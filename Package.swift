@@ -15,7 +15,9 @@ let package = Package(
   targets: [
     // Targets are the basic building blocks of a package, defining a module or a test suite.
     // Targets can depend on other targets in this package and products from dependencies.
-    .target(name: "ErrorInfo", dependencies: [.product(name: "SwiftCollectionsNonEmpty", package: "swiftCollections-nonEmpty")]),
+    .target(name: "ErrorInfo", dependencies: [
+      .product(name: "SwiftCollectionsNonEmpty", package: "swiftCollections-nonEmpty")
+    ]),
     .testTarget(name: "ErrorInfoTests", dependencies: [.target(name: "ErrorInfo")]),
   ],
   swiftLanguageModes: [.v6],
