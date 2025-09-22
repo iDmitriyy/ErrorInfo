@@ -57,33 +57,16 @@ extension ErrorInfoDictFuncs {
 }
 
 //import IndependentDeclarations
-import Collections
-import HashTreeCollections
+//import Collections
+//import HashTreeCollections
 
-protocol DictionaryProtocolUpdateValue: DictionaryUnifyingRootProtocol {
-  @discardableResult
-  mutating func updateValue(_ value: Value, forKey key: Key) -> Value?
-}
+//protocol DictionaryProtocolUpdateValue: DictionaryUnifyingRootProtocol {
+//  @discardableResult
+//  mutating func updateValue(_ value: Value, forKey key: Key) -> Value?
+//}
 
-func foo(ordered: OrderedDictionary<String, Int>,
-         tree: TreeDictionary<String, Int>,
-         swiftDict: [String: Int]) {
-  
-}
-
-extension TreeDictionary: DictionaryUnifyingRootProtocol {}
-
-//extension TreeDictionary: DictionaryUnifyingProtocol {
-//  public init(minimumCapacity: Int) {
-//    self.init()
-//    self.reserveCapacity(minimumCapacity)
-//  }
+//func foo(ordered: OrderedDictionary<String, Int>,
+//         tree: TreeDictionary<String, Int>,
+//         swiftDict: [String: Int]) {
 //  
-//  public mutating func reserveCapacity(_ minimumCapacity: Int) {
-//    
-//  }
-//  
-//  public mutating func removeAll(keepingCapacity keepCapacity: Bool) {
-//
-//  }
 //}

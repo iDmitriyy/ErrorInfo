@@ -12,3 +12,10 @@
 //@_exported public import struct IndependentDeclarations.StaticFileLine
 
 // @_exported public import StdLibExtensions // TODO: remove and import privately?
+
+@_exported public import protocol SwiftCollectionsNonEmpty.WithCapacityInitializableDictionaryProtocol
+@_exported public import protocol SwiftCollectionsNonEmpty.SingleValueSetSubscriptDictionaryProtocol
+
+public protocol DictionaryUnifyingProtocol<Key, Value>: WithCapacityInitializableDictionaryProtocol, SingleValueSetSubscriptDictionaryProtocol {}
+
+extension Dictionary: DictionaryUnifyingProtocol {}
