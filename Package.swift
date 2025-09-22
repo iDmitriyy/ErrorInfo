@@ -4,23 +4,29 @@
 import PackageDescription
 
 let package = Package(
-    name: "ErrorInfo",
-    products: [
-        // Products define the executables and libraries a package produces, making them visible to other packages.
-        .library(
-            name: "ErrorInfo",
-            targets: ["ErrorInfo"]
-        ),
-    ],
-    targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
-        .target(
-            name: "ErrorInfo"
-        ),
-        .testTarget(
-            name: "ErrorInfoTests",
-            dependencies: ["ErrorInfo"]
-        ),
-    ]
+  name: "ErrorInfo",
+  products: [
+    // Products define the executables and libraries a package produces, making them visible to other packages.
+    .library(name: "ErrorInfo", targets: ["ErrorInfo"]),
+  ],
+  dependencies: [
+    .package(url: "https://github.com/iDmitriyy/SwiftCollections-NonEmpty.git", branch: "main"),
+  ],
+  targets: [
+    // Targets are the basic building blocks of a package, defining a module or a test suite.
+    // Targets can depend on other targets in this package and products from dependencies.
+    .target(name: "ErrorInfo", dependencies: [.product(name: "SwiftCollectionsNonEmpty", package: "swiftCollections-nonEmpty")]),
+    .testTarget(name: "ErrorInfoTests", dependencies: [.target(name: "ErrorInfo")]),
+  ],
+  swiftLanguageModes: [.v6],
 )
+
+for target: PackageDescription.Target in package.targets {
+  {
+    var settings: [PackageDescription.SwiftSetting] = $0 ?? []
+    settings.append(.enableUpcomingFeature("ExistentialAny"))
+    settings.append(.enableUpcomingFeature("InternalImportsByDefault"))
+    settings.append(.enableUpcomingFeature("MemberImportVisibility"))
+    $0 = settings
+  }(&target.swiftSettings)
+}
