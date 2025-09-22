@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 16/09/2025.
 //
 
-//import IndependentDeclarations
+import SwiftyKit
 //import StdLibExtensions
 
 public struct PrefixTransformFunc: Sendable {

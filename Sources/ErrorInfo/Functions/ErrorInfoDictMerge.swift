@@ -6,6 +6,7 @@
 //
 
 //import StdLibExtensions
+import SwiftyKit
 
 extension ErrorInfoDictFuncs {
   /// Namespacing

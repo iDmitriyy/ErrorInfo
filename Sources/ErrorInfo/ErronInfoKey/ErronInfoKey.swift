@@ -24,10 +24,14 @@ public struct ErronInfoKey: Hashable, Sendable, CustomStringConvertible, CustomD
   /// Rationale: error info keys are used to be read by humans, so there 2 minimal requirements:
   /// 1. no new-line symbols
   /// 2. contains at least one symbol except whitespaces
-  public init?(rawValue: String) {
-    guard rawValue.containsCharacters(except: .whitespaces),
-          !rawValue.containsCharacters(in: .newlines) else { return nil }
-    self.init(uncheckedString: rawValue)
+//  public init?(rawValue: String) {
+//    guard rawValue.containsCharacters(except: .whitespaces),
+//          !rawValue.containsCharacters(in: .newlines) else { return nil }
+//    self.init(uncheckedString: rawValue)
+//  }
+  
+  public init(rawValue: String) {
+    self.rawValue = rawValue
   }
   
   internal init(uncheckedString: String) {

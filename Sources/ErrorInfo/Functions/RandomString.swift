@@ -6,6 +6,7 @@
 //
 
 //private import StdLibExtensions
+import SwiftyKit
 import NonEmpty
 
 // MARK: Random Suffix
@@ -46,7 +47,7 @@ extension ErrorInfoFuncs {
     let count = count.boundedWith(1, .max)
         
     let zeroIndexChar = Character(UnicodeScalar(alphaNumericAsciiSet.randomElement()!))
-    var result: NonEmptyString = NonEmptyString(zeroIndexChar)
+    var result: NonEmptyString = NonEmptyString(element: zeroIndexChar)
     for index in 1..<count {
       let randomAsciiNumber: UInt8 = if index == 0 || index == count - 1 {
         alphaNumericAsciiSet.randomElement()!

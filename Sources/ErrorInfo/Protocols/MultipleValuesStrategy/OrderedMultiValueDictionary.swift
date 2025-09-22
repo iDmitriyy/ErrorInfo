@@ -9,7 +9,7 @@ public import struct NonEmpty.NonEmpty
 private import typealias NonEmpty.NonEmptyArray
 import InternalCollectionsUtilities
 import OrderedCollections
-//import StdLibExtensions
+private import StdLibExtensions
 
 // MARK: - Ordered MultiValueDictionary
 
