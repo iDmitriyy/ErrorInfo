@@ -2,7 +2,7 @@
 //  Error+Merge.swift
 //  swifty-kit
 //
-//  Created by tmp on 21/09/2025.
+//  Created by Dmitriy Ignatyev on 21/09/2025.
 //
 
 extension Error {

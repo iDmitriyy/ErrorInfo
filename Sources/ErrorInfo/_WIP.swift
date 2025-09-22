@@ -2,7 +2,7 @@
 //  _WIP.swift
 //  swifty-kit
 //
-//  Created by tmp on 22/09/2025.
+//  Created by Dmitriy Ignatyev on 22/09/2025.
 //
 
 /*
