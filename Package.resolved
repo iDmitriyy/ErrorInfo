@@ -25,7 +25,7 @@
       "location" : "https://github.com/iDmitriyy/swift-nonempty.git",
       "state" : {
         "branch" : "SwiftCollectionsAdditions",
-        "revision" : "4e83af11f078b2672a8824da712b3d53e88bfd2a"
+        "revision" : "2667560f3b1077f813c70d0ca54fd79304c0ecf1"
       }
     },
     {
@@ -52,7 +52,7 @@
       "location" : "https://github.com/iDmitriyy/SwiftCollections-NonEmpty.git",
       "state" : {
         "branch" : "main",
-        "revision" : "ee94831b302fa6f0b22351743b4d0583eda9ae92"
+        "revision" : "5d9184021c2d040fb1779d52d8a3667f95f53f66"
       }
     },
     {

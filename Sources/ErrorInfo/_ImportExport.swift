@@ -16,10 +16,10 @@
 @_exported public import struct SwiftyKit.StaticFileLine
 
 
-@_exported public import protocol SwiftCollectionsNonEmpty.WithCapacityInitializableDictionaryProtocol
-@_exported public import protocol SwiftCollectionsNonEmpty.SingleValueSetSubscriptDictionaryProtocol
+@_exported public import protocol SwiftCollectionsNonEmpty.EmptyInitializableWithCapacityDictionary
+@_exported public import protocol SwiftCollectionsNonEmpty.SingleValueSetSubscriptDictionary
 
-public protocol DictionaryUnifyingProtocol<Key, Value>: WithCapacityInitializableDictionaryProtocol, SingleValueSetSubscriptDictionaryProtocol {}
+public protocol DictionaryUnifyingProtocol<Key, Value>: EmptyInitializableWithCapacityDictionary, SingleValueSetSubscriptDictionary {}
 
 extension Dictionary: DictionaryUnifyingProtocol {}
 
@@ -45,7 +45,7 @@ extension DictionaryUnifyingProtocol {
 internal import typealias NonEmpty.NonEmptyString
 
 extension NonEmptyString {
-  init(element: Collection.Element) {
+  init(element: Element) {
     fatalError()
   }
 }
