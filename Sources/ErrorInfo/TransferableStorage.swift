@@ -9,12 +9,17 @@ import struct Synchronization.Mutex
 private import struct OrderedCollections.OrderedDictionary
 
 // WIP, research
+// prototype
 
 /// Only single value for a key.
 /// No collsions resolution, value overwritten.
 internal struct TransferableStorage<Key: Hashable & Sendable> {
-  /// If enclosing instance is copied, then TransferableStorage is shared between copies.
-  /// Only one of all copies is able to extract values from TransferableStorage, which is unintuitive.
+  // If enclosing instance is copied, then TransferableStorage is shared between copies.
+  // Only one of all copies is able to extract values from TransferableStorage, which is unintuitive.
+  // It is possible to allow extraction of NonSendable values multiple timesb but it is unsafe and might need to be wrapped
+  // by some synchr.
+  // For ~Copyable instances miltiple extraction is not possible at all, so there would be an assymetry with NonSendable.
+  
   private var _storage: Storage?
   
   private var mutStorage: Storage {
@@ -39,12 +44,16 @@ internal struct TransferableStorage<Key: Hashable & Sendable> {
     }
   }
   
-  // mutating func sendNonCopyableNonSendable<T: ~Copyable>(_ nonCopyable: consuming sending T) {}
+  // mutating func putNonCopyableNonSendable<T: ~Copyable>(_ nonCopyable: consuming sending T) {}
   
   mutating func extractOnce<T>(forKey key: Key) -> sending T? {
     mutStorage.mutex.withLock { dict -> T? in
-      switch dict[key] {
+      defer { dict[key] = nil }
+      
+      return switch dict[key] {
       case .copyableNonSendable(let instance): instance as? T
+      case .anyObjectNonSendable(let instance): instance as? T
+      case .anyActor(let instance): instance as? T
       case .none: nil
       }
     }
@@ -57,8 +66,9 @@ internal struct TransferableStorage<Key: Hashable & Sendable> {
 
 extension TransferableStorage {
   enum ValueVariant {
-    // case nonCopyableNonSendable(any ~Copyable) // not possible yet
     case copyableNonSendable(instance: Any)
+    case anyObjectNonSendable(instance: AnyObject)
+    case anyActor(instance: any Actor)
   }
   
   private final class Storage {
