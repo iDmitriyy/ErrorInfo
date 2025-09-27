@@ -29,8 +29,8 @@ extension ErrorInfoDictFuncs.Merge {
   /// The function then checks if the modified key already exists in the errorInfo dictionary.
   /// If it does, it appends the index of the current dictionary to the suffix and checks again until it finds a key that does not exist in the `errorInfo` dictionary.
   /// Once it finds a unique key, the function adds the key-value pair to the `errorInfo` dictionary.
-  internal static func _mergeErrorInfo<V, C>(_ recipient: inout some DictionaryUnifyingProtocol<String, V>,
-                                             with donators: [some DictionaryUnifyingProtocol<String, V>],
+  internal static func _mergeErrorInfo<V, C>(_ recipient: inout some DictionaryProtocol<String, V>,
+                                             with donators: [some DictionaryProtocol<String, V>],
                                              omitEqualValue: Bool,
                                              identity: C,
                                              resolve: @Sendable (ResolvingInput<String, V, C>) -> ResolvingResult<String>) {
@@ -100,7 +100,7 @@ extension ErrorInfoDictFuncs.Merge {
                                                      omitEqualValue shouldOmitEqualValue: Bool,
                                                      identity: C,
                                                      resolve: (ResolvingInput<Dict.Key, Dict.Value, C>) -> ResolvingResult<Dict.Key>)
-    where Dict: DictionaryUnifyingProtocol, Dict.Key == String {
+    where Dict: DictionaryProtocol, Dict.Key == String {
     // TODO: update func documentation
     let suffixFirstChar: UnicodeScalar = ErrorInfoMerge.suffixBeginningForMergeScalar
     withKeyAugmentationAdd(keyValue: donatorKeyValue,
@@ -119,7 +119,7 @@ extension ErrorInfoDictFuncs.Merge {
                                                            shouldOmitEqualValue: Bool,
                                                            suffixFirstChar: UnicodeScalar,
                                                            to recipient: inout Dict)
-    where Dict: DictionaryUnifyingProtocol, Dict.Key == String {
+    where Dict: DictionaryProtocol, Dict.Key == String {
     _putAugmentingWithRandomSuffix(assumeModifiedKey: assumeModifiedKey,
                                    value: value,
                                    shouldOmitEqualValue: shouldOmitEqualValue,
@@ -145,7 +145,7 @@ extension ErrorInfoDictFuncs.Merge {
                                                        suffixSeparator: some Collection<Dict.Key.Element>,
                                                        randomSuffix: @Sendable () -> NonEmpty<Dict.Key>,
                                                        resolve: (ResolvingInput<Dict.Key, Dict.Value, C>) -> ResolvingResult<Dict.Key>)
-    where Dict: DictionaryUnifyingProtocol, Dict.Key: RangeReplaceableCollection {
+    where Dict: DictionaryProtocol, Dict.Key: RangeReplaceableCollection {
     let (donatorKey, donatorValue) = donatorKeyValue
     // In, most cases value is simply added to recipient. When collision happens, it must be properly resolved.
     if let recipientValue = recipient[donatorKey] {
@@ -201,7 +201,7 @@ extension ErrorInfoDictFuncs.Merge {
                                                             suffixSeparator: some Collection<Dict.Key.Element>,
                                                             randomSuffix: @Sendable () -> NonEmpty<Dict.Key>,
                                                             to recipient: inout Dict)
-    where Dict: DictionaryUnifyingProtocol, Dict.Key: RangeReplaceableCollection {
+    where Dict: DictionaryProtocol, Dict.Key: RangeReplaceableCollection {
     // Here we can can only make an assumtption that donator key was modified on the client side.
     // While it should always happen, there is no guarantee.
     

@@ -25,7 +25,7 @@ extension ErrorInfoMultipleValuesForKeyStrategy where Self: ErrorInfoPartialColl
   func asGenericDict<I, D>(omitEqualValue: Bool,
                            collisionsSpecifier: I,
                            resolve: (KeyCollisionResolvingInput<Key, Value, I>) -> KeyCollisionResolvingResult<Key>)
-    -> D where D: DictionaryUnifyingProtocol<Key, Value> {
+    -> D where D: DictionaryProtocol<Key, Value>, D: EmptyInitializableWithCapacityDictionary {
     var recipient = D(minimumCapacity: count)
     
     for keyValue in keyValuesView {
@@ -52,7 +52,8 @@ extension ErrorInfoMultipleValuesForKeyStrategy where Self: ErrorInfoPartialColl
   // ExpressibleByArrayLiteral – is only need for some kind of initialization. Somethong like `minimumCapacityInitializable`
   // can also be used.
   public func asMultipleValuesDictGeneric<D, VC>(omitEqualValue _: Bool) -> D
-    where D: DictionaryUnifyingProtocol<Key, NonEmpty<VC>>, VC: RangeReplaceableCollection, VC.Element == Self.Value {
+    where D: DictionaryProtocol<Key, NonEmpty<VC>>, D: EmptyInitializableWithCapacityDictionary,
+    VC: RangeReplaceableCollection, VC.Element == Self.Value {
     // VC: ExpressibleByArrayLiteral, VC.ArrayLiteralElement == Self.Value
     var dict: D = D(minimumCapacity: count)
     // VC: RangeReplaceableCollection –
@@ -75,7 +76,7 @@ extension ErrorInfoMultipleValuesForKeyStrategy where Self: ErrorInfoPartialColl
   // Fully opaque type is impossible yet
   // func asMultipleValuesDict(omitEqualValue: Bool) -> some DictionaryUnifyingProtocol<Key, NonEmpty<some Collection<Value>>>
   
-  func asMultipleValuesOpaqueDict(omitEqualValue: Bool) -> some DictionaryUnifyingProtocol<Key, NonEmptyArray<Value>> {
+  func asMultipleValuesOpaqueDict(omitEqualValue: Bool) -> some DictionaryProtocol<Key, NonEmptyArray<Value>> {
     imp_asMultipleValuesDict(omitEqualValue: omitEqualValue)
   }
   

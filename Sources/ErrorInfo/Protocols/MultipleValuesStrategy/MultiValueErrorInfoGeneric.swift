@@ -5,14 +5,16 @@
 //  Created by Dmitriy Ignatyev on 19/09/2025.
 //
 
-//import IndependentDeclarations
+// import IndependentDeclarations
 public import typealias NonEmpty.NonEmptyArray
 
 // MARK: - MultiValueErrorInfo Generic
 
 /// Generic backing storage for implementing error info types with `MultipleValuesForKey` strategy
 public struct MultiValueErrorInfoGeneric<Dict, Value>
-  where Dict: DictionaryUnifyingProtocol, Dict.Value == ErrorInfoMultiValueContainer<Value> {
+  where Dict: DictionaryProtocol, Dict: EmptyInitializableWithCapacityDictionary,
+  Dict.Value == ErrorInfoMultiValueContainer<Value> {
+  
   public typealias Key = Dict.Key
   public typealias Element = (key: Key, value: Value)
   
@@ -70,7 +72,7 @@ public enum ErrorInfoMultiValueContainer<T> {
       elementsWithAppendedNew = { NonEmptyArray(currentElement, newElement) }
       
     case .multiple(var elements):
-      isEqualToCurrent =  {
+      isEqualToCurrent = {
         elements.contains(where: { currentElement in
           ErrorInfoFuncs.isApproximatelyEqualAny(currentElement, newElement)
         })

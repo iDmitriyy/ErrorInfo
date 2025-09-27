@@ -19,6 +19,7 @@ let package = Package(
     // Targets can depend on other targets in this package and products from dependencies.
     .target(name: "ErrorInfo", dependencies: [
       .product(name: "SwiftCollectionsNonEmpty", package: "swiftCollections-nonEmpty"),
+      .product(name: "GeneralizedCollections", package: "swiftCollections-nonEmpty"),
 //      .product(name: "FunctionalTypes", package: "SwiftyKit"),
       .product(name: "StdLibExtensions", package: "SwiftyKit"),
       .product(name: "SwiftyKit", package: "SwiftyKit"),

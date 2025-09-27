@@ -122,7 +122,7 @@ func test(errorInfo: ErrorInfoCollection) {
 
 /// Default functions implementations for ErrorInfo types
 internal protocol ErrorInfoInternalDefaultFuncs {
-  associatedtype Storage: DictionaryUnifyingProtocol
+  associatedtype Storage: DictionaryProtocol
   
   var storage: Storage { get }
 }

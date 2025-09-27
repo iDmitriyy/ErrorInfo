@@ -15,7 +15,8 @@ public import struct NonEmpty.NonEmpty
 /// Each error-info type should have an ability to initialize from another one, like collections can be initialized from each other.
 
 /// Generic backing storage for implementing error info types with `KeyAugmentation` strategy.
-public struct KeyAugmentationErrorInfoGeneric<D> where D: DictionaryUnifyingProtocol, D.Key: RangeReplaceableCollection {
+public struct KeyAugmentationErrorInfoGeneric<D> where D: DictionaryProtocol, D: EmptyInitializableWithCapacityDictionary,
+  D.Key: RangeReplaceableCollection {
   public typealias Key = D.Key
   public typealias Value = D.Value
   public typealias Element = (key: Key, value: Value)
@@ -40,10 +41,10 @@ public struct KeyAugmentationErrorInfoGeneric<D> where D: DictionaryUnifyingProt
 extension KeyAugmentationErrorInfoGeneric {
   /// For usage in subscript imps.
   public mutating func appendResolvingCollisions(augmentingIfNeededKey key: D.Key,
-                                          value: D.Value,
-                                          omitEqualValue: Bool,
-                                          suffixSeparator: D.Key,
-                                          randomSuffix: @Sendable () -> NonEmpty<D.Key>) {
+                                                 value: D.Value,
+                                                 omitEqualValue: Bool,
+                                                 suffixSeparator: D.Key,
+                                                 randomSuffix: @Sendable () -> NonEmpty<D.Key>) {
     ErrorInfoDictFuncs.Merge._putAugmentingWithRandomSuffix(assumeModifiedKey: key,
                                                             value: value,
                                                             shouldOmitEqualValue: omitEqualValue,

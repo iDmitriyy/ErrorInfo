@@ -50,7 +50,7 @@ extension ErrorInfoCollisionsResolvable_ {
 // MARK: - Key Augmentation Collison Strategy
 
 public protocol ErrorInfoUniqueKeysAugmentationStrategy<Key, Value>: ErrorInfoCollisionsResolvable_ {
-  associatedtype OpaqueDictType: DictionaryUnifyingProtocol<Key, Value>
+  associatedtype OpaqueDictType: DictionaryProtocol<Key, Value>
 }
 
 extension ErrorInfoUniqueKeysAugmentationStrategy {

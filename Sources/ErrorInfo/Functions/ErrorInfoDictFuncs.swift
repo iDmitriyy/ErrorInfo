@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 31/07/2025.
 //
 
-//private import StdLibExtensions
+// private import StdLibExtensions
 
 /// Namespacing
 public enum ErrorInfoDictFuncs {}
@@ -16,7 +16,7 @@ extension ErrorInfoDictFuncs {
   public static func addKeyPrefix<V, Dict>(_ keyPrefix: String,
                                            toKeysOf dict: inout Dict,
                                            transform: PrefixTransformFunc)
-    where Dict: DictionaryUnifyingProtocol<String, V> {
+    where Dict: DictionaryProtocol<String, V>, Dict: EmptyInitializableWithCapacityDictionary {
     var prefixedKeysDict = Dict(minimumCapacity: dict.count)
     
     // Adding prefix is similar to merge operation, except that key collisions can happen between own keys after they are transformed.
@@ -44,7 +44,7 @@ extension ErrorInfoDictFuncs {
   
   /// No collisions can happen doing this operation.
   public static func addKeyPrefix<Dict>(_ keyPrefix: Dict.Key, toKeysOf dict: Dict) -> Dict
-    where Dict: DictionaryUnifyingProtocol, Dict.Key: RangeReplaceableCollection {
+    where Dict: DictionaryProtocol, Dict: EmptyInitializableWithCapacityDictionary, Dict.Key: RangeReplaceableCollection {
     var prefixedKeysDict = Dict(minimumCapacity: dict.count)
       
     for (key, value) in dict {
@@ -56,17 +56,17 @@ extension ErrorInfoDictFuncs {
   }
 }
 
-//import IndependentDeclarations
-//import Collections
-//import HashTreeCollections
+// import IndependentDeclarations
+// import Collections
+// import HashTreeCollections
 
-//protocol DictionaryProtocolUpdateValue: DictionaryUnifyingRootProtocol {
+// protocol DictionaryProtocolUpdateValue: DictionaryUnifyingRootProtocol {
 //  @discardableResult
 //  mutating func updateValue(_ value: Value, forKey key: Key) -> Value?
-//}
+// }
 
-//func foo(ordered: OrderedDictionary<String, Int>,
+// func foo(ordered: OrderedDictionary<String, Int>,
 //         tree: TreeDictionary<String, Int>,
 //         swiftDict: [String: Int]) {
-//  
-//}
+//
+// }
