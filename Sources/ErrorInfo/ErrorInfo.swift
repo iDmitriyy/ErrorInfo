@@ -94,7 +94,9 @@ extension ErrorInfo {
 // MARK: Merge
 
 extension ErrorInfo {
-  public mutating func merge<each D>(_: repeat each D) where repeat each D: ErrorInfoCollection {
+  public mutating func merge<each D>(_: repeat each D,
+                                     collisionSpecifier: CollisionSourceSpecifier.OnMerge = .fileLine())
+  where repeat each D: ErrorInfoCollection {
     fatalError()
 //    ErrorInfoDictFuncs.Merge._mergeErrorInfo
   }

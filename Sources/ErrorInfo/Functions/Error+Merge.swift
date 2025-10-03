@@ -5,6 +5,8 @@
 //  Created by Dmitriy Ignatyev on 21/09/2025.
 //
 
+private import SwiftyKit
+
 extension Error {
   public func mergedErrorInfo(with other: some Error,
                               omitEqualValue omitIfEqual: Bool = true,
@@ -78,7 +80,6 @@ func _merge(_ infos: NonEmptyArray<(any Error, info: [String: Any])>) {
   typealias ErrorIdentity = Int // index
   var accumulator: [[String: Any]] = []
     
-  
 //  let dd = do {
 //    54
 //  }
