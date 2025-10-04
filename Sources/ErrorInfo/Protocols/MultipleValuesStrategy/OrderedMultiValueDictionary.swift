@@ -48,13 +48,10 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
     _entries.makeIterator()
   }
   
-  func getAllUnique2() {
-    typealias Index = Int
-    typealias Entries = [EntryElement] // EntryElement
-    
+  func approximatelyUniqueValuesWithKeys() -> some Collection<Element> {
     var entriesRangeSet: RangeSet<Index> = RangeSet(_entries.indices)
     
-    for (key, allValuesForKeyIndexSet) in _keyEntryIndices where allValuesForKeyIndexSet.count > 1 {
+    for (_, allValuesForKeyIndexSet) in _keyEntryIndices where allValuesForKeyIndexSet.count > 1 {
       var valueForKeyIndices = allValuesForKeyIndexSet._asHeapNonEmptyOrderedSet.base
       
       var dropFirstCount: Int = 1
@@ -68,7 +65,7 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
             entriesRangeSet.remove(entryIndex, within: _entries)
           }
         }
-        // values: 0 1 1 1 1 2 3 2 3 2 1 4
+        // values example: 0 1 1 1 1 2 3 2 3 2 1 4
         let indicesAfterRemovingDuplicates = valueForKeyIndices.dropFirst(dropFirstCount)
         if let nextIndex = indicesAfterRemovingDuplicates.first {
           currentValue = _entries[nextIndex].value
@@ -78,9 +75,9 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
       }
     } // end `for (key, allValuesForKeyIndexSet)`
     
-    let uniqueValues = _entries[entriesRangeSet]
+    let uniqueValuesSlice = _entries[entriesRangeSet]
     
-    print("")
+    return uniqueValuesSlice
   }
 }
 
