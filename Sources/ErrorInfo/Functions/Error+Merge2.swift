@@ -7,7 +7,7 @@
 
 private import SwiftyKit
 private import Algorithms
-import protocol InternalCollectionsUtilities._UniqueCollection
+public import protocol InternalCollectionsUtilities._UniqueCollection
 
 struct StubError {
   let code: Int
@@ -117,38 +117,37 @@ func findCommonElements<Unique>(across collections: [Unique]) -> Set<Unique.Elem
   guard collections.count > 1 else { return [] }
     
   var countedElements: [Unique.Element: Int] = [:]
-  // ?Improvement:
-  // do { // if collection type has count O(1):
-  //   let capacity = collections.reduce(into: 0) { count, set in count += set.count }
-  //   countedElements.reserveCapacity(capacity)
-  //   in most cases, keys across errorInfo instances are unique, thats why capacity for totalCount can be allocated.
-  //   If there are duplicated elements across collections, memory overhead will be minimal
-  // }
+   do { // Unique collection types has count O(1):
+     let capacity = collections.reduce(into: 0) { count, set in count += set.count }
+     countedElements.reserveCapacity(capacity)
+     // in most cases, keys across errorInfo instances are unique, thats why capacity for totalCount can be allocated.
+     // If there are duplicated elements across collections, memory overhead will be minimal
+   }
   
-  // var commonElementsCapacity: Int = 0
+//   var commonElementsCapacity: Int = 0
   for collectionOfUniqueElements in collections {
     for element in collectionOfUniqueElements {
       countedElements[element, default: 0] += 1
       
       // ?Improvement:
-      // var count = countedElements[element, default: 0]
-      // switch count {
-      // case 0:
-      //   countedElements[element] = 1
-      // case 1:
-      //   count += 1
-      //   countedElements[element] = count
-      //   // when element appears second time, it will be added to commonElements. So we can calc commonElements.Capacity
-      //   commonElementsCapacity += 1
-      // default:
-      //   // real count is not needed. It is needed to know if element was met twice
-      //   break // optimize increment & subscript setter (hash calculatuon + value update)
-      // }
+//       var count = countedElements[element, default: 0]
+//       switch count {
+//       case 0:
+//         countedElements[element] = 1
+//       case 1:
+//         count += 1
+//         countedElements[element] = count
+//         // when element appears second time, it will be added to commonElements. So we can calc commonElements.Capacity
+////         commonElementsCapacity += 1
+//       default:
+//         // real count is not needed. It is needed to know if element was met twice
+//         break // optimize increment & subscript setter (hash calculatuon + value update)
+//       }
     } // end for element
   } // end for collection
   
   var commonElements: Set<Unique.Element> = []
-  // commonElements.reserveCapacity(commonElementsCapacity)
+//   commonElements.reserveCapacity(commonElementsCapacity)
   for (element, count) in countedElements where count > 1 {
     commonElements.insert(element)
   }

@@ -89,7 +89,11 @@ extension ErrorInfoFuncs {
     }
   }
   
-  private static func _isApproximatelyEqualEquatable(_ lhs: some Equatable, _ rhs: some Equatable) -> Bool {
+  private static func _isApproximatelyEqualEquatable<L, R>(_ lhs: L, _ rhs: R) -> Bool where L: Equatable, R: Equatable {
+    // ?Improvement:
+    // if let rhs = _specialize(rhs, for: L.self) {
+    //   return lhs == rhs
+    // }
     let lhsAdapter = _EquatableAnyhashableAdapter(equatableValue: lhs)
     let rhsAdapter = _EquatableAnyhashableAdapter(equatableValue: rhs)
     return AnyHashable(lhsAdapter) == AnyHashable(rhsAdapter)

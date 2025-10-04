@@ -11,9 +11,15 @@ import StdLibExtensions
 import OrderedCollections
 
 struct OrderedMultiValueDictionaryTests {
-//  @Test func `test values order`() throws {
-//
-//  }
+  @Test func `test values order`() throws {
+
+  }
+  
+  @Test func `test init with Dictionary Literal`() throws {
+    let dict: OrderedMultiValueDictionary<String, Int> = ["a": 1, "a": 2, "a": 2, "a": 2, "a": 3, "a": 3, "b": 5]
+    dict.keyValuesView(shouldOmitEqualValue: true)
+    print(dict)
+  }
   
   @Test func `test Empty Dictionary`() {
     let dict = OrderedMultiValueDictionary<String, Int>()

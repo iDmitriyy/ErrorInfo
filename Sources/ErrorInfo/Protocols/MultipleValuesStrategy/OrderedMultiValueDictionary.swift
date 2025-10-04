@@ -52,20 +52,21 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
     let allEntriesIndices = RangeSet(_entries.indices)
     let allEntriesSlice = _entries[...]
     
+    
     if omitEqualValues {
       for (key, entryIndices) in _keyEntryIndices where entryIndices.count > 1 {
         let valuesIndices = entryIndices.asRangeSet(for: _entries)
         let invertedIndices = allEntriesIndices.subtracting(valuesIndices)
         
-        var valuesSlice = allEntriesSlice
-        valuesSlice.removeSubranges(invertedIndices) // FIXME: might be inefficient
-        var currentElement = valuesSlice.first!
-        var nextElementsSlice = valuesSlice.dropFirst()
+        var valuesForKeySlice = allEntriesSlice
+        valuesForKeySlice.removeSubranges(invertedIndices) // FIXME: might be inefficient
+        var currentElement = valuesForKeySlice.first!
+        var nextElementsSlice = valuesForKeySlice.dropFirst()
         while !nextElementsSlice.isEmpty {
           let duplicatedElementsIndices = nextElementsSlice.indices(where: { nextElement in
             ErrorInfoFuncs.isApproximatelyEqualAny(currentElement, nextElement)
           })
-          
+          valuesForKeySlice.removeSubranges(duplicatedElementsIndices)
           nextElementsSlice.removeSubranges(duplicatedElementsIndices)
           if let nextElement = nextElementsSlice.first {
             currentElement = nextElement
@@ -75,8 +76,59 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
       }
     } else {
       // let allEntries = _entries[allEntriesIndices]
-      allEntriesSlice
+      let values = allEntriesSlice.map { $0.value }
+      print(values)
     } // end if omitEqualValues
+  }
+  
+  func getUnique() {
+    typealias Index = Int
+    typealias Entries = [EntryElement] // EntryElement
+    
+    var allEntriesRangeSet: RangeSet<Index> = RangeSet(_entries.indices)
+    
+    for (key, allValuesForKeyOrderedIndexSet) in _keyEntryIndices where allValuesForKeyOrderedIndexSet.count > 1 {
+      let allValuesForKeyRangeSet: RangeSet<Index> = allValuesForKeyOrderedIndexSet.asRangeSet(for: _entries)
+      let allValuesForKeyDiscSlice: DiscontiguousSlice<Entries> = _entries[allValuesForKeyRangeSet]
+      
+      var uniqueValuesForKeyIndices: RangeSet<Index> = allValuesForKeyRangeSet
+      var currentElement = allValuesForKeyDiscSlice.first!
+      var nextElementsSlice: DiscontiguousSlice<Entries> = allValuesForKeyDiscSlice.dropFirst()
+      
+      var resultIndices: RangeSet<Index> = allValuesForKeyRangeSet
+      var nextElementsIndices: RangeSet<Index> = allValuesForKeyRangeSet
+      while true {
+        let duplicatedElementsRangeSet = nextElementsSlice.indices(where: { nextElement in
+          ErrorInfoFuncs.isApproximatelyEqualAny(currentElement, nextElement)
+        })
+        
+        for range in duplicatedElementsRangeSet.ranges {
+          let adaptedRange: Range<Index> = range.lowerBound.base..<range.upperBound.base
+          allEntriesRangeSet.remove(contentsOf: adaptedRange)
+        }
+        
+      }
+      
+      switch allValuesForKeyOrderedIndexSet.count {
+      case 2:
+        let index0 = allValuesForKeyOrderedIndexSet[0]
+        let index1 = allValuesForKeyOrderedIndexSet[1]
+        if ErrorInfoFuncs.isApproximatelyEqualAny(_entries[index0].value, _entries[index1].value) {
+          allEntriesRangeSet.remove(index1, within: _entries)
+        }
+      default:
+        
+        break
+      }
+      // DiscontiguousSlice<Array<(key: Key, value: Value)>>.SubSequence
+    } // end for
+  }
+  
+  func dfsdf() {
+    // DiscontiguousSlice<[(key: Key, value: Value)]>.Index
+    // let allValuesForKeyIndices = _keyEntryIndices[_keyEntryIndices.startIndex].value.asRangeSet(for: _entries)
+    // var discSlice: DiscontiguousSlice<Array<(key: Key, value: Value)>> = _entries[allValuesForKeyIndices]
+    // let discSliceSubseq: DiscontiguousSlice<Array<(key: Key, value: Value)>> = discSlice[...]
   }
 }
 
@@ -99,6 +151,16 @@ extension OrderedMultiValueDictionary: CustomDebugStringConvertible {
 }
 
 extension OrderedMultiValueDictionary: Sendable where Key: Sendable, Value: Sendable {}
+
+extension OrderedMultiValueDictionary: ExpressibleByDictionaryLiteral {
+  public init(dictionaryLiteral elements: (Key, Value)...) {
+    self.init()
+    
+    for (key, value) in elements {
+      self.append(key: key, value: value)
+    }
+  }
+}
 
 /*
  TODO:
