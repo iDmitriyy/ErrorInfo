@@ -7,7 +7,8 @@
 
 public import struct NonEmpty.NonEmpty
 private import typealias NonEmpty.NonEmptyArray
-//import InternalCollectionsUtilities
+
+// import InternalCollectionsUtilities
 import OrderedCollections
 private import StdLibExtensions
 public import protocol InternalCollectionsUtilities._UniqueCollection
@@ -48,33 +49,34 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   }
   
   func keyValuesView(shouldOmitEqualValue omitEqualValues: Bool) {
-    var allEntriesIndices = RangeSet(_entries.indices)
+    let allEntriesIndices = RangeSet(_entries.indices)
+    let allEntriesSlice = _entries[...]
     
     if omitEqualValues {
       for (key, entryIndices) in _keyEntryIndices where entryIndices.count > 1 {
-        let keyValuesIndices = entryIndices.asRangeSet(for: _entries)
+        let valuesIndices = entryIndices.asRangeSet(for: _entries)
+        let invertedIndices = allEntriesIndices.subtracting(valuesIndices)
         
-        var valuesSlice = _entries[keyValuesIndices]
+        var valuesSlice = allEntriesSlice
+        valuesSlice.removeSubranges(invertedIndices) // FIXME: might be inefficient
         var currentElement = valuesSlice.first!
-        var sliceAfter = valuesSlice.dropFirst()
-        
-        while !sliceAfter.isEmpty {
-          let duplicatedElementsIndices = sliceAfter.indices(where: { nextElement in
+        var nextElementsSlice = valuesSlice.dropFirst()
+        while !nextElementsSlice.isEmpty {
+          let duplicatedElementsIndices = nextElementsSlice.indices(where: { nextElement in
             ErrorInfoFuncs.isApproximatelyEqualAny(currentElement, nextElement)
           })
-          // !!!
-          // sliceAfter = sliceAfter.removingSubranges(duplicatedElementsIndices)
-          if let nextElement = sliceAfter.first {
+          
+          nextElementsSlice.removeSubranges(duplicatedElementsIndices)
+          if let nextElement = nextElementsSlice.first {
             currentElement = nextElement
-            sliceAfter = sliceAfter.dropFirst()
+            nextElementsSlice = nextElementsSlice.dropFirst()
           }
         }
       }
     } else {
-      let allEntries = _entries[allEntriesIndices]
-    }
-    
-    
+      // let allEntries = _entries[allEntriesIndices]
+      allEntriesSlice
+    } // end if omitEqualValues
   }
 }
 

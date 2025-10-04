@@ -88,18 +88,18 @@ func extractApproximatelyUniqueElements<T>(from values: NonEmptyArray<T>) -> Non
   var processed: NonEmptyArray<T> = NonEmptyArray<T>(values.first)
   
   var currentElement = values.first
-  var sliceAfter = values.base.dropFirst()
-  while !sliceAfter.isEmpty {
-    let duplicatedElementsIndices = sliceAfter.indices(where: { nextElement in
+  var nextElementsSlice = values.base.dropFirst()
+  while !nextElementsSlice.isEmpty {
+    let duplicatedElementsIndices = nextElementsSlice.indices(where: { nextElement in
       ErrorInfoFuncs.isApproximatelyEqualAny(currentElement, nextElement)
     })
-    sliceAfter.removeSubranges(duplicatedElementsIndices) // ?? use DiscontiguousSlice<[T]>
-    if let nextElement = sliceAfter.first {
+    nextElementsSlice.removeSubranges(duplicatedElementsIndices) // ?? use DiscontiguousSlice<[T]>
+    if let nextElement = nextElementsSlice.first {
       currentElement = nextElement
-      sliceAfter = sliceAfter.dropFirst()
+      nextElementsSlice = nextElementsSlice.dropFirst()
     }
   }
-  processed.append(contentsOf: sliceAfter)
+  processed.append(contentsOf: nextElementsSlice)
   return values
 }
 
