@@ -60,16 +60,16 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
         
         var valuesForKeySlice = allEntriesSlice
         valuesForKeySlice.removeSubranges(invertedIndices) // FIXME: might be inefficient
-        var currentElement = valuesForKeySlice.first!
+        var currentElement = valuesForKeySlice.first!.value
         var nextElementsSlice = valuesForKeySlice.dropFirst()
         while !nextElementsSlice.isEmpty {
           let duplicatedElementsIndices = nextElementsSlice.indices(where: { nextElement in
-            ErrorInfoFuncs.isApproximatelyEqualAny(currentElement, nextElement)
+            ErrorInfoFuncs.isApproximatelyEqualAny(currentElement, nextElement.value)
           })
           valuesForKeySlice.removeSubranges(duplicatedElementsIndices)
           nextElementsSlice.removeSubranges(duplicatedElementsIndices)
           if let nextElement = nextElementsSlice.first {
-            currentElement = nextElement
+            currentElement = nextElement.value
             nextElementsSlice = nextElementsSlice.dropFirst()
           }
         }
@@ -92,34 +92,55 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
       let allValuesForKeyDiscSlice: DiscontiguousSlice<Entries> = _entries[allValuesForKeyRangeSet]
       
       var uniqueValuesForKeyIndices: RangeSet<Index> = allValuesForKeyRangeSet
-      var currentElement = allValuesForKeyDiscSlice.first!
-      var nextElementsSlice: DiscontiguousSlice<Entries> = allValuesForKeyDiscSlice.dropFirst()
+//      var currentElement = allValuesForKeyDiscSlice.first!
+//      var nextElementsSlice: DiscontiguousSlice<Entries> = allValuesForKeyDiscSlice.dropFirst()
       
       var resultIndices: RangeSet<Index> = allValuesForKeyRangeSet
+      
       var nextElementsIndices: RangeSet<Index> = allValuesForKeyRangeSet
-      while true {
+      var nextElementsSlice: DiscontiguousSlice<Entries> = _entries[nextElementsIndices]
+      var currentElement = nextElementsSlice.first!.value
+      nextElementsIndices.remove(nextElementsSlice.startIndex.base, within: _entries)
+      nextElementsSlice = _entries[nextElementsIndices]
+      while !nextElementsSlice.isEmpty {
         let duplicatedElementsRangeSet = nextElementsSlice.indices(where: { nextElement in
-          ErrorInfoFuncs.isApproximatelyEqualAny(currentElement, nextElement)
+          let nextValue = nextElement.value
+          let isApproxEqual = ErrorInfoFuncs.isApproximatelyEqualAny(currentElement, nextValue)
+          print("isApproxEqual \(isApproxEqual) \(currentElement)  \(nextValue)")
+          return isApproxEqual
         })
+        
+        let nextEl = Array(nextElementsSlice)
+        let duplicated = nextElementsSlice[duplicatedElementsRangeSet]
+        let dupEl = Array(duplicated)
         
         for range in duplicatedElementsRangeSet.ranges {
           let adaptedRange: Range<Index> = range.lowerBound.base..<range.upperBound.base
           allEntriesRangeSet.remove(contentsOf: adaptedRange)
+          nextElementsIndices.remove(contentsOf: adaptedRange)
         }
         
+        if let firstRange: Range<Index> = nextElementsIndices.ranges.first, !firstRange.isEmpty {
+          currentElement = _entries[firstRange.lowerBound].value
+          nextElementsIndices.remove(firstRange.lowerBound, within: _entries)
+          nextElementsSlice = _entries[nextElementsIndices]
+        }
       }
       
-      switch allValuesForKeyOrderedIndexSet.count {
-      case 2:
-        let index0 = allValuesForKeyOrderedIndexSet[0]
-        let index1 = allValuesForKeyOrderedIndexSet[1]
-        if ErrorInfoFuncs.isApproximatelyEqualAny(_entries[index0].value, _entries[index1].value) {
-          allEntriesRangeSet.remove(index1, within: _entries)
-        }
-      default:
-        
-        break
-      }
+      let uniqueEntries = _entries[allEntriesRangeSet]
+      print("")
+      
+//      switch allValuesForKeyOrderedIndexSet.count {
+//      case 2:
+//        let index0 = allValuesForKeyOrderedIndexSet[0]
+//        let index1 = allValuesForKeyOrderedIndexSet[1]
+//        if ErrorInfoFuncs.isApproximatelyEqualAny(_entries[index0].value, _entries[index1].value) {
+//          allEntriesRangeSet.remove(index1, within: _entries)
+//        }
+//      default:
+//        
+//        break
+//      }
       // DiscontiguousSlice<Array<(key: Key, value: Value)>>.SubSequence
     } // end for
   }
@@ -313,7 +334,7 @@ internal enum NonEmptyOrderedIndexSet: RandomAccessCollection {
       return indices.base[position]
     }
   }
-  
+    
   @available(*, deprecated, message: "not optimal")
   internal var _asHeapNonEmptyOrderedSet: NonEmpty<OrderedSet<Int>> { // TODO: confrom Sequence protocol instead of this
     switch self {

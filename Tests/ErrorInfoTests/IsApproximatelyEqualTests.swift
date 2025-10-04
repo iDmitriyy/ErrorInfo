@@ -74,7 +74,7 @@ extension IsApproximatelyEqualTests {
     #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as Any, 5))
     #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as Any, 5 as Any))
     
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as AnyObject, 5))
+    #expect(ErrorInfoFuncs.isApproximatelyEqualDTypes(5 as AnyObject, 5))
     #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as AnyObject, 5 as AnyObject))
     
     #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any Equatable, 5))
@@ -192,12 +192,12 @@ extension IsApproximatelyEqualTests {
     let a = 123
     let b = "123"
     // Different types are treated as not equal even if they have semantically same meaning
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a, b))
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualDTypes(a, b))
     
     #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as Any, b))
     #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as Any, b as Any))
     
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as AnyObject, b))
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualDTypes(a as AnyObject, b))
     #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as AnyObject, b as AnyObject))
     
     #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as any Equatable, b))
