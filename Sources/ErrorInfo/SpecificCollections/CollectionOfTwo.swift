@@ -5,6 +5,7 @@
 //  Created by tmp on 03/10/2025.
 //
 
+/// For storing multiple values
 internal struct CollectionOfTwo<Element>: RandomAccessCollection {
   private let pair: (first: Element, second: Element)
   

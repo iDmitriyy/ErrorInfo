@@ -7,6 +7,7 @@
 
 private import SwiftyKit
 private import Algorithms
+import protocol InternalCollectionsUtilities._UniqueCollection
 
 struct StubError {
   let code: Int
@@ -21,83 +22,91 @@ fileprivate enum ErrorInfoIndicesCache<Bound: Comparable> {
 
 struct KeyWithIndexPaths<Key: Hashable, ErrorsListIndex, DictIndex> {
   let key: Key
+  let indexPaths: [(errorIndex: ErrorsListIndex, keyIndex: DictIndex)]
 }
 
 // CollisionSourceSpecifier.defaultStringInterpolation
 // (CollisionSourceSpecifier) -> String
 
+//struct ElementWiseLazyMapArray<BaseElement, Element>: RandomAccessCollection {
+//  let base: [BaseElement]
+//  let transform: (BaseElement) -> Element
+//  private var dict: [Int: Element] // replace with Buffer + initialized indices set (? BitSet with endIndex to prevent rearranges)
+//
+//  var startIndex: Int { base.startIndex }
+//  var endIndex: Int { base.endIndex }
+//  
+//  internal subscript(position: Int) -> Element {
+//    if let element = dict[position] {
+//      return element
+//    } else {
+//      let baseElement = base[position]
+//      let element = transform(baseElement)
+//      dict[position] = element
+//      return element
+//    }
+//  }
+//}
+
 // ?naming merge-FlatMap operation
-func merge2(errors: NonEmptyArray<StubError>,
+func merge2(errors: [StubError],
             omitEqualValues: Bool,
+            errorSignatureBuilder: (StubError) -> String = { $0.domain + "\($0.code)" },
             collisionSpecifierInterpolation: (CollisionSourceSpecifier) -> String)
   -> OrderedDictionary<String, Int> {
   typealias Dict = OrderedDictionary<String, Int>
   typealias Key = Dict.Key
   typealias Value = Dict.Value
-    
-  guard errors.count > 1 else {
-    // FIXME: instance-bounded collisions
-    return errors.first.info
-  }
-  
-  // RangSet – can be created while intersections search.
-  var notCollidedKeysIndices: [RangeSet<Dict.Index>] = []
-  
-  let interErrorsCollidedKeys = mutate(value: Set<Key>()) { commonKeys in
-    var countedKeys: [Key: Int] = [:]
-    
-    for (errorIndex, error) in errors.enumerated() {
-      for key in error.info.keys {
-        countedKeys[key, default: 0] += 1
-      }
-    }
-    
-    for (key, count) in countedKeys where count > 1 {
-      commonKeys.insert(key)
-    }
-  }
+      
+  let crossErrorsCollisionKeys = findCommonElements(across: errors.map { $0.info.keys })
+  lazy var errorSignatures = errors.map(errorSignatureBuilder)
     
   var merged: OrderedDictionary<Key, Value> = [:]
-  
-  for error in errors.base {
-    let index: Int = 0
-    let indicesWithoutInterErrorCollisions = notCollidedKeysIndices[index]
-    let elementsWithoutInterErrorCollisions = error.info[indicesWithoutInterErrorCollisions]
-    
-    for (key, value) in elementsWithoutInterErrorCollisions {
+  for (errorIndex, error) in errors.enumerated() {
+    for (key, value) in error.info {
       // will possibly be multiple values for key later when MultivalueDict types used
-      var values: NonEmptyArray<Value> = NonEmptyArray(value) // TODO: use a slice or view to prevent heap allocation
-      if values.count > 1 { // value collisions within concrete error instance
-        let processedValues = prepareValues(values, removingEqualValues: omitEqualValues)
+      // TODO: use a slice or view to prevent heap allocation
+      let processedValues = prepareValues(NonEmptyArray(value), removingEqualValues: omitEqualValues)
+      let hasCrossErrorsCollision = crossErrorsCollisionKeys.contains(key)
+      // TODO: processedValues contain all values for key which leads to incorrect ordering.
+      var augmentedKey: String = key
+      if hasCrossErrorsCollision {
+        let errorSignature = errorSignatures[errorIndex]
+        augmentedKey.append(errorSignature)
         
+        var allTheRestSignaturesIndices = RangeSet(errorSignatures.indices)
+        allTheRestSignaturesIndices.remove(errorIndex, within: errorSignatures)
+        
+        let isContinedInErrorWithEqualSignature = errorSignatures[allTheRestSignaturesIndices].contains(errorSignature)
+        if isContinedInErrorWithEqualSignature {
+          // if there are errors with same signatures then append errorIndex to understand from which of similar errors
+          // the key-value is
+          augmentedKey.append("(\(errorIndex))")
+        }
+      } else {
+        ()
+      }
+      
+      func put(key assumeModifiedKey: Key, value processedValue: Value) {
+        ErrorInfoDictFuncs.Merge._putResolvingWithRandomSuffix(processedValue,
+                                                               assumeModifiedKey: key,
+                                                               shouldOmitEqualValue: omitEqualValues,
+                                                               suffixFirstChar: ErrorInfoMerge.suffixBeginningForMergeScalar,
+                                                               to: &merged)
+      }
+      
+      if processedValues.count > 1 { // value collisions within concrete error instance
         for collidedValue in processedValues {
           let collisionSpecifier = CollisionSourceSpecifier.onSubscript // !! get real one
           let collisionSpecString = collisionSpecifierInterpolation(collisionSpecifier)
-          let augmentedKey = key + collisionSpecString
-          merged[augmentedKey] = collidedValue // TODO: _putAugmentingWithRandomSuffix()
+          augmentedKey.append(collisionSpecString)
+          put(key: augmentedKey, value: collidedValue)
         }
       } else {
-        merged[key] = values.first
+        put(key: augmentedKey, value: processedValues.first)
       }
     } // end `for (key, value)`
-    
-    if error.info.count != elementsWithoutInterErrorCollisions.count {
-      // TODO: optimize inverted set creation or crated it
-      let indicesForInterErrorCollisions = RangeSet(error.info.indices, within: error.info)
-        .subtracting(indicesWithoutInterErrorCollisions)
-      let elementsWithInterErrorCollisions = error.info[indicesWithoutInterErrorCollisions]
-      
-      for (key, value) in elementsWithInterErrorCollisions {
-        var values: NonEmptyArray<Value> = NonEmptyArray(value) // TODO: use a slice or view to prevent heap allocation
-        let augmentedKey = key + error.domain + "\(error.code)"
-        if values.count > 1 {
-          
-        } else {
-          merged[augmentedKey] = values.first
-        }
-      }
-    }
-   } // end `for error`
+  } // end `for (errorIndex, error)`
   
   return merged
 }
@@ -128,50 +137,70 @@ func extractApproximatelyUniqueElements<T>(from values: NonEmptyArray<T>) -> Non
 }
 
 /// ```
-/// let set1: Set = [1, 2, 3, 4, 5]
-/// let set2: Set = [3, 4, 5, 6]
-/// let set3: Set = [4, 5, 7, 8]
+/// let set1 = [1, 2, 3, 4, 5]
+/// let set2 = [3, 4, 5, 6]
+/// let set3 = [4, 5, 7, 8]
 ///
 /// findCommonElements(inAnyOf: [set1, set2, set3])
 /// // Output: [3, 4, 5]
 /// // because 3 appears in 2 sets, 4 and 5 appear in all 3
 /// ```
-func findCommonElements<T: Hashable>(inAnyOf sets: [Set<T>]) -> Set<T> {
-  var frequency: [T: Int] = [:]
+func findCommonElements<Unique>(across collections: [Unique]) -> Set<Unique.Element>
+  where Unique: Collection & _UniqueCollection, Unique.Element: Hashable {
+  guard collections.count > 1 else { return [] }
+    
+  var countedElements: [Unique.Element: Int] = [:]
+  // ?Improvement:
+  // do { // if collection type has count O(1):
+  //   let capacity = collections.reduce(into: 0) { count, set in count += set.count }
+  //   countedElements.reserveCapacity(capacity)
+  //   in most cases, keys across errorInfo instances are unique, thats why capacity for totalCount can be allocated.
+  //   If there are duplicated elements across collections, memory overhead will be minimal
+  // }
   
-//  do {
-//    let totalCount = sets.reduce(into: 0) { count, set in
-//      count += set.count
-//    }
-//    frequency.reserveCapacity(totalCount)
-//  }
+  // var commonElementsCapacity: Int = 0
+  for collectionOfUniqueElements in collections {
+    for element in collectionOfUniqueElements {
+      countedElements[element, default: 0] += 1
+      
+      // ?Improvement:
+      // var count = countedElements[element, default: 0]
+      // switch count {
+      // case 0:
+      //   countedElements[element] = 1
+      // case 1:
+      //   count += 1
+      //   countedElements[element] = count
+      //   // when element appears second time, it will be added to commonElements. So we can calc commonElements.Capacity
+      //   commonElementsCapacity += 1
+      // default:
+      //   // real count is not needed. It is needed to know if element was met twice
+      //   break // optimize increment & subscript setter (hash calculatuon + value update)
+      // }
+    } // end for element
+  } // end for collection
   
-  for set in sets {
-    for element in set {
-      frequency[element, default: 0] += 1
-    }
+  var commonElements: Set<Unique.Element> = []
+  // commonElements.reserveCapacity(commonElementsCapacity)
+  for (element, count) in countedElements where count > 1 {
+    commonElements.insert(element)
   }
-  
-  var common: Set<T> = []
-  for (element, count) in frequency where count > 1 {
-    common.insert(element)
-  }
-  return common
+  return commonElements
 }
 
-//let interErrorsCollidedKeys = mutate(value: Set<Key>()) { commonKeys in
+// let interErrorsCollidedKeys = mutate(value: Set<Key>()) { commonKeys in
 //  var countedKeys: [Key: Int] = [:]
-//  
+//
 //  for (errorIndex, error) in errors.enumerated() {
 //    for key in error.info.keys {
 //      countedKeys[key, default: 0] += 1
 //    }
 //  }
-//  
+//
 //  for (key, count) in countedKeys where count > 1 {
 //    commonKeys.insert(key)
 //  }
-//}
+// }
 
 // let interErrorsCollidedKeys = mutate(value: Set<String>()) {
 //  var slice = errors.base[...]

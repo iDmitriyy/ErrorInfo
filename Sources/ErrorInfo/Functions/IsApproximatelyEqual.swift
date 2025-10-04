@@ -29,7 +29,7 @@ extension ErrorInfoFuncs {
   ///
   /// - Returns: `true` if the values are approximately equal; otherwise, `false`.
   public static func isApproximatelyEqualAny<L, R>(_ lhs: L, _ rhs: R) -> Bool {
-    // @_specialize(where L == any ErrorInfoValueType, R == any ErrorInfoValueType)
+    // Improvement: @_specialize(where L == any ErrorInfoValueType, R == any ErrorInfoValueType)
     lazy var isEqualDynamicTypes = type(of: lhs) == type(of: rhs)
     
     return if let lhs = lhs as? (any Equatable), let rhs = rhs as? (any Equatable) {

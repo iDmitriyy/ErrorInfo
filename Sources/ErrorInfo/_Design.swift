@@ -33,4 +33,13 @@
  
  MultiValue is also preferreble vs `in-place aaugmentation` as it preserves `values(forKey:)` and `hasValues(forKey:)`.
  If key augmented when added, then listed above functions will return only first value.
+ 
+ Make SUI app (for MacOS firstly, but crosspplatform) with error-type selectors
+ [ErrType1]  [ErrType2] + ... up to 5
+ add: k-val  add: k-val
+ 
+   info1       info1
+    [:]         [:]
+        Summary:
+          [:]
  */
