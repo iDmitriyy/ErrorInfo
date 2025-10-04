@@ -19,12 +19,12 @@
 
 public struct OrderedMultiValueErrorInfoGeneric<Key: Hashable, Value>: Sequence {
   public typealias Element = (key: Key, value: Value)
-  private typealias ValueWrapper = ValueWithCollisionWrapper<Value, String>
+  private typealias ValueWrapper = ValueWithCollisionWrapper<Value, CollisionSourceSpecifier>
   
   // Improvement / optimization:
   // Typically there will be one value for each key, so OrderedDictionary is enough for most situations.
   // OrderedMultiValueDictionary is needed when first collision happens.
-  // All overhead which OrderedMultiValueDictionary havs can be eliminated untill first collision happens.
+  // All overhead which OrderedMultiValueDictionary has can be eliminated untill first collision happens.
   // _storage: Either<OrderedDictionary<Key, Value>, OrderedMultiValueDictionary<Key, ValueWrapper>>
   private var _storage: OrderedMultiValueDictionary<Key, ValueWrapper>
   
@@ -42,12 +42,19 @@ public struct OrderedMultiValueErrorInfoGeneric<Key: Hashable, Value>: Sequence 
       }
     }
   }
+  
+  func keyValuesView(shouldOmitEqualValue omitEqualValues: Bool) {
+    
+  }
 }
 
 // MARK: - Mutation Methods
 
 extension OrderedMultiValueErrorInfoGeneric {
-  public mutating func appendResolvingCollisions(key: Key, value newValue: Value, omitEqualValue omitIfEqual: Bool) {
+  public mutating func appendResolvingCollisions(key: Key,
+                                                 value newValue: Value,
+                                                 omitEqualValue omitIfEqual: Bool,
+                                                 collisionSourceSpecifier: @autoclosure () -> CollisionSourceSpecifier) {
     if let currentValues = _storage.allValuesView(forKey: key) {
       lazy var isEqualToCurrent = currentValues.contains(where: { currentValue in
         ErrorInfoFuncs.isApproximatelyEqualAny(currentValue.value, newValue)
@@ -58,7 +65,7 @@ extension OrderedMultiValueErrorInfoGeneric {
         return
       } else {
         // FIXME: collisionSpecifier
-        _storage.append(key: key, value: .collidedValue(newValue, collisionSpecifier: ""))
+        _storage.append(key: key, value: .collidedValue(newValue, collisionSpecifier: collisionSourceSpecifier()))
       }
     } else {
       _storage.append(key: key, value: .value(newValue))
@@ -90,10 +97,10 @@ fileprivate enum ValueWithCollisionWrapper<Value, Specifier> {
   }
 }
 
-fileprivate enum ValueCollisionSourceKind {
-  case `subscript`
-  case merge
-  case keyPrefixAddition
-}
-
 extension ValueWithCollisionWrapper: Sendable where Value: Sendable, Specifier: Sendable {}
+
+//fileprivate enum ValueCollisionSourceKind {
+//  case `subscript`
+//  case merge
+//  case keyPrefixAddition
+//}

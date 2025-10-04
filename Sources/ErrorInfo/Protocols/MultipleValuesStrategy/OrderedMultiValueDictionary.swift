@@ -7,9 +7,11 @@
 
 public import struct NonEmpty.NonEmpty
 private import typealias NonEmpty.NonEmptyArray
-import InternalCollectionsUtilities
+//import InternalCollectionsUtilities
 import OrderedCollections
 private import StdLibExtensions
+public import protocol InternalCollectionsUtilities._UniqueCollection
+import func InternalCollectionsUtilities._dictionaryDescription
 
 // MARK: - Ordered MultiValueDictionary
 
@@ -25,7 +27,7 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   // [`indexOf value in __entries`: `index of its key in _keyEntryIndices.keys`]
 //  private var __keyIndices: [Int: Int]
   
-  public var keys: some Collection<Key> { _keyEntryIndices.keys }
+  public var keys: some RandomAccessCollection<Key> & _UniqueCollection { _keyEntryIndices.keys }
   
   public var count: Int { _entries.count }
   
@@ -44,9 +46,39 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   public func makeIterator() -> some IteratorProtocol<(key: Key, value: Value)> {
     _entries.makeIterator()
   }
+  
+  func keyValuesView(shouldOmitEqualValue omitEqualValues: Bool) {
+    var allEntriesIndices = RangeSet(_entries.indices)
+    
+    if omitEqualValues {
+      for (key, entryIndices) in _keyEntryIndices where entryIndices.count > 1 {
+        let keyValuesIndices = entryIndices.asRangeSet(for: _entries)
+        
+        var valuesSlice = _entries[keyValuesIndices]
+        var currentElement = valuesSlice.first!
+        var sliceAfter = valuesSlice.dropFirst()
+        
+        while !sliceAfter.isEmpty {
+          let duplicatedElementsIndices = sliceAfter.indices(where: { nextElement in
+            ErrorInfoFuncs.isApproximatelyEqualAny(currentElement, nextElement)
+          })
+          // !!!
+          // sliceAfter = sliceAfter.removingSubranges(duplicatedElementsIndices)
+          if let nextElement = sliceAfter.first {
+            currentElement = nextElement
+            sliceAfter = sliceAfter.dropFirst()
+          }
+        }
+      }
+    } else {
+      let allEntries = _entries[allEntriesIndices]
+    }
+    
+    
+  }
 }
 
-extension OrderedMultiValueDictionary: Collection {
+extension OrderedMultiValueDictionary: Collection { // ! RandomAccessCollection
   public typealias Index = Int
   
   public var startIndex: Int { _entries.startIndex }
@@ -56,9 +88,7 @@ extension OrderedMultiValueDictionary: Collection {
   public func index(after i: Int) -> Int { _entries.index(after: i) }
   
   public subscript(position: Int) -> (key: Key, value: Value) {
-//    TODO: _read {
     _entries[position]
-//    }
   }
 }
 
@@ -193,16 +223,30 @@ extension OrderedMultiValueDictionary {
 /// Introduced for implementing OrderedMultiValueDictionary. In most cases, Error-info types contain 1 value for a given key.
 /// When there are multiple values for key, multiple indices are also stored. This `NonEmpty Ordered IndexSet` store single index as a value type, and heap allocated
 /// OrderedSet is only created when there are 2 or more indices.
-internal enum NonEmptyOrderedIndexSet: Sequence {
+internal enum NonEmptyOrderedIndexSet: RandomAccessCollection {
   case single(index: Int)
   case multiple(indices: NonEmpty<OrderedSet<Int>>)
   
   typealias Element = Int
   
-  func makeIterator() -> some IteratorProtocol<Int> {
+  internal var startIndex: Int { 0 }
+  
+  internal var endIndex: Int {
     switch self {
-    case .single(let index): AnyIterator(CollectionOfOne(index).makeIterator())
-    case .multiple(let indices): AnyIterator(indices.makeIterator())
+    case .single: 1
+    case .multiple(let indices): indices.endIndex
+    }
+  }
+  
+  internal subscript(position: Int) -> Element {
+    switch self {
+    case .single(let index):
+      switch position {
+      case 0: return index
+      default: preconditionFailure("Index \(position) is out of bounds")
+      }
+    case .multiple(let indices):
+      return indices.base[position]
     }
   }
   
@@ -222,11 +266,11 @@ internal enum NonEmptyOrderedIndexSet: Sequence {
   }
   
   internal mutating func insert(_ newIndex: Int) {
-    switch self {
+    switch consume self {
     case .single(let currentIndex):
       self = .multiple(indices: NonEmpty<OrderedSet<Int>>(rawValue: [currentIndex, newIndex])!)
     case .multiple(let elements):
-      var rawValue = elements.rawValue
+      var rawValue = elements.rawValue // TODO: remove cow
       rawValue.append(newIndex)
       self = .multiple(indices: NonEmpty<OrderedSet<Int>>(rawValue: rawValue)!)
     }

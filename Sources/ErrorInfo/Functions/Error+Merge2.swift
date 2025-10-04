@@ -15,39 +15,6 @@ struct StubError {
   let info: OrderedDictionary<String, Int>
 }
 
-fileprivate enum ErrorInfoIndicesCache<Bound: Comparable> {
-  case unbounded
-  case bounded(noInterErrorCollisions: RangeSet<Bound>)
-}
-
-struct KeyWithIndexPaths<Key: Hashable, ErrorsListIndex, DictIndex> {
-  let key: Key
-  let indexPaths: [(errorIndex: ErrorsListIndex, keyIndex: DictIndex)]
-}
-
-// CollisionSourceSpecifier.defaultStringInterpolation
-// (CollisionSourceSpecifier) -> String
-
-//struct ElementWiseLazyMapArray<BaseElement, Element>: RandomAccessCollection {
-//  let base: [BaseElement]
-//  let transform: (BaseElement) -> Element
-//  private var dict: [Int: Element] // replace with Buffer + initialized indices set (? BitSet with endIndex to prevent rearranges)
-//
-//  var startIndex: Int { base.startIndex }
-//  var endIndex: Int { base.endIndex }
-//  
-//  internal subscript(position: Int) -> Element {
-//    if let element = dict[position] {
-//      return element
-//    } else {
-//      let baseElement = base[position]
-//      let element = transform(baseElement)
-//      dict[position] = element
-//      return element
-//    }
-//  }
-//}
-
 // ?naming merge-FlatMap operation
 func merge2(errors: [StubError],
             omitEqualValues: Bool,
@@ -57,11 +24,19 @@ func merge2(errors: [StubError],
   typealias Dict = OrderedDictionary<String, Int>
   typealias Key = Dict.Key
   typealias Value = Dict.Value
-      
+  
+  var merged: OrderedDictionary<Key, Value> = [:]
+    
+  func putResolvingCollisions(key assumeModifiedKey: Key, value processedValue: Value) {
+    ErrorInfoDictFuncs.Merge._putResolvingWithRandomSuffix(processedValue,
+                                                           assumeModifiedKey: assumeModifiedKey,
+                                                           shouldOmitEqualValue: omitEqualValues,
+                                                           suffixFirstChar: ErrorInfoMerge.suffixBeginningForMergeScalar,
+                                                           to: &merged)
+  }
+  
   let crossErrorsCollisionKeys = findCommonElements(across: errors.map { $0.info.keys })
   lazy var errorSignatures = errors.map(errorSignatureBuilder)
-    
-  var merged: OrderedDictionary<Key, Value> = [:]
   for (errorIndex, error) in errors.enumerated() {
     for (key, value) in error.info {
       // will possibly be multiple values for key later when MultivalueDict types used
@@ -87,23 +62,15 @@ func merge2(errors: [StubError],
         ()
       }
       
-      func put(key assumeModifiedKey: Key, value processedValue: Value) {
-        ErrorInfoDictFuncs.Merge._putResolvingWithRandomSuffix(processedValue,
-                                                               assumeModifiedKey: key,
-                                                               shouldOmitEqualValue: omitEqualValues,
-                                                               suffixFirstChar: ErrorInfoMerge.suffixBeginningForMergeScalar,
-                                                               to: &merged)
-      }
-      
       if processedValues.count > 1 { // value collisions within concrete error instance
         for collidedValue in processedValues {
           let collisionSpecifier = CollisionSourceSpecifier.onSubscript // !! get real one
           let collisionSpecString = collisionSpecifierInterpolation(collisionSpecifier)
           augmentedKey.append(collisionSpecString)
-          put(key: augmentedKey, value: collidedValue)
+          putResolvingCollisions(key: augmentedKey, value: collidedValue)
         }
       } else {
-        put(key: augmentedKey, value: processedValues.first)
+        putResolvingCollisions(key: augmentedKey, value: processedValues.first)
       }
     } // end `for (key, value)`
   } // end `for (errorIndex, error)`
@@ -187,33 +154,3 @@ func findCommonElements<Unique>(across collections: [Unique]) -> Set<Unique.Elem
   }
   return commonElements
 }
-
-// let interErrorsCollidedKeys = mutate(value: Set<Key>()) { commonKeys in
-//  var countedKeys: [Key: Int] = [:]
-//
-//  for (errorIndex, error) in errors.enumerated() {
-//    for key in error.info.keys {
-//      countedKeys[key, default: 0] += 1
-//    }
-//  }
-//
-//  for (key, count) in countedKeys where count > 1 {
-//    commonKeys.insert(key)
-//  }
-// }
-
-// let interErrorsCollidedKeys = mutate(value: Set<String>()) {
-//  var slice = errors.base[...]
-//  var sliceAfter = slice.dropFirst()
-//  while !sliceAfter.isEmpty, let currentError = slice.first {
-//    let currentKeys = currentError.info.keys.apply(Set.init)
-//
-//    for nextError in sliceAfter {
-//      let intersetion = currentKeys.intersection(nextError.info.keys)
-//      $0.formUnion(intersetion)
-//    }
-//
-//    slice = sliceAfter
-//    sliceAfter = slice.dropFirst()
-//  }
-// }
