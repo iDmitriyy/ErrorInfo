@@ -17,9 +17,9 @@ struct OrderedMultiValueDictionaryTests {
   
   @Test func `test init with Dictionary Literal`() throws {
     let dict: OrderedMultiValueDictionary<String, Int> =
-    ["a": 0, "a": 1, "a": 1, "a": 1, "a": 2, "a": 3, "a": 2, "a": 3, "a": 2, "a": 1, "a": 4, "b": 9]
+    ["a": 0, "a": 1, "a": 1, "a": 1, "a": 1, "a": 2, "a": 3, "a": 2, "a": 3, "a": 2, "a": 1, "a": 4, "b": 9]
 //    dict.keyValuesView(shouldOmitEqualValue: true)
-    dict.getUnique()
+    dict.getAllUnique2()
     print(dict)
   }
   

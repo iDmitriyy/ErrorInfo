@@ -48,108 +48,39 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
     _entries.makeIterator()
   }
   
-  func keyValuesView(shouldOmitEqualValue omitEqualValues: Bool) {
-    let allEntriesIndices = RangeSet(_entries.indices)
-    let allEntriesSlice = _entries[...]
-    
-    
-    if omitEqualValues {
-      for (key, entryIndices) in _keyEntryIndices where entryIndices.count > 1 {
-        let valuesIndices = entryIndices.asRangeSet(for: _entries)
-        let invertedIndices = allEntriesIndices.subtracting(valuesIndices)
-        
-        var valuesForKeySlice = allEntriesSlice
-        valuesForKeySlice.removeSubranges(invertedIndices) // FIXME: might be inefficient
-        var currentElement = valuesForKeySlice.first!.value
-        var nextElementsSlice = valuesForKeySlice.dropFirst()
-        while !nextElementsSlice.isEmpty {
-          let duplicatedElementsIndices = nextElementsSlice.indices(where: { nextElement in
-            ErrorInfoFuncs.isApproximatelyEqualAny(currentElement, nextElement.value)
-          })
-          valuesForKeySlice.removeSubranges(duplicatedElementsIndices)
-          nextElementsSlice.removeSubranges(duplicatedElementsIndices)
-          if let nextElement = nextElementsSlice.first {
-            currentElement = nextElement.value
-            nextElementsSlice = nextElementsSlice.dropFirst()
-          }
-        }
-      }
-    } else {
-      // let allEntries = _entries[allEntriesIndices]
-      let values = allEntriesSlice.map { $0.value }
-      print(values)
-    } // end if omitEqualValues
-  }
-  
-  func getUnique() {
+  func getAllUnique2() {
     typealias Index = Int
     typealias Entries = [EntryElement] // EntryElement
     
-    var allEntriesRangeSet: RangeSet<Index> = RangeSet(_entries.indices)
+    var entriesRangeSet: RangeSet<Index> = RangeSet(_entries.indices)
     
-    for (key, allValuesForKeyOrderedIndexSet) in _keyEntryIndices where allValuesForKeyOrderedIndexSet.count > 1 {
-      let allValuesForKeyRangeSet: RangeSet<Index> = allValuesForKeyOrderedIndexSet.asRangeSet(for: _entries)
-      let allValuesForKeyDiscSlice: DiscontiguousSlice<Entries> = _entries[allValuesForKeyRangeSet]
+    for (key, allValuesForKeyIndexSet) in _keyEntryIndices where allValuesForKeyIndexSet.count > 1 {
+      var valueForKeyIndices = allValuesForKeyIndexSet._asHeapNonEmptyOrderedSet.base
       
-      var uniqueValuesForKeyIndices: RangeSet<Index> = allValuesForKeyRangeSet
-//      var currentElement = allValuesForKeyDiscSlice.first!
-//      var nextElementsSlice: DiscontiguousSlice<Entries> = allValuesForKeyDiscSlice.dropFirst()
-      
-      var resultIndices: RangeSet<Index> = allValuesForKeyRangeSet
-      
-      var nextElementsIndices: RangeSet<Index> = allValuesForKeyRangeSet
-      var nextElementsSlice: DiscontiguousSlice<Entries> = _entries[nextElementsIndices]
-      var currentElement = nextElementsSlice.first!.value
-      nextElementsIndices.remove(nextElementsSlice.startIndex.base, within: _entries)
-      nextElementsSlice = _entries[nextElementsIndices]
-      while !nextElementsSlice.isEmpty {
-        let duplicatedElementsRangeSet = nextElementsSlice.indices(where: { nextElement in
-          let nextValue = nextElement.value
-          let isApproxEqual = ErrorInfoFuncs.isApproximatelyEqualAny(currentElement, nextValue)
-          print("isApproxEqual \(isApproxEqual) \(currentElement)  \(nextValue)")
-          return isApproxEqual
-        })
-        
-        let nextEl = Array(nextElementsSlice)
-        let duplicated = nextElementsSlice[duplicatedElementsRangeSet]
-        let dupEl = Array(duplicated)
-        
-        for range in duplicatedElementsRangeSet.ranges {
-          let adaptedRange: Range<Index> = range.lowerBound.base..<range.upperBound.base
-          allEntriesRangeSet.remove(contentsOf: adaptedRange)
-          nextElementsIndices.remove(contentsOf: adaptedRange)
+      var dropFirstCount: Int = 1
+      var currentValue = _entries[allValuesForKeyIndexSet.first].value
+      var nextIndices = valueForKeyIndices.dropFirst(dropFirstCount)
+      while !nextIndices.isEmpty {
+        for entryIndex in nextIndices { // remove equal values
+          let nextValue = _entries[entryIndex].value
+          if ErrorInfoFuncs.isApproximatelyEqualAny(currentValue, nextValue) {
+            valueForKeyIndices.remove(entryIndex)
+            entriesRangeSet.remove(entryIndex, within: _entries)
+          }
         }
-        
-        if let firstRange: Range<Index> = nextElementsIndices.ranges.first, !firstRange.isEmpty {
-          currentElement = _entries[firstRange.lowerBound].value
-          nextElementsIndices.remove(firstRange.lowerBound, within: _entries)
-          nextElementsSlice = _entries[nextElementsIndices]
+        // values: 0 1 1 1 1 2 3 2 3 2 1 4
+        let indicesAfterRemovingDuplicates = valueForKeyIndices.dropFirst(dropFirstCount)
+        if let nextIndex = indicesAfterRemovingDuplicates.first {
+          currentValue = _entries[nextIndex].value
         }
+        dropFirstCount += 1
+        nextIndices = indicesAfterRemovingDuplicates.dropFirst()
       }
-      
-      let uniqueEntries = _entries[allEntriesRangeSet]
-      print("")
-      
-//      switch allValuesForKeyOrderedIndexSet.count {
-//      case 2:
-//        let index0 = allValuesForKeyOrderedIndexSet[0]
-//        let index1 = allValuesForKeyOrderedIndexSet[1]
-//        if ErrorInfoFuncs.isApproximatelyEqualAny(_entries[index0].value, _entries[index1].value) {
-//          allEntriesRangeSet.remove(index1, within: _entries)
-//        }
-//      default:
-//        
-//        break
-//      }
-      // DiscontiguousSlice<Array<(key: Key, value: Value)>>.SubSequence
-    } // end for
-  }
-  
-  func dfsdf() {
-    // DiscontiguousSlice<[(key: Key, value: Value)]>.Index
-    // let allValuesForKeyIndices = _keyEntryIndices[_keyEntryIndices.startIndex].value.asRangeSet(for: _entries)
-    // var discSlice: DiscontiguousSlice<Array<(key: Key, value: Value)>> = _entries[allValuesForKeyIndices]
-    // let discSliceSubseq: DiscontiguousSlice<Array<(key: Key, value: Value)>> = discSlice[...]
+    } // end `for (key, allValuesForKeyIndexSet)`
+    
+    let uniqueValues = _entries[entriesRangeSet]
+    
+    print("")
   }
 }
 
@@ -320,6 +251,13 @@ internal enum NonEmptyOrderedIndexSet: RandomAccessCollection {
     switch self {
     case .single: 1
     case .multiple(let indices): indices.endIndex
+    }
+  }
+  
+  var first: Element {
+    switch self {
+    case .single(let index): index
+    case .multiple(let indices): indices.first
     }
   }
   
