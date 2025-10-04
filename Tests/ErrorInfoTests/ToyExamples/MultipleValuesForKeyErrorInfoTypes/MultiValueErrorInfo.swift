@@ -27,7 +27,8 @@ struct MultiValueErrorInfo: IterableErrorInfo {
   }
   
   mutating func addResolvingCollisions(key: Key, value: Value, omitEqualValue omitIfEqual: Bool = true) {
-    _storage.appendResolvingCollisions(key: key, value: value, omitEqualValue: omitIfEqual)
+    _storage.appendResolvingCollisions(key: key, value: value, omitEqualValue: omitIfEqual,
+                                       collisionSourceSpecifier: .onSubscript) // TODO: collisionSourceSpecifier
   }
 }
 
