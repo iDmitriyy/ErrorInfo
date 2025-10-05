@@ -13,7 +13,7 @@ private import struct OrderedCollections.OrderedDictionary
 
 /// Only single value for a key.
 /// No collsions resolution, value overwritten.
-internal struct TransferableStorage<Key: Hashable & Sendable> {
+internal struct TransferableStorage<Key: Hashable & Sendable>: Sendable {
   // If enclosing instance is copied, then TransferableStorage is shared between copies.
   // Only one of all copies is able to extract values from TransferableStorage, which is unintuitive.
   // It is possible to allow extraction of NonSendable values multiple timesb but it is unsafe and might need to be wrapped
@@ -58,10 +58,6 @@ internal struct TransferableStorage<Key: Hashable & Sendable> {
       }
     }
   }
-  
-  class NonSendable {
-    var foo: Int = 0
-  }
 }
 
 extension TransferableStorage {
@@ -71,7 +67,7 @@ extension TransferableStorage {
     case anyActor(instance: any Actor)
   }
   
-  private final class Storage {
+  private final class Storage: Sendable {
     let mutex: Mutex<OrderedDictionary<Key, ValueVariant>>
     
     init() {
