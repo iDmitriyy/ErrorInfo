@@ -12,14 +12,13 @@ private import typealias NonEmpty.NonEmptyArray
 import OrderedCollections
 private import StdLibExtensions
 public import protocol InternalCollectionsUtilities._UniqueCollection
-import func InternalCollectionsUtilities._dictionaryDescription
 
 // MARK: - Ordered MultiValueDictionary
 
 public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   public typealias Element = (key: Key, value: Value)
   
-  private var _entries: [EntryElement]
+  private var _entries: [Element]
   /// for `allValuesForKey` function
   /// stores indices for all values for a key
   private var _keyEntryIndices: OrderedDictionary<Key, NonEmptyOrderedIndexSet> // TODO: ? use RangeSet instead of NonEmptyOrderedIndexSet?
@@ -29,10 +28,6 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
 //  private var __keyIndices: [Int: Int]
   
   public var keys: some RandomAccessCollection<Key> & _UniqueCollection { _keyEntryIndices.keys }
-  
-  public var count: Int { _entries.count }
-  
-  public var isEmpty: Bool { _entries.isEmpty }
   
   public init() {
     _entries = []
@@ -81,34 +76,20 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   }
 }
 
-extension OrderedMultiValueDictionary: Collection { // ! RandomAccessCollection
-  public typealias Index = Int
+extension OrderedMultiValueDictionary: Sendable where Key: Sendable, Value: Sendable {}
+
+extension OrderedMultiValueDictionary: Collection {
+  public var count: Int { _entries.count }
   
+  public var isEmpty: Bool { _entries.isEmpty }
+}
+
+extension OrderedMultiValueDictionary: RandomAccessCollection { // ! RandomAccessCollection
   public var startIndex: Int { _entries.startIndex }
   
   public var endIndex: Int { _entries.endIndex }
-  
-  public func index(after i: Int) -> Int { _entries.index(after: i) }
-  
-  public subscript(position: Int) -> Element {
-    _entries[position]
-  }
-}
-
-extension OrderedMultiValueDictionary: CustomDebugStringConvertible {
-  public var debugDescription: String { InternalCollectionsUtilities._dictionaryDescription(for: self) }
-}
-
-extension OrderedMultiValueDictionary: Sendable where Key: Sendable, Value: Sendable {}
-
-extension OrderedMultiValueDictionary: ExpressibleByDictionaryLiteral {
-  public init(dictionaryLiteral elements: (Key, Value)...) {
-    self.init()
     
-    for (key, value) in elements {
-      self.append(key: key, value: value)
-    }
-  }
+  public subscript(position: Int) -> Element { _entries[position] }
 }
 
 /*
@@ -135,26 +116,14 @@ extension OrderedMultiValueDictionary {
     _keyEntryIndices.hasValue(forKey: key)
   }
   
-//  func ddd() -> some ~Escapable {
-//
-//  }
-  
-  public func allValuesView(forKey key: Key) -> AllValuesForKey? { // & ~Escapable
+  public func allValuesView(forKey key: Key) -> (some Sequence<Value>)? { // & ~Escapable
     if let allValuesForKeyIndices = _keyEntryIndices[key] {
       AllValuesForKey(entries: _entries, valueIndices: allValuesForKeyIndices)
     } else {
       nil as Optional<AllValuesForKey>
     }
   }
-  
-//  public func allValuesView(forKey key: Key) -> (some Sequence<Value>)? { // & ~Escapable
-//    if let allValuesForKeyIndices = _keyEntryIndices[key] {
-//      AllValuesForKeyView(entries: _entries, valueIndices: allValuesForKeyIndices)
-//    } else {
-//      nil as Optional<AllValuesForKeyView>
-//    }
-//  }
-  
+    
   @available(*, deprecated, message: "allValuesView(forKey:)")
   public func allValues(forKey key: Key) -> NonEmpty<some Collection<Value>>? {
     guard let indices = _keyEntryIndices[key] else { return Optional<NonEmptyArray<Value>>.none }
@@ -203,25 +172,3 @@ extension OrderedMultiValueDictionary {
   }
 }
 
-// MARK: - AllValues ForKey View
-
-extension OrderedMultiValueDictionary {
-  fileprivate typealias EntryElement = Element
-  
-  public struct AllValuesForKey: Sequence { //  ~Escapable
-    // TODO: ~Escapable | as DiscontiguousSlice is used, View must not outlive source
-    public typealias Element = Value
-    
-    private let entriesSlice: DiscontiguousSlice<[EntryElement]>
-    
-    // @lifetime(borrow entries)
-    fileprivate init(entries: [EntryElement], valueIndices: NonEmptyOrderedIndexSet) {
-      entriesSlice = entries[valueIndices.asRangeSet(for: entries)]
-    }
-    
-    public func makeIterator() -> some IteratorProtocol<Value> {
-      var iterator = entriesSlice.makeIterator()
-      return AnyIterator<Value> { iterator.next()?.value }
-    }
-  }
-}
