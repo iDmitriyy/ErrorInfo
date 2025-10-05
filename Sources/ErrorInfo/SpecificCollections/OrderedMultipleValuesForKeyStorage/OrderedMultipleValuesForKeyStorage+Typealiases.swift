@@ -9,6 +9,7 @@ internal import enum SwiftyKit.Either
 internal import struct OrderedCollections.OrderedDictionary
 
 extension OrderedMultipleValuesForKeyStorage {
+  // public ACL is for inlining
   public typealias SingleValueForKeyDict = OrderedDictionary<Key, Value>
   
   public typealias WrappedValue = ValueWithCollisionWrapper<Value, CollisionSource>

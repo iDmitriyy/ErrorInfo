@@ -85,38 +85,3 @@ extension OrderedMultiValueErrorInfoGeneric {
 // MARK: - Protocol Conformances
 
 extension OrderedMultiValueErrorInfoGeneric: Sendable where Key: Sendable, Value: Sendable {}
-
-// MARK: - Value + Collision Wrapper
-
-public struct ValueWithCollisionWrapper<Value, CollSource> {
-  @usableFromInline internal let value: Value
-  @usableFromInline internal let collisionSource: CollSource?
-  
-  @inlinable @inline(__always)
-  internal init(value: Value, collisionSource: CollSource?) {
-    self.value = value
-    self.collisionSource = collisionSource
-  }
-  
-  @inlinable @inline(__always)
-  internal static func value(_ value: Value) -> Self { Self(value: value, collisionSource: nil) }
-  
-  @inlinable @inline(__always)
-  internal static func collidedValue(_ value: Value, collisionSource: CollSource) -> Self {
-    Self(value: value, collisionSource: collisionSource)
-  }
-}
-
-extension ValueWithCollisionWrapper: Sendable where Value: Sendable, CollSource: Sendable {}
-
-// fileprivate enum ValueWithCollisionWrapper<Value, Source> {
-//  case value(Value)
-//  case collidedValue(Value, collisionSource: CollSource)
-//
-//  var value: Value {
-//    switch self {
-//    case .value(let value): value
-//    case .collidedValue(let value, _): value
-//    }
-//  }
-// }

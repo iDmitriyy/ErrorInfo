@@ -13,7 +13,7 @@ private import struct OrderedCollections.OrderedDictionary
 /// When first collision happens, `OrderedDictionary` is replaced by `OrderedMultiValueDictionary`.
 @usableFromInline
 internal struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value, CollisionSource> {
-  @usableFromInline internal var _variant: Variant { _muatbleVariant._variant }
+  @inlinable internal var _variant: Variant { _muatbleVariant._variant }
   
   // FIXME: private set
   @usableFromInline internal var _muatbleVariant: _Variant
@@ -28,14 +28,14 @@ extension OrderedMultipleValuesForKeyStorage: Sendable where Key: Sendable, Valu
 // MARK: Get methods
 
 extension OrderedMultipleValuesForKeyStorage {
-  func hasValue(forKey key: Key) -> Bool {
+  internal func hasValue(forKey key: Key) -> Bool {
     switch _variant {
     case .left(let singleValueForKeyDict): singleValueForKeyDict.hasValue(forKey: key)
     case .right(let multiValueForKeyDict): multiValueForKeyDict.hasValue(forKey: key)
     }
   }
   
-  func allValues(forKey key: Key) -> (some Sequence<WrappedValue>)? { // & ~Escapable
+  internal func allValues(forKey key: Key) -> (some Sequence<WrappedValue>)? { // & ~Escapable
     ValuesForKeySlice(_variant: _variant, key: key)
   }
 }

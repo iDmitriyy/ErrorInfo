@@ -51,3 +51,38 @@ extension StringBasedCollisionSource {
     }
   }
 }
+
+// MARK: - Value + Collision Wrapper
+
+public struct ValueWithCollisionWrapper<Value, CollisionSource> {
+  @usableFromInline internal let value: Value
+  @usableFromInline internal let collisionSource: CollisionSource?
+  
+  @inlinable
+  internal init(value: Value, collisionSource: CollisionSource?) {
+    self.value = value
+    self.collisionSource = collisionSource
+  }
+  
+  @inlinable
+  internal static func value(_ value: Value) -> Self { Self(value: value, collisionSource: nil) }
+  
+  @inlinable
+  internal static func collidedValue(_ value: Value, collisionSource: CollisionSource) -> Self {
+    Self(value: value, collisionSource: collisionSource)
+  }
+}
+
+extension ValueWithCollisionWrapper: Sendable where Value: Sendable, CollisionSource: Sendable {}
+
+// fileprivate enum ValueWithCollisionWrapper<Value, Source> {
+//  case value(Value)
+//  case collidedValue(Value, collisionSource: CollSource)
+//
+//  var value: Value {
+//    switch self {
+//    case .value(let value): value
+//    case .collidedValue(let value, _): value
+//    }
+//  }
+// }
