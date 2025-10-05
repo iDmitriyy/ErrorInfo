@@ -97,7 +97,7 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   public mutating func merge<each D>(_: repeat each D,
-                                     collisionSource: CollisionSource.MergeOrigin = .fileLine())
+                                     collisionSource: StringBasedCollisionSource.MergeOrigin = .fileLine())
   where repeat each D: ErrorInfoCollection {
     fatalError()
 //    ErrorInfoDictFuncs.Merge._mergeErrorInfo

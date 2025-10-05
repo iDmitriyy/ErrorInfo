@@ -20,6 +20,7 @@
 public struct OrderedMultiValueErrorInfoGeneric<Key: Hashable, Value>: Sequence {
   public typealias Element = (key: Key, value: Value)
   private typealias ValueWrapper = ValueWithCollisionWrapper<Value, CollisionSource>
+  public typealias CollisionSource = StringBasedCollisionSource
   
   // Improvement:
   // Typically there will be one value for each key, so OrderedDictionary is enough for most situations.

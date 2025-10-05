@@ -62,7 +62,7 @@ extension OrderedMultipleValuesForKeyStorage {
       case .right(let instance): multiValueForKeyDict = instance
       }
       
-      _variant = nil // deallocate _variant enum wrapper with strong references to underlying dict
+      _variant = nil // destroy _variant enum wrapper with strong references to underlying dict
       // end copy-paste
       
       if singleValueForKeyDict != nil {
@@ -93,4 +93,4 @@ extension OrderedMultipleValuesForKeyStorage {
   }
 }
 
-extension OrderedMultipleValuesForKeyStorage._Variant: Sendable where Key: Sendable, Value: Sendable {}
+extension OrderedMultipleValuesForKeyStorage._Variant: Sendable where Key: Sendable, Value: Sendable, CollisionSource: Sendable {}

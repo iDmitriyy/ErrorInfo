@@ -12,7 +12,7 @@ private import struct OrderedCollections.OrderedDictionary
 /// Almost all time Error info instances has single value for ech key. Until first collision happens, `OrderedDictionary` is used.
 /// When first collision happens, `OrderedDictionary` is replaced by `OrderedMultiValueDictionary`.
 @usableFromInline
-internal struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value> {
+internal struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value, CollisionSource> {
   @usableFromInline internal var _variant: Variant { _muatbleVariant._variant }
   
   // FIXME: private set
@@ -23,7 +23,7 @@ internal struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value> {
   }
 }
 
-extension OrderedMultipleValuesForKeyStorage: Sendable where Key: Sendable, Value: Sendable {}
+extension OrderedMultipleValuesForKeyStorage: Sendable where Key: Sendable, Value: Sendable, CollisionSource: Sendable {}
 
 // MARK: Get methods
 

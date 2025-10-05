@@ -26,7 +26,7 @@ func playMerge(errors: [any InformativeError]) {
 func merge3<E: InformativeError>(errors: some Sequence<E>,
                                  omitEqualValues: Bool,
                                  errorSignatureBuilder: (StubError) -> String = { $0.domain + "\($0.code)" },
-                                 collisionSourceInterpolation: (CollisionSource) -> String = { $0.defaultStringInterpolation() }) {
+                                 collisionSourceInterpolation: (StringBasedCollisionSource) -> String = { $0.defaultStringInterpolation() }) {
   
 }
 
@@ -34,7 +34,7 @@ func merge3<E: InformativeError>(errors: some Sequence<E>,
 func merge2(errors: [StubError],
             omitEqualValues: Bool,
             errorSignatureBuilder: (StubError) -> String = { $0.domain + "\($0.code)" },
-            collisionSourceInterpolation: (CollisionSource) -> String = { $0.defaultStringInterpolation() })
+            collisionSourceInterpolation: (StringBasedCollisionSource) -> String = { $0.defaultStringInterpolation() })
   -> OrderedDictionary<String, Int> {
   typealias Dict = OrderedDictionary<String, Int>
   typealias Key = Dict.Key
@@ -84,7 +84,7 @@ func merge2(errors: [StubError],
       
       if processedValues.count > 1 { // value collisions within concrete error instance
         for collidedValue in processedValues {
-          let collisionSource = CollisionSource.onSubscript // !! get real one
+          let collisionSource = StringBasedCollisionSource.onSubscript // !! get real one
           let collisionSourceString = collisionSourceInterpolation(collisionSource)
           augmentedKey.append(collisionSourceString)
           putResolvingCollisions(key: augmentedKey, value: collidedValue)

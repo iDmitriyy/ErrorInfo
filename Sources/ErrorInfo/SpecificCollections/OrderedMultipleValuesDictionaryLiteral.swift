@@ -6,10 +6,10 @@
 //
 
 public struct OrderedMultipleValuesDictionaryLiteral<Key: Hashable, Value>: ExpressibleByDictionaryLiteral {
-  internal let dict: OrderedMultipleValuesForKeyStorage<Key, Value>
+  internal let dict: OrderedMultipleValuesForKeyStorage<Key, Value, StringBasedCollisionSource>
   
   public init(dictionaryLiteral elements: (Key, Value)...) {
-    var dict = OrderedMultipleValuesForKeyStorage<Key, Value>()
+    var dict = OrderedMultipleValuesForKeyStorage<Key, Value, StringBasedCollisionSource>()
     for (key, value) in elements {
       dict.append(key: key, value: value, collisionSource: .onCreateWithDictionaryLiteral)
     }

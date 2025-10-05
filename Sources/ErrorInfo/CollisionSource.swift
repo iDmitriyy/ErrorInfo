@@ -5,7 +5,7 @@
 //  Created Dmitriy Ignatyev on 03/10/2025.
 //
 
-public enum CollisionSource: Sendable {
+public enum StringBasedCollisionSource: Sendable {
   case onSubscript
   case onMerge(origin: MergeOrigin)
   case onAddPrefix(prefix: String)
@@ -27,7 +27,7 @@ public enum CollisionSource: Sendable {
   }
 }
 
-extension CollisionSource {
+extension StringBasedCollisionSource {
   public enum MergeOrigin: Sendable, ExpressibleByStringLiteral {
     case fileLine(file: StaticString = #fileID, line: UInt = #line)
     case function(function: String = #function)
