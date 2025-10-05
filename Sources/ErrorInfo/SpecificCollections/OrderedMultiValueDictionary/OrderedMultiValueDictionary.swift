@@ -21,32 +21,24 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   private var _entries: [Element]
   /// for `allValuesForKey` function
   /// stores indices for all values for a key
-  private var _keyEntryIndices: OrderedDictionary<Key, NonEmptyOrderedIndexSet> // TODO: ? use RangeSet instead of NonEmptyOrderedIndexSet?
-  
-//  private var __entries: [Value] // _entries wthout Key duplicated copies
-  // [`indexOf value in __entries`: `index of its key in _keyEntryIndices.keys`]
-//  private var __keyIndices: [Int: Int]
-  
-  public var keys: some RandomAccessCollection<Key> & _UniqueCollection { _keyEntryIndices.keys }
+  private var _keyToEntryIndices: OrderedDictionary<Key, NonEmptyOrderedIndexSet> // TODO: ? use RangeSet instead of NonEmptyOrderedIndexSet?
+    
+  public var keys: some RandomAccessCollection<Key> & _UniqueCollection { _keyToEntryIndices.keys }
   
   public init() {
     _entries = []
-    _keyEntryIndices = [:]
+    _keyToEntryIndices = [:]
   }
   
   public init(minimumCapacity: Int) {
     _entries = Array(minimumCapacity: minimumCapacity)
-    _keyEntryIndices = OrderedDictionary(minimumCapacity: minimumCapacity)
+    _keyToEntryIndices = OrderedDictionary(minimumCapacity: minimumCapacity)
   }
-  
-  public func makeIterator() -> some IteratorProtocol<Element> {
-    _entries.makeIterator()
-  }
-  
+    
   func approximatelyUniqueValuesWithKeys() -> some Collection<Element> {
     var entriesRangeSet: RangeSet<Index> = RangeSet(_entries.indices)
     
-    for (_, allValuesForKeyIndexSet) in _keyEntryIndices where allValuesForKeyIndexSet.count > 1 {
+    for (_, allValuesForKeyIndexSet) in _keyToEntryIndices where allValuesForKeyIndexSet.count > 1 {
       var valueForKeyIndices = allValuesForKeyIndexSet._asHeapNonEmptyOrderedSet.base
       
       var dropFirstCount: Int = 1
@@ -113,11 +105,11 @@ extension OrderedMultiValueDictionary {
   }
 
   public func hasValue(forKey key: Key) -> Bool {
-    _keyEntryIndices.hasValue(forKey: key)
+    _keyToEntryIndices.hasValue(forKey: key)
   }
   
   public func allValuesView(forKey key: Key) -> (some Sequence<Value>)? { // & ~Escapable
-    if let allValuesForKeyIndices = _keyEntryIndices[key] {
+    if let allValuesForKeyIndices = _keyToEntryIndices[key] {
       AllValuesForKey(entries: _entries, valueIndices: allValuesForKeyIndices)
     } else {
       nil as Optional<AllValuesForKey>
@@ -126,7 +118,7 @@ extension OrderedMultiValueDictionary {
     
   @available(*, deprecated, message: "allValuesView(forKey:)")
   public func allValues(forKey key: Key) -> NonEmpty<some Collection<Value>>? {
-    guard let indices = _keyEntryIndices[key] else { return Optional<NonEmptyArray<Value>>.none }
+    guard let indices = _keyToEntryIndices[key] else { return Optional<NonEmptyArray<Value>>.none }
     // TODO: need smth more optimal instead of allocating new Array, e.g.:
     // 1) MultiValueContainer enum | case single(element: ), case multiple(elements: )
     // 2) for multiple elements NonEmptyArray<Value>
@@ -139,22 +131,21 @@ extension OrderedMultiValueDictionary {
 extension OrderedMultiValueDictionary {
   public mutating func append(key: Key, value: Value) {
     let index = _entries.endIndex
-    if var indices = _keyEntryIndices[key] {
+    if var indices = _keyToEntryIndices[key] {
       indices.insert(index)
-      _keyEntryIndices[key] = indices
+      _keyToEntryIndices[key] = indices
     } else {
-      _keyEntryIndices[key] = .single(index: index)
+      _keyToEntryIndices[key] = .single(index: index)
     }
-    
     _entries.append((key, value))
   }
   
-  public mutating func append(_ newElement: (key: Key, value: Value)) {
-    append(key: newElement.key, value: newElement.value)
+  public mutating func append(_ newElement: (Key, Value)) {
+    append(key: newElement.0, value: newElement.1)
   }
   
   public mutating func removeAllValues(forKey key: Key) {
-    guard let indices = _keyEntryIndices[key] else { return }
+    guard let indices = _keyToEntryIndices[key] else { return }
     
     switch indices._storage {
     case .single(let index):
@@ -163,12 +154,12 @@ extension OrderedMultiValueDictionary {
       let indicesToRemove = indices.asRangeSet(for: _entries)
       _entries.removeSubranges(indicesToRemove)
     }
-    _keyEntryIndices.removeValue(forKey: key)
+    _keyToEntryIndices.removeValue(forKey: key)
   }
   
   public mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
     _entries.removeAll(keepingCapacity: keepCapacity)
-    _keyEntryIndices.removeAll(keepingCapacity: keepCapacity)
+    _keyToEntryIndices.removeAll(keepingCapacity: keepCapacity)
   }
 }
 

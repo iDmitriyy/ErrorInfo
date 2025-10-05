@@ -19,7 +19,7 @@ struct OrderedMultiValueDictionaryTests {
     let dict: OrderedMultiValueDictionary<String, Int> =
     ["a": 0, "a": 1, "a": 1, "a": 1, "a": 1, "a": 2, "a": 3, "a": 2, "a": 3, "a": 2, "a": 1, "a": 4, "b": 9]
 //    dict.keyValuesView(shouldOmitEqualValue: true)
-    dict.getAllUnique2()
+    // dict.getAllUnique2()
     print(dict)
   }
   
@@ -213,7 +213,7 @@ struct NonEmptyOrderedIndexSetTests {
     var indexSet: NonEmptyOrderedIndexSet = .single(index: 1)
     indexSet.insert(3)
 
-    switch indexSet {
+    switch indexSet._storage {
     case .single:
       Issue.record("Expected to transition to .multiple")
     case .multiple(let indices):
