@@ -9,6 +9,7 @@ internal import enum SwiftyKit.Either
 @_spi(GeneralizedCollections) private import struct GeneralizedCollections.IterationDeferredMapSequence
 
 extension OrderedMultipleValuesForKeyStorage {
+  // TODO: NonEmpty ValuesForKeySlice | NonEmpty sequence
   internal struct ValuesForKeySlice: Sequence { // TODO: ~Escapaable
     internal typealias Element = WrappedValue
     

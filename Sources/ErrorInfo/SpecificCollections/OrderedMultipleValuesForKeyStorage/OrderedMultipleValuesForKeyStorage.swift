@@ -8,19 +8,6 @@
 internal import enum SwiftyKit.Either
 private import struct OrderedCollections.OrderedDictionary
 
-extension OrderedMultipleValuesForKeyStorage {
-  internal typealias SingleValueForKeyDict = OrderedDictionary<Key, Value>
-  
-  internal typealias WrappedValue = ValueWithCollisionWrapper<Value, CollisionSourceSpecifier>
-  internal typealias MultiValueForKeyDict = OrderedMultiValueDictionary<Key, WrappedValue>
-  
-  internal typealias Variant = Either<SingleValueForKeyDict, MultiValueForKeyDict>
-  
-  internal typealias Element = (key: Key, value: Value)
-  
-  internal typealias Index = Int
-}
-
 /// Reduces the overhead which `OrderedMultiValueDictionary` has.
 /// Almost all time Error info instances has single value for ech key. Until first collision happens, `OrderedDictionary` is used.
 /// When first collision happens, `OrderedDictionary` is replaced by `OrderedMultiValueDictionary`.
@@ -35,6 +22,21 @@ internal struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value> {
 }
 
 extension OrderedMultipleValuesForKeyStorage: Sendable where Key: Sendable, Value: Sendable {}
+
+// MARK: Get methods
+
+extension OrderedMultipleValuesForKeyStorage {
+  public func hasValue(forKey key: Key) -> Bool {
+    switch _variant {
+    case .left(let singleValueForKeyDict): singleValueForKeyDict.hasValue(forKey: key)
+    case .right(let multiValueForKeyDict): multiValueForKeyDict.hasValue(forKey: key)
+    }
+  }
+  
+  public func allValues(forKey key: Key) -> (some Sequence<WrappedValue>)? { // & ~Escapable
+    ValuesForKeySlice(_variant: _variant, key: key)
+  }
+}
 
 // MARK: Mutating methods
 

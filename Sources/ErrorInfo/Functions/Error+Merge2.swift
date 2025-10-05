@@ -59,6 +59,11 @@ func merge2(errors: [StubError],
       let processedValues = prepareValues(NonEmptyArray(value), removingEqualValues: omitEqualValues)
       let hasCrossErrorsCollision = crossErrorsCollisionKeys.contains(key)
       // TODO: processedValues contain all values for key which leads to incorrect ordering.
+      // TODO: after removingEqualValues there may be collisionSpecifiers, e.g. after  removingEqualValues there will be only
+      // 1 value with collision specifier. This specifier can be skipped as the value is unique and result dictionary
+      // will not contain approx. equal values. However, in general case this specifier should still be attached to the key
+      // for handling the fact that collision occured. The total elimination of specifier can be done by passing additional
+      // argument or option to this function
       var augmentedKey: String = key
       if hasCrossErrorsCollision {
         let errorSignature = errorSignatures[errorIndex]
