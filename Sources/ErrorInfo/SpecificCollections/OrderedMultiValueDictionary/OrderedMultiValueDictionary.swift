@@ -140,9 +140,9 @@ extension OrderedMultiValueDictionary {
     _entries.append((key, value))
   }
   
-  public mutating func append(_ newElement: (Key, Value)) {
-    append(key: newElement.0, value: newElement.1)
-  }
+  // public mutating func append(_ newElement: (Key, Value)) {
+  //   append(key: newElement.0, value: newElement.1)
+  // }
   
   public mutating func removeAllValues(forKey key: Key) {
     guard let indices = _keyToEntryIndices[key] else { return }

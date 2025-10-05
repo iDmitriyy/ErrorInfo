@@ -21,7 +21,7 @@ public struct OrderedMultiValueErrorInfoGeneric<Key: Hashable, Value>: Sequence 
   public typealias Element = (key: Key, value: Value)
   private typealias ValueWrapper = ValueWithCollisionWrapper<Value, CollisionSourceSpecifier>
   
-  // Improvement / optimization:
+  // Improvement:
   // Typically there will be one value for each key, so OrderedDictionary is enough for most situations.
   // OrderedMultiValueDictionary is needed when first collision happens.
   // All overhead which OrderedMultiValueDictionary has can be eliminated untill first collision happens.
@@ -81,26 +81,41 @@ extension OrderedMultiValueErrorInfoGeneric {
 //  }
 // }
 
+// MARK: - Storage
+
 // MARK: - Protocol Conformances
 
 extension OrderedMultiValueErrorInfoGeneric: Sendable where Key: Sendable, Value: Sendable {}
 
-fileprivate enum ValueWithCollisionWrapper<Value, Specifier> {
-  case value(Value)
-  case collidedValue(Value, collisionSpecifier: Specifier)
+// MARK: - Value + Collision Wrapper
+
+internal struct ValueWithCollisionWrapper<Value, Specifier> {
+  internal let value: Value
+  internal let collisionSpecifier: Specifier?
   
-  var value: Value {
-    switch self {
-    case .value(let value): value
-    case .collidedValue(let value, _): value
-    }
+  private init(value: Value, collisionSpecifier: Specifier?) {
+    self.value = value
+    self.collisionSpecifier = collisionSpecifier
+  }
+  
+  internal static func value(_ value: Value) -> Self { Self(value: value, collisionSpecifier: nil) }
+  
+  internal static func collidedValue(_ value: Value, collisionSpecifier: Specifier) -> Self {
+    Self(value: value, collisionSpecifier: collisionSpecifier)
   }
 }
 
 extension ValueWithCollisionWrapper: Sendable where Value: Sendable, Specifier: Sendable {}
 
-//fileprivate enum ValueCollisionSourceKind {
-//  case `subscript`
-//  case merge
-//  case keyPrefixAddition
+
+//fileprivate enum ValueWithCollisionWrapper<Value, Specifier> {
+//  case value(Value)
+//  case collidedValue(Value, collisionSpecifier: Specifier)
+//  
+//  var value: Value {
+//    switch self {
+//    case .value(let value): value
+//    case .collidedValue(let value, _): value
+//    }
+//  }
 //}
