@@ -11,7 +11,7 @@ let package = Package(
     .library(name: "ErrorInfo", targets: ["ErrorInfo"]),
   ],
   dependencies: [
-    .package(url: "https://github.com/iDmitriyy/SwiftCollections-NonEmpty.git", branch: "main"),
+    .package(url: "https://github.com/iDmitriyy/SwiftCollections-NonEmpty.git", branch: "RangeSet"),
     .package(url: "https://github.com/iDmitriyy/SwiftyKit.git", branch: "main"),
     .package(url: "https://github.com/apple/swift-algorithms", from: "1.2.1"),
   ],
