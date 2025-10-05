@@ -2,7 +2,7 @@
 //  CollectionOfTwo.swift
 //  ErrorInfo
 //
-//  Created by tmp on 03/10/2025.
+//  Created Dmitriy Ignatyev on 03/10/2025.
 //
 
 /// For storing multiple values

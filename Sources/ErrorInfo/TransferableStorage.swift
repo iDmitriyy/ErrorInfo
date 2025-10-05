@@ -2,7 +2,7 @@
 //  TransferableStorage.swift
 //  ErrorInfo
 //
-//  Created by tmp on 27/09/2025.
+//  Created Dmitriy Ignatyev on 27/09/2025.
 //
 
 import struct Synchronization.Mutex

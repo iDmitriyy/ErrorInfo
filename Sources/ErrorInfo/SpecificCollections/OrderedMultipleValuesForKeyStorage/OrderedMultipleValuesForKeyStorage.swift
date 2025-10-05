@@ -2,7 +2,7 @@
 //  OrderedMultipleValuesForKeyStorage.swift
 //  ErrorInfo
 //
-//  Created by tmp on 05/10/2025.
+//  Created Dmitriy Ignatyev on 05/10/2025.
 //
 
 internal import enum SwiftyKit.Either
@@ -11,10 +11,12 @@ private import struct OrderedCollections.OrderedDictionary
 /// Reduces the overhead which `OrderedMultiValueDictionary` has.
 /// Almost all time Error info instances has single value for ech key. Until first collision happens, `OrderedDictionary` is used.
 /// When first collision happens, `OrderedDictionary` is replaced by `OrderedMultiValueDictionary`.
+@usableFromInline
 internal struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value> {
-  internal var _variant: Variant { _muatbleVariant._variant }
+  @usableFromInline internal var _variant: Variant { _muatbleVariant._variant }
   
-  private var _muatbleVariant: _Variant
+  // FIXME: private set
+  @usableFromInline internal var _muatbleVariant: _Variant
   
   internal init() {
     _muatbleVariant = _Variant(.left(OrderedDictionary()))
@@ -41,6 +43,8 @@ extension OrderedMultipleValuesForKeyStorage {
 // MARK: Mutating methods
 
 extension OrderedMultipleValuesForKeyStorage {
+  @inlinable
+  @inline(__always)
   internal mutating func append(key: Key,
                                 value: Value,
                                 collisionSource: @autoclosure () -> CollisionSource) {

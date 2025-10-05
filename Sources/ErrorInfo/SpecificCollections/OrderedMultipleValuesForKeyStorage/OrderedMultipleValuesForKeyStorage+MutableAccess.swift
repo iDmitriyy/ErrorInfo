@@ -2,7 +2,7 @@
 //  OrderedMultipleValuesForKeyStorage+MutableAccess.swift
 //  ErrorInfo
 //
-//  Created by tmp on 05/10/2025.
+//  Created Dmitriy Ignatyev on 05/10/2025.
 //
 
 extension OrderedMultipleValuesForKeyStorage {
@@ -12,9 +12,12 @@ extension OrderedMultipleValuesForKeyStorage {
   // - https://github.com/swiftlang/swift-evolution/blob/main/proposals/0432-noncopyable-switch.md
   //   Future directions: inout pattern matches
   // - https://forums.swift.org/t/in-place-mutation-of-an-enum-associated-value/11747/5
-  internal struct _Variant {
-    internal private(set) var _variant: Variant!
+  @usableFromInline internal struct _Variant {
+    // FIXME: private set
+    @usableFromInline internal var _variant: Variant!
     
+    @inlinable
+    @inline(__always)
     internal init(_ variant: Variant) {
       _variant = variant
     }

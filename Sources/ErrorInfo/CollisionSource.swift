@@ -2,7 +2,7 @@
 //  CollisionSource.swift
 //  ErrorInfo
 //
-//  Created by tmp on 03/10/2025.
+//  Created Dmitriy Ignatyev on 03/10/2025.
 //
 
 public enum CollisionSource: Sendable {

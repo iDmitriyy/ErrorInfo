@@ -2,7 +2,7 @@
 //  OrderedMultipleValuesForKeyStorage+ValuesForKey.swift
 //  ErrorInfo
 //
-//  Created by tmp on 05/10/2025.
+//  Created Dmitriy Ignatyev on 05/10/2025.
 //
 
 internal import enum SwiftyKit.Either

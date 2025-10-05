@@ -2,7 +2,7 @@
 //  OrderedMultiValueDictionary+CustomStringConvertible.swift
 //  ErrorInfo
 //
-//  Created by tmp on 05/10/2025.
+//  Created Dmitriy Ignatyev on 05/10/2025.
 //
 
 private import func InternalCollectionsUtilities._dictionaryDescription

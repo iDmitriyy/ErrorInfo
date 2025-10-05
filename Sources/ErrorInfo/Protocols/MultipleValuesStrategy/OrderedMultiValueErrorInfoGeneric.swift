@@ -87,17 +87,20 @@ extension OrderedMultiValueErrorInfoGeneric: Sendable where Key: Sendable, Value
 
 // MARK: - Value + Collision Wrapper
 
-internal struct ValueWithCollisionWrapper<Value, CollSource> {
-  internal let value: Value
-  internal let collisionSource: CollSource?
+public struct ValueWithCollisionWrapper<Value, CollSource> {
+  @usableFromInline internal let value: Value
+  @usableFromInline internal let collisionSource: CollSource?
   
-  private init(value: Value, collisionSource: CollSource?) {
+  @inlinable @inline(__always)
+  internal init(value: Value, collisionSource: CollSource?) {
     self.value = value
     self.collisionSource = collisionSource
   }
   
+  @inlinable @inline(__always)
   internal static func value(_ value: Value) -> Self { Self(value: value, collisionSource: nil) }
   
+  @inlinable @inline(__always)
   internal static func collidedValue(_ value: Value, collisionSource: CollSource) -> Self {
     Self(value: value, collisionSource: collisionSource)
   }
