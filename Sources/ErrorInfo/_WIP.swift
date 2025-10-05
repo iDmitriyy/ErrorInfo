@@ -32,7 +32,7 @@
    - addPrefix(_ prefix: Key, withKeyMutation: )
    - addPrefix(_ prefix: Key)
  
- - add OrderedMultiValueErrorInfoGeneric collision specifier
+ - add OrderedMultiValueErrorInfoGeneric collisionSource
  
  - errors-chain merge algorythm
  - errors-chain merge algorythm Tests

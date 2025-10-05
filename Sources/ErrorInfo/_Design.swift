@@ -23,13 +23,13 @@
  Example: during collision resolution of 2 diferent values the following keys were created:
  "time_ME7@MVC_40_idx0"
  "time_ME7@MVC_40_idx2"
- ?? may be line can be omited and idx shpuld be used. If error identity(source specifier) is equal, mostly often it is the same
+ ?? may be line can be omited and idx shpuld be used. If error identity(collisionSource) is equal, mostly often it is the same
  file. So line number seems to look like a noise. This looks better:
  "time_ME7@MVC^idx0" || "time_ME7@MVC[i0]" || "time_ME7@MVC(0)"
  "time_ME7@MVC^idx1" || "time_ME7@MVC[i2]" || "time_ME7@MVC(2)"
  
- Value's collision specifier should be added after collisions resolution between error. If error instance have 2 values for a key, then errorDomain+code suffix will also add a random suffix, and then collision specifier from multivalue-type is ni useless.
- Firstly it is needed to add error specifier when merging between errors, and then check if there are colssions inside error bounds. If yes then multiValue collision specifier is added, and only after that random suffix is added.
+ Value's collisionSource should be added after collisions resolution between error. If error instance have 2 values for a key, then errorDomain+code suffix will also add a random suffix, and then collisionSource from multivalue-type is ni useless.
+ Firstly it is needed to add error collisionSource when merging between errors, and then check if there are colssions inside error bounds. If yes then multiValue collisionSource is added, and only after that random suffix is added.
  
  MultiValue is also preferreble vs `in-place aaugmentation` as it preserves `values(forKey:)` and `hasValues(forKey:)`.
  If key augmented when added, then listed above functions will return only first value.

@@ -55,8 +55,8 @@ extension MultiValueErrorInfoGeneric: Sendable where Dict: Sendable {}
 
 // MARK: - MultiValue Container
 
-// TODO: add identity(source specifier) for collision
-// so NonEmptyArray<Value> turns to NonEmptyArray<(Value, CollisionSpecifier)>
+// TODO: add identity(collisionSource) for collision
+// so NonEmptyArray<Value> turns to NonEmptyArray<(Value, CollisionSource)>
 
 /// For keeping one or more values for a key
 public enum ErrorInfoMultiValueContainer<T> {

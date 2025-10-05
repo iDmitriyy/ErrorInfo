@@ -48,7 +48,7 @@ extension OrderedMultipleValuesForKeyStorage {
     @inline(__always)
     internal mutating func append(key newKey: Key,
                                   value newValue: Value,
-                                  collisionSourceSpecifier: @autoclosure () -> CollisionSourceSpecifier) {
+                                  collisionSource: @autoclosure () -> CollisionSource) {
       // --- copy-paste from `mutateUnderlying`
       var singleValueForKeyDict: SingleValueForKeyDict!
       var multiValueForKeyDict: MultiValueForKeyDict!
@@ -70,7 +70,7 @@ extension OrderedMultipleValuesForKeyStorage {
           for (currentKey, currentValue) in singleValueForKeyDict {
             multiValueForKeyDict[currentKey] = WrappedValue.value(currentValue)
           }
-          let newValueWrapped = WrappedValue.collidedValue(newValue, collisionSpecifier: collisionSourceSpecifier())
+          let newValueWrapped = WrappedValue.collidedValue(newValue, collisionSource: collisionSource())
           multiValueForKeyDict.append(key: newKey, value: newValueWrapped)
           _variant = .right(multiValueForKeyDict)
         } else {
@@ -79,7 +79,7 @@ extension OrderedMultipleValuesForKeyStorage {
         }
       } else if multiValueForKeyDict != nil {
         let newValueWrapped: WrappedValue = if multiValueForKeyDict.hasValue(forKey: newKey) {
-          .collidedValue(newValue, collisionSpecifier: collisionSourceSpecifier())
+          .collidedValue(newValue, collisionSource: collisionSource())
         } else {
           .value(newValue)
         }

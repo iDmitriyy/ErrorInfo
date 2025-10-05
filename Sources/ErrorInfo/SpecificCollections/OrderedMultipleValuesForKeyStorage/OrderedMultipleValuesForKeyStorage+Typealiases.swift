@@ -11,7 +11,7 @@ internal import struct OrderedCollections.OrderedDictionary
 extension OrderedMultipleValuesForKeyStorage {
   internal typealias SingleValueForKeyDict = OrderedDictionary<Key, Value>
   
-  internal typealias WrappedValue = ValueWithCollisionWrapper<Value, CollisionSourceSpecifier>
+  internal typealias WrappedValue = ValueWithCollisionWrapper<Value, CollisionSource>
   internal typealias MultiValueForKeyDict = OrderedMultiValueDictionary<Key, WrappedValue>
   
   internal typealias Variant = Either<SingleValueForKeyDict, MultiValueForKeyDict>

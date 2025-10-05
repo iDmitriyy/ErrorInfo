@@ -11,7 +11,7 @@ public struct OrderedMultipleValuesDictionaryLiteral<Key: Hashable, Value>: Expr
   public init(dictionaryLiteral elements: (Key, Value)...) {
     var dict = OrderedMultipleValuesForKeyStorage<Key, Value>()
     for (key, value) in elements {
-      dict.append(key: key, value: value, collisionSourceSpecifier: .onCreateWithDictionaryLiteral)
+      dict.append(key: key, value: value, collisionSource: .onCreateWithDictionaryLiteral)
     }
     self.dict = dict
   }

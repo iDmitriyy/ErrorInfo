@@ -26,14 +26,14 @@ extension OrderedMultipleValuesForKeyStorage: Sendable where Key: Sendable, Valu
 // MARK: Get methods
 
 extension OrderedMultipleValuesForKeyStorage {
-  public func hasValue(forKey key: Key) -> Bool {
+  func hasValue(forKey key: Key) -> Bool {
     switch _variant {
     case .left(let singleValueForKeyDict): singleValueForKeyDict.hasValue(forKey: key)
     case .right(let multiValueForKeyDict): multiValueForKeyDict.hasValue(forKey: key)
     }
   }
   
-  public func allValues(forKey key: Key) -> (some Sequence<WrappedValue>)? { // & ~Escapable
+  func allValues(forKey key: Key) -> (some Sequence<WrappedValue>)? { // & ~Escapable
     ValuesForKeySlice(_variant: _variant, key: key)
   }
 }
@@ -43,8 +43,8 @@ extension OrderedMultipleValuesForKeyStorage {
 extension OrderedMultipleValuesForKeyStorage {
   internal mutating func append(key: Key,
                                 value: Value,
-                                collisionSourceSpecifier: @autoclosure () -> CollisionSourceSpecifier) {
-    _muatbleVariant.append(key: key, value: value, collisionSourceSpecifier: collisionSourceSpecifier())
+                                collisionSource: @autoclosure () -> CollisionSource) {
+    _muatbleVariant.append(key: key, value: value, collisionSource: collisionSource())
   }
   
   internal mutating func removeAllValues(forKey key: Key) {

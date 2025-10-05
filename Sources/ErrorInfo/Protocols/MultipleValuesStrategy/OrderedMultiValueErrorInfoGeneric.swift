@@ -19,7 +19,7 @@
 
 public struct OrderedMultiValueErrorInfoGeneric<Key: Hashable, Value>: Sequence {
   public typealias Element = (key: Key, value: Value)
-  private typealias ValueWrapper = ValueWithCollisionWrapper<Value, CollisionSourceSpecifier>
+  private typealias ValueWrapper = ValueWithCollisionWrapper<Value, CollisionSource>
   
   // Improvement:
   // Typically there will be one value for each key, so OrderedDictionary is enough for most situations.
@@ -29,7 +29,7 @@ public struct OrderedMultiValueErrorInfoGeneric<Key: Hashable, Value>: Sequence 
   private var _storage: OrderedMultiValueDictionary<Key, ValueWrapper>
   
   public init() {
-    self._storage = OrderedMultiValueDictionary<Key, ValueWrapper>()
+    _storage = OrderedMultiValueDictionary<Key, ValueWrapper>()
   }
   
   public func makeIterator() -> some IteratorProtocol<Element> {
@@ -43,9 +43,7 @@ public struct OrderedMultiValueErrorInfoGeneric<Key: Hashable, Value>: Sequence 
     }
   }
   
-  func keyValuesView(shouldOmitEqualValue omitEqualValues: Bool) {
-    
-  }
+  func keyValuesView(shouldOmitEqualValue _: Bool) {}
 }
 
 // MARK: - Mutation Methods
@@ -54,7 +52,7 @@ extension OrderedMultiValueErrorInfoGeneric {
   public mutating func appendResolvingCollisions(key: Key,
                                                  value newValue: Value,
                                                  omitEqualValue omitIfEqual: Bool,
-                                                 collisionSourceSpecifier: @autoclosure () -> CollisionSourceSpecifier) {
+                                                 collisionSource: @autoclosure () -> CollisionSource) {
     if let currentValues = _storage.allValuesView(forKey: key) {
       lazy var isEqualToCurrent = currentValues.contains(where: { currentValue in
         ErrorInfoFuncs.isApproximatelyEqualAny(currentValue.value, newValue)
@@ -64,8 +62,8 @@ extension OrderedMultiValueErrorInfoGeneric {
       if omitIfEqual, isEqualToCurrent {
         return
       } else {
-        // FIXME: collisionSpecifier
-        _storage.append(key: key, value: .collidedValue(newValue, collisionSpecifier: collisionSourceSpecifier()))
+        // FIXME: collisionSource
+        _storage.append(key: key, value: .collidedValue(newValue, collisionSource: collisionSource()))
       }
     } else {
       _storage.append(key: key, value: .value(newValue))
@@ -89,33 +87,32 @@ extension OrderedMultiValueErrorInfoGeneric: Sendable where Key: Sendable, Value
 
 // MARK: - Value + Collision Wrapper
 
-internal struct ValueWithCollisionWrapper<Value, Specifier> {
+internal struct ValueWithCollisionWrapper<Value, CollSource> {
   internal let value: Value
-  internal let collisionSpecifier: Specifier?
+  internal let collisionSource: CollSource?
   
-  private init(value: Value, collisionSpecifier: Specifier?) {
+  private init(value: Value, collisionSource: CollSource?) {
     self.value = value
-    self.collisionSpecifier = collisionSpecifier
+    self.collisionSource = collisionSource
   }
   
-  internal static func value(_ value: Value) -> Self { Self(value: value, collisionSpecifier: nil) }
+  internal static func value(_ value: Value) -> Self { Self(value: value, collisionSource: nil) }
   
-  internal static func collidedValue(_ value: Value, collisionSpecifier: Specifier) -> Self {
-    Self(value: value, collisionSpecifier: collisionSpecifier)
+  internal static func collidedValue(_ value: Value, collisionSource: CollSource) -> Self {
+    Self(value: value, collisionSource: collisionSource)
   }
 }
 
-extension ValueWithCollisionWrapper: Sendable where Value: Sendable, Specifier: Sendable {}
+extension ValueWithCollisionWrapper: Sendable where Value: Sendable, CollSource: Sendable {}
 
-
-//fileprivate enum ValueWithCollisionWrapper<Value, Specifier> {
+// fileprivate enum ValueWithCollisionWrapper<Value, Source> {
 //  case value(Value)
-//  case collidedValue(Value, collisionSpecifier: Specifier)
-//  
+//  case collidedValue(Value, collisionSource: CollSource)
+//
 //  var value: Value {
 //    switch self {
 //    case .value(let value): value
 //    case .collidedValue(let value, _): value
 //    }
 //  }
-//}
+// }

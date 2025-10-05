@@ -20,13 +20,13 @@ struct ErrorMergeWrapper {
 }
 
 func playMerge(errors: [any InformativeError]) {
-  
+  _ = errors
 }
 
 func merge3<E: InformativeError>(errors: some Sequence<E>,
                                  omitEqualValues: Bool,
                                  errorSignatureBuilder: (StubError) -> String = { $0.domain + "\($0.code)" },
-                                 collisionSpecifierInterpolation: (CollisionSourceSpecifier) -> String = { $0.defaultStringInterpolation() }) {
+                                 collisionSourceInterpolation: (CollisionSource) -> String = { $0.defaultStringInterpolation() }) {
   
 }
 
@@ -34,7 +34,7 @@ func merge3<E: InformativeError>(errors: some Sequence<E>,
 func merge2(errors: [StubError],
             omitEqualValues: Bool,
             errorSignatureBuilder: (StubError) -> String = { $0.domain + "\($0.code)" },
-            collisionSpecifierInterpolation: (CollisionSourceSpecifier) -> String = { $0.defaultStringInterpolation() })
+            collisionSourceInterpolation: (CollisionSource) -> String = { $0.defaultStringInterpolation() })
   -> OrderedDictionary<String, Int> {
   typealias Dict = OrderedDictionary<String, Int>
   typealias Key = Dict.Key
@@ -59,10 +59,10 @@ func merge2(errors: [StubError],
       let processedValues = prepareValues(NonEmptyArray(value), removingEqualValues: omitEqualValues)
       let hasCrossErrorsCollision = crossErrorsCollisionKeys.contains(key)
       // TODO: processedValues contain all values for key which leads to incorrect ordering.
-      // TODO: after removingEqualValues there may be collisionSpecifiers, e.g. after  removingEqualValues there will be only
-      // 1 value with collision specifier. This specifier can be skipped as the value is unique and result dictionary
-      // will not contain approx. equal values. However, in general case this specifier should still be attached to the key
-      // for handling the fact that collision occured. The total elimination of specifier can be done by passing additional
+      // TODO: after removingEqualValues there may be collisionSources, e.g. after  removingEqualValues there will be only
+      // 1 value with collisionSource. This collisionSource can be skipped as the value is unique and result dictionary
+      // will not contain approx. equal values. However, in general case this collisionSource should still be attached to the key
+      // for handling the fact that collision occured. The total elimination of collisionSource can be done by passing additional
       // argument or option to this function
       var augmentedKey: String = key
       if hasCrossErrorsCollision {
@@ -84,9 +84,9 @@ func merge2(errors: [StubError],
       
       if processedValues.count > 1 { // value collisions within concrete error instance
         for collidedValue in processedValues {
-          let collisionSpecifier = CollisionSourceSpecifier.onSubscript // !! get real one
-          let collisionSpecString = collisionSpecifierInterpolation(collisionSpecifier)
-          augmentedKey.append(collisionSpecString)
+          let collisionSource = CollisionSource.onSubscript // !! get real one
+          let collisionSourceString = collisionSourceInterpolation(collisionSource)
+          augmentedKey.append(collisionSourceString)
           putResolvingCollisions(key: augmentedKey, value: collidedValue)
         }
       } else {
