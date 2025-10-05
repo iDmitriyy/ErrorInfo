@@ -5,7 +5,7 @@
 //  Created by tmp on 05/10/2025.
 //
 
-private import enum SwiftyKit.Either
+internal import enum SwiftyKit.Either
 private import struct OrderedCollections.OrderedDictionary
 
 extension OrderedMultipleValuesForKeyStorage {
@@ -16,7 +16,9 @@ extension OrderedMultipleValuesForKeyStorage {
   
   internal typealias Variant = Either<SingleValueForKeyDict, MultiValueForKeyDict>
   
-  internal typealias Element = (key: Key, values: ValuesForKey)
+  internal typealias Element = (key: Key, value: Value)
+  
+  internal typealias Index = Int
 }
 
 /// Reduces the overhead which `OrderedMultiValueDictionary` has.

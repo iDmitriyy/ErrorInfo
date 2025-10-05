@@ -10,6 +10,7 @@ public enum CollisionSourceSpecifier: Sendable {
   case onMerge(specifier: OnMerge)
   case onAddPrefix(prefix: String)
   case onAddSuffix(suffix: String)
+  case onCreateWithDictionaryLiteral
   // case onKeysMapping(original: String, mapped: String)
   
   public func defaultStringInterpolation() -> String {
@@ -20,6 +21,7 @@ public enum CollisionSourceSpecifier: Sendable {
     case .onSubscript: tail = "onSubscript"
     case let .onAddPrefix(prefix): tail = "onAddPrefix(\"\(prefix)\")"
     case let .onAddSuffix(suffix): tail = "onAddSuffix(\"\(suffix)\")"
+    case .onCreateWithDictionaryLiteral: tail = "onCreateWithDictionaryLiteral"
     }
     return head + tail
   }
