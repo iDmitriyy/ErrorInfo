@@ -44,7 +44,7 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
     _keyEntryIndices = OrderedDictionary(minimumCapacity: minimumCapacity)
   }
   
-  public func makeIterator() -> some IteratorProtocol<(key: Key, value: Value)> {
+  public func makeIterator() -> some IteratorProtocol<Element> {
     _entries.makeIterator()
   }
   
@@ -90,7 +90,7 @@ extension OrderedMultiValueDictionary: Collection { // ! RandomAccessCollection
   
   public func index(after i: Int) -> Int { _entries.index(after: i) }
   
-  public subscript(position: Int) -> (key: Key, value: Value) {
+  public subscript(position: Int) -> Element {
     _entries[position]
   }
 }
@@ -187,10 +187,9 @@ extension OrderedMultiValueDictionary {
   public mutating func removeAllValues(forKey key: Key) {
     guard let indices = _keyEntryIndices[key] else { return }
     
-    switch indices {
+    switch indices._storage {
     case .single(let index):
-      // Typycally there is only one value for key
-      _entries.remove(at: index)
+      _entries.remove(at: index) // Typically there is only one value for key
     case .multiple:
       let indicesToRemove = indices.asRangeSet(for: _entries)
       _entries.removeSubranges(indicesToRemove)
@@ -209,97 +208,20 @@ extension OrderedMultiValueDictionary {
 extension OrderedMultiValueDictionary {
   fileprivate typealias EntryElement = Element
   
-  /// Adapter for changing element type from (key: Key, value: Value) to Value
   public struct AllValuesForKey: Sequence { //  ~Escapable
     // TODO: ~Escapable | as DiscontiguousSlice is used, View must not outlive source
     public typealias Element = Value
-    private let entries: [EntryElement]
-    private let valueIndices: NonEmptyOrderedIndexSet
     
-//    @lifetime(borrow entries)
-//    @_lifetime(immortal)
+    private let entriesSlice: DiscontiguousSlice<[EntryElement]>
+    
+    // @lifetime(borrow entries)
     fileprivate init(entries: [EntryElement], valueIndices: NonEmptyOrderedIndexSet) {
-      self.entries = entries
-      self.valueIndices = valueIndices
+      entriesSlice = entries[valueIndices.asRangeSet(for: entries)]
     }
     
     public func makeIterator() -> some IteratorProtocol<Value> {
-      let slicedEntries: DiscontiguousSlice<[EntryElement]> = entries[valueIndices.asRangeSet(for: entries)]
-      var iterator = slicedEntries.makeIterator()
+      var iterator = entriesSlice.makeIterator()
       return AnyIterator<Value> { iterator.next()?.value }
     }
   }
-}
-
-// MARK: - NonEmpty Ordered IndexSet
-
-/// Introduced for implementing OrderedMultiValueDictionary. In most cases, Error-info types contain 1 value for a given key.
-/// When there are multiple values for key, multiple indices are also stored. This `NonEmpty Ordered IndexSet` store single index as a value type, and heap allocated
-/// OrderedSet is only created when there are 2 or more indices.
-internal enum NonEmptyOrderedIndexSet: RandomAccessCollection {
-  case single(index: Int)
-  case multiple(indices: NonEmpty<OrderedSet<Int>>)
-  
-  typealias Element = Int
-  
-  internal var startIndex: Int { 0 }
-  
-  internal var endIndex: Int {
-    switch self {
-    case .single: 1
-    case .multiple(let indices): indices.endIndex
-    }
-  }
-  
-  var first: Element {
-    switch self {
-    case .single(let index): index
-    case .multiple(let indices): indices.first
-    }
-  }
-  
-  internal subscript(position: Int) -> Element {
-    switch self {
-    case .single(let index):
-      switch position {
-      case 0: return index
-      default: preconditionFailure("Index \(position) is out of bounds")
-      }
-    case .multiple(let indices):
-      return indices.base[position]
-    }
-  }
-    
-  @available(*, deprecated, message: "not optimal")
-  internal var _asHeapNonEmptyOrderedSet: NonEmpty<OrderedSet<Int>> { // TODO: confrom Sequence protocol instead of this
-    switch self {
-    case let .single(index): NonEmpty(rawValue: OrderedSet<Int>(arrayLiteral: index))!
-    case let .multiple(indices): indices
-    }
-  }
-  
-  internal func asRangeSet<C>(for collection: C) -> RangeSet<Int> where C: Collection, C.Index == Int {
-    switch self {
-    case let .single(index): RangeSet(CollectionOfOne(index), within: collection)
-    case let .multiple(indices): RangeSet(indices, within: collection)
-    }
-  }
-  
-  internal mutating func insert(_ newIndex: Int) {
-    switch consume self {
-    case .single(let currentIndex):
-      self = .multiple(indices: NonEmpty<OrderedSet<Int>>(rawValue: [currentIndex, newIndex])!)
-    case .multiple(let elements):
-      var rawValue = elements.rawValue // TODO: remove cow
-      rawValue.append(newIndex)
-      self = .multiple(indices: NonEmpty<OrderedSet<Int>>(rawValue: rawValue)!)
-    }
-  }
-  
-//  internal func contains(where predicate: (Int) throws -> Bool) rethrows -> Bool {
-//    switch self {
-//    case .single(let index): try predicate(index)
-//    case .multiple(let indices): try indices.contains(where: predicate)
-//    }
-//  }
 }

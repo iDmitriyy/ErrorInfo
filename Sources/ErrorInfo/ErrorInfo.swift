@@ -30,6 +30,8 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
   public init() {
     self.init(storage: OrderedDictionary<String, any ValueType>())
   }
+  
+  // init(name: String, dict: OrderedMultipleValuesDictionaryLiteral)
 }
 
 // MARK: CustomStringConvertible IMP

@@ -18,8 +18,8 @@ public enum CollisionSourceSpecifier: Sendable {
     switch self {
     case let .onMerge(specifier): return specifier.defaultStringInterpolation()
     case .onSubscript: tail = "onSubscript"
-    case let .onAddPrefix(prefix): tail = "onAddPrefix(\(prefix))"
-    case let .onAddSuffix(suffix): tail = "onAddSuffix(\(suffix))"
+    case let .onAddPrefix(prefix): tail = "onAddPrefix(\"\(prefix)\")"
+    case let .onAddSuffix(suffix): tail = "onAddSuffix(\"\(suffix)\")"
     }
     return head + tail
   }
@@ -37,13 +37,13 @@ extension CollisionSourceSpecifier {
       self = .custom(specifier: value)
     }
     
-    /// `  @#@    >X<    !*!  `
+    /// `  @#@    >X<    !*!  >collision*`
     public func defaultStringInterpolation() -> String {
       let head = "!*!" + "onMerge"
       let tail: String = switch self {
-      case let .fileLine(file, line): "(" + "fileLine: \(file)\(line)" + ")"
-      case let .function(function): "(" + "function: \(function)" + ")"
-      case let .custom(specifier): "(" + "custom: \(specifier)" + ")"
+      case let .fileLine(file, line): "(" + "at: \(file):\(line)" + ")"
+      case let .function(function): "(" + "inFunction: \(function)" + ")"
+      case let .custom(specifier): "(" + "specifier: \(specifier)" + ")"
       }
       return head + tail
     }

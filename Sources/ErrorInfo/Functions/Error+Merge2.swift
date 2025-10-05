@@ -15,11 +15,26 @@ struct StubError {
   let info: OrderedDictionary<String, Int>
 }
 
+struct ErrorMergeWrapper {
+  
+}
+
+func playMerge(errors: [any InformativeError]) {
+  
+}
+
+func merge3<E: InformativeError>(errors: some Sequence<E>,
+                                 omitEqualValues: Bool,
+                                 errorSignatureBuilder: (StubError) -> String = { $0.domain + "\($0.code)" },
+                                 collisionSpecifierInterpolation: (CollisionSourceSpecifier) -> String = { $0.defaultStringInterpolation() }) {
+  
+}
+
 // ?naming merge-FlatMap operation
 func merge2(errors: [StubError],
             omitEqualValues: Bool,
             errorSignatureBuilder: (StubError) -> String = { $0.domain + "\($0.code)" },
-            collisionSpecifierInterpolation: (CollisionSourceSpecifier) -> String)
+            collisionSpecifierInterpolation: (CollisionSourceSpecifier) -> String = { $0.defaultStringInterpolation() })
   -> OrderedDictionary<String, Int> {
   typealias Dict = OrderedDictionary<String, Int>
   typealias Key = Dict.Key
@@ -39,7 +54,7 @@ func merge2(errors: [StubError],
   lazy var errorSignatures = errors.map(errorSignatureBuilder)
   for (errorIndex, error) in errors.enumerated() {
     for (key, value) in error.info {
-      // will possibly be multiple values for key later when MultivalueDict types used
+      // will be multiple values for key later when MultivalueDict types used
       // TODO: use a slice or view to prevent heap allocation
       let processedValues = prepareValues(NonEmptyArray(value), removingEqualValues: omitEqualValues)
       let hasCrossErrorsCollision = crossErrorsCollisionKeys.contains(key)
