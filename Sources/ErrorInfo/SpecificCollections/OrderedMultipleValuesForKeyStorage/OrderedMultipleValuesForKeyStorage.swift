@@ -28,7 +28,7 @@ internal struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value> {
   private var _muatbleVariant: _Variant
   
   internal init() {
-    self._muatbleVariant = _Variant(.left(OrderedDictionary()))
+    _muatbleVariant = _Variant(.left(OrderedDictionary()))
   }
 }
 
@@ -37,11 +37,13 @@ extension OrderedMultipleValuesForKeyStorage: Sendable where Key: Sendable, Valu
 // MARK: Mutating methods
 
 extension OrderedMultipleValuesForKeyStorage {
-  public mutating func append(key: Key, value: Value, collisionSourceSpecifier: @autoclosure () -> CollisionSourceSpecifier) {
+  internal mutating func append(key: Key,
+                                value: Value,
+                                collisionSourceSpecifier: @autoclosure () -> CollisionSourceSpecifier) {
     _muatbleVariant.append(key: key, value: value, collisionSourceSpecifier: collisionSourceSpecifier())
   }
   
-  public mutating func removeAllValues(forKey key: Key) {
+  internal mutating func removeAllValues(forKey key: Key) {
     _muatbleVariant.mutateUnderlying(singleValueForKey: { dict in
       dict[key] = nil
     }, multiValueForKey: { dict in
@@ -49,7 +51,7 @@ extension OrderedMultipleValuesForKeyStorage {
     })
   }
   
-  public mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
+  internal mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
     _muatbleVariant.mutateUnderlying(singleValueForKey: { dict in
       dict.removeAll(keepingCapacity: keepCapacity)
     }, multiValueForKey: { dict in

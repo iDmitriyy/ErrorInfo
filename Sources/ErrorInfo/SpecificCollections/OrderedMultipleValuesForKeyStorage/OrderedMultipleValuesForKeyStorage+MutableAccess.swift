@@ -21,8 +21,8 @@ extension OrderedMultipleValuesForKeyStorage {
     
     @inlinable
     @inline(__always)
-    mutating func mutateUnderlying(singleValueForKey mutateLeft: (inout SingleValueForKeyDict) -> Void,
-                                   multiValueForKey mutateRight: (inout MultiValueForKeyDict) -> Void) {
+    internal mutating func mutateUnderlying(singleValueForKey mutateLeft: (inout SingleValueForKeyDict) -> Void,
+                                            multiValueForKey mutateRight: (inout MultiValueForKeyDict) -> Void) {
       var singleValueForKeyDict: SingleValueForKeyDict!
       var multiValueForKeyDict: MultiValueForKeyDict!
       
@@ -46,9 +46,9 @@ extension OrderedMultipleValuesForKeyStorage {
     /// Replaces `SingleValueForKeyDict` by `MultiValueForKeyDict` when first collision happens
     @inlinable
     @inline(__always)
-    public mutating func append(key newKey: Key,
-                                value newValue: Value,
-                                collisionSourceSpecifier: @autoclosure () -> CollisionSourceSpecifier) {
+    internal mutating func append(key newKey: Key,
+                                  value newValue: Value,
+                                  collisionSourceSpecifier: @autoclosure () -> CollisionSourceSpecifier) {
       // --- copy-paste from `mutateUnderlying`
       var singleValueForKeyDict: SingleValueForKeyDict!
       var multiValueForKeyDict: MultiValueForKeyDict!
