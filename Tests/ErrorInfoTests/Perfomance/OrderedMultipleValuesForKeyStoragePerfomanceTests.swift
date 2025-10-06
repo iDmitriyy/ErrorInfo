@@ -75,4 +75,7 @@ struct OrderedMultipleValuesForKeyStoragePerfomanceTests {
   @Test func asStringDictDefaultInterpolationUniqueKeysWithSingleValue() {
     // asStringDict() vs String(describing:)
   }
+  
+  // test creation of empty collections vs their backing data structures
+  // subscript perfomance test
 }
