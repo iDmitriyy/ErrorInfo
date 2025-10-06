@@ -26,14 +26,13 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
   public init() {
     self.init(storage: BackingStorage())
   }
-  
-  // init(name: String, dict: OrderedMultipleValuesDictionaryLiteral)
 }
 
 // MARK: CustomStringConvertible IMP
 
 extension ErrorInfo {
   public var description: String { String(describing: _storage) }
+  
   // FIXME: use @DebugDescription macro
   public var debugDescription: String { String(reflecting: _storage) }
 }

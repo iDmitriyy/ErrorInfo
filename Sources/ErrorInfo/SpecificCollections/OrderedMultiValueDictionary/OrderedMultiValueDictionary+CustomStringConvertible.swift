@@ -8,6 +8,8 @@
 private import func InternalCollectionsUtilities._dictionaryDescription
 
 
-extension OrderedMultiValueDictionary: CustomDebugStringConvertible {
+extension OrderedMultiValueDictionary: CustomStringConvertible, CustomDebugStringConvertible {
+  public var description: String { InternalCollectionsUtilities._dictionaryDescription(for: self) }
+  
   public var debugDescription: String { InternalCollectionsUtilities._dictionaryDescription(for: self) }
 }

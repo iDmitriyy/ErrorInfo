@@ -22,35 +22,20 @@ public struct OrderedMultiValueErrorInfoGeneric<Key: Hashable, Value>: Sequence 
   public typealias ValueWrapper = ValueWithCollisionWrapper<Value, CollisionSource>
   public typealias CollisionSource = StringBasedCollisionSource
   
-  private var _storage: OrderedMultipleValuesForKeyStorage<Key, Value, CollisionSource>
+  internal private(set) var _storage: OrderedMultipleValuesForKeyStorage<Key, Value, CollisionSource>
   
   public init() {
     _storage = OrderedMultipleValuesForKeyStorage()
   }
-  
-  public func makeIterator() -> some IteratorProtocol<Element> {
-    var sourceIterator = _storage.makeIterator()
-    return AnyIterator {
-      if let (key, valueWrapper) = sourceIterator.next() {
-        (key, valueWrapper)
-      } else {
-        nil
-      }
-    }
-  }
-  
-  func keyValuesView(shouldOmitEqualValue _: Bool) {}
 }
 
-extension OrderedMultiValueErrorInfoGeneric {
-  internal var count: Int { _storage.count }
-  
-  internal var isEmpty: Bool { _storage.isEmpty }
-}
+extension OrderedMultiValueErrorInfoGeneric: Sendable where Key: Sendable, Value: Sendable {}
 
 // MARK: - Mutation Methods
 
 extension OrderedMultiValueErrorInfoGeneric {
+  func keyValuesView(shouldOmitEqualValue _: Bool) {}
+  
   public mutating func appendResolvingCollisions(key: Key,
                                                  value newValue: Value,
                                                  omitEqualValue omitIfEqual: Bool,
@@ -75,8 +60,8 @@ extension OrderedMultiValueErrorInfoGeneric {
   }
   
   public mutating func mergeWith(other _: Self,
-                                 omitEqualValues omitIfEqual: Bool,
-                                 mergeOrigin: @autoclosure () -> CollisionSource.MergeOrigin = .fileLine()) {
+                                 omitEqualValues _: Bool,
+                                 mergeOrigin _: @autoclosure () -> CollisionSource.MergeOrigin = .fileLine()) {
     // use update(value:, forKey:) if it is fster than checking hasValue() + append
   }
 }
@@ -86,9 +71,3 @@ extension OrderedMultiValueErrorInfoGeneric {
 //    _storage = ErrorInfoDictFuncs.addKeyPrefix(keyPrefix, toKeysOf: _storage)
 //  }
 // }
-
-// MARK: - Storage
-
-// MARK: - Protocol Conformances
-
-extension OrderedMultiValueErrorInfoGeneric: Sendable where Key: Sendable, Value: Sendable {}
