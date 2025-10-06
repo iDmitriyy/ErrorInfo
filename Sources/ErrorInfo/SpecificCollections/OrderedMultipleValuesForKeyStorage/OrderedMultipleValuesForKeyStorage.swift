@@ -21,14 +21,6 @@ internal struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value, Collisi
   internal init() {
     _muatbleVariant = _Variant(.left(OrderedDictionary()))
   }
-  
-  internal init(_dictionaryLiteral sequence: some Sequence<(Key, Value)>,
-                dictionaryLiteralCollisionSource: CollisionSource) {
-    self.init()
-    for (key, value) in sequence {
-      _muatbleVariant.append(key: key, value: value, collisionSource: dictionaryLiteralCollisionSource)
-    }
-  }
 }
 
 extension OrderedMultipleValuesForKeyStorage: Sendable where Key: Sendable, Value: Sendable, CollisionSource: Sendable {}

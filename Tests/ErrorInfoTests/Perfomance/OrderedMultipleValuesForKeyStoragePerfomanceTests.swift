@@ -12,7 +12,7 @@ import Testing
 struct OrderedMultipleValuesForKeyStoragePerfomanceTests {
   private let elements = 1...50000
   
-  @Test func subscriptInsertionUniqueKeysWithSingleValue() {
+  @Test func addUniqueKeysWithSingleValue() {
     let count = 10
     let dictOutput = performMeasuredAction(count: count) {
       var dict: [Int: Int] = [:]
