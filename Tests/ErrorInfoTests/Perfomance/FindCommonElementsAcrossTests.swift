@@ -8,6 +8,7 @@
 @testable import ErrorInfo
 import Testing
 
+// !rewrite
 struct FindCommonElementsAcrossTests {
   let set0: Set<String> = (0...500).map(String.init(describing:)).apply(Set.init)
   let set1: Set<String> = (450...550).map(String.init(describing:)).apply(Set.init)

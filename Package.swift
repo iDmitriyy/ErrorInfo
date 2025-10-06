@@ -27,6 +27,7 @@ let package = Package(
       .product(name: "SwiftyKit", package: "SwiftyKit"),
     ]),
     .testTarget(name: "ErrorInfoTests", dependencies: [.target(name: "ErrorInfo")]),
+    .testTarget(name: "ErrorInfoPerfomanceTests", dependencies: [.target(name: "ErrorInfo")]),
   ],
   swiftLanguageModes: [.v6],
 )

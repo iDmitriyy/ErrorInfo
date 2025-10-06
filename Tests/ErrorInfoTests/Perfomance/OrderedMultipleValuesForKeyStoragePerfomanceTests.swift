@@ -9,6 +9,7 @@
 import OrderedCollections
 import Testing
 
+// !rewrite
 struct OrderedMultipleValuesForKeyStoragePerfomanceTests {
   private let elements = 1...50000
   

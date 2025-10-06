@@ -9,14 +9,10 @@ private import enum SwiftyKit.Either
 
 /// Store 1 element inline or heap allocated array.
 public struct ValuesForKey<Value>: Sequence { // TODO: may consume slices. Need improvements or make it also slice
-  @usableFromInline internal let _elements: Either<Value, Array<Value>>
+  private let _elements: Either<Value, Array<Value>>
   
-  @inlinable
-  @inline(__always)
   internal init(element: Value) { _elements = .left(element) }
   
-  @inlinable
-  @inline(__always)
   internal init(array: Array<Element>) { _elements = .right(array) }
   
   public func makeIterator() -> some IteratorProtocol<Value> {
@@ -25,6 +21,14 @@ public struct ValuesForKey<Value>: Sequence { // TODO: may consume slices. Need 
     case .right(let elements): AnyIterator(elements.makeIterator())
     }
   }
+}
+
+extension ValuesForKey {
+  @_spi(Testing)
+  public init(__element: Value) { _elements = .left(__element) }
+  
+  @_spi(Testing)
+  public init(__array: Array<Element>) { _elements = .right(__array) }
 }
 
 //public struct ValuesForKeySlice<Value>: Sequence { or OrderedMultipleValuesForKeyStorageSlice
