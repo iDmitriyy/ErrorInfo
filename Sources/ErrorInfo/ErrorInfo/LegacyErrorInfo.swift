@@ -30,3 +30,13 @@ extension LegacyErrorInfo {
     storage._dict
   }
 }
+
+// extension LegacyErrorInfo: ExpressibleByDictionaryLiteral {}
+
+extension LegacyErrorInfo {
+  // public subscript(_: Key) -> (Value)? {}
+  
+  func addPrefix() {}
+  
+  mutating func merge() {}
+}

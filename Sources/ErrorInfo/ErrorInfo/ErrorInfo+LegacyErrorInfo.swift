@@ -6,6 +6,16 @@
 //
 
 extension ErrorInfo {
+  //  public mutating func add(key: String, anyValue: Any, line: UInt = #line) {
+  //    // use cases:
+  //    // get value from [String: Any]. If it is Optional.nil, then type might be nknowm.
+  //    // If not nil, it may be useful id instance from ObjC
+  //    // >> need improvements as real Type can not always be known correctly.
+  //    // May be the same approach for Optional as in isApproximatelyEqual
+  //    var typeDescr: String { " (T.Type=" + "\(type(of: anyValue))" + ") " }
+  //    _addValue(typeDescr + prettyDescription(any: anyValue), forKey: key, line: line)
+  //  }
+  
   public init(legacyUserInfo: [String: Any],
               valueInterpolation: @Sendable (Any) -> String = { prettyDescriptionOfOptional(any: $0) },
               collisionSource: @autoclosure () -> StringBasedCollisionSource.MergeOrigin = .fileLine()) {
