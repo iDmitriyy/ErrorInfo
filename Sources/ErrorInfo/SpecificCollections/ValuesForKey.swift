@@ -22,7 +22,7 @@ public struct ValuesForKey<Value>: Sequence { // TODO: may consume slices. Need 
     }
   }
 }
-
+// TODO: make nonEmpty
 extension ValuesForKey {
   @_spi(Testing)
   public init(__element: Value) { _elements = .left(__element) }

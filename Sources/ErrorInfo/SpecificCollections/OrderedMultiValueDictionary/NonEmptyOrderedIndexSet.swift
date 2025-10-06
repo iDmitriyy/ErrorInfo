@@ -76,6 +76,12 @@ internal struct NonEmptyOrderedIndexSet: RandomAccessCollection {
   }
 }
 
+extension NonEmptyOrderedSet<Int> {
+  internal func asRangeSet<C>(for collection: C) -> RangeSet<Int> where C: Collection, C.Index == Int {
+    RangeSet(self, within: collection)
+  }
+}
+
 extension NonEmptyOrderedIndexSet {
   internal enum Storage {
     case single(index: Int)

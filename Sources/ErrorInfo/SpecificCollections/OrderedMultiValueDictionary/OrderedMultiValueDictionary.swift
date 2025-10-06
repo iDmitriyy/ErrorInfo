@@ -144,17 +144,24 @@ extension OrderedMultiValueDictionary {
      append(key: newElement.0, value: newElement.1)
    }
   
-   public mutating func removeAllValues(forKey key: Key) {
-     guard let indices = _keyToEntryIndices[key] else { return }
-  
-     switch indices._storage {
+   public mutating func removeAllValues(forKey key: Key) -> ValuesForKey<Value>? {
+     guard let indexSet = _keyToEntryIndices.removeValue(forKey: key) else { return nil }
+      
+     let oldValues: ValuesForKey<Value>
+     switch indexSet._storage {
      case .single(let index):
-       _entries.remove(at: index) // Typically there is only one value for key
-     case .multiple:
+       let removedElement = _entries.remove(at: index) // Typically there is only one value for key
+       oldValues = ValuesForKey(element: removedElement.value)
+     case .multiple(let indices):
+       var accumulator = Array<Value>(minimumCapacity: indices.count)
+       for index in indices.base {
+         accumulator.append(_entries[index].value)
+       }
        let indicesToRemove = indices.asRangeSet(for: _entries)
        _entries.removeSubranges(indicesToRemove)
+       oldValues = ValuesForKey(array: accumulator)
      }
-     _keyToEntryIndices.removeValue(forKey: key)
+     return oldValues
    }
   
    public mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
