@@ -59,6 +59,15 @@ extension OrderedMultiValueErrorInfoGeneric {
     }
   }
   
+  @discardableResult
+  internal mutating func removeAllValues(forKey key: Key) -> ValuesForKey<ValueWrapper>? {
+    _storage.removeAllValues(forKey: key)
+  }
+ 
+  internal mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
+    _storage.removeAll(keepingCapacity: keepCapacity)
+  }
+  
   public mutating func mergeWith(other _: Self,
                                  omitEqualValues _: Bool,
                                  mergeOrigin _: @autoclosure () -> CollisionSource.MergeOrigin = .fileLine()) {

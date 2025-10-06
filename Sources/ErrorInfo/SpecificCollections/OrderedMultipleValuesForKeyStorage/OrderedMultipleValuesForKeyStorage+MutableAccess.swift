@@ -16,14 +16,12 @@ extension OrderedMultipleValuesForKeyStorage {
     // FIXME: private set
     @usableFromInline internal var _variant: Variant!
     
-    @inlinable
-    @inline(__always)
+    @inlinable @inline(__always)
     internal init(_ variant: Variant) {
       _variant = variant
     }
     
-    @inlinable
-    @inline(__always)
+    @inlinable @inline(__always)
     internal mutating func mutateUnderlying(singleValueForKey mutateLeft: (inout SingleValueForKeyDict) -> Void,
                                             multiValueForKey mutateRight: (inout MultiValueForKeyDict) -> Void) {
       var singleValueForKeyDict: SingleValueForKeyDict!
@@ -46,9 +44,35 @@ extension OrderedMultipleValuesForKeyStorage {
       }
     }
     
+    @inlinable @inline(__always)
+    internal mutating func withResultMutateUnderlying<R>(singleValueForKey mutateLeft: (inout SingleValueForKeyDict) -> R,
+                                                         multiValueForKey mutateRight: (inout MultiValueForKeyDict) -> R) -> R {
+      var singleValueForKeyDict: SingleValueForKeyDict!
+      var multiValueForKeyDict: MultiValueForKeyDict!
+      
+      // making only one string reference to underlying dict for COW prevention
+      switch _variant! {
+      case .left(let instance): singleValueForKeyDict = instance
+      case .right(let instance): multiValueForKeyDict = instance
+      }
+      
+      _variant = nil // deallocate _variant enum wrapper with strong references to underlying dict
+      
+      if singleValueForKeyDict != nil {
+        let result = mutateLeft(&singleValueForKeyDict)
+        _variant = .left(singleValueForKeyDict)
+        return result
+      } else if multiValueForKeyDict != nil {
+        let result = mutateRight(&multiValueForKeyDict)
+        _variant = .right(multiValueForKeyDict)
+        return result
+      } else {
+        fatalError("OrderedMultipleValuesForKeyStorage internal error: empty variant")
+      }
+    }
+    
     /// Replaces `SingleValueForKeyDict` by `MultiValueForKeyDict` when first collision happens
-    @inlinable
-    @inline(__always)
+    @inlinable @inline(__always)
     internal mutating func append(key newKey: Key,
                                   value newValue: Value,
                                   collisionSource: @autoclosure () -> CollisionSource) {

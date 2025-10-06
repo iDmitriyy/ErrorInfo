@@ -11,6 +11,7 @@ import Testing
 
 // !rewrite
 struct ValuesForKeyPerfomanceTests {
+  /// Typically ErrorInfo has 1 value for key
   @Test func initWithSingleValue() {
     let count = 10
     

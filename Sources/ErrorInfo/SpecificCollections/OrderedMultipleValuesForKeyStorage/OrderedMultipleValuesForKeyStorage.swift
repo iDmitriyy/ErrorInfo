@@ -51,21 +51,26 @@ extension OrderedMultipleValuesForKeyStorage {
     _muatbleVariant.append(key: key, value: value, collisionSource: collisionSource())
   }
   
-  // internal mutating func removeAllValues(forKey key: Key) {
-  //   _muatbleVariant.mutateUnderlying(singleValueForKey: { dict in
-  //     dict[key] = nil
-  //   }, multiValueForKey: { dict in
-  //     dict.removeAllValues(forKey: key)
-  //   })
-  // }
-  //
-  // internal mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
-  //   _muatbleVariant.mutateUnderlying(singleValueForKey: { dict in
-  //     dict.removeAll(keepingCapacity: keepCapacity)
-  //   }, multiValueForKey: { dict in
-  //     dict.removeAll(keepingCapacity: keepCapacity)
-  //   })
-  // }
+  @discardableResult
+  internal mutating func removeAllValues(forKey key: Key) -> ValuesForKey<WrappedValue>? {
+    _muatbleVariant.withResultMutateUnderlying(singleValueForKey: { dict in
+      if let oldValue = dict.removeValue(forKey: key) {
+        ValuesForKey(element: WrappedValue.value(oldValue))
+      } else {
+        nil
+      }
+    }, multiValueForKey: { dict in
+      dict.removeAllValues(forKey: key)
+    })
+  }
+  
+  internal mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
+    _muatbleVariant.mutateUnderlying(singleValueForKey: { dict in
+      dict.removeAll(keepingCapacity: keepCapacity)
+    }, multiValueForKey: { dict in
+      dict.removeAll(keepingCapacity: keepCapacity)
+    })
+  }
 }
 
 // TODO: using of inlining seems reasonable only internally. For public types like ErrorInfo dynamic disptach might be ok

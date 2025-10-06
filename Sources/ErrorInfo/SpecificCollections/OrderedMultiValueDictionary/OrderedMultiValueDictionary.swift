@@ -7,6 +7,7 @@
 
 public import struct NonEmpty.NonEmpty
 private import typealias NonEmpty.NonEmptyArray
+import SwiftCollectionsNonEmpty
 
 // import InternalCollectionsUtilities
 import OrderedCollections
@@ -21,9 +22,9 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   private var _entries: [Element]
   /// for `allValuesForKey` function
   /// stores indices for all values for a key
-  private var _keyToEntryIndices: OrderedDictionary<Key, NonEmptyOrderedIndexSet> // TODO: ? use RangeSet instead of NonEmptyOrderedIndexSet?
+  private var _keyToEntryIndices: Dictionary<Key, NonEmptyOrderedIndexSet> // TODO: ? use RangeSet instead of NonEmptyOrderedIndexSet?
     
-  public var keys: some RandomAccessCollection<Key> & _UniqueCollection { _keyToEntryIndices.keys }
+  public var keys: some Collection<Key> & _UniqueCollection { _keyToEntryIndices.keys }
   
   public init() {
     _entries = []
@@ -32,10 +33,10 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   
   public init(minimumCapacity: Int) {
     _entries = Array(minimumCapacity: minimumCapacity)
-    _keyToEntryIndices = OrderedDictionary(minimumCapacity: minimumCapacity)
+    _keyToEntryIndices = Dictionary(minimumCapacity: minimumCapacity)
   }
     
-  func approximatelyUniqueValuesWithKeys() -> some Collection<Element> {
+  func approximatelyUniqueValuesWithKeysSlice() -> some Collection<Element> {
     var entriesRangeSet: RangeSet<Index> = RangeSet(_entries.indices)
     
     for (_, allValuesForKeyIndexSet) in _keyToEntryIndices where allValuesForKeyIndexSet.count > 1 {
@@ -132,7 +133,7 @@ extension OrderedMultiValueDictionary {
   public mutating func append(key: Key, value: Value) {
     let index = _entries.endIndex
     if var indices = _keyToEntryIndices[key] {
-      indices.insert(index)
+      indices.insert(index) // FIXME: remove CoW. _keyToEntryIndices[index].insert(index)
       _keyToEntryIndices[key] = indices
     } else {
       _keyToEntryIndices[key] = .single(index: index)
@@ -140,33 +141,34 @@ extension OrderedMultiValueDictionary {
     _entries.append((key, value))
   }
   
-   public mutating func append(_ newElement: (Key, Value)) {
-     append(key: newElement.0, value: newElement.1)
-   }
+  public mutating func append(_ newElement: (Key, Value)) {
+    append(key: newElement.0, value: newElement.1)
+  }
   
-   public mutating func removeAllValues(forKey key: Key) -> ValuesForKey<Value>? {
-     guard let indexSet = _keyToEntryIndices.removeValue(forKey: key) else { return nil }
+  @discardableResult
+  public mutating func removeAllValues(forKey key: Key) -> ValuesForKey<Value>? {
+    guard let indexSet = _keyToEntryIndices.removeValue(forKey: key) else { return nil }
       
-     let oldValues: ValuesForKey<Value>
-     switch indexSet._storage {
-     case .single(let index):
-       let removedElement = _entries.remove(at: index) // Typically there is only one value for key
-       oldValues = ValuesForKey(element: removedElement.value)
-     case .multiple(let indices):
-       var accumulator = Array<Value>(minimumCapacity: indices.count)
-       for index in indices.base {
-         accumulator.append(_entries[index].value)
-       }
-       let indicesToRemove = indices.asRangeSet(for: _entries)
-       _entries.removeSubranges(indicesToRemove)
-       oldValues = ValuesForKey(array: accumulator)
-     }
-     return oldValues
-   }
+    let oldValues: ValuesForKey<Value>
+    switch indexSet._storage {
+    case .single(let index): // Typically there is only one value for key
+      let removedElement = _entries.remove(at: index)
+      oldValues = ValuesForKey(element: removedElement.value)
+       
+    case .multiple(let indices):
+      var accumulator = Array<Value>(minimumCapacity: indices.count)
+      for index in indices.base {
+        accumulator.append(_entries[index].value)
+      }
+      let indicesToRemove = indices.asRangeSet(for: _entries)
+      _entries.removeSubranges(indicesToRemove)
+      oldValues = ValuesForKey(array: accumulator)
+    }
+    return oldValues
+  }
   
-   public mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
-     _entries.removeAll(keepingCapacity: keepCapacity)
-     _keyToEntryIndices.removeAll(keepingCapacity: keepCapacity)
-   }
+  public mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
+    _entries.removeAll(keepingCapacity: keepCapacity)
+    _keyToEntryIndices.removeAll(keepingCapacity: keepCapacity)
+  }
 }
-

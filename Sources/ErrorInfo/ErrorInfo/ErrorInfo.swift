@@ -15,6 +15,7 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
   public static let empty: Self = Self()
   
   internal typealias BackingStorage = OrderedMultiValueErrorInfoGeneric<String, any ValueType>
+  public typealias ValueWrapper = ValueWithCollisionWrapper<any ValueType, StringBasedCollisionSource>
   
   // FIXME: private(set)
   internal var _storage: BackingStorage
@@ -57,11 +58,9 @@ extension ErrorInfo {
                                        omitEqualValue: omitEqualValue,
                                        collisionSource: .onSubscript)
   }
-}
-
-extension ErrorInfo {
+  
   @discardableResult
-  mutating func removeAllValues(forKey key: Key) -> Value? {
-    nil
+  public mutating func removeAllValues(forKey key: Key) -> ValuesForKey<ValueWrapper>? {
+    _storage.removeAllValues(forKey: key)
   }
 }
