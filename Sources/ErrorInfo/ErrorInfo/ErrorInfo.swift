@@ -37,7 +37,8 @@ extension ErrorInfo {
   }
   
   func _getUnderlyingValue(forKey _: Key) -> (any ValueType)? {
-    nil
+    _storage.keyValuesView(shouldOmitEqualValue: true)
+    return nil
   }
   
   mutating func _addResolvingCollisions(key: Key, value: any ValueType, omitEqualValue: Bool) {
@@ -55,5 +56,12 @@ extension ErrorInfo {
                                        value: value,
                                        omitEqualValue: omitEqualValue,
                                        collisionSource: .onSubscript)
+  }
+}
+
+extension ErrorInfo {
+  @discardableResult
+  mutating func removeAllValues(forKey key: Key) -> Value? {
+    nil
   }
 }

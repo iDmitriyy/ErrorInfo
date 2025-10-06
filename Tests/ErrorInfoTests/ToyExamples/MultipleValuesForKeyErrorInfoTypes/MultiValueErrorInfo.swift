@@ -23,12 +23,15 @@ struct MultiValueErrorInfo: IterableErrorInfo {
   }
   
   func makeIterator() -> some IteratorProtocol<Element> {
-    _storage.makeIterator()
+    var iterator = _storage.makeIterator()
+    return AnyIterator {
+      guard let (key, warppedValue) = iterator.next() else { return nil }
+      return (key, warppedValue.value)
+    }
   }
   
   mutating func addResolvingCollisions(key: Key, value: Value, omitEqualValue omitIfEqual: Bool = true) {
     _storage.appendResolvingCollisions(key: key, value: value, omitEqualValue: omitIfEqual,
-                                                                                        collisionSource: .onSubscript) // TODO: collisionSource
+                                       collisionSource: .onSubscript) // TODO: collisionSource
   }
 }
-

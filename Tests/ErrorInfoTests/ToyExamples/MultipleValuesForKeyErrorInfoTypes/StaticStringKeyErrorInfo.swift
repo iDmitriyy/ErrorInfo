@@ -18,38 +18,25 @@ struct StaticStringKeyErrorInfo: Sequence {
   private var _storage: MultiValueStorage
   
   func makeIterator() -> some IteratorProtocol<Element> {
-    IteratorAdapter(_storage.makeIterator())
-  }
-}
-
-// MARK: IteratorAdapter
-
-extension StaticStringKeyErrorInfo {
-  private struct IteratorAdapter<Iterator: IteratorProtocol>: IteratorProtocol
-    where Iterator.Element == (key: StaticStringHashableAdapter, value: Value) {
-    private var wrappedIterator: Iterator
-    
-    init(_ wrappedIterator: Iterator) {
-      self.wrappedIterator = wrappedIterator
-    }
-    
-    mutating func next() -> (key: Key, value: Value)? {
-      wrappedIterator.next().map { key, value in (key.wrappedValue, value) }
+    var iterator = _storage.makeIterator()
+    return AnyIterator {
+      guard let (key, warppedValue) = iterator.next() else { return nil }
+      return (key.base, warppedValue.value)
     }
   }
 }
 
 // MARK: StaticString Hashable Adapter
 
-internal struct StaticStringHashableAdapter: Hashable {
-  let wrappedValue: StaticString
+fileprivate struct StaticStringHashableAdapter: Hashable {
+  let base: StaticString
   
   init(_ wrappedValue: StaticString) {
-    self.wrappedValue = wrappedValue
+    self.base = wrappedValue
   }
   
   func hash(into hasher: inout Hasher) {
-    wrappedValue.withUTF8Buffer { utf8Buffer in
+    base.withUTF8Buffer { utf8Buffer in
       for uint8 in utf8Buffer {
         hasher.combine(uint8)
       }
@@ -58,8 +45,8 @@ internal struct StaticStringHashableAdapter: Hashable {
 
   // TODO: this is not proper imp
   static func == (lhs: StaticStringHashableAdapter, rhs: StaticStringHashableAdapter) -> Bool {
-    lhs.wrappedValue.withUTF8Buffer { lhsBuffer in
-      rhs.wrappedValue.withUTF8Buffer { rhsBuffer in
+    lhs.base.withUTF8Buffer { lhsBuffer in
+      rhs.base.withUTF8Buffer { rhsBuffer in
         guard lhsBuffer.count == rhsBuffer.count else { return false }
         
         return lhsBuffer.enumerated().allSatisfy { index, byte in

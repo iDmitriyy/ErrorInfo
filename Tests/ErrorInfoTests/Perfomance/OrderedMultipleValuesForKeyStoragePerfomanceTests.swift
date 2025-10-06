@@ -30,6 +30,7 @@ struct OrderedMultipleValuesForKeyStoragePerfomanceTests {
       return dict
     }
     
+    // on debug builds:
     // ~1.5 slower vs OrderedDictionary
     // ~9.5x slower vs Swift.Dictionary
     // TODO: compare on optimized build

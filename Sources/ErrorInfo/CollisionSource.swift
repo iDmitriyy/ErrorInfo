@@ -60,8 +60,8 @@ extension StringBasedCollisionSource {
 // MARK: - Value + Collision Wrapper
 
 public struct ValueWithCollisionWrapper<Value, CollisionSource> {
-  @usableFromInline internal let value: Value
-  @usableFromInline internal let collisionSource: CollisionSource?
+  public let value: Value
+  public let collisionSource: CollisionSource?
   
   @inlinable
   internal init(value: Value, collisionSource: CollisionSource?) {

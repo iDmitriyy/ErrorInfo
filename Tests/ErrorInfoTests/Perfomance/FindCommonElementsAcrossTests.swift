@@ -8,7 +8,7 @@
 @testable import ErrorInfo
 import Testing
 
-struct FindCommonElementsAcross {
+struct FindCommonElementsAcrossTests {
   let set0: Set<String> = (0...500).map(String.init(describing:)).apply(Set.init)
   let set1: Set<String> = (450...550).map(String.init(describing:)).apply(Set.init)
   let set2: Set<String> = (450...1000).map(String.init(describing:)).apply(Set.init)
@@ -20,7 +20,7 @@ struct FindCommonElementsAcross {
       findCommonElements(across: [set0, set1, set2, set3, set4])
     }
     
-    // 3.657 3.522 3.590
+    // on debug builds:
     print(output.duration)
   }
 }

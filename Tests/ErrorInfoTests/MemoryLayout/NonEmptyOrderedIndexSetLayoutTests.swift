@@ -10,7 +10,7 @@ import Testing
 import SwiftCollectionsNonEmpty
 
 struct NonEmptyOrderedIndexSetLayoutTests {
-  @Test func `size is valid`() {
+  @Test func `size limits`() {
     let memoryLayout = MemoryLayout<NonEmptyOrderedIndexSet>.self
     let integerLayout = MemoryLayout<Int>.self
     let nonEmptyOrderedSetLayout = MemoryLayout<NonEmptyOrderedSet<Int>>.self
