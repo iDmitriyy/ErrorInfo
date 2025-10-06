@@ -31,17 +31,36 @@ public struct OrderedMultiValueErrorInfoGeneric<Key: Hashable, Value>: Sequence 
 
 extension OrderedMultiValueErrorInfoGeneric: Sendable where Key: Sendable, Value: Sendable {}
 
-// MARK: - Mutation Methods
+extension OrderedMultiValueErrorInfoGeneric {
+  public func hasValue(forKey key: Key) -> Bool {
+    _storage.hasValue(forKey: key)
+  }
+}
+
+// MARK: All Values For Key
 
 extension OrderedMultiValueErrorInfoGeneric {
-  func keyValuesView(shouldOmitEqualValue _: Bool) {}
+  // public func allValuesSlice(forKey key: Key) -> (some Sequence<Value>)? {}
   
+  public func allValues(forKey key: Key) -> ValuesForKey<ValueWrapper>? {
+    _storage.allValues(forKey: key)
+  }
+  
+  @discardableResult
+  internal mutating func removeAllValues(forKey key: Key) -> ValuesForKey<ValueWrapper>? {
+    _storage.removeAllValues(forKey: key)
+  }
+}
+
+// MARK: Append KeyValue
+
+extension OrderedMultiValueErrorInfoGeneric {
   public mutating func appendResolvingCollisions(key: Key,
                                                  value newValue: Value,
                                                  omitEqualValue omitIfEqual: Bool,
                                                  collisionSource: @autoclosure () -> CollisionSource) {
     if omitIfEqual {
-      if let currentValues = _storage.allValues(forKey: key) {
+      if let currentValues = _storage.allValuesSlice(forKey: key) {
         let isEqualToCurrent = currentValues.contains(where: { currentValue in
           ErrorInfoFuncs.isApproximatelyEqualAny(currentValue.value, newValue)
         })
@@ -59,24 +78,26 @@ extension OrderedMultiValueErrorInfoGeneric {
     }
   }
   
-  @discardableResult
-  internal mutating func removeAllValues(forKey key: Key) -> ValuesForKey<ValueWrapper>? {
-    _storage.removeAllValues(forKey: key)
+  public mutating func appendResolvingCollisions(_ newElement: (Key, Value),
+                                                 omitEqualValue omitIfEqual: Bool,
+                                                 collisionSource: @autoclosure () -> CollisionSource) {
+    appendResolvingCollisions(key: newElement.0,
+                              value: newElement.1,
+                              omitEqualValue: omitIfEqual,
+                              collisionSource: collisionSource())
   }
- 
+}
+
+extension OrderedMultiValueErrorInfoGeneric {
   internal mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
     _storage.removeAll(keepingCapacity: keepCapacity)
   }
-  
+}
+
+extension OrderedMultiValueErrorInfoGeneric {
   public mutating func mergeWith(other _: Self,
                                  omitEqualValues _: Bool,
                                  mergeOrigin _: @autoclosure () -> CollisionSource.MergeOrigin = .fileLine()) {
     // use update(value:, forKey:) if it is fster than checking hasValue() + append
   }
 }
-
-// extension OrderedMultiValueErrorInfoGeneric where Key: RangeReplaceableCollection {
-//  public mutating func addKeyPrefix(_ keyPrefix: Key) {
-//    _storage = ErrorInfoDictFuncs.addKeyPrefix(keyPrefix, toKeysOf: _storage)
-//  }
-// }

@@ -95,7 +95,7 @@ extension OrderedMultipleValuesForKeyStorage {
         if singleValueForKeyDict.hasValue(forKey: newKey) {
           var multiValueForKeyDict = MultiValueForKeyDict()
           for (currentKey, currentValue) in singleValueForKeyDict {
-            multiValueForKeyDict[currentKey] = WrappedValue.value(currentValue)
+            multiValueForKeyDict.append(key: currentKey, value: WrappedValue.value(currentValue))
           }
           let newValueWrapped = WrappedValue.collidedValue(newValue, collisionSource: collisionSource())
           multiValueForKeyDict.append(key: newKey, value: newValueWrapped)

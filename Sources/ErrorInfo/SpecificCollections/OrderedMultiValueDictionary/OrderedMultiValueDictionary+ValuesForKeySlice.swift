@@ -1,5 +1,5 @@
 //
-//  OrderedMultiValueDictionary+AllValuesForKey.swift
+//  OrderedMultiValueDictionary+ValuesForKeySlice.swift
 //  ErrorInfo
 //
 //  Created Dmitriy Ignatyev on 05/10/2025.
@@ -10,7 +10,7 @@
 extension OrderedMultiValueDictionary {
   internal typealias EntryElement = Element
   
-  internal struct AllValuesForKey: Sequence { //  ~Escapable
+  internal struct ValuesForKeySlice: Sequence { //  ~Escapable
     // TODO: ~Escapable | as DiscontiguousSlice is used, View must not outlive source
 //    public typealias Element = Value
     

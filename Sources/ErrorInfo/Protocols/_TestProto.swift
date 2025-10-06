@@ -10,9 +10,10 @@ import Playgrounds
 #Playground {
   var dict = OrderedMultiValueDictionary<String, Int>()
   
-  dict["a"] = 1
-  dict["a"] = 2
-  dict["b"] = 3
+  // FIXME: noe subscript is get-only
+//  dict["a"] = 1
+//  dict["a"] = 2
+//  dict["b"] = 3
   
   dict.debugDescription
   

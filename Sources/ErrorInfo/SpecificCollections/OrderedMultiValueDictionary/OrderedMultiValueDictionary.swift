@@ -5,11 +5,8 @@
 //  Created by Dmitriy Ignatyev on 20/09/2025.
 //
 
-public import struct NonEmpty.NonEmpty
-private import typealias NonEmpty.NonEmptyArray
-import SwiftCollectionsNonEmpty
 
-// import InternalCollectionsUtilities
+import SwiftCollectionsNonEmpty
 import OrderedCollections
 private import StdLibExtensions
 public import protocol InternalCollectionsUtilities._UniqueCollection
@@ -19,7 +16,7 @@ public import protocol InternalCollectionsUtilities._UniqueCollection
 public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   public typealias Element = (key: Key, value: Value)
   
-  private var _entries: [Element]
+  public private(set) var _entries: [Element]
   /// for `allValuesForKey` function
   /// stores indices for all values for a key
   private var _keyToEntryIndices: Dictionary<Key, NonEmptyOrderedIndexSet> // TODO: ? use RangeSet instead of NonEmptyOrderedIndexSet?
@@ -71,78 +68,39 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
 
 extension OrderedMultiValueDictionary: Sendable where Key: Sendable, Value: Sendable {}
 
-extension OrderedMultiValueDictionary: Collection {
-  public var count: Int { _entries.count }
-  
-  public var isEmpty: Bool { _entries.isEmpty }
-}
-
-extension OrderedMultiValueDictionary: RandomAccessCollection { // ! RandomAccessCollection
-  public var startIndex: Int { _entries.startIndex }
-  
-  public var endIndex: Int { _entries.endIndex }
-    
-  public subscript(position: Int) -> Element { _entries[position] }
-}
-
-/*
- TODO:
- 1) conform it to DictionaryProtocol for using with Dict merge / addPrefix functions
- 2) AllValuesForKeyView ~Escapable | RangeSet instaed IndexSet | entries without storing keys
- */
-
-// MARK: Get methods
-
-extension OrderedMultiValueDictionary {
-  public subscript(key: Key) -> Value {
-    @available(*, unavailable, message: "This is a set only subscript")
-    get { fatalError("unavailable") } // allValues(forKey: key)?.first
-    set { append(key: key, value: newValue) }
-  }
-  
-  @available(*, deprecated, message: "allValuesView(forKey:)")
-  public subscript(key: Key) -> NonEmpty<some Collection<Value>>? {
-    allValues(forKey: key)
-  }
-
+extension OrderedMultiValueDictionary {  
   public func hasValue(forKey key: Key) -> Bool {
     _keyToEntryIndices.hasValue(forKey: key)
   }
-  
-  public func allValuesView(forKey key: Key) -> (some Sequence<Value>)? { // & ~Escapable
-    if let allValuesForKeyIndices = _keyToEntryIndices[key] {
-      AllValuesForKey(entries: _entries, valueIndices: allValuesForKeyIndices)
-    } else {
-      nil as Optional<AllValuesForKey>
-    }
-  }
-    
-  @available(*, deprecated, message: "allValuesView(forKey:)")
-  public func allValues(forKey key: Key) -> NonEmpty<some Collection<Value>>? {
-    guard let indices = _keyToEntryIndices[key] else { return Optional<NonEmptyArray<Value>>.none }
-    // TODO: need smth more optimal instead of allocating new Array, e.g.:
-    // 1) MultiValueContainer enum | case single(element: ), case multiple(elements: )
-    // 2) for multiple elements NonEmptyArray<Value>
-    return indices._asHeapNonEmptyOrderedSet.map { _entries[$0].value }
-  }
 }
 
-// MARK: Mutating methods
+// MARK: All Values For Key
 
 extension OrderedMultiValueDictionary {
-  public mutating func append(key: Key, value: Value) {
-    let index = _entries.endIndex
-    if var indices = _keyToEntryIndices[key] {
-      indices.insert(index) // FIXME: remove CoW. _keyToEntryIndices[index].insert(index)
-      _keyToEntryIndices[key] = indices
+  public func allValuesSlice(forKey key: Key) -> (some Sequence<Value>)? { // & ~Escapable
+    if let allValuesForKeyIndices = _keyToEntryIndices[key] {
+      ValuesForKeySlice(entries: _entries, valueIndices: allValuesForKeyIndices)
     } else {
-      _keyToEntryIndices[key] = .single(index: index)
+      nil as Optional<ValuesForKeySlice>
     }
-    _entries.append((key, value))
   }
   
-  public mutating func append(_ newElement: (Key, Value)) {
-    append(key: newElement.0, value: newElement.1)
+  public func allValues(forKey key: Key) -> ValuesForKey<Value>? {
+    guard let indexSet = _keyToEntryIndices[key] else { return nil }
+    
+    let valuesForKey: ValuesForKey<Value>
+    switch indexSet._storage {
+    case .single(let index): // Typically there is only one value for key
+      valuesForKey = ValuesForKey(element: _entries[index].value)
+       
+    case .multiple(let indices):
+      var accumulator = Array<Value>(minimumCapacity: indices.count)
+      for index in indices.base {
+        accumulator.append(_entries[index].value)
+      }
+      valuesForKey = ValuesForKey(array: accumulator)
+    }
+    return valuesForKey
   }
   
   @discardableResult
@@ -166,7 +124,28 @@ extension OrderedMultiValueDictionary {
     }
     return oldValues
   }
+}
+
+// MARK: Append KeyValue
+
+extension OrderedMultiValueDictionary {
+  public mutating func append(key: Key, value: Value) {
+    let entryAppendingIndex = _entries.endIndex
+    if var indices = _keyToEntryIndices[key] {
+      indices.insert(entryAppendingIndex) // FIXME: remove CoW. _keyToEntryIndices[index].insert(index)
+      _keyToEntryIndices[key] = indices
+    } else {
+      _keyToEntryIndices[key] = .single(index: entryAppendingIndex)
+    }
+    _entries.append((key, value))
+  }
   
+  public mutating func append(_ newElement: (Key, Value)) {
+    append(key: newElement.0, value: newElement.1)
+  }
+}
+
+extension OrderedMultiValueDictionary {
   public mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
     _entries.removeAll(keepingCapacity: keepCapacity)
     _keyToEntryIndices.removeAll(keepingCapacity: keepCapacity)

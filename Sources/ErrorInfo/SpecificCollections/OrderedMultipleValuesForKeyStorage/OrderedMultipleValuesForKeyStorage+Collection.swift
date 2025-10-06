@@ -46,4 +46,9 @@ extension OrderedMultipleValuesForKeyStorage: RandomAccessCollection {
        return (key, wrappedValue)
     }
   }
+  
+  /// Returns a Boolean value indicating whether the sequence contains valuess for a given key that satisfies the given predicate.
+//  internal func containsValues(forKey key: Key, where predicate: (Self.Element) throws -> Bool) rethrows -> Bool {
+//    
+//  }
 }

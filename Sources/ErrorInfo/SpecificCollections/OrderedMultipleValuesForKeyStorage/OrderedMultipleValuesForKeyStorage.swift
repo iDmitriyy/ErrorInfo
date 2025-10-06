@@ -8,8 +8,9 @@
 internal import enum SwiftyKit.Either
 private import struct OrderedCollections.OrderedDictionary
 
-/// Reduces the overhead which `OrderedMultiValueDictionary` has.
-/// Almost all time Error info instances has single value for ech key. Until first collision happens, `OrderedDictionary` is used.
+/// The main purpose of this type is reducing the overhead which `OrderedMultiValueDictionary` has.
+///
+/// Almost all time Error info instances has 1 value for each key. Until first collision happens, `OrderedDictionary` is used.
 /// When first collision happens, `OrderedDictionary` is replaced by `OrderedMultiValueDictionary`.
 @usableFromInline
 internal struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value, CollisionSource> {
@@ -25,8 +26,6 @@ internal struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value, Collisi
 
 extension OrderedMultipleValuesForKeyStorage: Sendable where Key: Sendable, Value: Sendable, CollisionSource: Sendable {}
 
-// MARK: Get methods
-
 extension OrderedMultipleValuesForKeyStorage {
   internal func hasValue(forKey key: Key) -> Bool {
     switch _variant {
@@ -34,41 +33,63 @@ extension OrderedMultipleValuesForKeyStorage {
     case .right(let multiValueForKeyDict): multiValueForKeyDict.hasValue(forKey: key)
     }
   }
-  
-  internal func allValues(forKey key: Key) -> (some Sequence<WrappedValue>)? { // & ~Escapable
+}
+
+// MARK: All Values For Key
+
+extension OrderedMultipleValuesForKeyStorage {
+  // TODO: perfomance test allValues vs allValuesSlice
+  internal func allValuesSlice(forKey key: Key) -> (some Sequence<WrappedValue>)? { // & ~Escapable
     ValuesForKeySlice(_variant: _variant, key: key)
+  }
+  
+  internal func allValues(forKey key: Key) -> ValuesForKey<WrappedValue>? {
+    switch _variant {
+    case .left(let singleValueForKeyDict):
+      if let valueForKey = singleValueForKeyDict[key] {
+        ValuesForKey(element: WrappedValue.value(valueForKey))
+      } else {
+        nil
+      }
+    case .right(let multiValueForKeyDict):
+      multiValueForKeyDict.allValues(forKey: key)
+    }
+  }
+  
+  @discardableResult
+  internal mutating func removeAllValues(forKey key: Key) -> ValuesForKey<WrappedValue>? {
+    _muatbleVariant.withResultMutateUnderlying(singleValueForKey: { singleValueForKeyDict in
+      if let oldValue = singleValueForKeyDict.removeValue(forKey: key) {
+        ValuesForKey(element: WrappedValue.value(oldValue))
+      } else {
+        nil
+      }
+    }, multiValueForKey: { multiValueForKeyDict in
+      multiValueForKeyDict.removeAllValues(forKey: key)
+    })
   }
 }
 
-// MARK: Mutating methods
+// MARK: Append KeyValue
 
 extension OrderedMultipleValuesForKeyStorage {
-  @inlinable
-  @inline(__always)
   internal mutating func append(key: Key,
                                 value: Value,
                                 collisionSource: @autoclosure () -> CollisionSource) {
     _muatbleVariant.append(key: key, value: value, collisionSource: collisionSource())
   }
   
-  @discardableResult
-  internal mutating func removeAllValues(forKey key: Key) -> ValuesForKey<WrappedValue>? {
-    _muatbleVariant.withResultMutateUnderlying(singleValueForKey: { dict in
-      if let oldValue = dict.removeValue(forKey: key) {
-        ValuesForKey(element: WrappedValue.value(oldValue))
-      } else {
-        nil
-      }
-    }, multiValueForKey: { dict in
-      dict.removeAllValues(forKey: key)
-    })
+  public mutating func append(_ newElement: (Key, Value), collisionSource: @autoclosure () -> CollisionSource) {
+    append(key: newElement.0, value: newElement.1, collisionSource: collisionSource())
   }
-  
+}
+
+extension OrderedMultipleValuesForKeyStorage {
   internal mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
-    _muatbleVariant.mutateUnderlying(singleValueForKey: { dict in
-      dict.removeAll(keepingCapacity: keepCapacity)
-    }, multiValueForKey: { dict in
-      dict.removeAll(keepingCapacity: keepCapacity)
+    _muatbleVariant.mutateUnderlying(singleValueForKey: { singleValueForKeyDict in
+      singleValueForKeyDict.removeAll(keepingCapacity: keepCapacity)
+    }, multiValueForKey: { multiValueForKeyDict in
+      multiValueForKeyDict.removeAll(keepingCapacity: keepCapacity)
     })
   }
 }

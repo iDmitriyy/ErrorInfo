@@ -24,7 +24,7 @@ extension OrderedMultipleValuesForKeyStorage {
         let adapter = IterationDeferredMapSequence(sequence: collectionOfOne, transform: { WrappedValue.value($0) })
         _source = .left(AnySequence(adapter))
       case .right(let multiValueForKeyDict):
-        guard let allValuesForKey = multiValueForKeyDict.allValuesView(forKey: key) else { return nil }
+        guard let allValuesForKey = multiValueForKeyDict.allValuesSlice(forKey: key) else { return nil }
         _source = .right(AnySequence(allValuesForKey))
       }
     }

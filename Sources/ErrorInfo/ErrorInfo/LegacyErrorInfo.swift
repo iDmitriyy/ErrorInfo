@@ -39,4 +39,18 @@ extension LegacyErrorInfo {
   func addPrefix() {}
   
   mutating func merge() {}
+  
+//  mutating func _addResolvingCollisions(key: Key, value: any ValueType, omitEqualValue: Bool) {
+//    // Here values are added by ErrorInfo subscript, so use subroutine of root merge-function to put value into storage, which
+//    // adds a random suffix if collision occurs
+//    // Pass unmodified key
+//    // shouldOmitEqualValue = true, in ccomparison to addKeyPrefix function.
+//    //    ErrorInfoDictFuncs.Merge
+//    //      ._putResolvingWithRandomSuffix(value,
+//    //                                     assumeModifiedKey: key,
+//    //                                     shouldOmitEqualValue: true, // TODO: explain why
+//    //                                     suffixFirstChar: ErrorInfoMerge.suffixBeginningForSubcriptScalar,
+//    //                                     to: &_storage)
+//  }
 }
+

@@ -41,8 +41,8 @@ internal func performMeasuredAction<T>(_ actions: () -> T) -> (result: T, durati
 
 extension Duration {
   @usableFromInline internal var inMilliseconds: Double {
-    let v = components
-    return Double(v.seconds) * 1000 + Double(v.attoseconds) * 1e-15
+    let (seconds, attoseconds) = components
+    return Double(seconds) * 1000 + Double(attoseconds) * 1e-15
   }
 }
 

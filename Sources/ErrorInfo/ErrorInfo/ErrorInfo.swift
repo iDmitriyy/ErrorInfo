@@ -26,41 +26,52 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
   
   public init() {
     self.init(storage: BackingStorage())
+    // reserve capacity
+    // init minimumCapacity
   }
 }
 
-// MARK: Get / Set
-
-extension ErrorInfo {  
+extension ErrorInfo {
   public subscript(_: Key) -> (Value)? {
     get { fatalError() }
     set(maybeValue) {}
   }
+}
+
+// MARK: All Values For Key
+
+extension ErrorInfo {
+  // public func allValuesSlice(forKey key: Key) -> (some Sequence<Value>)? {}
   
-  func _getUnderlyingValue(forKey _: Key) -> (any ValueType)? {
-    _storage.keyValuesView(shouldOmitEqualValue: true)
-    return nil
+  public func allValues(forKey key: Key) -> ValuesForKey<ValueWrapper>? {
+    _storage.allValues(forKey: key)
   }
   
-  mutating func _addResolvingCollisions(key: Key, value: any ValueType, omitEqualValue: Bool) {
-    // Here values are added by ErrorInfo subscript, so use subroutine of root merge-function to put value into storage, which
-    // adds a random suffix if collision occurs
-    // Pass unmodified key
-    // shouldOmitEqualValue = true, in ccomparison to addKeyPrefix function.
-//    ErrorInfoDictFuncs.Merge
-//      ._putResolvingWithRandomSuffix(value,
-//                                     assumeModifiedKey: key,
-//                                     shouldOmitEqualValue: true, // TODO: explain why
-//                                     suffixFirstChar: ErrorInfoMerge.suffixBeginningForSubcriptScalar,
-//                                     to: &_storage)
+  @discardableResult
+  public mutating func removeAllValues(forKey key: Key) -> ValuesForKey<ValueWrapper>? {
+    _storage.removeAllValues(forKey: key)
+  }
+}
+
+// MARK: Append KeyValue
+
+extension ErrorInfo {
+  mutating func appendResolvingCollisions(key: Key, value: any ValueType, omitEqualValue: Bool) {
     _storage.appendResolvingCollisions(key: key,
                                        value: value,
                                        omitEqualValue: omitEqualValue,
                                        collisionSource: .onSubscript)
   }
   
-  @discardableResult
-  public mutating func removeAllValues(forKey key: Key) -> ValuesForKey<ValueWrapper>? {
-    _storage.removeAllValues(forKey: key)
+  mutating func appendResolvingCollisions(_ newElement: (Key, any ValueType), omitEqualValue: Bool) {
+    appendResolvingCollisions(key: newElement.0,
+                              value: newElement.1,
+                              omitEqualValue: omitEqualValue)
+  }
+}
+
+extension ErrorInfo {
+  internal mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
+    _storage.removeAll(keepingCapacity: keepCapacity)
   }
 }
