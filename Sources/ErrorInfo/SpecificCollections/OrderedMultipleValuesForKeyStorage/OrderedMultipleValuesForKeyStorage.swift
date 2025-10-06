@@ -67,3 +67,6 @@ extension OrderedMultipleValuesForKeyStorage {
   //   })
   // }
 }
+
+// TODO: using of inlining seems reasonable only internally. For public types like ErrorInfo dynamic disptach might be ok
+// as it is fasr.

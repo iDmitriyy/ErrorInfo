@@ -112,19 +112,9 @@ func test(errorInfo: ErrorInfoCollection) {
   errorInfo.isEmpty
 }
 
-// extension ErrorInfoProtocol {
-//  public init(dictionaryLiteral elements: (String, (any ValueType)?)..., line: UInt = #line) {
-//    elements.forEach { key, value in
-//      self[key, line] = value
-//    }
-//  }
-// }
-
 /// Default functions implementations for ErrorInfo types
-internal protocol ErrorInfoInternalDefaultFuncs {
-  associatedtype Storage: DictionaryProtocol
-  
-  var storage: Storage { get }
-}
-
-extension ErrorInfo: ErrorInfoInternalDefaultFuncs {}
+//internal protocol ErrorInfoInternalDefaultFuncs {
+//  associatedtype Storage: DictionaryProtocol
+//  
+//  var storage: Storage { get }
+//}

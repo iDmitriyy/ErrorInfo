@@ -5,23 +5,28 @@
 //  Created Dmitriy Ignatyev on 03/10/2025.
 //
 
+// TODO: make as struct with static functions
+
 public enum StringBasedCollisionSource: Sendable {
   case onSubscript
   case onMerge(origin: MergeOrigin)
+  case onDictionaryConsumption(origin: MergeOrigin)
   case onAddPrefix(prefix: String)
   case onAddSuffix(suffix: String)
   case onCreateWithDictionaryLiteral
-  // case onKeysMapping(original: String, mapped: String)
+  case onKeysMapping(original: String, mapped: String)
   
   public func defaultStringInterpolation() -> String {
     let head = "!*!"
     let tail: String
     switch self {
-    case let .onMerge(origin): return origin.defaultStringInterpolation()
+    case let .onMerge(origin): return origin.defaultStringInterpolation(sourceString: "onMerge")
+    case let .onDictionaryConsumption(origin): return origin.defaultStringInterpolation(sourceString: "onDictionaryConsumption")
     case .onSubscript: tail = "onSubscript"
     case let .onAddPrefix(prefix): tail = "onAddPrefix(\"\(prefix)\")"
     case let .onAddSuffix(suffix): tail = "onAddSuffix(\"\(suffix)\")"
     case .onCreateWithDictionaryLiteral: tail = "onCreateWithDictionaryLiteral"
+    case let .onKeysMapping(original, mapped): tail = "onKeyMapping(original: \"\(original)\", mapped: \"\(mapped)\")"
     }
     return head + tail
   }
@@ -40,8 +45,8 @@ extension StringBasedCollisionSource {
     }
     
     /// `  @#@    >X<    !*!  >collision*`
-    public func defaultStringInterpolation() -> String {
-      let head = "!*!" + "onMerge"
+    fileprivate func defaultStringInterpolation(sourceString: String) -> String {
+      let head = "!*!" + sourceString
       let tail: String = switch self {
       case let .fileLine(file, line): "(" + "at: \(file):\(line)" + ")"
       case let .function(function): "(" + "inFunction: \(function)" + ")"

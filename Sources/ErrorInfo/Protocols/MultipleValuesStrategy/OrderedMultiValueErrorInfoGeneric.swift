@@ -18,8 +18,8 @@
 // import Foundation
 
 public struct OrderedMultiValueErrorInfoGeneric<Key: Hashable, Value>: Sequence {
-  public typealias Element = (key: Key, value: Value)
-  private typealias ValueWrapper = ValueWithCollisionWrapper<Value, CollisionSource>
+  public typealias Element = (key: Key, value: ValueWrapper)
+  public typealias ValueWrapper = ValueWithCollisionWrapper<Value, CollisionSource>
   public typealias CollisionSource = StringBasedCollisionSource
   
   private var _storage: OrderedMultipleValuesForKeyStorage<Key, Value, CollisionSource>
@@ -32,7 +32,7 @@ public struct OrderedMultiValueErrorInfoGeneric<Key: Hashable, Value>: Sequence 
     var sourceIterator = _storage.makeIterator()
     return AnyIterator {
       if let (key, valueWrapper) = sourceIterator.next() {
-        (key, valueWrapper.value)
+        (key, valueWrapper)
       } else {
         nil
       }
@@ -40,6 +40,12 @@ public struct OrderedMultiValueErrorInfoGeneric<Key: Hashable, Value>: Sequence 
   }
   
   func keyValuesView(shouldOmitEqualValue _: Bool) {}
+}
+
+extension OrderedMultiValueErrorInfoGeneric {
+  internal var count: Int { _storage.count }
+  
+  internal var isEmpty: Bool { _storage.isEmpty }
 }
 
 // MARK: - Mutation Methods

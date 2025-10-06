@@ -7,28 +7,24 @@
 
 import struct OrderedCollections.OrderedDictionary
 
-//import CrossImportOverlays
-
-// public import func IndependentDeclarations.prettyDescriptionOfOptional // for default valueInterpolation with prettyDescription
-//import IndependentDeclarations
-//import OrderedCollections
+// TODO: - add tests for elements ordering stability
+// TODO: - add overloads for Sendable AnyObjects & actors
 
 public struct ErrorInfo: Sendable { // ErrorInfoCollection
   public typealias ValueType = ErrorInfoValueType
   public static let empty: Self = Self()
   
-  // TODO: - add tests for elements ordering stability
+  internal typealias BackingStorage = OrderedMultiValueErrorInfoGeneric<String, any ValueType>
   
-//  internal typealias BackingStorage = KeyAugmentationErrorInfoGeneric<OrderedDictionary<String, any ValueType>>
-//  internal private(set) var storage: BackingStorage
-  internal private(set) var storage: OrderedDictionary<String, any ValueType>
+  // FIXME: private(set)
+  internal var _storage: BackingStorage
   
-  fileprivate init(storage: OrderedDictionary<String, any ValueType>) {
-    self.storage = storage
+  fileprivate init(storage: BackingStorage) {
+    self._storage = storage
   }
   
   public init() {
-    self.init(storage: OrderedDictionary<String, any ValueType>())
+    self.init(storage: BackingStorage())
   }
   
   // init(name: String, dict: OrderedMultipleValuesDictionaryLiteral)
@@ -37,9 +33,9 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
 // MARK: CustomStringConvertible IMP
 
 extension ErrorInfo {
-  public var description: String { String(describing: storage) }
+  public var description: String { String(describing: _storage) }
   // FIXME: use @DebugDescription macro
-  public var debugDescription: String { String(reflecting: storage) }
+  public var debugDescription: String { String(reflecting: _storage) }
 }
 
 // MARK: Get / Set
@@ -64,17 +60,21 @@ extension ErrorInfo {
     nil
   }
   
-  mutating func _addResolvingCollisions(value: any ValueType, forKey key: Key) {
+  mutating func _addResolvingCollisions(key: Key, value: any ValueType, omitEqualValue: Bool) {
     // Here values are added by ErrorInfo subscript, so use subroutine of root merge-function to put value into storage, which
     // adds a random suffix if collision occurs
     // Pass unmodified key
     // shouldOmitEqualValue = true, in ccomparison to addKeyPrefix function.
-    ErrorInfoDictFuncs.Merge
-      ._putResolvingWithRandomSuffix(value,
-                                     assumeModifiedKey: key,
-                                     shouldOmitEqualValue: true, // TODO: explain why
-                                     suffixFirstChar: ErrorInfoMerge.suffixBeginningForSubcriptScalar,
-                                     to: &storage)
+//    ErrorInfoDictFuncs.Merge
+//      ._putResolvingWithRandomSuffix(value,
+//                                     assumeModifiedKey: key,
+//                                     shouldOmitEqualValue: true, // TODO: explain why
+//                                     suffixFirstChar: ErrorInfoMerge.suffixBeginningForSubcriptScalar,
+//                                     to: &_storage)
+    _storage.appendResolvingCollisions(key: key,
+                                       value: value,
+                                       omitEqualValue: omitEqualValue,
+                                       collisionSource: .onSubscript)
   }
 }
 
@@ -82,9 +82,9 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   public mutating func addKeyPrefix(_ keyPrefix: String, transform: PrefixTransformFunc) {
-    ErrorInfoDictFuncs.addKeyPrefix(keyPrefix,
-                                    toKeysOf: &storage,
-                                    transform: transform)
+//    ErrorInfoDictFuncs.addKeyPrefix(keyPrefix,
+//                                    toKeysOf: &_storage,
+//                                    transform: transform)
   }
   
   public consuming func addingKeyPrefix(_ keyPrefix: String, transform: PrefixTransformFunc) -> Self {
@@ -97,16 +97,18 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   public mutating func merge<each D>(_: repeat each D,
-                                     collisionSource: StringBasedCollisionSource.MergeOrigin = .fileLine())
-  where repeat each D: ErrorInfoCollection {
-    fatalError()
+                                     collisionSource: @autoclosure () -> StringBasedCollisionSource.MergeOrigin = .fileLine())
+    where repeat each D: ErrorInfoCollection {
+      fatalError()
 //    ErrorInfoDictFuncs.Merge._mergeErrorInfo
-  }
+    }
   
-  public consuming func merging<each D>(_ donators: repeat each D) -> Self where repeat each D: ErrorInfoCollection {
-    merge(repeat each donators)
-    return self
-  }
+  public consuming func merging<each D>(_ donators: repeat each D,
+                                        collisionSource _: @autoclosure () -> StringBasedCollisionSource.MergeOrigin = .fileLine())
+    -> Self where repeat each D: ErrorInfoCollection {
+      merge(repeat each donators)
+      return self
+    }
 }
 
 // extension ErrorInfo {
@@ -135,35 +137,24 @@ extension ErrorInfo {
 //  }
 // }
 
-extension ErrorInfo {
-  public init(legacyUserInfo: [String: Any],
-              valueInterpolation: @Sendable (Any) -> String = { prettyDescriptionOfOptional(any: $0) }) {
-    self.init()
-    legacyUserInfo.forEach { key, value in storage[key] = valueInterpolation(value) }
-  }
-  
-  public func asStringDict() -> [String: String] { // TODO: shouls be a protocol default imp
-    var dict = [String: String](minimumCapacity: storage.count)
-    storage.forEach { key, value in // TODO: use builtin initializer of OrderedDict instead of foreach
-      dict[key] = String(describing: value)
-    }
-    return dict
-  }
-}
-
 // MARK: collect values from KeyPath
 
 extension ErrorInfo {
   // public static func fromKeys<T, each V: ErrorInfo.ValueType>(of instance: T,
   @inlinable
   public static func collect<R, each V: ErrorInfo.ValueType>(from instance: R,
+                                                             addTypePrefix: Bool,
                                                              keys key: repeat KeyPath<R, each V>) -> Self {
     func collectEach(_ keyPath: KeyPath<R, some ErrorInfo.ValueType>, root: R, to info: inout Self) {
-      let keyPathString = ErrorInfoFuncs.asErrorInfoKeyString(keyPath: keyPath)
+      var keyPathString = ErrorInfoFuncs.asErrorInfoKeyString(keyPath: keyPath)
+      if addTypePrefix {
+        keyPathString = "\(type(of: root))." + keyPathString
+      }
+      // TODO: if keyPathString can not be formed correctly then macro can be tried
       info[keyPathString] = root[keyPath: keyPath]
     }
     // ⚠️ @iDmitriyy
-    // _TODO: - add tests
+    // TODO: - add tests
     var info = Self()
     
     repeat collectEach(each key, root: instance, to: &info)

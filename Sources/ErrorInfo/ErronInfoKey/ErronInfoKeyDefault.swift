@@ -8,7 +8,8 @@
 extension ErronInfoKey {
   // By default names are given with snake_case, which can ba transformed to camelCase, kebab-case or PascalCase
   // formats when logging.
-  // TODO: - inspet Swift codebases for styles
+  // TODO: - inspect Swift codebases for styles
+  // TODO: - use compile-time values instead of static
   
   public static let id = ErronInfoKey(uncheckedString: "id")
   public static let instanceID = ErronInfoKey(uncheckedString: "instance_id")
@@ -55,6 +56,7 @@ extension ErronInfoKey {
   public static let debugDescription = ErronInfoKey(uncheckedString: "debug_description")
   
   public static let decodingDate = ErronInfoKey(uncheckedString: "decoding_date")
+  public static let encodingDate = ErronInfoKey(uncheckedString: "encoding_date")
   
   public static let timestamp = ErronInfoKey(uncheckedString: "timestamp")
   public static let decodingTimestamp = ErronInfoKey(uncheckedString: "decoding_timestamp")

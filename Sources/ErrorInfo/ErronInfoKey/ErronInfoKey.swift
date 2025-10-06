@@ -49,6 +49,8 @@ extension ErronInfoKey {
   }
 }
 
+// TODO: add + - operators
+
 // extension ErronInfoKey {
 //  public struct Separator: Sendable, Hashable, CustomStringConvertible { // RawRepresentable
 //    private let rawValue: String

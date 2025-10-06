@@ -54,7 +54,23 @@ struct OrderedMultipleValuesForKeyStoragePerfomanceTests {
     
   }
   
-  @Test func initWithDictionaryLiteral() {
+  @Test func count() {
+    
+  }
+  
+  @Test func isEmpty() {
+    
+  }
+  
+  @Test func initWithDictionaryLiteralUniqueKeysWithSingleValue() {
     // OrderedMultipleValuesForKeyStorage has special initializer
+  }
+  
+  @Test func contentMemoryConsumption() {
+    // check amount of memory needed for storing Keys & Values for Dictionary, OrderedDictionary, OrderedMultiValueDictionary
+  }
+  
+  @Test func asStringDictDefaultInterpolationUniqueKeysWithSingleValue() {
+    // asStringDict() vs String(describing:)
   }
 }

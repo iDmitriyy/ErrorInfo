@@ -16,6 +16,8 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
   
   public init(dictionaryLiteral elements: (String, Value)...) {
     self.init()
+    // TODO: OrderedMultipleValuesDictionaryLiteral(dictionaryLiteral: elements)
+    // ur use self[key] = value for preserving Self.collisionStrategy
     elements.forEach { key, value in self[key] = value }
   }
 }
