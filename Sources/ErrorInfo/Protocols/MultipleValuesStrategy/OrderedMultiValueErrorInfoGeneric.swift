@@ -22,15 +22,10 @@ public struct OrderedMultiValueErrorInfoGeneric<Key: Hashable, Value>: Sequence 
   private typealias ValueWrapper = ValueWithCollisionWrapper<Value, CollisionSource>
   public typealias CollisionSource = StringBasedCollisionSource
   
-  // Improvement:
-  // Typically there will be one value for each key, so OrderedDictionary is enough for most situations.
-  // OrderedMultiValueDictionary is needed when first collision happens.
-  // All overhead which OrderedMultiValueDictionary has can be eliminated untill first collision happens.
-  // _storage: Either<OrderedDictionary<Key, Value>, OrderedMultiValueDictionary<Key, ValueWrapper>>
-  private var _storage: OrderedMultiValueDictionary<Key, ValueWrapper>
+  private var _storage: OrderedMultipleValuesForKeyStorage<Key, Value, CollisionSource>
   
   public init() {
-    _storage = OrderedMultiValueDictionary<Key, ValueWrapper>()
+    _storage = OrderedMultipleValuesForKeyStorage()
   }
   
   public func makeIterator() -> some IteratorProtocol<Element> {
@@ -54,24 +49,30 @@ extension OrderedMultiValueErrorInfoGeneric {
                                                  value newValue: Value,
                                                  omitEqualValue omitIfEqual: Bool,
                                                  collisionSource: @autoclosure () -> CollisionSource) {
-    if let currentValues = _storage.allValuesView(forKey: key) {
-      lazy var isEqualToCurrent = currentValues.contains(where: { currentValue in
-        ErrorInfoFuncs.isApproximatelyEqualAny(currentValue.value, newValue)
-      })
-      
-      // if both `isEqualToCurrent` and `omitIfEqual` are true then value must not be added. Otherwise add it.
-      if omitIfEqual, isEqualToCurrent {
-        return
+    if omitIfEqual {
+      if let currentValues = _storage.allValues(forKey: key) {
+        let isEqualToCurrent = currentValues.contains(where: { currentValue in
+          ErrorInfoFuncs.isApproximatelyEqualAny(currentValue.value, newValue)
+        })
+        
+        if isEqualToCurrent {
+          return
+        } else {
+          _storage.append(key: key, value: newValue, collisionSource: collisionSource())
+        }
       } else {
-        // FIXME: collisionSource
-        _storage.append(key: key, value: .collidedValue(newValue, collisionSource: collisionSource()))
+        _storage.append(key: key, value: newValue, collisionSource: collisionSource())
       }
     } else {
-      _storage.append(key: key, value: .value(newValue))
+      _storage.append(key: key, value: newValue, collisionSource: collisionSource())
     }
   }
   
-  public mutating func mergeWith(other _: Self) {}
+  public mutating func mergeWith(other _: Self,
+                                 omitEqualValues omitIfEqual: Bool,
+                                 mergeOrigin: @autoclosure () -> CollisionSource.MergeOrigin = .fileLine()) {
+    // use update(value:, forKey:) if it is fster than checking hasValue() + append
+  }
 }
 
 // extension OrderedMultiValueErrorInfoGeneric where Key: RangeReplaceableCollection {

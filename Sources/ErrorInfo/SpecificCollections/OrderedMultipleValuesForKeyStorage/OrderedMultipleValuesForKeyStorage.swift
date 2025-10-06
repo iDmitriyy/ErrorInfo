@@ -21,6 +21,14 @@ internal struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value, Collisi
   internal init() {
     _muatbleVariant = _Variant(.left(OrderedDictionary()))
   }
+  
+  internal init(_dictionaryLiteral sequence: some Sequence<(Key, Value)>,
+                dictionaryLiteralCollisionSource: CollisionSource) {
+    self.init()
+    for (key, value) in sequence {
+      _muatbleVariant.append(key: key, value: value, collisionSource: dictionaryLiteralCollisionSource)
+    }
+  }
 }
 
 extension OrderedMultipleValuesForKeyStorage: Sendable where Key: Sendable, Value: Sendable, CollisionSource: Sendable {}
@@ -51,19 +59,19 @@ extension OrderedMultipleValuesForKeyStorage {
     _muatbleVariant.append(key: key, value: value, collisionSource: collisionSource())
   }
   
-  internal mutating func removeAllValues(forKey key: Key) {
-    _muatbleVariant.mutateUnderlying(singleValueForKey: { dict in
-      dict[key] = nil
-    }, multiValueForKey: { dict in
-      dict.removeAllValues(forKey: key)
-    })
-  }
-  
-  internal mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
-    _muatbleVariant.mutateUnderlying(singleValueForKey: { dict in
-      dict.removeAll(keepingCapacity: keepCapacity)
-    }, multiValueForKey: { dict in
-      dict.removeAll(keepingCapacity: keepCapacity)
-    })
-  }
+  // internal mutating func removeAllValues(forKey key: Key) {
+  //   _muatbleVariant.mutateUnderlying(singleValueForKey: { dict in
+  //     dict[key] = nil
+  //   }, multiValueForKey: { dict in
+  //     dict.removeAllValues(forKey: key)
+  //   })
+  // }
+  //
+  // internal mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
+  //   _muatbleVariant.mutateUnderlying(singleValueForKey: { dict in
+  //     dict.removeAll(keepingCapacity: keepCapacity)
+  //   }, multiValueForKey: { dict in
+  //     dict.removeAll(keepingCapacity: keepCapacity)
+  //   })
+  // }
 }
