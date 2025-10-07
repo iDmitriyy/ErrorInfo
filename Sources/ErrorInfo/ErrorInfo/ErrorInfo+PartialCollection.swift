@@ -6,7 +6,7 @@
 //
 
 extension ErrorInfo {
-  mutating func reserveCapacity(_ minimumCapacity: Int) {
-    
-  }
+  public var count: Int { _storage.count }
+  
+  public var isEmpty: Bool { _storage.isEmpty }
 }
