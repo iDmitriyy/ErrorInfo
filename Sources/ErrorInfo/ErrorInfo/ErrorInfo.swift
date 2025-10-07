@@ -85,7 +85,7 @@ extension ErrorInfo {
            omitEqualValue: omitEqualValue)
   }
   
-  public mutating func append(key: Key, optionalValue: (any ValueType)?, omitEqualValue: Bool, addTypeInfo: TypeInfoOptions) {
+  public mutating func append(key: Key, optionalValue: (any ValueType)?, omitEqualValue: Bool, addTypeInfo: TypeInfoOptions_) {
     // FIXME: ? add dynamic type when needed
     
     let finalValue: any ValueType
@@ -97,10 +97,10 @@ extension ErrorInfo {
       // case .whenNil:
       // }
     } else {
-      switch addTypeInfo {
-      case .always: finalValue = prettyDescriptionOfOptional(any: optionalValue)
-      case .whenNil: finalValue = prettyDescriptionOfOptional(any: optionalValue)
-      }
+//      switch addTypeInfo {
+//      case .always: finalValue = prettyDescriptionOfOptional(any: optionalValue)
+//      case .whenNil: finalValue = prettyDescriptionOfOptional(any: optionalValue)
+//      }
     }
     
     _add(key: key, value: finalValue, omitEqualValue: omitEqualValue, collisionSource: .onAppend)
@@ -127,25 +127,5 @@ extension ErrorInfo {
 extension ErrorInfo {
   internal mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
     _storage.removeAll(keepingCapacity: keepCapacity)
-  }
-}
-
-extension ErrorInfo {
-  public enum TypeInfoOptions {
-    case always
-    case whenNil
-  }
-  
-  struct TypeInfoOptions_: OptionSet {
-    var rawValue: UInt32
-    
-    init(rawValue: UInt32) {
-      self.rawValue = rawValue
-    }
-    
-    static let whenNil = TypeInfoOptions_(rawValue: 1 << 0)
-    static let always = TypeInfoOptions_(rawValue: 1 << 1)
-    static let nonStndard = TypeInfoOptions_(rawValue: 1 << 2)
-    static let multipathTCPAllowed = TypeInfoOptions_(rawValue: 1 << 3)
   }
 }
