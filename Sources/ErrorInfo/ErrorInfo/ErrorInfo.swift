@@ -17,9 +17,10 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
   
   // TODO: should CollisionSource be stored in BackingStorage? mostly always CollisionSource is nil
   // may be BackingStorage should keep a separate dict for keeping CollisionSource instances
-  // check memory consuption for both cases
+  // check memory consuption for both cases.
   // Do it after all Slices will be comlpeted, askeeping collisionSource in separate dict need a way to somehow
   // store relation between values in slice and collision sources.
+  // Another one case is with TypeInfo. Simply type info can be stored as a Bool flag or Empty() instance.
   internal typealias BackingStorage = OrderedMultiValueErrorInfoGeneric<String, any ValueType>
   public typealias ValueWrapper = ValueWithCollisionWrapper<any ValueType, CollisionSource>
   
@@ -85,22 +86,14 @@ extension ErrorInfo {
            omitEqualValue: omitEqualValue)
   }
   
-  public mutating func append(key: Key, optionalValue: (any ValueType)?, omitEqualValue: Bool, addTypeInfo: TypeInfoOptions_) {
+  public mutating func append(key: Key, optionalValue: (any ValueType)?, omitEqualValue: Bool, addTypeInfo: TypeInfoOptions) {
     // FIXME: ? add dynamic type when needed
     
     let finalValue: any ValueType
     if let value = optionalValue {
-      // TODO: check if it is an optional if someone conformed Optional to CustomStringConvertible
       finalValue = value
-      // switch addTypeInfo {
-      // case .always: // where should it be contained? might be in a separate dictionary, not BackingStorage
-      // case .whenNil:
-      // }
     } else {
-//      switch addTypeInfo {
-//      case .always: finalValue = prettyDescriptionOfOptional(any: optionalValue)
-//      case .whenNil: finalValue = prettyDescriptionOfOptional(any: optionalValue)
-//      }
+      finalValue = "nil"
     }
     
     _add(key: key, value: finalValue, omitEqualValue: omitEqualValue, collisionSource: .onAppend)
