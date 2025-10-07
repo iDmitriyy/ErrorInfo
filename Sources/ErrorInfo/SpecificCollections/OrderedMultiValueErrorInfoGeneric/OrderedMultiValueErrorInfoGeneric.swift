@@ -96,11 +96,3 @@ extension OrderedMultiValueErrorInfoGeneric {
     _storage.removeAll(keepingCapacity: keepCapacity)
   }
 }
-
-extension OrderedMultiValueErrorInfoGeneric {
-  public mutating func mergeWith(other _: Self,
-                                 omitEqualValues _: Bool,
-                                 mergeOrigin _: @autoclosure () -> CollisionSource.MergeOrigin = .fileLine()) {
-    // use update(value:, forKey:) if it is fster than checking hasValue() + append
-  }
-}
