@@ -16,10 +16,10 @@ public import protocol InternalCollectionsUtilities._UniqueCollection
 public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   public typealias Element = (key: Key, value: Value)
   
-  public private(set) var _entries: [Element]
+  internal private(set) var _entries: [Element]
   /// for `allValuesForKey` function
   /// stores indices for all values for a key
-  private var _keyToEntryIndices: Dictionary<Key, NonEmptyOrderedIndexSet> // TODO: ? use RangeSet instead of NonEmptyOrderedIndexSet?
+  internal private(set) var _keyToEntryIndices: Dictionary<Key, NonEmptyOrderedIndexSet> // TODO: ? use RangeSet instead of NonEmptyOrderedIndexSet?
     
   public var keys: some Collection<Key> & _UniqueCollection { _keyToEntryIndices.keys }
   

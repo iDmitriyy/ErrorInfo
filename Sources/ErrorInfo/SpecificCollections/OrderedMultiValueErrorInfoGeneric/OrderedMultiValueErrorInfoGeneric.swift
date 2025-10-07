@@ -63,6 +63,7 @@ extension OrderedMultiValueErrorInfoGeneric {
                                                  collisionSource: @autoclosure () -> CollisionSource) {
     if omitIfEqual {
       if let currentValues = _storage.allValuesSlice(forKey: key) {
+        // TODO: perfomace Test: containsValues(forKey:, where:) might be faster than allValuesSlice(forKey:)
         let isEqualToCurrent = currentValues.contains(where: { currentValue in
           ErrorInfoFuncs.isApproximatelyEqualAny(currentValue.value, newValue)
         })

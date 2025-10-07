@@ -42,13 +42,24 @@ extension OrderedMultipleValuesForKeyStorage: RandomAccessCollection {
       let (key, value) = singleValueForKeyDict[position]
       return (key, WrappedValue.value(value))
     case .right(let multiValueForKeyDict):
-       let (key, wrappedValue) = multiValueForKeyDict[position]
-       return (key, wrappedValue)
+      let (key, wrappedValue) = multiValueForKeyDict[position]
+      return (key, wrappedValue)
     }
   }
-  
+}
+
+extension OrderedMultipleValuesForKeyStorage {
   /// Returns a Boolean value indicating whether the sequence contains valuess for a given key that satisfies the given predicate.
-//  internal func containsValues(forKey key: Key, where predicate: (Self.Element) throws -> Bool) rethrows -> Bool {
-//    
-//  }
+  internal func containsValues<E>(forKey key: Key, where predicate: (Value) throws(E) -> Bool) rethrows -> Bool {
+    switch _variant {
+    case .left(let singleValueForKeyDict):
+      guard let value = singleValueForKeyDict[key] else { return false }
+      return try predicate(value)
+      
+    case .right(let multiValueForKeyDict):
+      return try multiValueForKeyDict.containsValues(forKey: key, where: { warppedValue in
+        try predicate(warppedValue.value)
+      })
+    }
+  }
 }
