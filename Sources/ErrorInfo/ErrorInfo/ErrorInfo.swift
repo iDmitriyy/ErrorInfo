@@ -37,7 +37,7 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
 extension ErrorInfo {
   // TODO: ? make subscript as a defualt imp in protocol, providing a way to override implementation at usage site
   public subscript(key: Key, omitEqualValue: Bool = true) -> (any ValueType)? {
-    // TODO: check if there runtime issues with unavailable setter
+    // TODO: check if there runtime issues with unavailable setter. If yes then make deprecated
     @available(*, unavailable, message: "This is a set only subscript")
     get { allValues(forKey: key)?.first.value }
     set {
@@ -69,6 +69,26 @@ extension ErrorInfo {
 // MARK: Append KeyValue
 
 extension ErrorInfo {
+  
+  /// Append value resolving collisions if there is already a value for given key.
+  mutating func append(key: Key, value: any ValueType, omitEqualValue: Bool) {
+    _storage.appendResolvingCollisions(key: key,
+                                       value: value,
+                                       omitEqualValue: omitEqualValue,
+                                       collisionSource: .onSubscript)
+  }
+  
+  mutating func append(_ newElement: (Key, any ValueType), omitEqualValue: Bool) {
+    append(key: newElement.0,
+           value: newElement.1,
+           omitEqualValue: omitEqualValue)
+  }
+  
+  mutating func append(key: Key, valueIfNotNil value: (any ValueType)?, omitEqualValue: Bool) {
+    guard let value else { return }
+    append(key: key, value: value, omitEqualValue: omitEqualValue)
+  }
+  
   mutating func append(key: Key, optionalValue: (any ValueType)?, omitEqualValue: Bool, addTypeInfo: TypeInfoOptions) {
     // FIXME: ? add dynamic type when needed
     
@@ -86,25 +106,8 @@ extension ErrorInfo {
       case .whenNil: finalValue = prettyDescriptionOfOptional(any: optionalValue)
       }
     }
-  }
-  
-  mutating func append(key: Key, valueIfNotNil value: (any ValueType)?, omitEqualValue: Bool) {
-    guard let value else { return }
-    append(key: key, value: value, omitEqualValue: omitEqualValue)
-  }
-  
-  /// Append value resolving collisions if there is already a value for given key.
-  mutating func append(key: Key, value: any ValueType, omitEqualValue: Bool) {
-    _storage.appendResolvingCollisions(key: key,
-                                       value: value,
-                                       omitEqualValue: omitEqualValue,
-                                       collisionSource: .onSubscript)
-  }
-  
-  mutating func append(_ newElement: (Key, any ValueType), omitEqualValue: Bool) {
-    append(key: newElement.0,
-           value: newElement.1,
-           omitEqualValue: omitEqualValue)
+    
+    append(key: key, value: finalValue, omitEqualValue: omitEqualValue)
   }
 }
 
