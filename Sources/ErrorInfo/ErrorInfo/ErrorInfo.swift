@@ -12,6 +12,7 @@ import struct OrderedCollections.OrderedDictionary
 
 public struct ErrorInfo: Sendable { // ErrorInfoCollection
   public typealias ValueType = ErrorInfoValueType
+  public typealias CollisionSource = StringBasedCollisionSource
   public static let empty: Self = Self()
   
   // TODO: should CollisionSource be stored in BackingStorage? mostly always CollisionSource is nil
@@ -20,7 +21,7 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
   // Do it after all Slices will be comlpeted, askeeping collisionSource in separate dict need a way to somehow
   // store relation between values in slice and collision sources.
   internal typealias BackingStorage = OrderedMultiValueErrorInfoGeneric<String, any ValueType>
-  public typealias ValueWrapper = ValueWithCollisionWrapper<any ValueType, StringBasedCollisionSource>
+  public typealias ValueWrapper = ValueWithCollisionWrapper<any ValueType, CollisionSource>
   
   // FIXME: private(set)
   internal var _storage: BackingStorage
@@ -38,11 +39,11 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
   }
 }
 
+// TODO: check if there runtime issues with unavailable setter. If yes then make deprecated
+// TODO: ? make subscript as a defualt imp in protocol, providing a way to override implementation at usage site
 extension ErrorInfo {
-  // TODO: ? make subscript as a defualt imp in protocol, providing a way to override implementation at usage site
   public subscript(key: Key, omitEqualValue: Bool = true) -> (any ValueType)? {
-    // TODO: check if there runtime issues with unavailable setter. If yes then make deprecated
-    @available(*, unavailable, message: "This is a set only subscript")
+    @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
     get { allValues(forKey: key)?.first.value }
     set {
       let value: any ValueType = if let newValue {
@@ -50,7 +51,7 @@ extension ErrorInfo {
       } else {
         "nil"
       }
-      append(key: key, value: value, omitEqualValue: omitEqualValue)
+      _add(key: key, value: value, omitEqualValue: omitEqualValue, collisionSource: .onSubscript)
     }
   }
 }
@@ -74,25 +75,17 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   /// Append value resolving collisions if there is already a value for given key.
-  mutating func append(key: Key, value: any ValueType, omitEqualValue: Bool) {
-    _storage.appendResolvingCollisions(key: key,
-                                       value: value,
-                                       omitEqualValue: omitEqualValue,
-                                       collisionSource: .onSubscript)
+  public mutating func append(key: Key, value: any ValueType, omitEqualValue: Bool = true) {
+    _add(key: key, value: value, omitEqualValue: omitEqualValue, collisionSource: .onAppend)
   }
   
-  mutating func append(_ newElement: (Key, any ValueType), omitEqualValue: Bool) {
+  public mutating func append(_ newElement: (Key, any ValueType), omitEqualValue: Bool = true) {
     append(key: newElement.0,
            value: newElement.1,
            omitEqualValue: omitEqualValue)
   }
   
-  mutating func append(key: Key, valueIfNotNil value: (any ValueType)?, omitEqualValue: Bool) {
-    guard let value else { return }
-    append(key: key, value: value, omitEqualValue: omitEqualValue)
-  }
-  
-  mutating func append(key: Key, optionalValue: (any ValueType)?, omitEqualValue: Bool, addTypeInfo: TypeInfoOptions) {
+  public mutating func append(key: Key, optionalValue: (any ValueType)?, omitEqualValue: Bool, addTypeInfo: TypeInfoOptions) {
     // FIXME: ? add dynamic type when needed
     
     let finalValue: any ValueType
@@ -110,7 +103,24 @@ extension ErrorInfo {
       }
     }
     
-    append(key: key, value: finalValue, omitEqualValue: omitEqualValue)
+    _add(key: key, value: finalValue, omitEqualValue: omitEqualValue, collisionSource: .onAppend)
+  }
+  
+  public mutating func append(key: Key, valueIfNotNil value: (any ValueType)?, omitEqualValue: Bool) {
+    guard let value else { return }
+    append(key: key, value: value, omitEqualValue: omitEqualValue)
+  }
+}
+
+extension ErrorInfo {
+  internal mutating func _add(key: Key,
+                              value: any ValueType,
+                              omitEqualValue: Bool,
+                              collisionSource: @autoclosure () -> CollisionSource) {
+    _storage.appendResolvingCollisions(key: key,
+                                       value: value,
+                                       omitEqualValue: omitEqualValue,
+                                       collisionSource: collisionSource())
   }
 }
 
@@ -124,5 +134,18 @@ extension ErrorInfo {
   public enum TypeInfoOptions {
     case always
     case whenNil
+  }
+  
+  struct TypeInfoOptions_: OptionSet {
+    var rawValue: UInt32
+    
+    init(rawValue: UInt32) {
+      self.rawValue = rawValue
+    }
+    
+    static let whenNil = TypeInfoOptions_(rawValue: 1 << 0)
+    static let always = TypeInfoOptions_(rawValue: 1 << 1)
+    static let nonStndard = TypeInfoOptions_(rawValue: 1 << 2)
+    static let multipathTCPAllowed = TypeInfoOptions_(rawValue: 1 << 3)
   }
 }

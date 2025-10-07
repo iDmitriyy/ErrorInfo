@@ -9,12 +9,16 @@
 
 public enum StringBasedCollisionSource: Sendable {
   case onSubscript
+  case onAppend
+  
   case onMerge(origin: MergeOrigin)
-  case onDictionaryConsumption(origin: MergeOrigin)
+  
   case onAddPrefix(prefix: String)
   case onAddSuffix(suffix: String)
-  case onCreateWithDictionaryLiteral
   case onKeysMapping(original: String, mapped: String)
+  
+  case onDictionaryConsumption(origin: MergeOrigin)
+  case onCreateWithDictionaryLiteral
   
   public func defaultStringInterpolation() -> String {
     let head = "!*!"
@@ -23,6 +27,7 @@ public enum StringBasedCollisionSource: Sendable {
     case let .onMerge(origin): return origin.defaultStringInterpolation(sourceString: "onMerge")
     case let .onDictionaryConsumption(origin): return origin.defaultStringInterpolation(sourceString: "onDictionaryConsumption")
     case .onSubscript: tail = "onSubscript"
+    case .onAppend: tail = "onSubscript"
     case let .onAddPrefix(prefix): tail = "onAddPrefix(\"\(prefix)\")"
     case let .onAddSuffix(suffix): tail = "onAddSuffix(\"\(suffix)\")"
     case .onCreateWithDictionaryLiteral: tail = "onCreateWithDictionaryLiteral"

@@ -52,4 +52,6 @@
  - prettyDescriptionOfOptional remove Mirror, use flattened() | use _isOptional or AnyOptionalProtocol
  - prettyDescriptionOfOptional Test for string containig `Optional` substring
  - PrefixTransformFunc default imps: plain prefix, capitlize first, styles(camel, pascal, snake, kebab)
+ 
+ - #if SWIFT_ENABLE_REFLECTION
  */

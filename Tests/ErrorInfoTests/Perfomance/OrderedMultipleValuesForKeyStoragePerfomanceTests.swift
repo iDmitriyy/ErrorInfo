@@ -53,7 +53,15 @@ struct OrderedMultipleValuesForKeyStoragePerfomanceTests {
   }
   
   @Test func hasValueForKey() {
+    var array = ["": ""]
     
+    let isU1 = unsafeHasUniquelyReferencedStorage_(&array)
+    
+//    var array2 = array
+    
+    let isU2 = unsafeHasUniquelyReferencedStorage_(&array)
+    
+    print("HasUniquelyReferencedStorage", isU1, isU2)
   }
   
   @Test func count() {
@@ -78,4 +86,37 @@ struct OrderedMultipleValuesForKeyStoragePerfomanceTests {
   
   // test creation of empty collections vs their backing data structures
   // subscript perfomance test
+}
+
+extension ObjectIdentifier {
+  /// Returns true iff the object identified by `self` is uniquely referenced.
+  ///
+  /// - Requires: the object identified by `self` exists.
+  /// - Note: will only work when called from a mutating method
+  @_transparent public func _liveObjectIsUniquelyReferenced() -> Bool {
+    var me = self
+    return withUnsafeMutablePointer(to: &me) {
+      $0.withMemoryRebound(to: AnyObject.self, capacity: 1) {
+        isKnownUniquelyReferenced(&$0.pointee)
+      }
+    }
+  }
+}
+
+/// Returns `true` iff the reference contained in `x` is uniquely referenced.
+///
+/// - Requires: `T` contains exactly one reference or optional reference
+///   and no other stored properties or is itself a reference.
+@_transparent public func unsafeHasUniquelyReferencedStorage<T>(_ x: inout T) -> Bool {
+  unsafeBitCast(x, to: ObjectIdentifier.self)._liveObjectIsUniquelyReferenced()
+}
+
+
+@_transparent public func unsafeHasUniquelyReferencedStorage_<T>(_ x: inout T) -> Bool {
+  var id = unsafeBitCast(x, to: ObjectIdentifier.self)
+  return withUnsafeMutablePointer(to: &id) {
+    $0.withMemoryRebound(to: AnyObject.self, capacity: 1) {
+      isKnownUniquelyReferenced(&$0.pointee)
+    }
+  }
 }
