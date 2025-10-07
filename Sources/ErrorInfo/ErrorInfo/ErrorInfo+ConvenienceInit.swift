@@ -2,7 +2,7 @@
 //  ErrorInfo+ConvenienceInit.swift
 //  ErrorInfo
 //
-//  Created by tmp on 07/10/2025.
+//  Created by Dmitriy Ignatyev on 07/10/2025.
 //
 
 import GeneralizedCollections

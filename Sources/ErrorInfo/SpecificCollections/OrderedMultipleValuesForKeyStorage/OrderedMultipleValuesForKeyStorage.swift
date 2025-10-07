@@ -22,6 +22,10 @@ internal struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value, Collisi
   internal init() {
     _muatbleVariant = _Variant(.left(OrderedDictionary()))
   }
+  
+  public init(minimumCapacity: Int) {
+    _muatbleVariant = _Variant(.left(OrderedDictionary(minimumCapacity: minimumCapacity)))
+  }
 }
 
 extension OrderedMultipleValuesForKeyStorage: Sendable where Key: Sendable, Value: Sendable, CollisionSource: Sendable {}

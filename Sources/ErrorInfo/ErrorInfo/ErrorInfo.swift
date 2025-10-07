@@ -29,8 +29,10 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
   
   public init() {
     self.init(storage: BackingStorage())
-    // reserve capacity
-    // init minimumCapacity
+  }
+  
+  public init(minimumCapacity: Int) {
+    self.init(storage: BackingStorage(minimumCapacity: minimumCapacity))
   }
 }
 
@@ -69,7 +71,6 @@ extension ErrorInfo {
 // MARK: Append KeyValue
 
 extension ErrorInfo {
-  
   /// Append value resolving collisions if there is already a value for given key.
   mutating func append(key: Key, value: any ValueType, omitEqualValue: Bool) {
     _storage.appendResolvingCollisions(key: key,

@@ -2,7 +2,7 @@
 //  ValuesForKey.swift
 //  ErrorInfo
 //
-//  Created by tmp on 06/10/2025.
+//  Created by Dmitriy Ignatyev on 06/10/2025.
 //
 
 private import enum SwiftyKit.Either

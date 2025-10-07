@@ -15,8 +15,6 @@
  which differs from the order values were appended
  */
 
-// import Foundation
-
 public struct OrderedMultiValueErrorInfoGeneric<Key: Hashable, Value>: Sequence {
   public typealias Element = (key: Key, value: ValueWrapper)
   public typealias ValueWrapper = ValueWithCollisionWrapper<Value, CollisionSource>
@@ -26,6 +24,10 @@ public struct OrderedMultiValueErrorInfoGeneric<Key: Hashable, Value>: Sequence 
   
   public init() {
     _storage = OrderedMultipleValuesForKeyStorage()
+  }
+  
+  public init(minimumCapacity: Int) {
+    _storage = OrderedMultipleValuesForKeyStorage(minimumCapacity: minimumCapacity)
   }
 }
 
