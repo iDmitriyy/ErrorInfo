@@ -18,7 +18,9 @@ extension ErrorInfoFuncs {
   internal static func asErrorInfoKeyString<R, V>(keyPath: KeyPath<R, V>) -> String {
     String(reflecting: keyPath)
   }
-  
+}
+
+extension ErrorInfoFuncs {
   internal static func typeDesciption(for value: some ErrorInfoValueType) -> String {
     let type = type(of: value)
     return "\(type)"
@@ -30,52 +32,64 @@ extension ErrorInfoFuncs {
   }
   
   internal static func typeDesciptionIfNeeded(forOptional value: (any ErrorInfoValueType)?, options: TypeInfoOptions) -> String? {
-    
+    let type = value.typeOfWrapped()
+    return typeDesciptionIfNeeded(for: type, options: options, isOptionalWrapped: true)
   }
   
-  internal static func typeDesciptionIfNeeded(for value: any ErrorInfoValueType,
-                                              options: TypeInfoOptions) -> String? {
+  internal static func typeDesciptionIfNeeded<T>(for value: T,
+                                                 options: TypeInfoOptions) -> String? {
+    typeDesciptionIfNeeded(for: T.self, options: options, isOptionalWrapped: false)
+  }
+  
+  private static func typeDesciptionIfNeeded<T>(for type: T.Type,
+                                                 options: TypeInfoOptions,
+                                                 isOptionalWrapped: Bool) -> String? {
     guard !options.contains([.never, .whenNil]) else { return nil }
     
     switch options {
-    case .never, .whenNil:
+    case .never:
       return nil
-      
+    case .whenNil:
+      return if isOptionalWrapped {
+        ErrorInfoFuncs.typeDesciption(for: type)
+      } else {
+        nil
+      }
     case .onlyObjects:
-      return if type(of: value) is any AnyObject.Type {
-        ErrorInfoFuncs.typeDesciption(for: value)
+      return if type is any AnyObject.Type {
+        ErrorInfoFuncs.typeDesciption(for: type)
       } else {
         nil
       }
       
     case .nonBuiltIn:
-      return if isOfBuiltinPrimitiveType(value: value) || isOfBuiltinNonPrimitiveType(value: value) {
+      return if isOfBuiltinPrimitiveType(value: type) || isOfBuiltinNonPrimitiveType(value: type) {
         nil
       } else {
-        ErrorInfoFuncs.typeDesciption(for: value)
+        ErrorInfoFuncs.typeDesciption(for: type)
       }
       
     case .nonPrimitive:
-      return if isOfBuiltinPrimitiveType(value: value) {
+      return if isOfBuiltinPrimitiveType(value: type) {
         nil
       } else {
-        ErrorInfoFuncs.typeDesciption(for: value)
+        ErrorInfoFuncs.typeDesciption(for: type)
       }
       
     default:
-      return ErrorInfoFuncs.typeDesciption(for: value)
+      return ErrorInfoFuncs.typeDesciption(for: type)
     }
   }
   
-  private static func isOfBuiltinNonPrimitiveType(value: any ErrorInfoValueType) -> Bool {
+  private static func isOfBuiltinNonPrimitiveType<T>(value: T.Type) -> Bool {
     // TODO: proper implementation
-    if type(of: value) is Array<Any>.Type {
+    if value is Array<Any>.Type {
       true
-    } else if type(of: value) is Set<AnyHashable>.Type {
+    } else if value is Set<AnyHashable>.Type {
       true
-    } else if type(of: value) is Dictionary<AnyHashable, Any>.Type {
+    } else if value is Dictionary<AnyHashable, Any>.Type {
       true
-    } else if type(of: value) is any FloatingPoint.Type {
+    } else if value is any FloatingPoint.Type {
       true
     } else if value is any RangeExpression.Type { // FIXME: warning
       true
@@ -84,20 +98,26 @@ extension ErrorInfoFuncs {
     }
   }
   
-  private static func isOfBuiltinPrimitiveType(value: any ErrorInfoValueType) -> Bool {
+  private static func isOfBuiltinPrimitiveType<T>(value: T.Type) -> Bool {
     // Techically String is a collecion, not a primitive. However, specifying String type is redudant and meaningless in most cases.
-    if type(of: value) is any StringProtocol.Type {
+    if value is any StringProtocol.Type {
       true
-    } else if type(of: value) is any BinaryInteger.Type {
+    } else if value is any BinaryInteger.Type {
       true
-    } else if type(of: value) is Bool.Type {
+    } else if value is Bool.Type {
       true
-    } else if type(of: value) is any FloatingPoint.Type {
+    } else if value is any FloatingPoint.Type {
       true
-    } else if value is StaticString { // FIXME: warning
+    } else if value is StaticString.Type { // FIXME: warning
       true
     } else {
       false
     }
   }
+}
+
+extension Optional {
+  fileprivate static func typeOfWrapped() -> Wrapped.Type { Wrapped.self }
+
+  fileprivate func typeOfWrapped() -> Wrapped.Type { Wrapped.self }
 }

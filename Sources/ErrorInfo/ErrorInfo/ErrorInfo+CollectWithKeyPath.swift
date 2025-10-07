@@ -9,7 +9,6 @@
 
 extension ErrorInfo {
   // public static func fromKeys<T, each V: ErrorInfo.ValueType>(of instance: T,
-  @inlinable
   public static func collect<R, each V: ErrorInfo.ValueType>(from instance: R,
                                                              addTypePrefix: Bool, // TODO:  addTypeInfo: TypeInfoOptions
                                                              keys key: repeat KeyPath<R, each V>) -> Self {

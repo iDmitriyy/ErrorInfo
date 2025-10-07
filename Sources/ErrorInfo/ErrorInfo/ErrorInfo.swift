@@ -87,15 +87,16 @@ extension ErrorInfo {
   }
   
   public mutating func append(key: Key, optionalValue: (any ValueType)?, omitEqualValue: Bool, addTypeInfo: TypeInfoOptions) {
-    // FIXME: ? add dynamic type when needed
+    // TODO: ? add dynamic type when needed
     
     let finalValue: any ValueType
     if let value = optionalValue {
+      // if let typeDesc = ErrorInfoFuncs.typeDesciptionIfNeeded(for: value, options: addTypeInfo) {}
       finalValue = value
     } else {
+      // if let typeDesc = ErrorInfoFuncs.typeDesciptionIfNeeded(forOptional: optionalValue, options: addTypeInfo) {}
       finalValue = "nil"
     }
-    
     _add(key: key, value: finalValue, omitEqualValue: omitEqualValue, collisionSource: .onAppend)
   }
   
