@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 07/10/2025.
 //
 
-// MARK: With Custom TypeInfoOptions
+// MARK: - With Custom TypeInfoOptions
 
 extension ErrorInfo {
   ///
@@ -51,5 +51,15 @@ extension ErrorInfo {
                              collisionSource: .onSubscript)
       }
     }
+  }
+}
+
+// MARK: - With Predefined ErronInfoKey
+
+extension ErrorInfo {
+  public subscript(key: ErronInfoKey, omitEqualValue: Bool = true) -> (any ValueType)? {
+    @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
+    get { allValues(forKey: key.rawValue)?.first.value }
+    set { self[key.rawValue] = newValue }
   }
 }

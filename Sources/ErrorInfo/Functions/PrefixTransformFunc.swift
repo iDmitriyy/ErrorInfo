@@ -47,7 +47,8 @@ extension PrefixTransformFunc {
 // May be it is better to make a more general KeyTransform type, where add prefix-like operations, suffix-like and mapping
 // will be prsent as different favors of Key-tranform.
 // There is a limited set of reasonable kinds of key mappings:
-// - Allow to make changes at characters at arbitrary postions, but the overall count / lenght is >= than original
+// - Allow to make changes at characters at arbitrary postions, but the overall count / lenght is >= than original.
+//   Something similar to outputSpan
 // - prefix + optional separator["" if not needed] + inout first char
 // - inout last char + optional separator["" if not needed] + suffix
 // - providing a view with limited builtin operations like converting to camel / pascal case

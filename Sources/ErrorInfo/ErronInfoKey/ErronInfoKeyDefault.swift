@@ -32,6 +32,7 @@ extension ErronInfoKey {
   public static let instance = ErronInfoKey(uncheckedString: "instance")
   public static let object = ErronInfoKey(uncheckedString: "object")
   
+  public static let url = ErronInfoKey(uncheckedString: "url")
   public static let requestURL = ErronInfoKey(uncheckedString: "request_url")
   public static let responseURL = ErronInfoKey(uncheckedString: "response_url")
   public static let responseData = ErronInfoKey(uncheckedString: "response_data")
@@ -60,4 +61,5 @@ extension ErronInfoKey {
   
   public static let timestamp = ErronInfoKey(uncheckedString: "timestamp")
   public static let decodingTimestamp = ErronInfoKey(uncheckedString: "decoding_timestamp")
+  public static let encodingTimestamp = ErronInfoKey(uncheckedString: "encoding_timestamp")
 }

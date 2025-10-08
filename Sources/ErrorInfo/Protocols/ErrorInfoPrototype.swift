@@ -55,7 +55,6 @@ extension ErrorInfoPrototype where Key == String {
   // TODO: - think about design of such using of ErronInfoKey.
   
   // Subscript duplicated, check if compiler handle when root subscript getter become available or not
-  // - add ability to add NonSendable values via sending and wrapping them into a Sendable wrapper
   
   subscript(key: ErronInfoKey) -> Value? {
     get { self[key.rawValue] }
