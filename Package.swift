@@ -40,7 +40,7 @@ for target: PackageDescription.Target in package.targets {
     settings.append(.enableUpcomingFeature("MemberImportVisibility"))
     settings.append(.enableExperimentalFeature("Lifetimes"))
     settings.append(.enableExperimentalFeature("LifetimeDependence"))
-    
+    settings.append(.enableExperimentalFeature("CompileTimeValues"))
     $0 = settings
   }(&target.swiftSettings)
 }
