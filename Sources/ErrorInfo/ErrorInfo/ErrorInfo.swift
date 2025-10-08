@@ -45,14 +45,17 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
 extension ErrorInfo {
   public subscript(key: Key, omitEqualValue: Bool = true) -> (any ValueType)? {
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
-    get { allValues(forKey: key)?.first.value }
+    get {
+      allValues(forKey: key)?.first.value
+    }
     set {
       let value: any ValueType = if let newValue {
         newValue
       } else {
-        "nil"
+        "nil" // FIXME: this String instance will be returned by `allValues(forKey:)` function, which is not what we want.
+        // There is needed a way to store a nil value value for key. The same is in CustomTypeInfoOptionsView subscript.
       }
-      _add(key: key, value: value, omitEqualValue: omitEqualValue, collisionSource: .onSubscript)
+      _add(key: key, value: value, omitEqualValue: omitEqualValue, addTypeInfo: .default, collisionSource: .onSubscript)
     }
   }
 }
@@ -77,7 +80,7 @@ extension ErrorInfo {
 extension ErrorInfo {
   /// Append value resolving collisions if there is already a value for given key.
   public mutating func append(key: Key, value: any ValueType, omitEqualValue: Bool = true) {
-    _add(key: key, value: value, omitEqualValue: omitEqualValue, collisionSource: .onAppend)
+    _add(key: key, value: value, omitEqualValue: omitEqualValue, addTypeInfo: .default, collisionSource: .onAppend)
   }
   
   public mutating func append(_ newElement: (Key, any ValueType), omitEqualValue: Bool = true) {
@@ -110,7 +113,9 @@ extension ErrorInfo {
   internal mutating func _add(key: Key,
                               value: any ValueType,
                               omitEqualValue: Bool,
+                              addTypeInfo: TypeInfoOptions,
                               collisionSource: @autoclosure () -> CollisionSource) {
+    // TODO: put type TypeInfo
     _storage.appendResolvingCollisions(key: key,
                                        value: value,
                                        omitEqualValue: omitEqualValue,
