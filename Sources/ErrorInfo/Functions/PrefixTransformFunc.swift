@@ -43,7 +43,17 @@ extension PrefixTransformFunc {
 
 // MARK: - Composite Transform
 
-// FIXME: - to do implementation
+// FIXME: - to do implementation.
+// May be it is better to make a more general KeyTransform type, where add prefix-like operations, suffix-like and mapping
+// will be prsent as different favors of Key-tranform.
+// There is a limited set of reasonable kinds of key mappings:
+// - Allow to make changes at characters at arbitrary postions, but the overall count / lenght is >= than original
+// - prefix + optional separator["" if not needed] + inout first char
+// - inout last char + optional separator["" if not needed] + suffix
+// - providing a view with limited builtin operations like converting to camel / pascal case
+// - unverifiedResult mapping, allowing to completely replace key, for custom logic. `unverified` term handles some sort
+// of unsafety and increased attention / cauton. Even though collisions will be resolved, the error info keys can be corrupted
+// to something unreadable / meaningless.
 public struct PrefixCompositeTransformFunc: Sendable {
   public typealias TransformFunc = @Sendable (_ key: String, _ prefix: String) -> String
   

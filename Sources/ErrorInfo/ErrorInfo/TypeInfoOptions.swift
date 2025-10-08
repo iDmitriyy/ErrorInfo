@@ -12,7 +12,8 @@ public struct TypeInfoOptions: OptionSet, Sendable { // add tests
     self.rawValue = rawValue
   }
   
-  public static let `default`: Self = [.nonBuiltIn]
+  /// alias to `.nonBuiltIn` option
+  public static let `default`: Self = .nonBuiltIn
   
   // MARK: Conditions
   

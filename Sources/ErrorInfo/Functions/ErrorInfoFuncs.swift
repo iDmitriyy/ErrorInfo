@@ -21,17 +21,8 @@ extension ErrorInfoFuncs {
 }
 
 extension ErrorInfoFuncs {
-  internal static func typeDesciption(for value: some ErrorInfoValueType) -> String {
-    let type = type(of: value)
-    return "\(type)"
-  }
-  
-  internal static func typeDesciption<T>(for type: T.Type) -> String {
-    let type = type
-    return "\(type)"
-  }
-  
-  internal static func typeDesciptionIfNeeded(forOptional value: (any ErrorInfoValueType)?, options: TypeInfoOptions) -> String? {
+  internal static func typeDesciptionIfNeeded(forOptional value: (any ErrorInfoValueType)?,
+                                              options: TypeInfoOptions) -> String? {
     let type = value.typeOfWrapped()
     return typeDesciptionIfNeeded(for: type, options: options, isOptionalWrapped: true)
   }
@@ -79,6 +70,11 @@ extension ErrorInfoFuncs {
     default:
       return ErrorInfoFuncs.typeDesciption(for: type)
     }
+  }
+  
+  private static func typeDesciption<T>(for type: T.Type) -> String {
+    let type = type
+    return "\(type)"
   }
   
   private static func isOfBuiltinNonPrimitiveType<T>(value: T.Type) -> Bool {

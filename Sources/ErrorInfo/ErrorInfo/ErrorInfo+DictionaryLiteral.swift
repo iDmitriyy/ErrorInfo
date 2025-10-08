@@ -17,9 +17,13 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
   public init(dictionaryLiteral elements: (String, Value)...) {
     self.init()
     // TODO: OrderedMultipleValuesDictionaryLiteral(dictionaryLiteral: elements) or appropriate init
-    // to pass collisionSource: .onCreateWithDictionaryLiteral
-    // / use self[key] = value for preserving Self.collisionStrategy
     // TODO: try reserve capacity. perfomance tests
-    elements.forEach { key, value in self[key] = value }
+    for (key, value) in elements {
+      self._add(key: key,
+                value: value,
+                omitEqualValue: false,
+                addTypeInfo: .default,
+                collisionSource: .onCreateWithDictionaryLiteral)
+    }
   }
 }

@@ -27,7 +27,7 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
   // FIXME: private(set)
   internal var _storage: BackingStorage
   
-  fileprivate init(storage: BackingStorage) {
+  private init(storage: BackingStorage) {
     _storage = storage
   }
   
@@ -76,10 +76,6 @@ extension ErrorInfo {
     appendWithDefaultTypeInfo(key: newElement.0, value: newElement.1, omitEqualValue: omitEqualValue)
   }
   
-  public mutating func append(key: Key, optionalValue: (any ValueType)?, omitEqualValue: Bool = true) {
-    _add(key: key, value: optionalValue, omitEqualValue: omitEqualValue, addTypeInfo: .default, collisionSource: .onAppend)
-  }
-  
   public mutating func append(key: Key, valueIfNotNil value: (any ValueType)?, omitEqualValue: Bool = true) {
     guard let value else { return }
     appendWithDefaultTypeInfo(key: key, value: value, omitEqualValue: omitEqualValue)
@@ -111,7 +107,8 @@ extension ErrorInfo {
       newValue
     } else {
       // if let typeDesc = ErrorInfoFuncs.typeDesciptionIfNeeded(forOptional: optionalValue, options: addTypeInfo) {}
-      "nil" // FIXME: this String instance will be returned by `allValues(forKey:)` function, which is not what we want.
+      "nil"
+      // FIXME: this String instance will be returned by `allValues(forKey:)` function, which is not what we want.
       // There is needed a way to store a nil value value for key. The same is in CustomTypeInfoOptionsView subscript.
       // When omitEqualValue = true, then two nil values should still be stored if their Wrapped type was different.
       // From this point of view "nil" string is also incorrect.

@@ -8,6 +8,9 @@
 // MARK: - Collect values from KeyPath
 
 extension ErrorInfo {
+  // TODO: need some better api to collect values from keyPaths.
+  // May be closure-based, functionBuilder, stepBuilder pattern with _disfavoredOverload or their combination.
+  
   // public static func fromKeys<T, each V: ErrorInfo.ValueType>(of instance: T,
   public static func collect<R, each V: ErrorInfo.ValueType>(from instance: R,
                                                              addTypePrefix: Bool, // TODO:  addTypeInfo: TypeInfoOptions
