@@ -49,13 +49,7 @@ extension ErrorInfo {
       allValues(forKey: key)?.first.value
     }
     set {
-      let value: any ValueType = if let newValue {
-        newValue
-      } else {
-        "nil" // FIXME: this String instance will be returned by `allValues(forKey:)` function, which is not what we want.
-        // There is needed a way to store a nil value value for key. The same is in CustomTypeInfoOptionsView subscript.
-      }
-      _add(key: key, value: value, omitEqualValue: omitEqualValue, addTypeInfo: .default, collisionSource: .onSubscript)
+      _add(key: key, value: newValue, omitEqualValue: omitEqualValue, addTypeInfo: .default, collisionSource: .onSubscript)
     }
   }
 }
@@ -78,48 +72,21 @@ extension ErrorInfo {
 // MARK: Append KeyValue
 
 extension ErrorInfo {
-  /// Append value resolving collisions if there is already a value for given key.
-  public mutating func append(key: Key, value: any ValueType, omitEqualValue: Bool = true) {
-    _add(key: key, value: value, omitEqualValue: omitEqualValue, addTypeInfo: .default, collisionSource: .onAppend)
+  public mutating func append(element newElement: (Key, any ValueType), omitEqualValue: Bool = true) {
+    appendWithDefaultTypeInfo(key: newElement.0, value: newElement.1, omitEqualValue: omitEqualValue)
   }
   
-  public mutating func append(_ newElement: (Key, any ValueType), omitEqualValue: Bool = true) {
-    append(key: newElement.0,
-           value: newElement.1,
-           omitEqualValue: omitEqualValue)
+  public mutating func append(key: Key, optionalValue: (any ValueType)?, omitEqualValue: Bool = true) {
+    _add(key: key, value: optionalValue, omitEqualValue: omitEqualValue, addTypeInfo: .default, collisionSource: .onAppend)
   }
   
-  public mutating func append(key: Key, optionalValue: (any ValueType)?, omitEqualValue: Bool, addTypeInfo: TypeInfoOptions) {
-    // TODO: ? add dynamic type when needed
-    
-    let finalValue: any ValueType
-    if let value = optionalValue {
-      // if let typeDesc = ErrorInfoFuncs.typeDesciptionIfNeeded(for: value, options: addTypeInfo) {}
-      finalValue = value
-    } else {
-      // if let typeDesc = ErrorInfoFuncs.typeDesciptionIfNeeded(forOptional: optionalValue, options: addTypeInfo) {}
-      finalValue = "nil"
-    }
-    _add(key: key, value: finalValue, omitEqualValue: omitEqualValue, collisionSource: .onAppend)
-  }
-  
-  public mutating func append(key: Key, valueIfNotNil value: (any ValueType)?, omitEqualValue: Bool) {
+  public mutating func append(key: Key, valueIfNotNil value: (any ValueType)?, omitEqualValue: Bool = true) {
     guard let value else { return }
-    append(key: key, value: value, omitEqualValue: omitEqualValue)
+    appendWithDefaultTypeInfo(key: key, value: value, omitEqualValue: omitEqualValue)
   }
-}
-
-extension ErrorInfo {
-  internal mutating func _add(key: Key,
-                              value: any ValueType,
-                              omitEqualValue: Bool,
-                              addTypeInfo: TypeInfoOptions,
-                              collisionSource: @autoclosure () -> CollisionSource) {
-    // TODO: put type TypeInfo
-    _storage.appendResolvingCollisions(key: key,
-                                       value: value,
-                                       omitEqualValue: omitEqualValue,
-                                       collisionSource: collisionSource())
+  
+  private mutating func appendWithDefaultTypeInfo(key: Key, value: any ValueType, omitEqualValue: Bool) {
+    _add(key: key, value: value, omitEqualValue: omitEqualValue, addTypeInfo: .default, collisionSource: .onAppend)
   }
 }
 
@@ -128,3 +95,33 @@ extension ErrorInfo {
     _storage.removeAll(keepingCapacity: keepCapacity)
   }
 }
+
+// MARK: Append KeyValue with all arguments passed explicitly
+
+extension ErrorInfo {
+  /// The root appending function for public API imps. The term "_add" is chosen to visually / syntatically differentiate from family of public `append()`functions.
+  internal mutating func _add(key: Key,
+                              value newValue: (any ValueType)?,
+                              omitEqualValue: Bool,
+                              addTypeInfo: TypeInfoOptions,
+                              collisionSource: @autoclosure () -> CollisionSource) {
+    // TODO: put type TypeInfo
+    let value: any ValueType = if let newValue {
+      // if let typeDesc = ErrorInfoFuncs.typeDesciptionIfNeeded(for: value, options: addTypeInfo) {}
+      newValue
+    } else {
+      // if let typeDesc = ErrorInfoFuncs.typeDesciptionIfNeeded(forOptional: optionalValue, options: addTypeInfo) {}
+      "nil" // FIXME: this String instance will be returned by `allValues(forKey:)` function, which is not what we want.
+      // There is needed a way to store a nil value value for key. The same is in CustomTypeInfoOptionsView subscript.
+      // When omitEqualValue = true, then two nil values should still be stored if their Wrapped type was different.
+      // From this point of view "nil" string is also incorrect.
+    }
+    
+    _storage.appendResolvingCollisions(key: key,
+                                       value: value,
+                                       omitEqualValue: omitEqualValue,
+                                       collisionSource: collisionSource())
+  }
+}
+
+

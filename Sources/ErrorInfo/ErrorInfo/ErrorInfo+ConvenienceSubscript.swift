@@ -42,16 +42,9 @@ extension ErrorInfo {
         pointer.pointee.allValues(forKey: key)?.first.value
       }
       set {
-        let value: any ValueType = if let newValue {
-          newValue
-        } else {
-          "nil"
-        }
-        
         let effectiveOmitEqualValue: Bool = omitEqualValueFromSubscript ?? omitEqualValue
-        
         pointer.pointee._add(key: key,
-                             value: value,
+                             value: newValue,
                              omitEqualValue: effectiveOmitEqualValue,
                              addTypeInfo: typeInfoOptions,
                              collisionSource: .onSubscript)
