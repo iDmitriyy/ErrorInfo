@@ -6,7 +6,21 @@
 //
 
 extension ErrorInfo {
-  
+  // TODO: minimize CoW
+  public mutating func merge(omitEqualValues: Bool = true,
+                             with first: Self,
+                             _ otherDonators: Self...) {
+    // 1. reserve capacity
+    // 2.
+    
+//    for (key, wrappedValue) in first {
+//      self._add(key: key,
+//                value: wrappedValue.value,
+//                omitEqualValue: omitEqualValues,
+//                addTypeInfo: , // !! not meaningful here
+//                collisionSource: ) // wrappedValue.collisionSource & merge
+//    }
+  }
 }
 
 // extension ErrorInfo {

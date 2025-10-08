@@ -37,6 +37,7 @@ extension ErronInfoKey {
     Self(uncheckedString: rawValue + suffix.rawValue)
   }
   
+  // TODO: perfomance: borrowing | consuming(copying), @const
   public static func + (lhs: Self, rhs: Self) -> Self {
     Self(uncheckedString: lhs.rawValue + rhs.rawValue)
   }
