@@ -84,7 +84,7 @@ func merge2(errors: [StubError],
       
       if processedValues.count > 1 { // value collisions within concrete error instance
         for collidedValue in processedValues {
-          let collisionSource = StringBasedCollisionSource.onSubscript // !! get real one
+          let collisionSource = StringBasedCollisionSource.onSubscript(keyKind: .dynamic) // !! get real one
           let collisionSourceString = collisionSourceInterpolation(collisionSource)
           augmentedKey.append(collisionSourceString)
           putResolvingCollisions(key: augmentedKey, value: collidedValue)

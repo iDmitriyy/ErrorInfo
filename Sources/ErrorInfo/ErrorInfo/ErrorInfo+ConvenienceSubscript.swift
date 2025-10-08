@@ -36,7 +36,25 @@ extension ErrorInfo {
     }
     
     /// `omitEqualValue`has higher priority than provided in `appendWith(typeInfoOptions:, omitEqualValue:, append:)` function.
-    public subscript(key: Key, omitEqualValue omitEqualValueFromSubscript: Bool? = nil) -> (any ValueType)? {
+    public subscript(key: ErronInfoKey, omitEqualValue omitEqualValueFromSubscript: Bool? = nil) -> (any ValueType)? {
+      // TODO: ? borrowing get set
+      @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
+      get {
+        pointer.pointee.allValues(forKey: key.rawValue)?.first.value
+      }
+      set {
+        let effectiveOmitEqualValue: Bool = omitEqualValueFromSubscript ?? omitEqualValue
+        pointer.pointee._add(key: key.rawValue,
+                             value: newValue,
+                             omitEqualValue: effectiveOmitEqualValue,
+                             addTypeInfo: typeInfoOptions,
+                             collisionSource: .onSubscript(keyKind: .stringLiteralConstant))
+      }
+    }
+    
+    /// `omitEqualValue`has higher priority than provided in `appendWith(typeInfoOptions:, omitEqualValue:, append:)` function.
+    @_disfavoredOverload
+    public subscript(key: String, omitEqualValue omitEqualValueFromSubscript: Bool? = nil) -> (any ValueType)? {
       // TODO: ? borrowing get set
       @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
       get {
@@ -48,18 +66,8 @@ extension ErrorInfo {
                              value: newValue,
                              omitEqualValue: effectiveOmitEqualValue,
                              addTypeInfo: typeInfoOptions,
-                             collisionSource: .onSubscript)
+                             collisionSource: .onSubscript(keyKind: .dynamic))
       }
     }
-  }
-}
-
-// MARK: - With Predefined ErronInfoKey
-
-extension ErrorInfo {
-  public subscript(key: ErronInfoKey, omitEqualValue: Bool = true) -> (any ValueType)? {
-    @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
-    get { allValues(forKey: key.rawValue)?.first.value }
-    set { self[key.rawValue] = newValue }
   }
 }

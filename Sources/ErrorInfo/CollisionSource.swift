@@ -8,7 +8,7 @@
 // TODO: make as struct with static functions
 
 public enum StringBasedCollisionSource: Sendable {
-  case onSubscript
+  case onSubscript(keyKind: KeyKind)
   case onAppend
   
   case onMerge(origin: MergeOrigin)
@@ -26,8 +26,8 @@ public enum StringBasedCollisionSource: Sendable {
     switch self {
     case let .onMerge(origin): return origin.defaultStringInterpolation(sourceString: "onMerge")
     case let .onDictionaryConsumption(origin): return origin.defaultStringInterpolation(sourceString: "onDictionaryConsumption")
-    case .onSubscript: tail = "onSubscript"
-    case .onAppend: tail = "onSubscript"
+    case .onSubscript(let keyKind): tail = "onSubscript(keyKind: \(keyKind.defaultStringInterpolation())"
+    case .onAppend: tail = "onAppend"
     case let .onAddPrefix(prefix): tail = "onAddPrefix(\"\(prefix)\")"
     case let .onAddSuffix(suffix): tail = "onAddSuffix(\"\(suffix)\")"
     case .onCreateWithDictionaryLiteral: tail = "onCreateWithDictionaryLiteral"
@@ -58,6 +58,19 @@ extension StringBasedCollisionSource {
       case let .custom(origin): "(" + "origin: \(origin)" + ")"
       }
       return head + tail
+    }
+  }
+  
+  public enum KeyKind: Sendable {
+    case stringLiteralConstant
+    /// when key is passed as a string interpolation of value or String that created at runtime
+    case dynamic
+    
+    public func defaultStringInterpolation() -> String {
+      switch self {
+      case .stringLiteralConstant: "stringLiteralConstant"
+      case .dynamic: "dynamic"
+      }
     }
   }
 }

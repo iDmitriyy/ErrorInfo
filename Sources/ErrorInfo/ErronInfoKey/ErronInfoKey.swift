@@ -5,51 +5,39 @@
 //  Created by Dmitriy Ignatyev on 16.04.2025.
 //
 
-//private import FoundationExtensions
-
-public struct ErronInfoKey: Hashable, Sendable, CustomStringConvertible, CustomDebugStringConvertible, RawRepresentable {
-  public typealias RawValue = String
-  
+public struct ErronInfoKey: Hashable, Sendable, CustomStringConvertible, CustomDebugStringConvertible {  
   /// A new instance initialized with `rawValue` will be equivalent to this instance.
   public let rawValue: String
   
   public var description: String { rawValue }
   
   public var debugDescription: String { rawValue }
-  
-  /// Creates a new instance with the specified raw value.
-  ///
-  /// - Parameter rawValue: The raw value to use for the new instance.
-  ///
-  /// Rationale: error info keys are used to be read by humans, so there 2 minimal requirements:
-  /// 1. no new-line symbols
-  /// 2. contains at least one symbol except whitespaces
-//  public init?(rawValue: String) {
-//    guard rawValue.containsCharacters(except: .whitespaces),
-//          !rawValue.containsCharacters(in: .newlines) else { return nil }
-//    self.init(uncheckedString: rawValue)
-//  }
-  
-  public init(rawValue: String) {
-    self.rawValue = rawValue
-  }
-  
+    
   internal init(uncheckedString: String) {
     rawValue = uncheckedString
   }
 }
 
-extension ErronInfoKey {
-  public func withPrefix(_ prefix: String) -> Self {
-    Self(uncheckedString: prefix + rawValue)
-  }
-  
-  public func withSuffix(_ suffix: String) -> Self {
-    Self(uncheckedString: rawValue + suffix)
+extension ErronInfoKey: ExpressibleByStringLiteral { // TODO: try to make it zero-cost abstraction
+  public typealias StringLiteralType = StaticString
+  // TODO: Check if there any costs for usinf StaticString instead of String as literal type.
+  // StaticString completely closes the hole when ErronInfoKey can be initialized with dynamically formed string
+  public init(stringLiteral value: StaticString) {
+    self.rawValue = String.init(value)
   }
 }
 
-// TODO: add + - operators
+extension ErronInfoKey {
+  public func withPrefix(_ prefix: Self) -> Self {
+    Self(uncheckedString: prefix.rawValue + rawValue)
+  }
+  
+  public func withSuffix(_ suffix: Self) -> Self {
+    Self(uncheckedString: rawValue + suffix.rawValue)
+  }
+}
+
+// TODO: add + - operators for Self.
 
 // extension ErronInfoKey {
 //  public struct Separator: Sendable, Hashable, CustomStringConvertible { // RawRepresentable

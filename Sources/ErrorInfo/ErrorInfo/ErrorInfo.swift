@@ -42,14 +42,40 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
 
 // TODO: check if there runtime issues with unavailable setter. If yes then make deprecated
 // TODO: ? make subscript as a defualt imp in protocol, providing a way to override implementation at usage site
+// ErronInfoKey with @_disfavoredOverload String-base subscript allows to differemtiate betwee when it was a literal-key subscript
+// and when it was defenitely some string value passed dynamically / at runtime.
+// so this cleary separate the subscript access to 2 kinds:
+// 1. exact literal that can be found in source code or predefined key which also can be found i source
+// 2. some string value created dynamically
+// The same trick with sub-separaation can be done for append() functions
+// Dictionary literal can then strictly be created with string literals, and when dynamic for strings another APIs are forced to be used.
 extension ErrorInfo {
-  public subscript(key: Key, omitEqualValue: Bool = true) -> (any ValueType)? {
+  public subscript(key: ErronInfoKey, omitEqualValue: Bool = true) -> (any ValueType)? {
+    @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
+    get {
+      allValues(forKey: key.rawValue)?.first.value
+    }
+    set {
+      _add(key: key.rawValue,
+           value: newValue,
+           omitEqualValue: omitEqualValue,
+           addTypeInfo: .default,
+           collisionSource: .onSubscript(keyKind: .stringLiteralConstant))
+    }
+  }
+  
+  @_disfavoredOverload
+  public subscript(key: String, omitEqualValue: Bool = true) -> (any ValueType)? {
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
     get {
       allValues(forKey: key)?.first.value
     }
     set {
-      _add(key: key, value: newValue, omitEqualValue: omitEqualValue, addTypeInfo: .default, collisionSource: .onSubscript)
+      _add(key: key,
+           value: newValue,
+           omitEqualValue: omitEqualValue,
+           addTypeInfo: .default,
+           collisionSource: .onSubscript(keyKind: .dynamic))
     }
   }
 }
