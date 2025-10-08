@@ -9,7 +9,7 @@
 
 public enum StringBasedCollisionSource: Sendable {
   case onSubscript(keyKind: KeyKind)
-  case onAppend
+  case onAppend(keyKind: KeyKind)
   
   case onMerge(origin: MergeOrigin)
   
@@ -24,14 +24,14 @@ public enum StringBasedCollisionSource: Sendable {
     let head = "!*!"
     let tail: String
     switch self {
+    case .onSubscript(let keyKind): tail = "onSubscript(keyKind: \(keyKind.defaultStringInterpolation()))"
+    case .onAppend(let keyKind): tail = "onAppend(keyKind: \(keyKind.defaultStringInterpolation()))"
     case let .onMerge(origin): return origin.defaultStringInterpolation(sourceString: "onMerge")
-    case let .onDictionaryConsumption(origin): return origin.defaultStringInterpolation(sourceString: "onDictionaryConsumption")
-    case .onSubscript(let keyKind): tail = "onSubscript(keyKind: \(keyKind.defaultStringInterpolation())"
-    case .onAppend: tail = "onAppend"
     case let .onAddPrefix(prefix): tail = "onAddPrefix(\"\(prefix)\")"
     case let .onAddSuffix(suffix): tail = "onAddSuffix(\"\(suffix)\")"
-    case .onCreateWithDictionaryLiteral: tail = "onCreateWithDictionaryLiteral"
     case let .onKeysMapping(original, mapped): tail = "onKeyMapping(original: \"\(original)\", mapped: \"\(mapped)\")"
+    case let .onDictionaryConsumption(origin): return origin.defaultStringInterpolation(sourceString: "onDictionaryConsumption")
+    case .onCreateWithDictionaryLiteral: tail = "onCreateWithDictionaryLiteral"
     }
     return head + tail
   }

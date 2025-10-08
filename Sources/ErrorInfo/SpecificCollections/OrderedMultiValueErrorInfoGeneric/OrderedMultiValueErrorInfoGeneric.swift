@@ -81,11 +81,11 @@ extension OrderedMultiValueErrorInfoGeneric {
     }
   }
   
-  public mutating func appendResolvingCollisions(_ newElement: (Key, Value),
+  public mutating func appendResolvingCollisions(element: (Key, Value),
                                                  omitEqualValue omitIfEqual: Bool,
                                                  collisionSource: @autoclosure () -> CollisionSource) {
-    appendResolvingCollisions(key: newElement.0,
-                              value: newElement.1,
+    appendResolvingCollisions(key: element.0,
+                              value: element.1,
                               omitEqualValue: omitIfEqual,
                               collisionSource: collisionSource())
   }

@@ -22,6 +22,7 @@ extension ErronInfoKey: ExpressibleByStringLiteral { // TODO: try to make it zer
   public typealias StringLiteralType = StaticString
   // TODO: Check if there any costs for usinf StaticString instead of String as literal type.
   // StaticString completely closes the hole when ErronInfoKey can be initialized with dynamically formed string
+  // use @const
   public init(stringLiteral value: StaticString) {
     self.rawValue = String.init(value)
   }
@@ -34,6 +35,10 @@ extension ErronInfoKey {
   
   public func withSuffix(_ suffix: Self) -> Self {
     Self(uncheckedString: rawValue + suffix.rawValue)
+  }
+  
+  public static func + (lhs: Self, rhs: Self) -> Self {
+    Self(uncheckedString: lhs.rawValue + rhs.rawValue)
   }
 }
 

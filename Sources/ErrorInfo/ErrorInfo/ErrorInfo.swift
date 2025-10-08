@@ -98,17 +98,31 @@ extension ErrorInfo {
 // MARK: Append KeyValue
 
 extension ErrorInfo {
-  public mutating func append(element newElement: (Key, any ValueType), omitEqualValue: Bool = true) {
-    appendWithDefaultTypeInfo(key: newElement.0, value: newElement.1, omitEqualValue: omitEqualValue)
+  /// For copying values with Collection / Sequence types.
+  public mutating func append(element newElement: (String, any ValueType), omitEqualValue: Bool = true) {
+    appendWithDefaultTypeInfo(key: newElement.0, value: newElement.1, omitEqualValue: omitEqualValue, keyKind: .dynamic)
   }
   
-  public mutating func append(key: Key, valueIfNotNil value: (any ValueType)?, omitEqualValue: Bool = true) {
+  public mutating func append(key: ErronInfoKey, valueIfNotNil value: (any ValueType)?, omitEqualValue: Bool = true) {
     guard let value else { return }
-    appendWithDefaultTypeInfo(key: key, value: value, omitEqualValue: omitEqualValue)
+    appendWithDefaultTypeInfo(key: key.rawValue, value: value, omitEqualValue: omitEqualValue, keyKind: .stringLiteralConstant)
   }
   
-  private mutating func appendWithDefaultTypeInfo(key: Key, value: any ValueType, omitEqualValue: Bool) {
-    _add(key: key, value: value, omitEqualValue: omitEqualValue, addTypeInfo: .default, collisionSource: .onAppend)
+  @_disfavoredOverload
+  public mutating func append(key dynamicKey: String, valueIfNotNil value: (any ValueType)?, omitEqualValue: Bool = true) {
+    guard let value else { return }
+    appendWithDefaultTypeInfo(key: dynamicKey, value: value, omitEqualValue: omitEqualValue, keyKind: .dynamic)
+  }
+  
+  private mutating func appendWithDefaultTypeInfo(key: Key,
+                                                  value: any ValueType,
+                                                  omitEqualValue: Bool,
+                                                  keyKind: CollisionSource.KeyKind) {
+    _add(key: key,
+         value: value,
+         omitEqualValue: omitEqualValue,
+         addTypeInfo: .default,
+         collisionSource: .onAppend(keyKind: keyKind))
   }
 }
 

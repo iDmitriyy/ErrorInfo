@@ -68,7 +68,8 @@ func merge2(errors: [StubError],
       if hasCrossErrorsCollision {
         let errorSignature = errorSignatures[errorIndex]
         augmentedKey.append(errorSignature)
-        
+        // TODO: In this kind of summary-merge it is reasonable to provide an option if nil values with different Optional.Wrapped
+        // types should be put to summary.
         var allTheRestSignaturesIndices = RangeSet(errorSignatures.indices)
         allTheRestSignaturesIndices.remove(errorIndex, within: errorSignatures)
         

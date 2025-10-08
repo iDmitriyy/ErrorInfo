@@ -26,6 +26,13 @@ public struct TypeInfoOptions: OptionSet, Sendable { // add tests
   /// Imlicitly means `allTypes`, if more narrow category of types is not provided.
   public static let whenNil = TypeInfoOptions(rawValue: 1 << 0)
   
+  // TODO: How to express the ideaa when someone wants
+  // 1) nonBuiltIn for non-optional values.
+  // In common case, for standard types like Dict / Array the string repesentation is recognizable and obvious.
+  // But if a custom type was passed, it is good to have an ability to extract the type of passed value.
+  // 2) all types when it is nil. If there several nil values passed as optionals with different Wrapped types,
+  // it may be good to know that.
+  
   // MARK: Type categories
   
   /// All types without any exceptions.
