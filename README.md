@@ -6,7 +6,7 @@
 While Swift has robust support for modeling errors through the `Error` protocol, the language lacks a native, structured, and thread-safe way to store **additional error context**.
 
 In practice, `[String: Any]` is often used  for this, but this pattern suffers from serious drawbacks:
-- ❌ **Not `Sendable`** – can't be safely used across concurrent contexts
+- ❌ **Not compatible with modern concurrency** – can't be safely used across concurrent contexts
 - ❌ **Unsafe typing** – `Any` allows placing arbitrary, non-type-safe values
 - ❌ **Loss of previous values** – inserting a value for an existing key overwrites the old one
 - ❌ **Poor merging support** – key collisions can lead to data loss
@@ -15,7 +15,7 @@ In practice, `[String: Any]` is often used  for this, but this pattern suffers f
 ### ✅ `ErrorInfo`
 
 The `ErrorInfo` library introduces a family of structured, type-safe, and `Sendable` error info containers that:
-- Maintain safe value types
+- Values are checked for safety at compile time
 - Support advanced merge strategies to avoid data loss
 - Are compatible with Swift concurrency
 - Provide ordered and unordered variants
