@@ -116,7 +116,7 @@ extension ErrorInfoFuncs {
 // 2. https://stackoverflow.com/questions/75179804/how-can-i-tell-if-a-variable-is-optionalnil-in-swift-without-converting-it-to/75183596#75183596
 
 
-fileprivate protocol AnyOptionalProtocol {
+internal protocol AnyOptionalProtocol {
   associatedtype Wrapped
 }
 

@@ -21,6 +21,43 @@ extension ErrorInfoFuncs {
 }
 
 extension ErrorInfoFuncs {
+  public static func _typeDesciption(for optional: (any ErrorInfoValueType)?) {
+    let typeOfWrapped = optional.typeOfWrapped()
+    
+    let typeOfWrappedStr = "\(typeOfWrapped)"
+    print("___typeDescr:", typeOfWrappedStr)
+    
+    let dynamicOptType = type(of: optional)
+    if let value = optional {
+      print("___typeDescrDynamicOpt:", "\(dynamicOptType)")
+      
+//      unpackOptionalType(optional) { type in
+//        print("___typeDescrUnpacked:", "\(type)")
+//      }
+      
+      let dynamicType = type(of: value)
+      print("___typeDescrDynamic:", "\(dynamicType)")
+      
+      // testt(ff: 5 as any BinaryInteger)
+    }
+  }
+  
+  static func testt<T: BinaryInteger>(ff: T) {
+    
+  }
+  
+  private static func unpackOptionalType<T: ErrorInfoValueType>(_ value: T?, _ body: (T.Type) -> Void) {
+    let typeOfWrapped = value.typeOfWrapped()
+    body(typeOfWrapped)
+  }
+  
+  public static func _typeDesciptionG<T: ErrorInfoValueType>(for value: T?) {
+    let typeOfWrapped = value.typeOfWrapped()
+    
+    let typeOfWrappedStr = "\(typeOfWrapped)"
+    print("___typeDescrGeneric:", typeOfWrappedStr)
+  }
+  
   internal static func typeDesciptionIfNeeded(forOptional value: (any ErrorInfoValueType)?,
                                               options: TypeInfoOptions) -> String? {
     let type = value.typeOfWrapped()
