@@ -31,23 +31,31 @@ extension ErrorInfoFuncs {
     if let value = optional {
       print("___typeDescrDynamicOpt:", "\(dynamicOptType)")
       
-//      unpackOptionalType(optional) { type in
-//        print("___typeDescrUnpacked:", "\(type)")
-//      }
+      unpackExistential(value) { type in
+        print("___typeDescrUnpacked:", "\(type)")
+      }
       
       let dynamicType = type(of: value)
       print("___typeDescrDynamic:", "\(dynamicType)")
       
-      // testt(ff: 5 as any BinaryInteger)
     }
   }
   
-  static func testt<T: BinaryInteger>(ff: T) {
+  static func testt(ffe: any BinaryInteger) {
+    testt(ffg: ffe)
+  }
+  
+  static func testt<T: BinaryInteger>(ffg: T) {
     
   }
   
-  private static func unpackOptionalType<T: ErrorInfoValueType>(_ value: T?, _ body: (T.Type) -> Void) {
-    let typeOfWrapped = value.typeOfWrapped()
+  private static func unpackOptionalExistential<T: Equatable & Sendable>(_ value: T?, _ body: (T.Type) -> Void) {
+    let typeOfWrapped = T.self
+    body(typeOfWrapped)
+  }
+  
+  private static func unpackExistential<T: ErrorInfoValueType>(_ value: T, _ body: (T.Type) -> Void) {
+    let typeOfWrapped = T.self
     body(typeOfWrapped)
   }
   
