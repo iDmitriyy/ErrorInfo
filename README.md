@@ -15,7 +15,7 @@ In practice, `[String: Any]` is often used  for this, but this pattern suffers f
 ### ✅ `ErrorInfo`
 
 The `ErrorInfo` library introduces a family of structured, type-safe, and `Sendable` error info containers that:
-- Values are checked for safety at compile time
+- Provide checking values for safety at compile time
 - Support advanced merge strategies to avoid data loss
 - Are compatible with Swift concurrency
 - Provide ordered and unordered variants
