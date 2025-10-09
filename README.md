@@ -21,32 +21,32 @@ The `ErrorInfo` library introduces a family of structured, type-safe, and `Senda
 - Provide ordered and unordered variants
 - Allow merging, tracing, and resolving conflicts intelligently
 
+#### ⚠️ Design Principles
+- ✅ Safe merging without data loss
+- ✅ Trackable value origins for logging & debugging
+- ✅ No implicit value overwrites
+- ✅ Type-safe values only
+
 ## 📦 Library Overview
 
 ### Provided Types
 
-| Type               | Backing Storage                   | Ordered | Sendable | Type of Value            |
-|---------------------|----------------------------------|---------|----------|--------------------------|
-| `ErrorInfo`         | `OrderedMultiValueDictionary`    |  ✅ Yes |  ✅ Yes | `any ErrorInfoValueType` |
-| `LegacyErrorInfo`   | `Swift.Dictionary`               |  ❌ No  |  ❌ No  | `Any`                    |
+| Type                |     Collision Resolution     | Ordered | Sendable |       Type of Value      |
+|---------------------|------------------------------|---------|----------|--------------------------|
+| `ErrorInfo`         | ✅ Yes (preserve all values) |  ✅ Yes |  ✅ Yes | `any ErrorInfoValueType` |
+| `LegacyErrorInfo`   | ✅ Yes (key augmentation)    |  ❌ No  |  ❌ No  | `Any`                    |
 
 
 *`any ErrorInfoValueType` is typeaias to `Sendable & Equatable & CustomStringConvertible`
 
 This constraint ensures:
-✅ Thread Safety via Sendable
-✅ Meaningful Logging via CustomStringConvertible
-✅ Collision Detection via Equatable
+- ✅ Thread Safety via Sendable
+- ✅ Meaningful Logging via CustomStringConvertible
+- ✅ Collision Detection via Equatable
 
-⚠️ Design Principles
-✅ Safe merging without data loss
-✅ Trackable value origins for logging & debugging
-✅ No implicit value overwrites
-✅ Type-safe values only
-
-🧠 Design Highlights
+#### 🧠 Design Highlights
 🔁 Merging with Collision Resolution
-Merging error-info containers is a core use case. The library supports two collision resolution strategies:
+The library supports two collision resolution strategies:
 - Multiple Values per Key – preserve all values
 - Key Augmentation – append suffixes (e.g., error domain, code) to conflicting keys
 
@@ -63,6 +63,7 @@ let allValues = merged.allValues(forKey: "key")
 Or with key augmentation: TBD
 
 🧩 Value Collisions
+
 Unlike dictionaries, ErrorInfo keeps all values.
 ```
 var info: ErrorInfo = ["a": 1]
@@ -76,6 +77,7 @@ info["a"] = 2.0                      // ✅ Added (different type)
 ```
 
 🧪 Example Use Case
+
 Merging Multiple Errors
 TBD
 
