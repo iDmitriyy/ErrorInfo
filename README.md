@@ -31,14 +31,16 @@ The `ErrorInfo` library introduces a family of structured, type-safe, and `Senda
 
 ### Provided Types
 
-| Type                |     Collision Resolution     | Ordered | Sendable |       Type of Value      |
-|---------------------|------------------------------|---------|----------|--------------------------|
-| `ErrorInfo`         | ✅ Yes (preserve all values) |  ✅ Yes |  ✅ Yes | `any ErrorInfoValueType` |
-| `LegacyErrorInfo`   | ✅ Yes (key augmentation)    |  ❌ No  |  ❌ No  | `Any`                    |
-
+| Feature              |        `ErrorInfo`        |     `LegacyErrorInfo`     | [String: Any] |
+|----------------------|---------------------------|---------------------------|---------------|
+| Collision Resolution | ✅ Yes (store all values) | ✅ Yes (key augmentation) | ❌ No        |
+| Type info            | ✅ Yes                    | ❌ No                     | ❌ No        |
+| Collision source     | ✅ Yes                    | ❌ No                     | ❌ No        |
+| Ordered              | ✅ Yes                    | ❌ No                     | ❌ No        |
+| Sendable             | ✅ Yes                    | ❌ No                     | ❌ No        |
+| Type of Value        | `any ErrorInfoValueType`  | `Any`                     | `Any`         |
 
 *`any ErrorInfoValueType` is typeaias to `Sendable & Equatable & CustomStringConvertible`
-
 This constraint ensures:
 - ✅ Thread Safety via Sendable
 - ✅ Meaningful Logging via CustomStringConvertible
