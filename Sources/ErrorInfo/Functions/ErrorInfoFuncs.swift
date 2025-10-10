@@ -21,6 +21,7 @@ extension ErrorInfoFuncs {
 }
 
 extension ErrorInfoFuncs {
+  @_disfavoredOverload
   public static func _typeDesciption(for optional: (any ErrorInfoValueType)?) {
     let typeOfWrapped = optional.typeOfWrapped()
     
@@ -31,15 +32,35 @@ extension ErrorInfoFuncs {
     if let value = optional {
       print("___typeDescrDynamicOpt:", "\(dynamicOptType)")
       
+      print("___typeDescrDynamicOptTWrapped:", "\(type(of: typeOfWrapped))")
+      
       unpackExistential(value) { type in
-        print("___typeDescrUnpacked:", "\(type)")
+        print("___typeDescrUnpacked:", "\(type)") // Int
       }
       
       let dynamicType = type(of: value)
-      print("___typeDescrDynamic:", "\(dynamicType)")
+      print("___typeDescrDynamic:", "\(dynamicType)") // Int
       
+      _typeDesciptionG_Meta(for: typeOfWrapped)
     }
   }
+  
+  public static func _typeDesciption<T: ErrorInfoValueType>(for value: T?) {
+    let typeOfWrapped = value.typeOfWrapped()
+    
+    let typeOfWrappedStr = "\(typeOfWrapped)"
+    print("___typeDescrGeneric:", typeOfWrappedStr) // Int
+  }
+  
+  public static func _typeDesciptionG_Meta<T>(for typeT: T.Type) {
+    // print("___typeDescrGeneric_Meta:", "\(type)") // CustomStringConvertible & Equatable
+    // print("___typeDescrGeneric_Meta:", "\(typeT.self)") // CustomStringConvertible & Equatable
+    // print("___typeDescrGeneric_Meta:", "\(type(of: typeT))") // (CustomStringConvertible & Equatable).Protocol
+    // print("___typeDescrGeneric_Meta:", "\(type(of: typeT.self))") // (CustomStringConvertible & Equatable).Protocol
+    // print("___typeDescrGeneric_Meta:", "\(String(reflecting: typeT))") // Swift.CustomStringConvertible & Swift.Equatable
+  }
+  
+  
   
   static func testt(ffe: any BinaryInteger) {
     testt(ffg: ffe)
@@ -59,12 +80,7 @@ extension ErrorInfoFuncs {
     body(typeOfWrapped)
   }
   
-  public static func _typeDesciptionG<T: ErrorInfoValueType>(for value: T?) {
-    let typeOfWrapped = value.typeOfWrapped()
-    
-    let typeOfWrappedStr = "\(typeOfWrapped)"
-    print("___typeDescrGeneric:", typeOfWrappedStr)
-  }
+  // ----------
   
   internal static func typeDesciptionIfNeeded(forOptional value: (any ErrorInfoValueType)?,
                                               options: TypeInfoOptions) -> String? {

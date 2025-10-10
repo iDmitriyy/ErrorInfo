@@ -9,14 +9,26 @@
 import Testing
 
 struct TypeDesciptionTests {
+  
+  
   @Test func checkTypes() {
     let integer: Int = 10
+    let anyErrorInfoInteger: any ErrorInfoValueType = 10
+    let optionalAnyErrorInfoInteger: (any ErrorInfoValueType)? = 10
     
-    let value = integer
+    let value = optionalAnyErrorInfoInteger
     
     ErrorInfoFuncs._typeDesciption(for: value)
-    ErrorInfoFuncs._typeDesciptionG(for: value)
+    
+    ErrorInfoFuncs._typeDesciption(for: integer)
+    ErrorInfoFuncs._typeDesciption(for: anyErrorInfoInteger)
+    ErrorInfoFuncs._typeDesciption(for: optionalAnyErrorInfoInteger)
     
     print("")
   }
+}
+
+extension TypeDesciptionTests {
+  private class TestClass {}
+  private class TestSubClass {}
 }
