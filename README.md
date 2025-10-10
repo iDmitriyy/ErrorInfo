@@ -34,10 +34,10 @@ The `ErrorInfo` library introduces a family of structured, type-safe, and `Senda
 | Feature              |        `ErrorInfo`        |     `LegacyErrorInfo`     | [String: Any] |
 |----------------------|---------------------------|---------------------------|---------------|
 | Collision Resolution | ✅ Yes (store all values) | ✅ Yes (key augmentation) | ❌ No        |
-| Type info            | ✅ Yes                    | ❌ No                     | ❌ No        |
 | Collision source     | ✅ Yes                    | ❌ No                     | ❌ No        |
 | Ordered              | ✅ Yes                    | ❌ No                     | ❌ No        |
 | Sendable             | ✅ Yes                    | ❌ No                     | ❌ No        |
+| Type info            | ✅ Yes                    | ❌ No                     | ❌ No        |
 | Type of Value        | `any ErrorInfoValueType`  | `Any`                     | `Any`         |
 
 *`any ErrorInfoValueType` is typeaias to `Sendable & Equatable & CustomStringConvertible`
