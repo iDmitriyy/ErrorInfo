@@ -33,12 +33,16 @@ The `ErrorInfo` library introduces a family of structured, type-safe, and `Senda
 
 | Feature              |        `ErrorInfo`        |     `LegacyErrorInfo`     | [String: Any] |
 |----------------------|---------------------------|---------------------------|---------------|
-| Collision Resolution | ✅ Yes (store all values) | ✅ Yes (key augmentation) | ❌ No        |
-| Collision source     | ✅ Yes                    | ❌ No                     | ❌ No        |
+| Collision Resolution | ✅ Yes (store all values) | ⚠️ Yes (key augmentation) | ❌ No        |
+| Implicit overwrite   | ✅ No                     | ✅ No                     | ❌ Yes       |
+| Prevent equal values | ✅ Yes                    | ✅ Yes                    | ❌ No        |
+| Preserve nil values  | ✅ Yes                    | ✅ Yes                    | ❌ No        |
+| Collision source     | ✅ Yes                    | ✅ Yes                    | ❌ No        |
+| Merge                | ✅ Yes                    | ⚠️ Yes                    | 💥 Data loss |
+| Key tranform         | ✅ Yes                    | ⚠️ Yes                    | 💥 Data loss |
 | Ordered              | ✅ Yes                    | ❌ No                     | ❌ No        |
 | Sendable             | ✅ Yes                    | ❌ No                     | ❌ No        |
-| Type info            | ✅ Yes                    | ❌ No                     | ❌ No        |
-| Type of Value        | `any ErrorInfoValueType`  | `Any`                     | `Any`         |
+| Type of Value        | `any ErrorInfoValueType`  |            `Any`          |     `Any`     |
 
 *`any ErrorInfoValueType` is typeaias to `Sendable & Equatable & CustomStringConvertible`
 
