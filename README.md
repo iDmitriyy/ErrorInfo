@@ -41,6 +41,7 @@ The `ErrorInfo` library introduces a family of structured, type-safe, and `Senda
 | Type of Value        | `any ErrorInfoValueType`  | `Any`                     | `Any`         |
 
 *`any ErrorInfoValueType` is typeaias to `Sendable & Equatable & CustomStringConvertible`
+
 This constraint ensures:
 - ✅ Thread Safety via Sendable
 - ✅ Meaningful Logging via CustomStringConvertible
