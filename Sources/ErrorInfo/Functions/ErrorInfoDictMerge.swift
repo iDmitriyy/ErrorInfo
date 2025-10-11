@@ -212,6 +212,7 @@ extension ErrorInfoDictFuncs.Merge {
     var counter: Int = 0
     while let recipientAnotherValue = recipient[modifiedKey] { // condition mostly always should not happen
       lazy var isEqualToCurrent = ErrorInfoFuncs.isApproximatelyEqualAny(recipientAnotherValue, value)
+            
       if omitIfEqual, isEqualToCurrent { // if newly added value is equal to current, then keep only existing
         return // Early exit
       } else {

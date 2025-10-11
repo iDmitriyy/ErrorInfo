@@ -14,10 +14,12 @@ extension ErrorInfo {
   ///   - omitEqualValue: `omitEqualValue` in subscript has higher priority than this argument
   ///   - append:
   public mutating func appendWith(typeInfoOptions: TypeInfoOptions,
-                                  omitEqualValue: Bool = true,
+                                  preserveNilValus: Bool = true,
+                                  insertIfEqual: Bool = false,
+                                  overwriteExisting: Bool = false,
                                   append: (consuming CustomTypeInfoOptionsView) -> Void) {
     withUnsafeMutablePointer(to: &self) { pointer in
-      let view = CustomTypeInfoOptionsView(pointer: pointer, omitEqualValue: omitEqualValue, typeInfoOptions: typeInfoOptions)
+      let view = CustomTypeInfoOptionsView(pointer: pointer, insertIfEqual: insertIfEqual, typeInfoOptions: typeInfoOptions)
       append(view)
     }
   }
@@ -26,27 +28,27 @@ extension ErrorInfo {
 extension ErrorInfo {
   public struct CustomTypeInfoOptionsView: ~Copyable { // TODO: ~Escapable
     private let pointer: UnsafeMutablePointer<ErrorInfo> // TODO: check CoW not triggered | inplace mutation
-    private let omitEqualValue: Bool
+    private let insertIfEqual: Bool
     private let typeInfoOptions: TypeInfoOptions
     
-    fileprivate init(pointer: UnsafeMutablePointer<ErrorInfo>, omitEqualValue: Bool, typeInfoOptions: TypeInfoOptions) {
+    fileprivate init(pointer: UnsafeMutablePointer<ErrorInfo>, insertIfEqual: Bool, typeInfoOptions: TypeInfoOptions) {
       self.pointer = pointer
-      self.omitEqualValue = omitEqualValue
+      self.insertIfEqual = insertIfEqual
       self.typeInfoOptions = typeInfoOptions
     }
     
     /// `omitEqualValue`has higher priority than provided in `appendWith(typeInfoOptions:, omitEqualValue:, append:)` function.
-    public subscript(key: ErronInfoKey, omitEqualValue omitEqualValueFromSubscript: Bool? = nil) -> (any ValueType)? {
+    public subscript(key: ErronInfoKey, insertIfEqual insertIfEqualFromSubscript: Bool? = nil) -> (any ValueType)? {
       // TODO: ? borrowing get set
       @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
       get {
         pointer.pointee.allValues(forKey: key.rawValue)?.first.value
       }
       set {
-        let effectiveOmitEqualValue: Bool = omitEqualValueFromSubscript ?? omitEqualValue
+        let effectiveInsertIfEqual: Bool = insertIfEqualFromSubscript ?? insertIfEqual
         pointer.pointee._add(key: key.rawValue,
                              value: newValue,
-                             omitEqualValue: effectiveOmitEqualValue,
+                             insertIfEqual: effectiveInsertIfEqual,
                              addTypeInfo: typeInfoOptions,
                              collisionSource: .onSubscript(keyKind: .stringLiteralConstant))
       }
@@ -54,17 +56,17 @@ extension ErrorInfo {
     
     /// `omitEqualValue`has higher priority than provided in `appendWith(typeInfoOptions:, omitEqualValue:, append:)` function.
     @_disfavoredOverload
-    public subscript(key: String, omitEqualValue omitEqualValueFromSubscript: Bool? = nil) -> (any ValueType)? {
+    public subscript(key: String, insertIfEqual insertIfEqualFromSubscript: Bool? = nil) -> (any ValueType)? {
       // TODO: ? borrowing get set
       @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
       get {
         pointer.pointee.allValues(forKey: key)?.first.value
       }
       set {
-        let effectiveOmitEqualValue: Bool = omitEqualValueFromSubscript ?? omitEqualValue
+        let effectiveInsertIfEqual: Bool = insertIfEqualFromSubscript ?? insertIfEqual
         pointer.pointee._add(key: key,
                              value: newValue,
-                             omitEqualValue: effectiveOmitEqualValue,
+                             insertIfEqual: effectiveInsertIfEqual,
                              addTypeInfo: typeInfoOptions,
                              collisionSource: .onSubscript(keyKind: .dynamic))
       }

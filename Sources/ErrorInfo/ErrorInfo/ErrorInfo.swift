@@ -13,7 +13,6 @@ import struct OrderedCollections.OrderedDictionary
 public struct ErrorInfo: Sendable { // ErrorInfoCollection
   public typealias ValueType = ErrorInfoValueType
   public typealias CollisionSource = StringBasedCollisionSource
-  public static let empty: Self = Self()
   
   // TODO: should CollisionSource be stored in BackingStorage? mostly always CollisionSource is nil
   // may be BackingStorage should keep a separate dict for keeping CollisionSource instances
@@ -38,6 +37,8 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
   public init(minimumCapacity: Int) {
     self.init(storage: BackingStorage(minimumCapacity: minimumCapacity))
   }
+  
+  public static let empty: Self = Self()
 }
 
 // TODO: check if there runtime issues with unavailable setter. If yes then make deprecated
@@ -50,7 +51,7 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
 // The same trick with sub-separaation can be done for append() functions
 // Dictionary literal can then strictly be created with string literals, and when dynamic for strings another APIs are forced to be used.
 extension ErrorInfo {
-  public subscript(key: ErronInfoKey, omitEqualValue: Bool = true) -> (any ValueType)? {
+  public subscript(key: ErronInfoKey, insertIfEqual: Bool = false) -> (any ValueType)? {
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
     get {
       allValues(forKey: key.rawValue)?.first.value
@@ -58,14 +59,14 @@ extension ErrorInfo {
     set {
       _add(key: key.rawValue,
            value: newValue,
-           omitEqualValue: omitEqualValue,
+           insertIfEqual: insertIfEqual,
            addTypeInfo: .default,
            collisionSource: .onSubscript(keyKind: .stringLiteralConstant))
     }
   }
   
   @_disfavoredOverload
-  public subscript(key: String, omitEqualValue: Bool = true) -> (any ValueType)? {
+  public subscript(key: String, insertIfEqual: Bool = false) -> (any ValueType)? {
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
     get {
       allValues(forKey: key)?.first.value
@@ -73,7 +74,7 @@ extension ErrorInfo {
     set {
       _add(key: key,
            value: newValue,
-           omitEqualValue: omitEqualValue,
+           insertIfEqual: insertIfEqual,
            addTypeInfo: .default,
            collisionSource: .onSubscript(keyKind: .dynamic))
     }
@@ -99,28 +100,28 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   /// For copying values with Collection / Sequence types.
-  public mutating func append(element newElement: (String, any ValueType), omitEqualValue: Bool = true) {
-    appendWithDefaultTypeInfo(key: newElement.0, value: newElement.1, omitEqualValue: omitEqualValue, keyKind: .dynamic)
+  public mutating func append(element newElement: (String, any ValueType), insertIfEqual: Bool = false) {
+    appendWithDefaultTypeInfo(key: newElement.0, value: newElement.1, insertIfEqual: insertIfEqual, keyKind: .dynamic)
   }
   
-  public mutating func append(key: ErronInfoKey, valueIfNotNil value: (any ValueType)?, omitEqualValue: Bool = true) {
+  public mutating func append(key: ErronInfoKey, valueIfNotNil value: (any ValueType)?, insertIfEqual: Bool = false) {
     guard let value else { return }
-    appendWithDefaultTypeInfo(key: key.rawValue, value: value, omitEqualValue: omitEqualValue, keyKind: .stringLiteralConstant)
+    appendWithDefaultTypeInfo(key: key.rawValue, value: value, insertIfEqual: insertIfEqual, keyKind: .stringLiteralConstant)
   }
   
   @_disfavoredOverload
-  public mutating func append(key dynamicKey: String, valueIfNotNil value: (any ValueType)?, omitEqualValue: Bool = true) {
+  public mutating func append(key dynamicKey: String, valueIfNotNil value: (any ValueType)?, insertIfEqual: Bool = false) {
     guard let value else { return }
-    appendWithDefaultTypeInfo(key: dynamicKey, value: value, omitEqualValue: omitEqualValue, keyKind: .dynamic)
+    appendWithDefaultTypeInfo(key: dynamicKey, value: value, insertIfEqual: insertIfEqual, keyKind: .dynamic)
   }
   
   private mutating func appendWithDefaultTypeInfo(key: Key,
                                                   value: any ValueType,
-                                                  omitEqualValue: Bool,
+                                                  insertIfEqual: Bool,
                                                   keyKind: CollisionSource.KeyKind) {
     _add(key: key,
          value: value,
-         omitEqualValue: omitEqualValue,
+         insertIfEqual: insertIfEqual,
          addTypeInfo: .default,
          collisionSource: .onAppend(keyKind: keyKind))
   }
@@ -138,7 +139,7 @@ extension ErrorInfo {
   /// The root appending function for public API imps. The term "_add" is chosen to visually / syntatically differentiate from family of public `append()`functions.
   internal mutating func _add(key: Key,
                               value newValue: (any ValueType)?,
-                              omitEqualValue: Bool,
+                              insertIfEqual: Bool,
                               addTypeInfo: TypeInfoOptions,
                               collisionSource: @autoclosure () -> CollisionSource) {
     // TODO: put type TypeInfo
@@ -156,7 +157,7 @@ extension ErrorInfo {
     
     _storage.appendResolvingCollisions(key: key,
                                        value: value,
-                                       omitEqualValue: omitEqualValue,
+                                       insertIfEqual: insertIfEqual,
                                        collisionSource: collisionSource())
   }
 }

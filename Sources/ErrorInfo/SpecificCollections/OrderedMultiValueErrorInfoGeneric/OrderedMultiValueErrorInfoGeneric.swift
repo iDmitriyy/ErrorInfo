@@ -59,9 +59,11 @@ extension OrderedMultiValueErrorInfoGeneric {
 extension OrderedMultiValueErrorInfoGeneric {
   public mutating func appendResolvingCollisions(key: Key,
                                                  value newValue: Value,
-                                                 omitEqualValue omitIfEqual: Bool,
+                                                 insertIfEqual: Bool,
                                                  collisionSource: @autoclosure () -> CollisionSource) {
-    if omitIfEqual {
+    if insertIfEqual {
+      _storage.append(key: key, value: newValue, collisionSource: collisionSource())
+    } else {
       if let currentValues = _storage.allValuesSlice(forKey: key) {
         // TODO: perfomace Test: containsValues(forKey:, where:) might be faster than allValuesSlice(forKey:)
         let isEqualToCurrent = currentValues.contains(where: { currentValue in
@@ -76,17 +78,15 @@ extension OrderedMultiValueErrorInfoGeneric {
       } else {
         _storage.append(key: key, value: newValue, collisionSource: collisionSource())
       }
-    } else {
-      _storage.append(key: key, value: newValue, collisionSource: collisionSource())
     }
   }
   
   public mutating func appendResolvingCollisions(element: (Key, Value),
-                                                 omitEqualValue omitIfEqual: Bool,
+                                                 insertIfEqual: Bool,
                                                  collisionSource: @autoclosure () -> CollisionSource) {
     appendResolvingCollisions(key: element.0,
                               value: element.1,
-                              omitEqualValue: omitIfEqual,
+                              insertIfEqual: insertIfEqual,
                               collisionSource: collisionSource())
   }
 }
