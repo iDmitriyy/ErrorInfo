@@ -8,15 +8,29 @@
 // MARK: - With Custom TypeInfoOptions
 
 extension ErrorInfo {
+  public static func with(typeInfoOptions: TypeInfoOptions,
+                          preserveNilValus: Bool = true,
+                          insertIfEqual: Bool = false,
+                          overwriteExisting: Bool = false,
+                          append: (consuming CustomTypeInfoOptionsView) -> Void) -> Self {
+    var info = Self()
+    info.appendWith(typeInfoOptions: typeInfoOptions,
+                    preserveNilValus: preserveNilValus,
+                    insertIfEqual: insertIfEqual,
+                    overwriteExisting: overwriteExisting,
+                    append: append)
+    return info
+  }
+  
   ///
   /// - Parameters:
   ///   - typeInfoOptions:
   ///   - omitEqualValue: `omitEqualValue` in subscript has higher priority than this argument
   ///   - append:
   public mutating func appendWith(typeInfoOptions: TypeInfoOptions,
-                                  preserveNilValus: Bool = true,
+                                  preserveNilValus _: Bool = true,
                                   insertIfEqual: Bool = false,
-                                  overwriteExisting: Bool = false,
+                                  overwriteExisting _: Bool = false,
                                   append: (consuming CustomTypeInfoOptionsView) -> Void) {
     withUnsafeMutablePointer(to: &self) { pointer in
       let view = CustomTypeInfoOptionsView(pointer: pointer, insertIfEqual: insertIfEqual, typeInfoOptions: typeInfoOptions)
