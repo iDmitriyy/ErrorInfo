@@ -104,13 +104,13 @@ extension ErrorInfo {
     appendWithDefaultTypeInfo(key: newElement.0, value: newElement.1, insertIfEqual: insertIfEqual, keyKind: .dynamic)
   }
   
-  public mutating func append(key: ErronInfoKey, valueIfNotNil value: (any ValueType)?, insertIfEqual: Bool = false) {
+  public mutating func appendIfNotNil(_ value: (any ValueType)?, forKey key: ErronInfoKey , insertIfEqual: Bool = false) {
     guard let value else { return }
     appendWithDefaultTypeInfo(key: key.rawValue, value: value, insertIfEqual: insertIfEqual, keyKind: .stringLiteralConstant)
   }
   
   @_disfavoredOverload
-  public mutating func append(key dynamicKey: String, valueIfNotNil value: (any ValueType)?, insertIfEqual: Bool = false) {
+  public mutating func appendIfNotNil(_ value: (any ValueType)?, forKey dynamicKey: String, insertIfEqual: Bool = false) {
     guard let value else { return }
     appendWithDefaultTypeInfo(key: dynamicKey, value: value, insertIfEqual: insertIfEqual, keyKind: .dynamic)
   }
