@@ -65,12 +65,12 @@ extension OrderedMultiValueErrorInfoGeneric {
       _storage.append(key: key, value: newValue, collisionSource: collisionSource())
     } else {
       if let currentValues = _storage.allValuesSlice(forKey: key) {
-        // TODO: perfomace Test: containsValues(forKey:, where:) might be faster than allValuesSlice(forKey:)
-        let isEqualToCurrent = currentValues.contains(where: { currentValue in
+        // TODO: perfomace Test: _storage.containsValues(forKey:, where:) might be faster than allValuesSlice(forKey:).contains
+        let isEqualToOneOfCurrent = currentValues.contains(where: { currentValue in
           ErrorInfoFuncs.isApproximatelyEqualAny(currentValue.value, newValue)
         })
         
-        if isEqualToCurrent {
+        if isEqualToOneOfCurrent {
           return
         } else {
           _storage.append(key: key, value: newValue, collisionSource: collisionSource())

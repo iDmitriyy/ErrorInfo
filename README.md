@@ -1,6 +1,14 @@
 # 🧩 ErrorInfo
-> A Swift-native, type-safe, and `Sendable`-compliant alternative to `[String: Any]` for storing structured error details.
----
+
+<p align="left">
+<img src="https://img.shields.io/badge/platforms-iOS%2C%20macOS%2C%20watchOS%2C%20tvOS%2C%20visionOS%2C%20macCatalyst-lightgrey.svg">
+<img src="https://img.shields.io/badge/Licence-MIT-green">
+</p>
+
+> A Swift-native, type-safe and concurrency-compliant alternative to `[String: Any]` for storing structured error details.
+
+*(currently is prepared for release 0.1.0)*
+
 ## 🚀 Why ErrorInfo?
 
 While Swift has robust support for modeling errors through the `Error` protocol, the language lacks a native, structured, and thread-safe way to store **additional error context**.
@@ -38,6 +46,7 @@ The `ErrorInfo` library introduces a family of structured, type-safe, and `Senda
 | Prevent equal values       | ✅ Yes                    | ✅ Yes                    | －            |
 | Preserve nil values        | ✅ Yes                    | ✅ Yes                    | ❌ No        |
 | Collision source           | ✅ Yes                    | ✅ Yes                    | ❌ No        |
+| Type info                  | ✅ Yes                    | ✅ Yes                    | ❌ No        |
 | Merge                      | ✅ Yes                    | ☑️ Yes                    | 💥 Data loss |
 | Key transform              | ✅ Yes                    | ☑️ Yes                    | 💥 Data loss |
 | Sendable                   | ✅ Yes                    | ❌ No                     | ❌ No        |
@@ -69,18 +78,21 @@ let allValues = merged.allValues(forKey: "key")
 
 Or with key augmentation: TBD
 
-🧩 Value Collisions
+🧩 Example: value collisions, no implicit overwrite, prevent equal values, preserve nil values 
 
 Unlike dictionaries, ErrorInfo keeps all values.
 ```
 var info: ErrorInfo = ["a": 1]
-info["a"] = 1                        // ❌ Skipped (duplicate)
-info.append(key: "a", 
-            value: 1,
-            insertIfEqual: true)     // ✅ Explicitly added
-info["a"] = 2                        // ✅ Added (another value)
-info["a"] = "2"                      // ✅ Added (different type)
-info["a"] = 2.0                      // ✅ Added (different type)
+info["a"] = 1                     // ❌ Skipped (duplicate)
+info["a"] = 2                     // ✅ Added (another value)
+info["a"] = "2"                   // ✅ Added (different type)
+info["a"] = nil Optional<Decimal> // ✅ Added (nil value)
+
+info.appendIfNotNil(3 as Optional,
+                    forKey: "a")  // ✅ added (non-nil another value)
+
+allValues(forKey: "a")             // 1, 2, "2", 3
+allValuesWithMetaInfo(forKey: "a") // 1, 2, "2", nil, 3
 ```
 
 🧪 Example Use Case
@@ -101,3 +113,12 @@ All collision detection, value comparison, and merge behaviors are covered in un
 
 📣 Contributing
 Contributions are welcome! If you have ideas, optimizations, or find a bug — feel free to open an issue or submit a PR.
+
+<details>
+  <summary>ErrorInfo details</summary>
+  
+  ```swift
+  
+  ```
+  
+</details>

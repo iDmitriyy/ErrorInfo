@@ -19,6 +19,8 @@ struct TypeDesciptionTests {
     ErrorInfoFuncs._typeDesciption(for: integer)
     ErrorInfoFuncs._typeDesciption(for: integerOptional)
     
+    
+    
     print("")
   }
   
@@ -32,8 +34,20 @@ struct TypeDesciptionTests {
     let testClassAsAnyObject: AnyObject = TestClass()
     let testClassOptionalAnyObject: AnyObject? = TestClass()
     
-    let testSubClassAsAnyObject: AnyObject = TestSubClass()
-    let testSubClassOptionalAnyObject: AnyObject? = TestSubClass()
+    let testSubClassAnyObject: AnyObject = TestSubClass()
+    let testSubClassOptionalObject: AnyObject? = TestSubClass()
+    
+    descr(of: testClass)
+    descr(of: testClassOptional)
+    
+    descr(of: testSubClass)
+    descr(of: testSubClassOptional)
+    
+    descr(of: testClassAsAnyObject)
+    descr(of: testClassOptionalAnyObject)
+    
+    descr(of: testSubClassAnyObject)
+    descr(of: testSubClassOptionalObject)
   }
   
   @Test func objectTypesNil() {
@@ -42,6 +56,22 @@ struct TypeDesciptionTests {
     
     let testClassOptionalAsAnyObject: AnyObject? = Optional<TestClass>.none
     let testSubClassOptionalAsAnyObject: AnyObject? = Optional<TestSubClass>.none
+  }
+  
+  func descr<T>(of value: T) {
+    _ = value
+  }
+  
+  func descr<T>(of value: T?) {
+    _ = value
+  }
+  
+  func descr<T: AnyObject>(of value: T) {
+    _ = value
+  }
+  
+  func descr<T: AnyObject>(of value: T?) {
+    _ = value
   }
 }
 

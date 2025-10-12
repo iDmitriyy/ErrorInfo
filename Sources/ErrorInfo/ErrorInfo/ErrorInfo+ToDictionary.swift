@@ -25,4 +25,8 @@ extension ErrorInfo {
   public func asDictionary<V>() ->[String: V] {
     [:]
   }
+  
+  public func asEncodableDictionary<V>() ->[String: V] {
+    [:]
+  }
 }
