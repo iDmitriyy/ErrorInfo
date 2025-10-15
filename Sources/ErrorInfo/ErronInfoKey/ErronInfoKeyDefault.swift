@@ -5,61 +5,61 @@
 //  Created by Dmitriy Ignatyev on 26/07/2025.
 //
 
-extension ErronInfoKey {
+extension ErronInfoLiteralKey {
   // By default names are given with snake_case, which can ba transformed to camelCase, kebab-case or PascalCase
   // formats when logging.
   // TODO: - inspect Swift codebases for styles
   // TODO: - use compile-time values instead of static
   
-  public static let id = ErronInfoKey(uncheckedString: "id")
-  public static let instanceID = ErronInfoKey(uncheckedString: "instance_id")
-  public static let objectID = ErronInfoKey(uncheckedString: "object_id")
+  public static let id = ErronInfoLiteralKey(uncheckedString: "id")
+  public static let instanceID = ErronInfoLiteralKey(uncheckedString: "instance_id")
+  public static let objectID = ErronInfoLiteralKey(uncheckedString: "object_id")
   
-  public static let status = ErronInfoKey(uncheckedString: "status")
-  public static let statusID = ErronInfoKey(uncheckedString: "status_id")
-  public static let rawStatus = ErronInfoKey(uncheckedString: "raw_status")
+  public static let status = ErronInfoLiteralKey(uncheckedString: "status")
+  public static let statusID = ErronInfoLiteralKey(uncheckedString: "status_id")
+  public static let rawStatus = ErronInfoLiteralKey(uncheckedString: "raw_status")
   
-  public static let state = ErronInfoKey(uncheckedString: "state")
-  public static let invalidState = ErronInfoKey(uncheckedString: "invalid_state")
-  public static let unexpectedState = ErronInfoKey(uncheckedString: "unexpected_state")
-  public static let sourceState = ErronInfoKey(uncheckedString: "source_state")
-  public static let targetState = ErronInfoKey(uncheckedString: "target_state")
+  public static let state = ErronInfoLiteralKey(uncheckedString: "state")
+  public static let invalidState = ErronInfoLiteralKey(uncheckedString: "invalid_state")
+  public static let unexpectedState = ErronInfoLiteralKey(uncheckedString: "unexpected_state")
+  public static let sourceState = ErronInfoLiteralKey(uncheckedString: "source_state")
+  public static let targetState = ErronInfoLiteralKey(uncheckedString: "target_state")
   
-  public static let value = ErronInfoKey(uncheckedString: "value")
-  public static let rawValue = ErronInfoKey(uncheckedString: "raw_value")
-  public static let stringValue = ErronInfoKey(uncheckedString: "string_value")
-  public static let uncheckedValue = ErronInfoKey(uncheckedString: "unchecked_value")
-  public static let instance = ErronInfoKey(uncheckedString: "instance")
-  public static let object = ErronInfoKey(uncheckedString: "object")
+  public static let value = ErronInfoLiteralKey(uncheckedString: "value")
+  public static let rawValue = ErronInfoLiteralKey(uncheckedString: "raw_value")
+  public static let stringValue = ErronInfoLiteralKey(uncheckedString: "string_value")
+  public static let uncheckedValue = ErronInfoLiteralKey(uncheckedString: "unchecked_value")
+  public static let instance = ErronInfoLiteralKey(uncheckedString: "instance")
+  public static let object = ErronInfoLiteralKey(uncheckedString: "object")
   
-  public static let url = ErronInfoKey(uncheckedString: "url")
-  public static let requestURL = ErronInfoKey(uncheckedString: "request_url")
-  public static let responseURL = ErronInfoKey(uncheckedString: "response_url")
-  public static let responseData = ErronInfoKey(uncheckedString: "response_data")
-  public static let responseJson = ErronInfoKey(uncheckedString: "response_json")
-  public static let dataString = ErronInfoKey(uncheckedString: "data_string")
-  public static let dataBytesCount = ErronInfoKey(uncheckedString: "data_bytes_count")
+  public static let url = ErronInfoLiteralKey(uncheckedString: "url")
+  public static let requestURL = ErronInfoLiteralKey(uncheckedString: "request_url")
+  public static let responseURL = ErronInfoLiteralKey(uncheckedString: "response_url")
+  public static let responseData = ErronInfoLiteralKey(uncheckedString: "response_data")
+  public static let responseJson = ErronInfoLiteralKey(uncheckedString: "response_json")
+  public static let dataString = ErronInfoLiteralKey(uncheckedString: "data_string")
+  public static let dataBytesCount = ErronInfoLiteralKey(uncheckedString: "data_bytes_count")
   
-  public static let index = ErronInfoKey(uncheckedString: "index")
-  public static let indices = ErronInfoKey(uncheckedString: "indices")
+  public static let index = ErronInfoLiteralKey(uncheckedString: "index")
+  public static let indices = ErronInfoLiteralKey(uncheckedString: "indices")
   
-  public static let errorCode = ErronInfoKey(uncheckedString: "error_code")
-  public static let errorDomain = ErronInfoKey(uncheckedString: "error_domain")
+  public static let errorCode = ErronInfoLiteralKey(uncheckedString: "error_code")
+  public static let errorDomain = ErronInfoLiteralKey(uncheckedString: "error_domain")
   
-  public static let file = ErronInfoKey(uncheckedString: "file")
-  public static let line = ErronInfoKey(uncheckedString: "line")
-  public static let fileLine = ErronInfoKey(uncheckedString: "file_line")
-  public static let function = ErronInfoKey(uncheckedString: "function")
+  public static let file = ErronInfoLiteralKey(uncheckedString: "file")
+  public static let line = ErronInfoLiteralKey(uncheckedString: "line")
+  public static let fileLine = ErronInfoLiteralKey(uncheckedString: "file_line")
+  public static let function = ErronInfoLiteralKey(uncheckedString: "function")
   
-  public static let message = ErronInfoKey(uncheckedString: "message")
-  public static let debugMessage = ErronInfoKey(uncheckedString: "debug_message")
-  public static let description = ErronInfoKey(uncheckedString: "description")
-  public static let debugDescription = ErronInfoKey(uncheckedString: "debug_description")
+  public static let message = ErronInfoLiteralKey(uncheckedString: "message")
+  public static let debugMessage = ErronInfoLiteralKey(uncheckedString: "debug_message")
+  public static let description = ErronInfoLiteralKey(uncheckedString: "description")
+  public static let debugDescription = ErronInfoLiteralKey(uncheckedString: "debug_description")
   
-  public static let decodingDate = ErronInfoKey(uncheckedString: "decoding_date")
-  public static let encodingDate = ErronInfoKey(uncheckedString: "encoding_date")
+  public static let decodingDate = ErronInfoLiteralKey(uncheckedString: "decoding_date")
+  public static let encodingDate = ErronInfoLiteralKey(uncheckedString: "encoding_date")
   
-  public static let timestamp = ErronInfoKey(uncheckedString: "timestamp")
-  public static let decodingTimestamp = ErronInfoKey(uncheckedString: "decoding_timestamp")
-  public static let encodingTimestamp = ErronInfoKey(uncheckedString: "encoding_timestamp")
+  public static let timestamp = ErronInfoLiteralKey(uncheckedString: "timestamp")
+  public static let decodingTimestamp = ErronInfoLiteralKey(uncheckedString: "decoding_timestamp")
+  public static let encodingTimestamp = ErronInfoLiteralKey(uncheckedString: "encoding_timestamp")
 }

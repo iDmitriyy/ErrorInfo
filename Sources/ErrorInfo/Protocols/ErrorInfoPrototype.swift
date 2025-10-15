@@ -56,7 +56,7 @@ extension ErrorInfoPrototype where Key == String {
   
   // Subscript duplicated, check if compiler handle when root subscript getter become available or not
   
-  subscript(key: ErronInfoKey) -> Value? {
+  subscript(key: ErronInfoLiteralKey) -> Value? {
     get { self[key.rawValue] }
     set { self[key.rawValue] = newValue }
   }

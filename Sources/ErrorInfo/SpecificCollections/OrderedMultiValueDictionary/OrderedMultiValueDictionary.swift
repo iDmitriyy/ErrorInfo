@@ -118,6 +118,7 @@ extension OrderedMultiValueDictionary {
       for index in indices.base {
         accumulator.append(_entries[index].value)
       }
+      // FIXME: recalculate indices in _keyToEntryIndices
       let indicesToRemove = indices.asRangeSet(for: _entries)
       _entries.removeSubranges(indicesToRemove)
       oldValues = ValuesForKey(array: accumulator)

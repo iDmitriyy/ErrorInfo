@@ -1,11 +1,11 @@
 //
-//  ErronInfoKey.swift
+//  ErronInfoLiteralKey.swift
 //  swifty-kit
 //
 //  Created by Dmitriy Ignatyev on 16.04.2025.
 //
 
-public struct ErronInfoKey: Hashable, Sendable, CustomStringConvertible, CustomDebugStringConvertible {  
+public struct ErronInfoLiteralKey: Hashable, Sendable, CustomStringConvertible, CustomDebugStringConvertible {  
   /// A new instance initialized with `rawValue` will be equivalent to this instance.
   public let rawValue: String
   
@@ -18,7 +18,7 @@ public struct ErronInfoKey: Hashable, Sendable, CustomStringConvertible, CustomD
   }
 }
 
-extension ErronInfoKey: ExpressibleByStringLiteral { // TODO: try to make it zero-cost abstraction
+extension ErronInfoLiteralKey: ExpressibleByStringLiteral { // TODO: try to make it zero-cost abstraction
   public typealias StringLiteralType = StaticString
   // TODO: Check if there any costs for usinf StaticString instead of String as literal type.
   // StaticString completely closes the hole when ErronInfoKey can be initialized with dynamically formed string
@@ -28,7 +28,7 @@ extension ErronInfoKey: ExpressibleByStringLiteral { // TODO: try to make it zer
   }
 }
 
-extension ErronInfoKey {
+extension ErronInfoLiteralKey {
   public func withPrefix(_ prefix: Self) -> Self {
     Self(uncheckedString: prefix.rawValue + rawValue)
   }
@@ -45,7 +45,7 @@ extension ErronInfoKey {
 
 // TODO: add + - operators for Self.
 
-// extension ErronInfoKey {
+// extension ErronInfoLiteralKey {
 //  public struct Separator: Sendable, Hashable, CustomStringConvertible { // RawRepresentable
 //    private let rawValue: String
 //
@@ -57,6 +57,6 @@ extension ErronInfoKey {
 //  }
 // }
 //
-// extension ErronInfoKey.Separator {
+// extension ErronInfoLiteralKey.Separator {
 //  public static let dash = Self(uncheckedString: "-")
 // }

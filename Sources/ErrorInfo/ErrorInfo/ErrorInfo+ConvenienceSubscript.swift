@@ -52,7 +52,7 @@ extension ErrorInfo {
     }
     
     /// `omitEqualValue`has higher priority than provided in `appendWith(typeInfoOptions:, omitEqualValue:, append:)` function.
-    public subscript(key: ErronInfoKey, insertIfEqual insertIfEqualFromSubscript: Bool? = nil) -> (any ValueType)? {
+    public subscript(key: ErronInfoLiteralKey, insertIfEqual insertIfEqualFromSubscript: Bool? = nil) -> (any ValueType)? {
       // TODO: ? borrowing get set
       @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
       get {
