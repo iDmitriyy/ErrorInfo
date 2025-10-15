@@ -27,7 +27,7 @@ public struct LegacyErrorInfo: IterableErrorInfo {
 extension LegacyErrorInfo {
   // TODO: this method should be an overload for default implementation
   public func asDictionary() -> [String: Any] {
-    storage._dict
+    storage._storage
   }
 }
 
