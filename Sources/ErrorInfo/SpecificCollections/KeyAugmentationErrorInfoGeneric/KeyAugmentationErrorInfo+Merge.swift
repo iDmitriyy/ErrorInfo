@@ -1,5 +1,5 @@
 //
-//  LegacyErrorInfo+DictionaryLiteral.swift
+//  KeyAugmentationErrorInfo+Merge.swift
 //  ErrorInfo
 //
 //  Created Dmitriy Ignatyev on 15/10/2025.

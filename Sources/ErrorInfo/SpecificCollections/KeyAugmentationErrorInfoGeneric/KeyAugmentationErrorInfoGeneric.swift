@@ -21,18 +21,18 @@ public struct KeyAugmentationErrorInfoGeneric<D> where D: DictionaryProtocol, D:
   public typealias Value = D.Value
   public typealias Element = (key: Key, value: Value)
   
-  internal private(set) var _dict: D
+  internal private(set) var _storage: D
   
   public init() {
-    _dict = D()
+    _storage = D()
   }
   
   public init(_ dict: D) {
-    _dict = dict
+    _storage = dict
   }
   
   public func makeIterator() -> some IteratorProtocol<Element> {
-    _dict.makeIterator()
+    _storage.makeIterator()
   }
 }
 
@@ -50,7 +50,7 @@ extension KeyAugmentationErrorInfoGeneric {
                                                             shouldOmitEqualValue: omitEqualValue,
                                                             suffixSeparator: suffixSeparator,
                                                             randomSuffix: randomSuffix,
-                                                            to: &_dict)
+                                                            to: &_storage)
   }
   
 //  mutating func mergeWith(other: Self,
@@ -71,10 +71,16 @@ extension KeyAugmentationErrorInfoGeneric {
 
 extension KeyAugmentationErrorInfoGeneric {
   public mutating func addKeyPrefix(_ keyPrefix: D.Key) {
-    _dict = ErrorInfoDictFuncs.addKeyPrefix(keyPrefix, toKeysOf: _dict)
+    _storage = ErrorInfoDictFuncs.addKeyPrefix(keyPrefix, toKeysOf: _storage)
   }
 }
 
 // MARK: - Protocol Conformances
 
 extension KeyAugmentationErrorInfoGeneric: Sendable where D: Sendable {}
+
+extension KeyAugmentationErrorInfoGeneric {
+  internal var count: Int { _storage.count }
+  
+  internal var isEmpty: Bool { _storage.isEmpty }
+}

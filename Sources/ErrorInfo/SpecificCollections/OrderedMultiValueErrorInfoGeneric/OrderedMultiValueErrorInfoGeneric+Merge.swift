@@ -2,7 +2,7 @@
 //  OrderedMultiValueErrorInfoGeneric+Merge.swift
 //  ErrorInfo
 //
-//  Created by tmp on 07/10/2025.
+//  Created Dmitriy Ignatyev on 07/10/2025.
 //
 
 extension OrderedMultiValueErrorInfoGeneric {

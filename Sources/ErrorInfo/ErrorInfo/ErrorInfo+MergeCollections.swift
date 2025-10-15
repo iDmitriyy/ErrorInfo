@@ -2,7 +2,7 @@
 //  ErrorInfo+MergeCollections.swift
 //  ErrorInfo
 //
-//  Created by tmp on 08/10/2025.
+//  Created Dmitriy Ignatyev on 08/10/2025.
 //
 
 extension ErrorInfo {
