@@ -21,6 +21,7 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
     for (key, value) in elements {
       self._add(key: key,
                 value: value,
+                preserveNilValues: true,
                 insertIfEqual: true,
                 addTypeInfo: .default,
                 collisionSource: .onCreateWithDictionaryLiteral)

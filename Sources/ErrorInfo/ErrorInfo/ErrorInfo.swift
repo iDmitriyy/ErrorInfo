@@ -41,6 +41,10 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
   public static let empty: Self = Self()
 }
 
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// MARK: - Subscript
+
 // TODO: check if there runtime issues with unavailable setter. If yes then make deprecated
 // TODO: ? make subscript as a defualt imp in protocol, providing a way to override implementation at usage site
 // ErronInfoLiteralKey with @_disfavoredOverload String-base subscript allows to differemtiate betwee when it was a literal-key subscript
@@ -51,7 +55,7 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
 // The same trick with sub-separaation can be done for append() functions
 // Dictionary literal can then strictly be created with string literals, and when dynamic for strings another APIs are forced to be used.
 extension ErrorInfo {
-  public subscript(key: ErronInfoLiteralKey, insertIfEqual: Bool = false) -> (any ValueType)? {
+  public subscript(key: ErronInfoLiteralKey) -> (any ValueType)? {
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
     get {
       allValues(forKey: key.rawValue)?.first.value
@@ -59,14 +63,15 @@ extension ErrorInfo {
     set {
       _add(key: key.rawValue,
            value: newValue,
-           insertIfEqual: insertIfEqual,
+           preserveNilValues: true,
+           insertIfEqual: false,
            addTypeInfo: .default,
            collisionSource: .onSubscript(keyKind: .stringLiteralConstant))
     }
   }
   
   @_disfavoredOverload
-  public subscript(key: String, insertIfEqual: Bool = false) -> (any ValueType)? {
+  public subscript(key: String) -> (any ValueType)? {
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
     get {
       allValues(forKey: key)?.first.value
@@ -74,72 +79,133 @@ extension ErrorInfo {
     set {
       _add(key: key,
            value: newValue,
-           insertIfEqual: insertIfEqual,
+           preserveNilValues: true,
+           insertIfEqual: false,
            addTypeInfo: .default,
            collisionSource: .onSubscript(keyKind: .dynamic))
     }
   }
 }
 
-// MARK: All Values For Key
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// MARK: - All For Key
 
 extension ErrorInfo {
   // public func allValuesSlice(forKey key: Key) -> (some Sequence<Value>)? {}
   
+  public func allValues(forKey key: ErronInfoLiteralKey) -> ValuesForKey<ValueWrapper>? {
+    allValues(forKey: key.rawValue)
+  }
+  
   public func allValues(forKey key: Key) -> ValuesForKey<ValueWrapper>? {
     _storage.allValues(forKey: key)
+  }
+}
+
+extension ErrorInfo {
+  @discardableResult
+  public mutating func removeAllValues(forKey key: ErronInfoLiteralKey) -> ValuesForKey<ValueWrapper>? {
+    removeAllValues(forKey: key.rawValue)
   }
   
   @discardableResult
   public mutating func removeAllValues(forKey key: Key) -> ValuesForKey<ValueWrapper>? {
     _storage.removeAllValues(forKey: key)
   }
+}
+
+extension ErrorInfo {
+  @discardableResult
+  public mutating func replaceAllValues(forKey key: ErronInfoLiteralKey, by newValue: any ValueType) -> ValuesForKey<ValueWrapper>? {
+    let oldValues = _storage.removeAllValues(forKey: key.rawValue)
+    _add(key: key.rawValue,
+         value: newValue,
+         preserveNilValues: true, // has no effect in this func
+         insertIfEqual: true, // has no effect in this func
+         addTypeInfo: .default,
+         collisionSource: .onAppend(keyKind: .stringLiteralConstant)) // collisions must never happen using this func
+    return oldValues
+  }
   
   @discardableResult
-  public mutating func replaceAllValues(forKey key: Key,
-                                        by newValue: any ValueType,
-                                        insertIfEqual: Bool = false) -> ValuesForKey<ValueWrapper>? {
+  public mutating func replaceAllValues(forKey key: Key, by newValue: any ValueType) -> ValuesForKey<ValueWrapper>? {
     let oldValues = _storage.removeAllValues(forKey: key)
-    // collisions never happens when replacing
     _add(key: key,
          value: newValue,
-         insertIfEqual: insertIfEqual,
-         addTypeInfo: .default, // TODO:
-         collisionSource: .onAppend(keyKind: .dynamic))
+         preserveNilValues: true, // has no effect in this func
+         insertIfEqual: true, // has no effect in this func
+         addTypeInfo: .default,
+         collisionSource: .onAppend(keyKind: .dynamic)) // collisions must never happen using this func
     return oldValues
   }
 }
 
-// MARK: Append KeyValue
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// MARK: - Append KeyValue
 
 extension ErrorInfo {
   /// For copying values with Collection / Sequence types.
-  public mutating func append(element newElement: (String, any ValueType), insertIfEqual: Bool = false) {
-    appendWithDefaultTypeInfo(key: newElement.0, value: newElement.1, insertIfEqual: insertIfEqual, keyKind: .dynamic)
+  public mutating func append(element newElement: (String, any ValueType),
+                              insertIfEqual: Bool = false) {
+    _appendWithDefaultTypeInfo(key: newElement.0,
+                               value: newElement.1,
+                               preserveNilValues: true, // has no effect in this func
+                               insertIfEqual: insertIfEqual,
+                               keyKind: .dynamic)
   }
   
-  public mutating func appendIfNotNil(_ value: (any ValueType)?, forKey key: ErronInfoLiteralKey , insertIfEqual: Bool = false) {
+//  public mutating func append(element newElement: (String, (any ValueType)?),
+//                              preserveNilValues: Bool = true,
+//                              insertIfEqual: Bool = false) {
+//    appendWithDefaultTypeInfo(key: newElement.0,
+//                              value: newElement.1,
+//                              preserveNilValues: preserveNilValues,
+//                              insertIfEqual: insertIfEqual,
+//                              keyKind: .dynamic)
+//  }
+}
+
+extension ErrorInfo {
+  public mutating func appendIfNotNil(_ value: (any ValueType)?, forKey key: ErronInfoLiteralKey, insertIfEqual: Bool = false) {
     guard let value else { return }
-    appendWithDefaultTypeInfo(key: key.rawValue, value: value, insertIfEqual: insertIfEqual, keyKind: .stringLiteralConstant)
+    _appendWithDefaultTypeInfo(key: key.rawValue,
+                               value: value,
+                               preserveNilValues: true, // has no effect in this func
+                               insertIfEqual: insertIfEqual,
+                               keyKind: .stringLiteralConstant)
   }
   
   @_disfavoredOverload
   public mutating func appendIfNotNil(_ value: (any ValueType)?, forKey dynamicKey: String, insertIfEqual: Bool = false) {
     guard let value else { return }
-    appendWithDefaultTypeInfo(key: dynamicKey, value: value, insertIfEqual: insertIfEqual, keyKind: .dynamic)
+    _appendWithDefaultTypeInfo(key: dynamicKey,
+                               value: value,
+                               preserveNilValues: true, // has no effect in this func
+                               insertIfEqual: insertIfEqual,
+                               keyKind: .dynamic)
   }
-  
-  private mutating func appendWithDefaultTypeInfo(key: Key,
-                                                  value: any ValueType,
-                                                  insertIfEqual: Bool,
-                                                  keyKind: CollisionSource.KeyKind) {
+}
+
+extension ErrorInfo {
+  private mutating func _appendWithDefaultTypeInfo(key: Key,
+                                                   value: any ValueType,
+                                                   preserveNilValues: Bool, // always true at call sites, need if value become optional
+                                                   insertIfEqual: Bool,
+                                                   keyKind: CollisionSource.KeyKind) {
     _add(key: key,
          value: value,
+         preserveNilValues: preserveNilValues,
          insertIfEqual: insertIfEqual,
          addTypeInfo: .default,
          collisionSource: .onAppend(keyKind: keyKind))
   }
 }
+
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// MARK: - Remove All
 
 extension ErrorInfo {
   internal mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
@@ -147,14 +213,17 @@ extension ErrorInfo {
   }
 }
 
-// MARK: Append KeyValue with all arguments passed explicitly
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// MARK: - Append KeyValue with all arguments passed explicitly
 
 extension ErrorInfo {
   /// The root appending function for public API imps. The term "_add" is chosen to visually / syntatically differentiate from family of public `append()`functions.
   internal mutating func _add(key: Key,
                               value newValue: (any ValueType)?,
+                              preserveNilValues _: Bool,
                               insertIfEqual: Bool,
-                              addTypeInfo: TypeInfoOptions,
+                              addTypeInfo _: TypeInfoOptions,
                               collisionSource: @autoclosure () -> CollisionSource) {
     // TODO: put type TypeInfo
     let value: any ValueType = if let newValue {
@@ -175,5 +244,3 @@ extension ErrorInfo {
                                        collisionSource: collisionSource())
   }
 }
-
-

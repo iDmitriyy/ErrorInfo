@@ -7,11 +7,11 @@
 
 public struct ErronInfoLiteralKey: Hashable, Sendable, CustomStringConvertible, CustomDebugStringConvertible {  
   /// A new instance initialized with `rawValue` will be equivalent to this instance.
-  public let rawValue: String
+  internal let rawValue: String
   
   public var description: String { rawValue }
   
-  public var debugDescription: String { rawValue }
+  public var debugDescription: String { rawValue } // TODO: ? rawValue.debugDescription
     
   internal init(uncheckedString: String) {
     rawValue = uncheckedString

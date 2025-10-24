@@ -66,6 +66,9 @@ extension StringBasedCollisionSource {
     /// when key is passed as a string interpolation of value or String that created at runtime
     case dynamic
     
+    // prefix / suffix
+    // indirect case modified(to: KeyKind, from: KeyKind)
+    
     public func defaultStringInterpolation() -> String {
       switch self {
       case .stringLiteralConstant: "stringLiteralConstant"
