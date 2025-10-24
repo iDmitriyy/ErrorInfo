@@ -56,17 +56,19 @@ extension ErrorInfo {
       self.typeInfoOptions = typeInfoOptions
     }
     
+    // MARK: - Subscript
+    
     /// `omitEqualValue`has higher priority than provided in `appendWith(typeInfoOptions:, omitEqualValue:, append:)` function.
-    public subscript(key: ErronInfoLiteralKey,
+    public subscript(key literalKey: ErronInfoLiteralKey,
                      preserveNilValues: Bool? = nil,
                      insertIfEqual: Bool? = nil) -> (any ValueType)? {
       // TODO: ? borrowing get set
       @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
       get {
-        pointer.pointee.allValues(forKey: key.rawValue)?.first.value
+        pointer.pointee.allValues(forKey: literalKey)?.first.value
       }
       set {
-        pointer.pointee._add(key: key.rawValue,
+        pointer.pointee._add(key: literalKey.rawValue,
                              value: newValue,
                              preserveNilValues: preserveNilValues ?? self.preserveNilValues,
                              insertIfEqual: insertIfEqual ?? self.insertIfEqual,
@@ -77,16 +79,16 @@ extension ErrorInfo {
     
     /// `omitEqualValue`has higher priority than provided in `appendWith(typeInfoOptions:, omitEqualValue:, append:)` function.
     @_disfavoredOverload
-    public subscript(key: String,
+    public subscript(key dynamicKey: String,
                      preserveNilValues: Bool? = nil,
                      insertIfEqual: Bool? = nil) -> (any ValueType)? {
       // TODO: ? borrowing get set
       @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
       get {
-        pointer.pointee.allValues(forKey: key)?.first.value
+        pointer.pointee.allValues(forKey: dynamicKey)?.first.value
       }
       set {
-        pointer.pointee._add(key: key,
+        pointer.pointee._add(key: dynamicKey,
                              value: newValue,
                              preserveNilValues: preserveNilValues ?? self.preserveNilValues,
                              insertIfEqual: insertIfEqual ?? self.insertIfEqual,
@@ -95,14 +97,16 @@ extension ErrorInfo {
       }
     }
     
+    // MARK: - Replace AllValues ForKey
+    
     @discardableResult
-    public mutating func replaceAllValues(forKey key: Key,
+    public mutating func replaceAllValues(forKey dynamicKey: Key,
                                           by newValue: any ValueType,
                                           preserveNilValues: Bool? = nil,
                                           insertIfEqual: Bool? = nil) -> ValuesForKey<ValueWrapper>? {
-      let oldValues = pointer.pointee._storage.removeAllValues(forKey: key)
+      let oldValues = pointer.pointee._storage.removeAllValues(forKey: dynamicKey)
       // collisions never happens when replacing
-      pointer.pointee._add(key: key,
+      pointer.pointee._add(key: dynamicKey,
                            value: newValue,
                            preserveNilValues: preserveNilValues ?? self.preserveNilValues,
                            insertIfEqual: insertIfEqual ?? self.insertIfEqual,

@@ -61,17 +61,15 @@ extension StringBasedCollisionSource {
     }
   }
   
+  /// Kind of key
   public enum KeyKind: Sendable {
     case stringLiteralConstant
     /// when key is passed as a string interpolation of value or String that created at runtime
     case dynamic
     
-    // prefix / suffix
-    // indirect case modified(to: KeyKind, from: KeyKind)
-    
     public func defaultStringInterpolation() -> String {
       switch self {
-      case .stringLiteralConstant: "stringLiteralConstant"
+      case .stringLiteralConstant: "literalConstant"
       case .dynamic: "dynamic"
       }
     }

@@ -117,9 +117,10 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   @discardableResult
-  public mutating func replaceAllValues(forKey key: ErronInfoLiteralKey, by newValue: any ValueType) -> ValuesForKey<ValueWrapper>? {
-    let oldValues = _storage.removeAllValues(forKey: key.rawValue)
-    _add(key: key.rawValue,
+  public mutating func replaceAllValues(forKey literalKey: ErronInfoLiteralKey,
+                                        by newValue: any ValueType) -> ValuesForKey<ValueWrapper>? {
+    let oldValues = _storage.removeAllValues(forKey: literalKey.rawValue)
+    _add(key: literalKey.rawValue,
          value: newValue,
          preserveNilValues: true, // has no effect in this func
          insertIfEqual: true, // has no effect in this func
@@ -129,9 +130,9 @@ extension ErrorInfo {
   }
   
   @discardableResult
-  public mutating func replaceAllValues(forKey key: Key, by newValue: any ValueType) -> ValuesForKey<ValueWrapper>? {
-    let oldValues = _storage.removeAllValues(forKey: key)
-    _add(key: key,
+  public mutating func replaceAllValues(forKey dynamicKey: Key, by newValue: any ValueType) -> ValuesForKey<ValueWrapper>? {
+    let oldValues = _storage.removeAllValues(forKey: dynamicKey)
+    _add(key: dynamicKey,
          value: newValue,
          preserveNilValues: true, // has no effect in this func
          insertIfEqual: true, // has no effect in this func
@@ -153,7 +154,7 @@ extension ErrorInfo {
                                value: newElement.1,
                                preserveNilValues: true, // has no effect in this func
                                insertIfEqual: insertIfEqual,
-                               keyKind: .dynamic)
+                               keyKind: .dynamic) // TODO: ? keyKind: .unspecified
   }
   
 //  public mutating func append(element newElement: (String, (any ValueType)?),
@@ -168,9 +169,9 @@ extension ErrorInfo {
 }
 
 extension ErrorInfo {
-  public mutating func appendIfNotNil(_ value: (any ValueType)?, forKey key: ErronInfoLiteralKey, insertIfEqual: Bool = false) {
+  public mutating func appendIfNotNil(_ value: (any ValueType)?, forKey literalKey: ErronInfoLiteralKey, insertIfEqual: Bool = false) {
     guard let value else { return }
-    _appendWithDefaultTypeInfo(key: key.rawValue,
+    _appendWithDefaultTypeInfo(key: literalKey.rawValue,
                                value: value,
                                preserveNilValues: true, // has no effect in this func
                                insertIfEqual: insertIfEqual,
@@ -221,21 +222,26 @@ extension ErrorInfo {
   /// The root appending function for public API imps. The term "_add" is chosen to visually / syntatically differentiate from family of public `append()`functions.
   internal mutating func _add(key: Key,
                               value newValue: (any ValueType)?,
-                              preserveNilValues _: Bool,
+                              preserveNilValues: Bool,
                               insertIfEqual: Bool,
                               addTypeInfo _: TypeInfoOptions,
                               collisionSource: @autoclosure () -> CollisionSource) {
+    
+    
     // TODO: put type TypeInfo
-    let value: any ValueType = if let newValue {
+    let value: any ValueType
+    if let newValue {
       // if let typeDesc = ErrorInfoFuncs.typeDesciptionIfNeeded(for: value, options: addTypeInfo) {}
-      newValue
-    } else {
+      value = newValue
+    } else if preserveNilValues {
       // if let typeDesc = ErrorInfoFuncs.typeDesciptionIfNeeded(forOptional: optionalValue, options: addTypeInfo) {}
-      "nil"
+      value = "nil"
       // FIXME: this String instance will be returned by `allValues(forKey:)` function, which is not what we want.
       // There is needed a way to store a nil value value for key. The same is in CustomTypeInfoOptionsView subscript.
       // When omitEqualValue = true, then two nil values should still be stored if their Wrapped type was different.
       // From this point of view "nil" string is also incorrect.
+    } else {
+      return
     }
     
     _storage.appendResolvingCollisions(key: key,
