@@ -94,6 +94,20 @@ extension ErrorInfo {
   public mutating func removeAllValues(forKey key: Key) -> ValuesForKey<ValueWrapper>? {
     _storage.removeAllValues(forKey: key)
   }
+  
+  @discardableResult
+  public mutating func replaceAllValues(forKey key: Key,
+                                        by newValue: any ValueType,
+                                        insertIfEqual: Bool = false) -> ValuesForKey<ValueWrapper>? {
+    let oldValues = _storage.removeAllValues(forKey: key)
+    // collisions never happens when replacing
+    _add(key: key,
+         value: newValue,
+         insertIfEqual: insertIfEqual,
+         addTypeInfo: .default, // TODO:
+         collisionSource: .onAppend(keyKind: .dynamic))
+    return oldValues
+  }
 }
 
 // MARK: Append KeyValue
