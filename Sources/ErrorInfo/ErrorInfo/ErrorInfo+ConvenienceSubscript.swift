@@ -73,7 +73,7 @@ extension ErrorInfo {
                              preserveNilValues: preserveNilValues ?? self.preserveNilValues,
                              insertIfEqual: insertIfEqual ?? self.insertIfEqual,
                              addTypeInfo: typeInfoOptions,
-                             collisionSource: .onSubscript(keyKind: .stringLiteralConstant))
+                             collisionSource: .onSubscript(keyKind: .literalConstant))
       }
     }
     

@@ -61,15 +61,14 @@ extension StringBasedCollisionSource {
     }
   }
   
-  /// Kind of key
   public enum KeyKind: Sendable {
-    case stringLiteralConstant
+    case literalConstant
     /// when key is passed as a string interpolation of value or String that created at runtime
     case dynamic
     
     public func defaultStringInterpolation() -> String {
       switch self {
-      case .stringLiteralConstant: "literalConstant"
+      case .literalConstant: "literal"
       case .dynamic: "dynamic"
       }
     }
@@ -98,6 +97,36 @@ public struct ValueWithCollisionWrapper<Value, CollisionSource> {
 }
 
 extension ValueWithCollisionWrapper: Sendable where Value: Sendable, CollisionSource: Sendable {}
+
+public enum StringKeyKind: Sendable {
+  case literalConstant
+  
+  /// literalA + literalB
+  case combinedLiterals
+  
+  /// when key is passed as a string interpolation of value or String that created at runtime
+  case dynamic
+  
+  case modifiedLiteralConstant
+  
+  case modifiedCombinedLiterals
+  
+  case modifiedDynamic
+  
+  case mapped
+  
+  public func defaultStringInterpolation() -> String {
+    switch self {
+    case .literalConstant: "literal"
+    case .combinedLiterals: "combinedLiterals"
+    case .dynamic: "dynamic"
+    case .modifiedLiteralConstant: "modifiedLiteral"
+    case .modifiedCombinedLiterals: "modifiedCombinedLiterals"
+    case .modifiedDynamic: "modifiedDynamic"
+    case .mapped: "modifiedDynamic"
+    }
+  }
+}
 
 // fileprivate enum ValueWithCollisionWrapper<Value, Source> {
 //  case value(Value)

@@ -66,7 +66,7 @@ extension ErrorInfo {
            preserveNilValues: true,
            insertIfEqual: false,
            addTypeInfo: .default,
-           collisionSource: .onSubscript(keyKind: .stringLiteralConstant))
+           collisionSource: .onSubscript(keyKind: .literalConstant))
     }
   }
   
@@ -125,7 +125,7 @@ extension ErrorInfo {
          preserveNilValues: true, // has no effect in this func
          insertIfEqual: true, // has no effect in this func
          addTypeInfo: .default,
-         collisionSource: .onAppend(keyKind: .stringLiteralConstant)) // collisions must never happen using this func
+         collisionSource: .onAppend(keyKind: .literalConstant)) // collisions must never happen using this func
     return oldValues
   }
   
@@ -147,6 +147,8 @@ extension ErrorInfo {
 // MARK: - Append KeyValue
 
 extension ErrorInfo {
+  // TODO: replace this functions with `init(_ sequence: some Sequence)` & `append(contentsOf: some Sequence)`
+  
   /// For copying values with Collection / Sequence types.
   public mutating func append(element newElement: (String, any ValueType),
                               insertIfEqual: Bool = false) {
@@ -175,7 +177,7 @@ extension ErrorInfo {
                                value: value,
                                preserveNilValues: true, // has no effect in this func
                                insertIfEqual: insertIfEqual,
-                               keyKind: .stringLiteralConstant)
+                               keyKind: .literalConstant)
   }
   
   @_disfavoredOverload
