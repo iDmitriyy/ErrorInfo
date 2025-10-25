@@ -24,22 +24,30 @@ extension ErronInfoLiteralKey: ExpressibleByStringLiteral { // TODO: try to make
   // StaticString completely closes the hole when ErronInfoKey can be initialized with dynamically formed string
   // use @const
   public init(stringLiteral value: StaticString) {
-    self.rawValue = String.init(value)
+    self.rawValue = String(value)
   }
 }
 
 extension ErronInfoLiteralKey {
-  public func withPrefix(_ prefix: Self) -> Self {
-    Self(uncheckedString: prefix.rawValue + rawValue)
-  }
-  
-  public func withSuffix(_ suffix: Self) -> Self {
-    Self(uncheckedString: rawValue + suffix.rawValue)
-  }
+//  public func withPrefix(_ prefix: Self) -> Self {
+//    Self(uncheckedString: prefix.rawValue + rawValue)
+//  }
+//  
+//  public func withSuffix(_ suffix: Self) -> Self {
+//    Self(uncheckedString: rawValue + suffix.rawValue)
+//  }
   
   // TODO: perfomance: borrowing | consuming(copying), @const
   public static func + (lhs: Self, rhs: Self) -> Self {
     Self(uncheckedString: lhs.rawValue + rhs.rawValue)
+  }
+  
+  public static func + (lhs: Self, rhs: StaticString) -> Self {
+    Self(uncheckedString: lhs.rawValue + String(rhs))
+  }
+  
+  public static func + (lhs: StaticString, rhs: Self) -> Self {
+    Self(uncheckedString: String(lhs) + rhs.rawValue)
   }
 }
 

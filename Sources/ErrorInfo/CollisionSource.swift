@@ -101,16 +101,21 @@ extension ValueWithCollisionWrapper: Sendable where Value: Sendable, CollisionSo
 public enum StringKeyKind: Sendable {
   case literalConstant
   
-  /// literalA + literalB
+  /// literalA + literalB ,  literalA + "stringLiteral"
   case combinedLiterals
   
   /// when key is passed as a string interpolation of value or String that created at runtime
   case dynamic
   
+  case keyPath
+  
+  /// + prefix / suffix
   case modifiedLiteralConstant
   
+  /// + prefix / suffix
   case modifiedCombinedLiterals
   
+  /// + prefix / suffix
   case modifiedDynamic
   
   case mapped
@@ -120,6 +125,7 @@ public enum StringKeyKind: Sendable {
     case .literalConstant: "literal"
     case .combinedLiterals: "combinedLiterals"
     case .dynamic: "dynamic"
+    case .keyPath: "keyPath"
     case .modifiedLiteralConstant: "modifiedLiteral"
     case .modifiedCombinedLiterals: "modifiedCombinedLiterals"
     case .modifiedDynamic: "modifiedDynamic"

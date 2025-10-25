@@ -12,10 +12,11 @@ extension ErrorInfo {
   // May be closure-based, functionBuilder, stepBuilder pattern with _disfavoredOverload or their combination.
   
   // public static func fromKeys<T, each V: ErrorInfo.ValueType>(of instance: T,
-  public static func collect<R, each V: ErrorInfo.ValueType>(from instance: R,
-                                                             addTypePrefix: Bool, // TODO:  addTypeInfo: TypeInfoOptions
-                                                             keys key: repeat KeyPath<R, each V>) -> Self {
-    func collectEach(_ keyPath: KeyPath<R, some ErrorInfo.ValueType>, root: R, to info: inout Self) {
+  public static func collectFromKeyPaths<R, each V: ValueType>(from instance: R,
+                                                               addTypePrefix: Bool,
+                                                               keys key: repeat KeyPath<R, each V>) -> Self {
+    // TODO:  addTypeInfo: TypeInfoOptions
+    func collectEach(_ keyPath: KeyPath<R, some ValueType>, root: R, to info: inout Self) {
       var keyPathString = ErrorInfoFuncs.asErrorInfoKeyString(keyPath: keyPath)
       if addTypePrefix {
         keyPathString = "\(type(of: root))." + keyPathString

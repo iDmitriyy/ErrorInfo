@@ -23,6 +23,12 @@ extension ErrorInfo {
   }
 }
 
+extension ErrorInfo {
+//  public func unverifiedMapKeys(_ transform: (_ key: String) -> String) -> Self {
+//
+//  }
+}
+
 // extension ErrorInfo {
 //  
 //

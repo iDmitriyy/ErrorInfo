@@ -147,31 +147,9 @@ extension ErrorInfo {
 // MARK: - Append KeyValue
 
 extension ErrorInfo {
-  // TODO: replace this functions with `init(_ sequence: some Sequence)` & `append(contentsOf: some Sequence)`
-  
-  /// For copying values with Collection / Sequence types.
-  public mutating func append(element newElement: (String, any ValueType),
-                              insertIfEqual: Bool = false) {
-    _appendWithDefaultTypeInfo(key: newElement.0,
-                               value: newElement.1,
-                               preserveNilValues: true, // has no effect in this func
-                               insertIfEqual: insertIfEqual,
-                               keyKind: .dynamic) // TODO: ? keyKind: .unspecified
-  }
-  
-//  public mutating func append(element newElement: (String, (any ValueType)?),
-//                              preserveNilValues: Bool = true,
-//                              insertIfEqual: Bool = false) {
-//    appendWithDefaultTypeInfo(key: newElement.0,
-//                              value: newElement.1,
-//                              preserveNilValues: preserveNilValues,
-//                              insertIfEqual: insertIfEqual,
-//                              keyKind: .dynamic)
-//  }
-}
-
-extension ErrorInfo {
-  public mutating func appendIfNotNil(_ value: (any ValueType)?, forKey literalKey: ErronInfoLiteralKey, insertIfEqual: Bool = false) {
+  public mutating func appendIfNotNil(_ value: (any ValueType)?,
+                                      forKey literalKey: ErronInfoLiteralKey,
+                                      insertIfEqual: Bool = false) {
     guard let value else { return }
     _appendWithDefaultTypeInfo(key: literalKey.rawValue,
                                value: value,
@@ -181,13 +159,27 @@ extension ErrorInfo {
   }
   
   @_disfavoredOverload
-  public mutating func appendIfNotNil(_ value: (any ValueType)?, forKey dynamicKey: String, insertIfEqual: Bool = false) {
+  public mutating func appendIfNotNil(_ value: (any ValueType)?,
+                                      forKey dynamicKey: String,
+                                      insertIfEqual: Bool = false) {
     guard let value else { return }
     _appendWithDefaultTypeInfo(key: dynamicKey,
                                value: value,
                                preserveNilValues: true, // has no effect in this func
                                insertIfEqual: insertIfEqual,
                                keyKind: .dynamic)
+  }
+}
+
+extension ErrorInfo {
+  public mutating func append(contentsOf sequence: some Sequence<(String, any ValueType)>, insertIfEqual: Bool = false) {
+    for (key, value) in sequence {
+      _appendWithDefaultTypeInfo(key: key,
+                                 value: value,
+                                 preserveNilValues: true, // has no effect in this func
+                                 insertIfEqual: insertIfEqual,
+                                 keyKind: .dynamic)
+    }
   }
 }
 
@@ -228,7 +220,6 @@ extension ErrorInfo {
                               insertIfEqual: Bool,
                               addTypeInfo _: TypeInfoOptions,
                               collisionSource: @autoclosure () -> CollisionSource) {
-    
     
     // TODO: put type TypeInfo
     let value: any ValueType
