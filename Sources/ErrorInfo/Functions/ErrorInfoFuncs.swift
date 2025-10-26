@@ -15,8 +15,16 @@ public enum ErrorInfoFuncs {}
 
 extension ErrorInfoFuncs {
   /// https://github.com/apple/swift-evolution/blob/main/proposals/0369-add-customdebugdescription-conformance-to-anykeypath.md
-  internal static func asErrorInfoKeyString<R, V>(keyPath: KeyPath<R, V>) -> String {
-    String(reflecting: keyPath)
+  internal static func asErrorInfoKeyString<R, V>(keyPath: KeyPath<R, V>, withTypePrefix: Bool) -> String {
+    let keyPathString = String(reflecting: keyPath) // e.g. "\Foo.count"
+    
+    if withTypePrefix {
+      return String(keyPathString.dropFirst())
+    } else {
+      guard let dotIndex = keyPathString.firstIndex(of: ".") else { return keyPathString }
+      let nextAfterDotIndex = keyPathString.index(after: dotIndex)
+      return String(keyPathString[nextAfterDotIndex...])
+    }
   }
 }
 

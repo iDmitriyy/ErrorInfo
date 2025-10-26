@@ -10,18 +10,13 @@
 extension ErrorInfo {
   
   public mutating func appendFromKeyPaths<R, each V: ValueType>(of instance: R,
-                                                                addTypePrefix: Bool,
+                                                                withTypePrefix: Bool,
                                                                 @ErrorInfoKeyPathsBuilder keys: () -> (repeat KeyPath<R, each V>)) {
     let keyPaths = keys() // R.self
     
     for keyPath in repeat (each keyPaths) {
       let value = instance[keyPath: keyPath]
-      
-      var key = ErrorInfoFuncs.asErrorInfoKeyString(keyPath: keyPath)
-      if addTypePrefix {
-        key = "\(R.self)." + key
-      }
-      
+      let key = ErrorInfoFuncs.asErrorInfoKeyString(keyPath: keyPath, withTypePrefix: withTypePrefix)
       self[key] = value
     }
   }
