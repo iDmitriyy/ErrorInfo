@@ -8,29 +8,29 @@
 // MARK: - Collect values from KeyPath
 
 extension ErrorInfo {
-  // TODO: need some better api to collect values from keyPaths.
-  // May be closure-based, functionBuilder, stepBuilder pattern with _disfavoredOverload or their combination.
   
-  // public static func fromKeys<T, each V: ErrorInfo.ValueType>(of instance: T,
-  public static func collectFromKeyPaths<R, each V: ValueType>(from instance: R,
-                                                               addTypePrefix: Bool,
-                                                               keys key: repeat KeyPath<R, each V>) -> Self {
-    // TODO:  addTypeInfo: TypeInfoOptions
-    func collectEach(_ keyPath: KeyPath<R, some ValueType>, root: R, to info: inout Self) {
-      var keyPathString = ErrorInfoFuncs.asErrorInfoKeyString(keyPath: keyPath)
+  public mutating func appendFromKeyPaths<R, each V: ValueType>(of instance: R,
+                                                                addTypePrefix: Bool,
+                                                                @ErrorInfoKeyPathsBuilder keys: () -> (repeat KeyPath<R, each V>)) {
+    let keyPaths = keys() // R.self
+    
+    for keyPath in repeat (each keyPaths) {
+      let value = instance[keyPath: keyPath]
+      
+      var key = ErrorInfoFuncs.asErrorInfoKeyString(keyPath: keyPath)
       if addTypePrefix {
-        keyPathString = "\(type(of: root))." + keyPathString
+        key = "\(R.self)." + key
       }
-      // TODO: if keyPathString can not be formed correctly then macro can be tried
-      info[keyPathString] = root[keyPath: keyPath]
+      
+      self[key] = value
     }
-    // ⚠️ @iDmitriyy
-    // TODO: - add tests
-    // TODO: check CoW for `inout Self`
-    var info = Self()
+  }
     
-    repeat collectEach(each key, root: instance, to: &info)
-    
-    return info
+  @resultBuilder
+  public struct ErrorInfoKeyPathsBuilder {
+    public static func buildBlock<R, each V: ErrorInfoValueType>(_ values: repeat KeyPath<R, each V>) -> (repeat KeyPath<R, each V>) {
+      let result = (repeat each values)
+      return result
+    }
   }
 }

@@ -89,62 +89,9 @@ extension ErrorInfo {
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
-// MARK: - All For Key
+// MARK: - Append
 
-extension ErrorInfo {
-  // public func allValuesSlice(forKey key: Key) -> (some Sequence<Value>)? {}
-  
-  public func allValues(forKey key: ErronInfoLiteralKey) -> ValuesForKey<ValueWrapper>? {
-    allValues(forKey: key.rawValue)
-  }
-  
-  public func allValues(forKey key: Key) -> ValuesForKey<ValueWrapper>? {
-    _storage.allValues(forKey: key)
-  }
-}
-
-extension ErrorInfo {
-  @discardableResult
-  public mutating func removeAllValues(forKey key: ErronInfoLiteralKey) -> ValuesForKey<ValueWrapper>? {
-    removeAllValues(forKey: key.rawValue)
-  }
-  
-  @discardableResult
-  public mutating func removeAllValues(forKey key: Key) -> ValuesForKey<ValueWrapper>? {
-    _storage.removeAllValues(forKey: key)
-  }
-}
-
-extension ErrorInfo {
-  @discardableResult
-  public mutating func replaceAllValues(forKey literalKey: ErronInfoLiteralKey,
-                                        by newValue: any ValueType) -> ValuesForKey<ValueWrapper>? {
-    let oldValues = _storage.removeAllValues(forKey: literalKey.rawValue)
-    _add(key: literalKey.rawValue,
-         value: newValue,
-         preserveNilValues: true, // has no effect in this func
-         insertIfEqual: true, // has no effect in this func
-         addTypeInfo: .default,
-         collisionSource: .onAppend(keyKind: .literalConstant)) // collisions must never happen using this func
-    return oldValues
-  }
-  
-  @discardableResult
-  public mutating func replaceAllValues(forKey dynamicKey: Key, by newValue: any ValueType) -> ValuesForKey<ValueWrapper>? {
-    let oldValues = _storage.removeAllValues(forKey: dynamicKey)
-    _add(key: dynamicKey,
-         value: newValue,
-         preserveNilValues: true, // has no effect in this func
-         insertIfEqual: true, // has no effect in this func
-         addTypeInfo: .default,
-         collisionSource: .onAppend(keyKind: .dynamic)) // collisions must never happen using this func
-    return oldValues
-  }
-}
-
-// ===-------------------------------------------------------------------------------------------------------------------=== //
-
-// MARK: - Append KeyValue
+// MARK: appendIfNotNil
 
 extension ErrorInfo {
   public mutating func appendIfNotNil(_ value: (any ValueType)?,
@@ -171,6 +118,8 @@ extension ErrorInfo {
   }
 }
 
+// MARK: Append contentsOf
+
 extension ErrorInfo {
   public mutating func append(contentsOf sequence: some Sequence<(String, any ValueType)>, insertIfEqual: Bool = false) {
     for (key, value) in sequence {
@@ -195,6 +144,94 @@ extension ErrorInfo {
          insertIfEqual: insertIfEqual,
          addTypeInfo: .default,
          collisionSource: .onAppend(keyKind: keyKind))
+  }
+}
+
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// MARK: - All For Key
+
+// MARK: hasValues forKey
+
+extension ErrorInfo {
+  public func hasValues(forKey key: ErronInfoLiteralKey) -> Bool {
+    _storage.hasValue(forKey: key.rawValue)
+  }
+  
+  @_disfavoredOverload
+  public func hasValues(forKey key: Key) -> Bool {
+    _storage.hasValue(forKey: key)
+  }
+}
+
+// MARK: hasNonNilValues forKey
+
+// TODO: implement
+//extension ErrorInfo {
+//  public func hasNonNilValues(forKey key: ErronInfoLiteralKey) -> Bool {
+//    hasNonNilValues(forKey: key.rawValue)
+//  }
+//  
+//  public func hasNonNilValues(forKey key: Key) -> Bool {
+//
+//  }
+//}
+
+// MARK: allValues forKey
+
+extension ErrorInfo {
+  // public func allValuesSlice(forKey key: Key) -> (some Sequence<Value>)? {}
+  
+  public func allValues(forKey key: ErronInfoLiteralKey) -> ValuesForKey<ValueWrapper>? {
+    allValues(forKey: key.rawValue)
+  }
+  
+  @_disfavoredOverload
+  public func allValues(forKey key: Key) -> ValuesForKey<ValueWrapper>? {
+    _storage.allValues(forKey: key)
+  }
+}
+
+// MARK: removeAllValues forKey
+
+extension ErrorInfo {
+  @discardableResult
+  public mutating func removeAllValues(forKey key: ErronInfoLiteralKey) -> ValuesForKey<ValueWrapper>? {
+    removeAllValues(forKey: key.rawValue)
+  }
+  
+  @_disfavoredOverload @discardableResult
+  public mutating func removeAllValues(forKey key: Key) -> ValuesForKey<ValueWrapper>? {
+    _storage.removeAllValues(forKey: key)
+  }
+}
+
+// MARK: replaceAllValues forKey
+
+extension ErrorInfo {
+  @discardableResult
+  public mutating func replaceAllValues(forKey literalKey: ErronInfoLiteralKey,
+                                        by newValue: any ValueType) -> ValuesForKey<ValueWrapper>? {
+    let oldValues = _storage.removeAllValues(forKey: literalKey.rawValue)
+    _add(key: literalKey.rawValue,
+         value: newValue,
+         preserveNilValues: true, // has no effect in this func
+         insertIfEqual: true, // has no effect in this func
+         addTypeInfo: .default,
+         collisionSource: .onAppend(keyKind: .literalConstant)) // collisions must never happen using this func
+    return oldValues
+  }
+  
+  @_disfavoredOverload @discardableResult
+  public mutating func replaceAllValues(forKey dynamicKey: Key, by newValue: any ValueType) -> ValuesForKey<ValueWrapper>? {
+    let oldValues = _storage.removeAllValues(forKey: dynamicKey)
+    _add(key: dynamicKey,
+         value: newValue,
+         preserveNilValues: true, // has no effect in this func
+         insertIfEqual: true, // has no effect in this func
+         addTypeInfo: .default,
+         collisionSource: .onAppend(keyKind: .dynamic)) // collisions must never happen using this func
+    return oldValues
   }
 }
 
