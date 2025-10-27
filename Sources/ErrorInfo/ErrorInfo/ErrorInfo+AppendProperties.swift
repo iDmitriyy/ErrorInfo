@@ -26,7 +26,6 @@ extension ErrorInfo {
     let keyPaths = keys() // R.self
     
     for keyPath in repeat (each keyPaths) {
-      // TODO: keyKind – case keyPath
       let key: String = switch keysPrefixKind {
       case .type: ErrorInfoFuncs.asErrorInfoKeyString(keyPath: keyPath, withTypePrefix: true)
       case .valueName(let name): name + "." + ErrorInfoFuncs.asErrorInfoKeyString(keyPath: keyPath, withTypePrefix: false)
@@ -34,7 +33,7 @@ extension ErrorInfo {
       }
       
       let value = instance[keyPath: keyPath]
-      self[key] = value
+      self[key] = value // TODO: keyKind – case keyPath
     }
   }
     
