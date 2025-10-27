@@ -28,16 +28,9 @@ extension ErronInfoLiteralKey: ExpressibleByStringLiteral { // TODO: try to make
   }
 }
 
-extension ErronInfoLiteralKey {
-//  public func withPrefix(_ prefix: Self) -> Self {
-//    Self(uncheckedString: prefix.rawValue + rawValue)
-//  }
-//  
-//  public func withSuffix(_ suffix: Self) -> Self {
-//    Self(uncheckedString: rawValue + suffix.rawValue)
-//  }
-  
+extension ErronInfoLiteralKey {  
   // TODO: perfomance: borrowing | consuming(copying), @const
+  
   public static func + (lhs: Self, rhs: Self) -> Self {
     Self(uncheckedString: lhs.rawValue + rhs.rawValue)
   }

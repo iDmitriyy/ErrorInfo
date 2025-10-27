@@ -70,7 +70,7 @@ extension ErrorInfoFuncs {
       true
     } else if value is Dictionary<AnyHashable, Any>.Type {
       true
-    } else if value is any FloatingPoint.Type {
+    } else if value is Array<AnyHashable>.Type {
       true
     } else if value is any RangeExpression.Type { // FIXME: warning
       true
@@ -94,5 +94,115 @@ extension ErrorInfoFuncs {
     } else {
       false
     }
+    
+    /*
+     Optional
+     Character
+     UnicodeScalar
+     Ranges
+     Stride
+     CollectionOfOne
+     RangeSet
+     Result
+     Error
+     LazyCollections
+     Hasher
+     ObjectIdentifier
+     Pointer
+     SIMDVector
+     Slices
+     */
   }
 }
+
+/*
+ CustomStringConvertible
+
+ Inherited By:
+ BinaryInteger
+ CodingKey
+ FixedWidthInteger
+ LosslessStringConvertible
+ SIMD
+ SignedInteger
+ StringProtocol
+ UnsignedInteger
+
+ Conforming Types:
+ AnyHashable
+ Array
+ Conforms when Element conforms to Copyable and Escapable.
+ ArraySlice
+ Conforms when Element conforms to Copyable and Escapable.
+ AtomicLoadOrdering
+ AtomicStoreOrdering
+ AtomicUpdateOrdering
+ Bool
+ Character
+ ClosedRange
+ Conforms when Bound conforms to Comparable.
+ ContiguousArray
+ Conforms when Element conforms to Copyable and Escapable.
+ DefaultStringInterpolation
+ Dictionary
+ Conforms when Key conforms to Hashable, Value conforms to Copyable, and Value conforms to Escapable.
+ Dictionary.Keys
+ Conforms when Key conforms to Hashable, Value conforms to Copyable, and Value conforms to Escapable.
+ Dictionary.Values
+ Conforms when Key conforms to Hashable, Value conforms to Copyable, and Value conforms to Escapable.
+ DiscontiguousSlice
+ Conforms when Base conforms to Collection.
+ DiscontiguousSlice.Index
+ Conforms when Base conforms to Collection.
+ Double
+ Duration
+ Float
+ Float16
+ Float80
+ Int
+ Int128
+ Int16
+ Int32
+ Int64
+ Int8
+ KeyValuePairs
+ Conforms when Key conforms to Copyable, Key conforms to Escapable, Value conforms to Copyable, and Value conforms to Escapable.
+ Mirror
+ Range
+ Conforms when Bound conforms to Comparable.
+ RangeSet
+ Conforms when Bound conforms to Comparable.
+ RangeSet.Ranges
+ Conforms when Bound conforms to Comparable.
+ RemoteCallTarget
+ SIMD16
+ SIMD2
+ SIMD3
+ SIMD32
+ SIMD4
+ SIMD64
+ SIMD8
+ SIMDMask
+ Set
+ Conforms when Element conforms to Hashable.
+ StaticString
+ String
+ String.Encoding
+ String.UTF16View
+ String.UTF8View
+ String.UnicodeScalarView
+ Substring
+ TaskLocal
+ TaskPriority
+ UInt
+ UInt128
+ UInt16
+ UInt32
+ UInt64
+ UInt8
+ Unicode.Scalar
+ Unicode.UTF8.ValidationError
+ Unicode.UTF8.ValidationError.Kind
+ UnownedJob
+ WordPair
+ */
