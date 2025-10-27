@@ -15,11 +15,12 @@ struct TypeDesciptionTests {
     
     let integerAnyEIV: any ErrorInfoValueType = 10
     let integerOptionalAnyEIV: (any ErrorInfoValueType)? = 10
+        
+    descr(of: integer)
+    descr(of: integerOptional)
     
-    ErrorInfoFuncs._typeDesciption(for: integer)
-    ErrorInfoFuncs._typeDesciption(for: integerOptional)
-    
-    
+    descr(of: integerAnyEIV)
+    descr(of: integerOptionalAnyEIV)
     
     print("")
   }
@@ -30,6 +31,9 @@ struct TypeDesciptionTests {
     
     let testSubClass: TestSubClass = TestSubClass()
     let testSubClassOptional: TestSubClass? = TestSubClass()
+    
+    let testSubClassAsParent: TestClass = TestSubClass()
+    let testSubClassAsParentOptional: TestClass? = TestSubClass()
     
     let testClassAsAnyObject: AnyObject = TestClass()
     let testClassOptionalAnyObject: AnyObject? = TestClass()
@@ -42,6 +46,9 @@ struct TypeDesciptionTests {
     
     descr(of: testSubClass)
     descr(of: testSubClassOptional)
+    
+    descr(of: testSubClassAsParent)
+    descr(of: testSubClassAsParentOptional)
     
     descr(of: testClassAsAnyObject)
     descr(of: testClassOptionalAnyObject)
@@ -57,21 +64,26 @@ struct TypeDesciptionTests {
     let testClassOptionalAsAnyObject: AnyObject? = Optional<TestClass>.none
     let testSubClassOptionalAsAnyObject: AnyObject? = Optional<TestSubClass>.none
   }
-  
+    
   func descr<T>(of value: T) {
     _ = value
+    print("descr<T> \(T.self)")
   }
   
   func descr<T>(of value: T?) {
     _ = value
+    print("descr<T?> \(T.self)?")
+//    print("descr<T?> \(type(of: value))")
   }
   
   func descr<T: AnyObject>(of value: T) {
     _ = value
+    print("descr<objT> \(type(of: value))")
   }
   
   func descr<T: AnyObject>(of value: T?) {
     _ = value
+    print("descr<objT?> \(T.self)?")
   }
 }
 
