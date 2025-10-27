@@ -8,15 +8,25 @@
 // MARK: - Collect values from KeyPath
 
 extension ErrorInfo {
+  public enum KeyPathPrefixKind {
+    case type
+    case valueName(_ name: String)
+  }
   
   public mutating func appendFromKeyPaths<R, each V: ValueType>(of instance: R,
-                                                                withTypePrefix: Bool,
+                                                                withKeysPrefix keysPrefixKind: KeyPathPrefixKind?,
                                                                 @ErrorInfoKeyPathsBuilder keys: () -> (repeat KeyPath<R, each V>)) {
     let keyPaths = keys() // R.self
     
     for keyPath in repeat (each keyPaths) {
+      // TODO: keyKind – case keyPath
+      let key: String = switch keysPrefixKind {
+      case .type: ErrorInfoFuncs.asErrorInfoKeyString(keyPath: keyPath, withTypePrefix: true)
+      case .valueName(let name): name + "." + ErrorInfoFuncs.asErrorInfoKeyString(keyPath: keyPath, withTypePrefix: false)
+      case nil: ErrorInfoFuncs.asErrorInfoKeyString(keyPath: keyPath, withTypePrefix: false)
+      }
+      
       let value = instance[keyPath: keyPath]
-      let key = ErrorInfoFuncs.asErrorInfoKeyString(keyPath: keyPath, withTypePrefix: withTypePrefix)
       self[key] = value
     }
   }

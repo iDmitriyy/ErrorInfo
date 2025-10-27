@@ -118,7 +118,7 @@ public enum StringKeyKind: Sendable {
   /// + prefix / suffix
   case modifiedDynamic
   
-  case mapped
+  case uverifiedMapped
   
   public func defaultStringInterpolation() -> String {
     switch self {
@@ -129,7 +129,7 @@ public enum StringKeyKind: Sendable {
     case .modifiedLiteralConstant: "modifiedLiteral"
     case .modifiedCombinedLiterals: "modifiedCombinedLiterals"
     case .modifiedDynamic: "modifiedDynamic"
-    case .mapped: "modifiedDynamic"
+    case .uverifiedMapped: "uverifiedMapped"
     }
   }
 }
