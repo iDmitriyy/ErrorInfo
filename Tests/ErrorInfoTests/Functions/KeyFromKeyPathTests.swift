@@ -1,5 +1,5 @@
 //
-//  ErrorInfoKeyFromKeyPathTests.swift
+//  KeyFromKeyPathTests.swift
 //  ErrorInfo
 //
 //  Created by tmp on 26/10/2025.
@@ -8,7 +8,7 @@
 @testable import ErrorInfo
 import Testing
 
-struct ErrorInfoKeyFromKeyPathTests {
+struct KeyFromKeyPathTests {
   @Test func keyPathString() throws {
     let count = ErrorInfoFuncs.asErrorInfoKeyString(keyPath: \String.count, withTypePrefix: false)
     let countWithTypePrefix = ErrorInfoFuncs.asErrorInfoKeyString(keyPath: \String.count, withTypePrefix: true)

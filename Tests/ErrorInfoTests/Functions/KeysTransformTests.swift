@@ -1,5 +1,5 @@
 //
-//  ErrorInfoKeysTransformTests.swift
+//  KeysTransformTests.swift
 //  swifty-kit
 //
 //  Created by Dmitriy Ignatyev on 16.04.2025.
@@ -9,7 +9,7 @@
 import Foundation
 import Testing
 
-struct ErrorInfoKeysTransformTests {
+struct KeysTransformTests {
   private static let expectedAlwaysStayUnmodified: [String] = [
     "",
     " ",
@@ -61,7 +61,7 @@ struct ErrorInfoKeysTransformTests {
       "string.with.dots",
       "string.WiTh.dOtS2",
       "string&WIth*|",
-    ] + Self.expectedAlwaysStayUnmodified
+    ] + KeysTransformTests.expectedAlwaysStayUnmodified
     
     let diff = Set(camelCased).subtracting(expected)
     #expect(diff.isEmpty)
@@ -88,7 +88,7 @@ struct ErrorInfoKeysTransformTests {
       "String.with.dots",
       "String.WiTh.dOtS2",
       "String&WIth*|",
-    ] + Self.expectedAlwaysStayUnmodified
+    ] + KeysTransformTests.expectedAlwaysStayUnmodified
     
     let diff = Set(pascalCased).subtracting(expected)
     #expect(diff.isEmpty)
@@ -115,7 +115,7 @@ struct ErrorInfoKeysTransformTests {
       "string.with.dots",
       "string._wi_th.d_ot_s2",
       "string&_with*|",
-    ] + Self.expectedAlwaysStayUnmodified
+    ] + KeysTransformTests.expectedAlwaysStayUnmodified
     
     let diff = Set(snakeCased).subtracting(expected)
     #expect(diff.isEmpty)
@@ -142,7 +142,7 @@ struct ErrorInfoKeysTransformTests {
       "string.with.dots",
       "string._wi_th.d_ot_s2",
       "string&_with*|",
-    ] + Self.expectedAlwaysStayUnmodified
+    ] + KeysTransformTests.expectedAlwaysStayUnmodified
     
     let diff = Set(snakeCased).subtracting(expected)
     #expect(diff.isEmpty)
