@@ -134,6 +134,17 @@ public enum StringKeyKind: Sendable {
   }
 }
 
+extension ErrorInfo {
+  internal struct TaggedKey: Hashable, Sendable {
+    let string: String
+    let kind: StringKeyKind
+    
+    func hash(into hasher: inout Hasher) { hasher.combine(string) }
+    
+    static func == (lhs: Self, rhs: Self) -> Bool { lhs.string == rhs.string }
+  }
+}
+
 // fileprivate enum ValueWithCollisionWrapper<Value, Source> {
 //  case value(Value)
 //  case collidedValue(Value, collisionSource: CollSource)

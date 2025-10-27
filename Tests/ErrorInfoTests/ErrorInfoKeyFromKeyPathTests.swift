@@ -15,7 +15,5 @@ struct ErrorInfoKeyFromKeyPathTests {
     
     #expect(count == "count")
     #expect(countWithTypePrefix == "String.count")
-    
-    print(count, countWithTypePrefix)
   }
 }
