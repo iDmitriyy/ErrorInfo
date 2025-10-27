@@ -1,5 +1,5 @@
 //
-//  ErrorInfo+CollectWithKeyPath.swift
+//  ErrorInfo+AppendProperties.swift
 //  ErrorInfo
 //
 //  Created by Dmitriy Ignatyev on 06/10/2025.
@@ -13,9 +13,16 @@ extension ErrorInfo {
     case valueName(_ name: String)
   }
   
-  public mutating func appendFromKeyPaths<R, each V: ValueType>(of instance: R,
-                                                                withKeysPrefix keysPrefixKind: KeyPathPrefixKind?,
-                                                                @ErrorInfoKeyPathsBuilder keys: () -> (repeat KeyPath<R, each V>)) {
+  // Improvement: stingify-like macro for extrating the string name of value passed to `instance` arg
+  // case .valueName then be useful only in contexts with shortand args like $0.
+  // But typically macro will be more convenient as there no need to duplacte binding name.
+  // e.g. appendFromKeyPaths(of: address, keysPrefix: .valueName("address")) { ... } – need to maanually write "address".
+  // if `address` is renamed in sources, then "address" literal alsso needed to be cnhaged manualy, which is not what we want.
+  // Macro also closses the hole that valueName can be en empty string: .valueName(""). binding can not be empty
+  
+  public mutating func appendProperties<R, each V: ValueType>(of instance: R,
+                                                              keysPrefix keysPrefixKind: KeyPathPrefixKind?,
+                                                              @ErrorInfoKeyPathsBuilder keys: () -> (repeat KeyPath<R, each V>)) {
     let keyPaths = keys() // R.self
     
     for keyPath in repeat (each keyPaths) {

@@ -9,7 +9,7 @@
 import Testing
 
 struct ErrorInfoKeyFromKeyPathTests {
-  @Test func keyPathString() throws {    
+  @Test func keyPathString() throws {
     let count = ErrorInfoFuncs.asErrorInfoKeyString(keyPath: \String.count, withTypePrefix: false)
     let countWithTypePrefix = ErrorInfoFuncs.asErrorInfoKeyString(keyPath: \String.count, withTypePrefix: true)
     
