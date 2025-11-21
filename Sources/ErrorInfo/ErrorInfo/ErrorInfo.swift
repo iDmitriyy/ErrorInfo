@@ -55,10 +55,10 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
 // The same trick with sub-separaation can be done for append() functions
 // Dictionary literal can then strictly be created with string literals, and when dynamic for strings another APIs are forced to be used.
 extension ErrorInfo {
-  public subscript(key: ErronInfoLiteralKey) -> (any ValueType)? {
+  public subscript<V: ValueType>(key: ErronInfoLiteralKey) -> V? {
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
     get {
-      allValues(forKey: key.rawValue)?.first.value
+      allValues(forKey: key.rawValue)?.first.value as? V
     }
     set {
       _add(key: key.rawValue,
@@ -71,10 +71,10 @@ extension ErrorInfo {
   }
   
   @_disfavoredOverload
-  public subscript(key: String) -> (any ValueType)? {
+  public subscript<V: ValueType>(key: String) -> V? {
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
     get {
-      allValues(forKey: key)?.first.value
+      allValues(forKey: key)?.first.value as? V
     }
     set {
       _add(key: key,
