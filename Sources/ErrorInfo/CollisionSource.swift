@@ -109,9 +109,9 @@ public enum StringKeyKind: Sendable {
   
   case keyPath
   
-  case unverifiedMapped
+  indirect case unverifiedMapped(original: Self)
   
-  indirect case modified(Self)
+  indirect case modified(original: Self)
   
   public func defaultStringInterpolation() -> String {
     switch self {
@@ -120,7 +120,7 @@ public enum StringKeyKind: Sendable {
     case .dynamic: "dynamic"
     case .keyPath: "keyPath"
     case .modified(let original): "modified_\(original)"
-    case .unverifiedMapped: "uverifiedMapped"
+    case .unverifiedMapped(let original): "uverifiedMapped_\(original)"
     }
   }
 }

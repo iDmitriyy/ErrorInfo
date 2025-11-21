@@ -40,18 +40,23 @@ struct TypeDesciptionTests {
     
     let testSubClassAnyObject: AnyObject = TestSubClass()
     let testSubClassOptionalObject: AnyObject? = TestSubClass()
+    print("")
     
     descr(of: testClass)
     descr(of: testClassOptional)
+    print("")
     
     descr(of: testSubClass)
     descr(of: testSubClassOptional)
+    print("")
     
     descr(of: testSubClassAsParent)
     descr(of: testSubClassAsParentOptional)
+    print("")
     
     descr(of: testClassAsAnyObject)
     descr(of: testClassOptionalAnyObject)
+    print("")
     
     descr(of: testSubClassAnyObject)
     descr(of: testSubClassOptionalObject)
@@ -83,7 +88,12 @@ struct TypeDesciptionTests {
   
   func descr<T: AnyObject>(of value: T?) {
     _ = value
-    print("descr<objT?> \(T.self)?")
+//    print("descr<objT?> \(T.self)?")
+    if let value {
+      print("descr<objT?> \(type(of: value))?")
+    } else {
+      print("descr<objT?> \(T.self)?")
+    }
   }
 }
 
