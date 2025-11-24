@@ -9,7 +9,7 @@
 
 extension ErrorInfo {
   internal struct _ValueVariant: Sendable, ApproximatelyEquatable {
-    let wrapped: Variant
+    private let wrapped: Variant
     
     var optionalValue: (any ErrorInfoValueType)? {
       switch wrapped {
@@ -18,12 +18,12 @@ extension ErrorInfo {
       }
     }
     
-    static func value(_ value: some ErrorInfoValueType) -> Self {
+    static func value(_ value: any ErrorInfoValueType) -> Self {
       Self(wrapped: .value(value))
     }
     
     static func nilInstance(typeOfWrapped: any ErrorInfoValueType.Type) -> Self {
-      Self(wrapped: .typedNil(type: typeOfWrapped))
+      Self(wrapped: .typedNil(typeOfWrapped: typeOfWrapped))
     }
     
     static func isApproximatelyEqual(lhs: borrowing Self, rhs: borrowing Self) -> Bool {
@@ -42,7 +42,7 @@ extension ErrorInfo {
     
     enum Variant {
       case value(any ErrorInfoValueType)
-      case typedNil(type: any ErrorInfoValueType.Type)
+      case typedNil(typeOfWrapped: any Sendable.Type)
     }
   }
 }

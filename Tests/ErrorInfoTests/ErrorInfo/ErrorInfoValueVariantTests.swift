@@ -15,6 +15,11 @@ struct ErrorInfoValueVariantTests {
     #expect(Variant.isApproximatelyEqual(lhs: .value(10), rhs: .value(10)))
     #expect(!Variant.isApproximatelyEqual(lhs: .value(Int(10)), rhs: .value(UInt(10))))
     
+    #expect(Variant.isApproximatelyEqual(lhs: .value(10), rhs: .value(10 as any ErrorInfoValueType)))
+    
+    
+    #expect(Variant.isApproximatelyEqual(lhs: .value(10), rhs: .value(10)))
+    
     #expect(!Variant.isApproximatelyEqual(lhs: .value(10),
                                          rhs: .nilInstance(typeOfWrapped: Int.self)))
     
