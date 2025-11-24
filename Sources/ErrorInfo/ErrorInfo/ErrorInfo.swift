@@ -17,7 +17,7 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
   // TODO: should CollisionSource be stored in BackingStorage? mostly always CollisionSource is nil
   // may be BackingStorage should keep a separate dict for keeping CollisionSource instances
   // check memory consuption for both cases.
-  // Do it after all Slices will be comlpeted, askeeping collisionSource in separate dict need a way to somehow
+  // Do it after all Slices will be comlpeted, as keeping collisionSource in separate dict need a way to somehow
   // store relation between values in slice and collision sources.
   // Another one case is with TypeInfo. Simply type info can be stored as a Bool flag or Empty() instance.
   internal typealias BackingStorage = OrderedMultiValueErrorInfoGeneric<String, _ValueVariant>

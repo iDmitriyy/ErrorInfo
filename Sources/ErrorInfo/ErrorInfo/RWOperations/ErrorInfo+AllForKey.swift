@@ -2,7 +2,7 @@
 //  ErrorInfo+AllForKey.swift
 //  ErrorInfo
 //
-//  Created by tmp on 25/11/2025.
+//  Created by Dmitriy Ignatyev on 25/11/2025.
 //
 
 // MARK: - All For Key

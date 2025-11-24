@@ -2,7 +2,7 @@
 //  ErrorInfo+Append.swift
 //  ErrorInfo
 //
-//  Created by tmp on 24/11/2025.
+//  Created by Dmitriy Ignatyev on 24/11/2025.
 //
 
 // MARK: - Append

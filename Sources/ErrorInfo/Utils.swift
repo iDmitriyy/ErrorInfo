@@ -2,7 +2,7 @@
 //  Utils.swift
 //  ErrorInfo
 //
-//  Created by tmp on 27/10/2025.
+//  Created by Dmitriy Ignatyev on 27/10/2025.
 //
 
 extension Optional {

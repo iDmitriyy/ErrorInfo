@@ -2,7 +2,7 @@
 //  KeyFromKeyPathTests.swift
 //  ErrorInfo
 //
-//  Created by tmp on 26/10/2025.
+//  Created by Dmitriy Ignatyev on 26/10/2025.
 //
 
 @testable import ErrorInfo
