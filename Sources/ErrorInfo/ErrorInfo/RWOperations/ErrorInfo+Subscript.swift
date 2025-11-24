@@ -17,6 +17,16 @@
 // The same trick with sub-separaation can be done for append() functions
 // Dictionary literal can then strictly be created with string literals, and when dynamic for strings another APIs are forced to be used.
 extension ErrorInfo {
+  // TODO: is it good idead to return .first as a default? In most cases it is what expected, as normally there will 1 va;ue for key
+  // public subscript(key: ErronInfoLiteralKey) -> (any ValueType)? {
+  //   allValues(forKey: key)?.first
+  // }
+  //
+  // @_disfavoredOverload
+  // public subscript(key: String) -> (any ValueType)? {
+  //   allValues(forKey: key)?.first
+  // }
+  
   public subscript<V: ValueType>(key: ErronInfoLiteralKey) -> V? {
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
     get {
