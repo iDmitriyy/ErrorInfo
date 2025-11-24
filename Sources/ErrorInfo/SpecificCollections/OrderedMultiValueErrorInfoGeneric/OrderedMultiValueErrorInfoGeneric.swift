@@ -15,7 +15,7 @@
  which differs from the order values were appended
  */
 
-public struct OrderedMultiValueErrorInfoGeneric<Key: Hashable, Value>: Sequence {
+public struct OrderedMultiValueErrorInfoGeneric<Key: Hashable, Value: ApproximatelyEquatable>: Sequence {
   public typealias Element = (key: Key, value: ValueWrapper)
   public typealias ValueWrapper = ValueWithCollisionWrapper<Value, CollisionSource>
   public typealias CollisionSource = StringBasedCollisionSource
@@ -67,7 +67,7 @@ extension OrderedMultiValueErrorInfoGeneric {
       if let currentValues = _storage.allValuesSlice(forKey: key) {
         // TODO: perfomace Test: _storage.containsValues(forKey:, where:) might be faster than allValuesSlice(forKey:).contains
         let isEqualToOneOfCurrent = currentValues.contains(where: { currentValue in
-          ErrorInfoFuncs.isApproximatelyEqualAny(currentValue.value, newValue)
+          newValue.isApproximatelyEqual(to: currentValue.value)
         })
         
         if isEqualToOneOfCurrent {
@@ -94,5 +94,17 @@ extension OrderedMultiValueErrorInfoGeneric {
 extension OrderedMultiValueErrorInfoGeneric {
   internal mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
     _storage.removeAll(keepingCapacity: keepCapacity)
+  }
+}
+
+// MARK: - ApproximatelyEquatable
+
+public protocol ApproximatelyEquatable: ~Copyable {
+  static func isApproximatelyEqual(lhs: borrowing Self, rhs: borrowing Self) -> Bool
+}
+
+extension ApproximatelyEquatable {
+  func isApproximatelyEqual(to other: borrowing Self) -> Bool {
+    Self.isApproximatelyEqual(lhs: self, rhs: other)
   }
 }

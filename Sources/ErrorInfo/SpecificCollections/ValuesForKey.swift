@@ -22,6 +22,21 @@ public struct ValuesForKey<Value>: Sequence { // TODO: make nonEmpty
     }
   }
   
+  /// Return nonEmpty instance
+  internal func _compactMap<U>(_ transform: (Value) -> U?) -> ValuesForKey<U>? {
+    switch _elements {
+    case .left(let element):
+      return if let transformedElement = transform(element) {
+        ValuesForKey<U>(element: transformedElement)
+      } else {
+        nil
+      }
+    case .right(let elements):
+      let transformedElements = elements.compactMap(transform)
+      return transformedElements.isEmpty ? nil : ValuesForKey<U>(array: transformedElements)
+    }
+  }
+  
   public func makeIterator() -> some IteratorProtocol<Value> {
     switch _elements {
     case .left(let element): AnyIterator(CollectionOfOne(element).makeIterator())

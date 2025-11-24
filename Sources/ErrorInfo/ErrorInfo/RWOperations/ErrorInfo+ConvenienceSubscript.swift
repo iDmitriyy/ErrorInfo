@@ -59,13 +59,13 @@ extension ErrorInfo {
     // MARK: - Subscript
     
     /// `omitEqualValue`has higher priority than provided in `appendWith(typeInfoOptions:, omitEqualValue:, append:)` function.
-    public subscript(key literalKey: ErronInfoLiteralKey,
+    public subscript<V: ValueType>(key literalKey: ErronInfoLiteralKey,
                      preserveNilValues: Bool? = nil,
-                     insertIfEqual: Bool? = nil) -> (any ValueType)? {
+                     insertIfEqual: Bool? = nil) -> V? {
       // TODO: ? borrowing get set
       @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
       get {
-        pointer.pointee.allValues(forKey: literalKey)?.first.value
+        pointer.pointee.allValues(forKey: literalKey)?.first as? V
       }
       set {
         pointer.pointee._add(key: literalKey.rawValue,
@@ -79,13 +79,13 @@ extension ErrorInfo {
     
     /// `omitEqualValue`has higher priority than provided in `appendWith(typeInfoOptions:, omitEqualValue:, append:)` function.
     @_disfavoredOverload
-    public subscript(key dynamicKey: String,
+    public subscript<V: ValueType>(key dynamicKey: String,
                      preserveNilValues: Bool? = nil,
-                     insertIfEqual: Bool? = nil) -> (any ValueType)? {
+                     insertIfEqual: Bool? = nil) -> V? {
       // TODO: ? borrowing get set
       @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
       get {
-        pointer.pointee.allValues(forKey: dynamicKey)?.first.value
+        pointer.pointee.allValues(forKey: dynamicKey)?.first as? V
       }
       set {
         pointer.pointee._add(key: dynamicKey,
@@ -103,7 +103,7 @@ extension ErrorInfo {
     public mutating func replaceAllValues(forKey dynamicKey: Key,
                                           by newValue: any ValueType,
                                           preserveNilValues: Bool? = nil,
-                                          insertIfEqual: Bool? = nil) -> ValuesForKey<ValueWrapper>? {
+                                          insertIfEqual: Bool? = nil) -> ValuesForKey<any ValueType>? {
       let oldValues = pointer.pointee._storage.removeAllValues(forKey: dynamicKey)
       // collisions never happens when replacing
       pointer.pointee._add(key: dynamicKey,
@@ -112,7 +112,7 @@ extension ErrorInfo {
                            insertIfEqual: insertIfEqual ?? self.insertIfEqual,
                            addTypeInfo: typeInfoOptions,
                            collisionSource: .onAppend(keyKind: .dynamic))
-      return oldValues
+      return oldValues?._compactMap { $0.value.optionalValue }
     }
   }
 }

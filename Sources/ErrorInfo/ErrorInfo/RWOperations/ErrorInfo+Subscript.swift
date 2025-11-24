@@ -1,0 +1,50 @@
+//
+//  ErrorInfo+Subscript.swift
+//  ErrorInfo
+//
+//  Created by tmp on 24/11/2025.
+//
+
+// MARK: - Subscript
+
+// TODO: check if there runtime issues with unavailable setter. If yes then make deprecated
+// TODO: ? make subscript as a defualt imp in protocol, providing a way to override implementation at usage site
+// ErronInfoLiteralKey with @_disfavoredOverload String-base subscript allows to differemtiate betwee when it was a literal-key subscript
+// and when it was defenitely some string value passed dynamically / at runtime.
+// so this cleary separate the subscript access to 2 kinds:
+// 1. exact literal that can be found in source code or predefined key which also can be found i source
+// 2. some string value created dynamically
+// The same trick with sub-separaation can be done for append() functions
+// Dictionary literal can then strictly be created with string literals, and when dynamic for strings another APIs are forced to be used.
+extension ErrorInfo {
+  public subscript<V: ValueType>(key: ErronInfoLiteralKey) -> V? {
+    @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
+    get {
+      allValues(forKey: key.rawValue)?.first as? V
+    }
+    set {
+      _add(key: key.rawValue,
+           value: newValue,
+           preserveNilValues: true,
+           insertIfEqual: false,
+           addTypeInfo: .default,
+           collisionSource: .onSubscript(keyKind: .literalConstant))
+    }
+  }
+  
+  @_disfavoredOverload
+  public subscript<V: ValueType>(key: String) -> V? {
+    @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
+    get {
+      allValues(forKey: key)?.first as? V
+    }
+    set {
+      _add(key: key,
+           value: newValue,
+           preserveNilValues: true,
+           insertIfEqual: false,
+           addTypeInfo: .default,
+           collisionSource: .onSubscript(keyKind: .dynamic))
+    }
+  }
+}

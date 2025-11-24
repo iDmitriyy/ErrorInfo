@@ -18,13 +18,30 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
     self.init()
     // TODO: OrderedMultipleValuesDictionaryLiteral(dictionaryLiteral: elements) or appropriate init
     // TODO: try reserve capacity. perfomance tests
+    
     for (key, value) in elements {
-      self._add(key: key,
-                value: value,
-                preserveNilValues: true,
-                insertIfEqual: true,
-                addTypeInfo: .default,
-                collisionSource: .onCreateWithDictionaryLiteral)
+//      if let value {
+//        add1(value)
+//      }
+//      
+//      add2(value)
+      // FIXME: 
+//      self._add(key: key,
+//                value: value,
+//                preserveNilValues: true,
+//                insertIfEqual: true,
+//                addTypeInfo: .default,
+//                collisionSource: .onCreateWithDictionaryLiteral)
     }
+    
+    
   }
+  
+//  func add1<T: ErrorInfoValueType>(_ v: T) {
+//    
+//  }
+//  
+//  func add2<T: ErrorInfoValueType>(_ v: T?) {
+//    
+//  }
 }

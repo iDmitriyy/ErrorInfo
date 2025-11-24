@@ -26,7 +26,7 @@ extension ErrorInfo {
       // Swift.Dictionary<String, Any> has unique keys with single value for key, so collision might never happen.
       // hardcode collisionSource: .onMerge(origin: .fileLine())
       _storage.appendResolvingCollisions(key: key,
-                                         value: interpolatedValue,
+                                         value: .value(interpolatedValue),
                                          insertIfEqual: true,
                                          collisionSource: .onDictionaryConsumption(origin: collisionSource()))
       // TODO: ? insteaad of converting to string may be try cast to concrete standard types, and iterpolate if only cast fails
