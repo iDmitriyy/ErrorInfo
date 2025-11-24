@@ -77,8 +77,12 @@ struct TypeDesciptionTests {
   
   func descr<T>(of value: T?) {
     _ = value
-    print("descr<T?> \(T.self)?")
-//    print("descr<T?> \(type(of: value))")
+//
+    if let value {
+      print("descr<T?> \(type(of: value))?")
+    } else {
+      print("descr<T?> \(T.self)?")
+    }
   }
   
   func descr<T: AnyObject>(of value: T) {
@@ -94,6 +98,19 @@ struct TypeDesciptionTests {
     } else {
       print("descr<objT?> \(T.self)?")
     }
+  }
+  
+  @Test func typesEquality() {
+    #expect(Int.self == Int.self)
+    
+    let a1 = (Int.self as Any.Type) == Int.self
+    #expect(a1)
+    
+    let a2 = (Int.self as (any ErrorInfoValueType.Type)) == Int.self
+    #expect(a2)
+    
+    let a3 = (Int.self as (any ErrorInfoValueType.Type)) == (Int.self as Any.Type)
+    #expect(a3)
   }
 }
 

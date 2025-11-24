@@ -280,3 +280,15 @@ extension ErrorInfo {
                                        collisionSource: collisionSource())
   }
 }
+
+extension ErrorInfo {
+  internal struct _Value: Sendable {
+    let variant: Variant
+    
+    enum Variant {
+      case value(any ErrorInfoValueType)
+      case none(type: (any ErrorInfoValueType).Type)
+      // check nil instances via AnyHashable
+    }
+  }
+}

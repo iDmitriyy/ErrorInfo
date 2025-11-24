@@ -67,13 +67,11 @@ extension ErrorInfoFuncs {
     var normalCharsCount: UInt = 0 // non-separator characters count
     var previousWasSeprator = false
     for character in string {
-      if character == "_" {
-        previousWasSeprator = true
-      } else if character == "-" {
+      if character == "_" || character == "-" {
         previousWasSeprator = true
       } else { // normal (non-separator) character:
         // TODO: If no transform was made, then self can be returned without making a copy to result.
-        // save a flag to remeber if any trnasforms were made, save only current index and make actual transform
+        // save a flag to remeber if any transforms were made, save only current index and make actual transform
         // and result allocation only when trasform really needed.
         if normalCharsCount > 0 { // If after separator then uppercased
           if previousWasSeprator {
@@ -121,6 +119,7 @@ extension ErrorInfoFuncs {
         normalCharsCount += 1
       } // end if
     } // end for
+    // TODO: is this conditions needed? isn't enough to return result?
     return normalCharsCount > 0 ? result : String(repeating: separator, count: string.count)
   }
 }
