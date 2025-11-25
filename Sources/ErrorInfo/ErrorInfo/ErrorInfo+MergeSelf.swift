@@ -6,6 +6,17 @@
 //
 
 extension ErrorInfo {
+  // Here keeping equal values has 2 variants:
+  // 1. keep duplicates for inside of each info, but deny duplucates between them
+  // 2. remove duplicates from everywhere, finally on value is kept
+  // 3. keep duplicates, if any
+  
+  // 3d variant seems the most reasonable.
+  // If there are 2 equal values in an ErrorInfo, someone explicitly added it. If so, these 2 instances should not be
+  // deduplicated by default making a merge.
+  // If there 2 equal values across several ErrorInfo & there is no collision of values inside errorinfo, then
+  // the should be deduplicated.
+  
   // TODO: minimize CoW
   public mutating func merge(omitEqualValues: Bool = true,
                              with first: Self,
