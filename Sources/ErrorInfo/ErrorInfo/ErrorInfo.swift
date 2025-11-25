@@ -72,8 +72,7 @@ extension ErrorInfo {
   // SE-0352 Implicitly Opened Existentials
   // https://github.com/swiftlang/swift-evolution/blob/main/proposals/0352-implicit-open-existentials.md
   
-  // SE-0375
-  // Opening existential arguments to optional parameters
+  // SE-0375 Opening existential arguments to optional parameters
   
   internal mutating func _addExistentialNil(key: Key,
                                             preserveNilValues: Bool,
