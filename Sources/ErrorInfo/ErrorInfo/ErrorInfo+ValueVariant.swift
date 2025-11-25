@@ -11,39 +11,67 @@ extension ErrorInfo {
   internal struct _ValueVariant: Sendable, ApproximatelyEquatable {
     private let wrapped: Variant
     
-    var optionalValue: (any ErrorInfoValueType)? {
+    internal var optionalValue: (any ErrorInfoValueType)? {
       switch wrapped {
       case .value(let value): value
-      case .typedNil: nil
+      case .nilInstance: nil
       }
     }
     
-    static func value(_ value: any ErrorInfoValueType) -> Self {
+    internal var isValue: Bool {
+      switch wrapped {
+      case .value: true
+      case .nilInstance: false
+      }
+    }
+    
+    internal var isNilInstance: Bool {
+      switch wrapped {
+      case .value: false
+      case .nilInstance: true
+      }
+    }
+    
+    internal static func value(_ value: any ErrorInfoValueType) -> Self {
       Self(wrapped: .value(value))
     }
     
-    static func nilInstance(typeOfWrapped: any Sendable.Type) -> Self { // FIXME: change Sendable.Type -> ErrorInfoValueType.Type
+    internal static func nilInstance(typeOfWrapped: any Sendable.Type) -> Self { // FIXME: change Sendable.Type -> ErrorInfoValueType.Type
       // FIXME: `any Sendable.Type` & `(any Sendable).Type` is not the same. Explore this
-      Self(wrapped: .typedNil(typeOfWrapped: typeOfWrapped))
+      Self(wrapped: .nilInstance(typeOfWrapped: typeOfWrapped))
     }
     
-    static func isApproximatelyEqual(lhs: borrowing Self, rhs: borrowing Self) -> Bool {
+    static func == (lhs: Self, rhs: Self) -> Bool {
       switch (lhs.wrapped, rhs.wrapped) {
-      case (.value, .typedNil),
-           (.typedNil, .value):
+      case (.value, .nilInstance),
+           (.nilInstance, .value):
+        false
+        
+      case let (.value(lhsInstance), .value(rhsInstance)):
+        ErrorInfoFuncs.isEqualAnyEqatable(a: lhsInstance, b: rhsInstance)
+        
+      case let (.nilInstance(lhsType), .nilInstance(rhsType)):
+        lhsType == rhsType
+      }
+    }
+    
+    internal static func isApproximatelyEqual(lhs: borrowing Self, rhs: borrowing Self) -> Bool {
+      switch (lhs.wrapped, rhs.wrapped) {
+      case (.value, .nilInstance),
+           (.nilInstance, .value):
         false
         
       case let (.value(lhsInstance), .value(rhsInstance)):
         ErrorInfoFuncs.isApproximatelyEqualAny(lhsInstance, rhsInstance)
         
-      case let (.typedNil(lhsType), .typedNil(rhsType)):
+      case let (.nilInstance(lhsType), .nilInstance(rhsType)):
         lhsType == rhsType
       }
     }
     
-    enum Variant {
+    private enum Variant {
       case value(any ErrorInfoValueType)
-      case typedNil(typeOfWrapped: any Sendable.Type)
+      case nilInstance(typeOfWrapped: any Sendable.Type)
     }
   }
 }

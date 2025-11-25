@@ -28,7 +28,7 @@ extension ErrorInfo {
     static let valueAndNil = Self(rawValue: 1 << 4)
     
     // case values(count:)
-    // case nilInstance(count:)
+    // case nilInstances(count:)
     // case valueAndNil(valueCount: , nilInstancesCount:)
   }
   
@@ -65,3 +65,17 @@ extension ErrorInfo {
 //
 //  }
 // }
+
+extension ErrorInfo {
+  // public func countValues(forKey: String) -> Int {
+  //
+  // }
+  //
+  // public func countNilInstances(forKey: String) -> Int {
+  //
+  // }
+  //
+  // public func countAll(forKey: String) -> Int {
+  //
+  // }
+}
