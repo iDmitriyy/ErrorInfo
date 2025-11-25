@@ -94,6 +94,12 @@ extension ErronInfoLiteralKey {
   public static let description = ErronInfoLiteralKey(uncheckedString: "description")
   public static let debugDescription = ErronInfoLiteralKey(uncheckedString: "debug_description")
   
+  public static let name = ErronInfoLiteralKey(uncheckedString: "name")
+  public static let resource = ErronInfoLiteralKey(uncheckedString: "resource")
+  
+  public static let donator = ErronInfoLiteralKey(uncheckedString: "donator")
+  public static let recipient = ErronInfoLiteralKey(uncheckedString: "recipient")
+  
   public static let file = ErronInfoLiteralKey(uncheckedString: "file")
   public static let line = ErronInfoLiteralKey(uncheckedString: "line")
   public static let fileLine = ErronInfoLiteralKey(uncheckedString: "file_line")
@@ -126,12 +132,16 @@ extension ErronInfoLiteralKey {
   public static let errorDescription: ErronInfoLiteralKey = "error_description"
   public static let errorDebugDescription: ErronInfoLiteralKey = "error_debug_description"
   public static let errorMessage: ErronInfoLiteralKey = "error_message"
-  public static let errorLocalizedMessage = ErronInfoLiteralKey(uncheckedString: "error_localized_message")
+  public static let errorLocalizedMessage: ErronInfoLiteralKey = "error_localized_message"
   
   /// e.g., network, database, validation
   public static let errorType: ErronInfoLiteralKey = "error_type"
   
   public static let failureReason: ErronInfoLiteralKey = "failure_reason"
+  public static let errorSource: ErronInfoLiteralKey = "error_source"
+  
+  public static let severity: ErronInfoLiteralKey = "severity"
+  
   public static let underlyingError: ErronInfoLiteralKey = "underlying_error"
   public static let exception: ErronInfoLiteralKey = "exception"
   
