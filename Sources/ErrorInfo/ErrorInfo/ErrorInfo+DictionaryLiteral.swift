@@ -18,6 +18,7 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
     self.init()
     // TODO: OrderedMultipleValuesDictionaryLiteral(dictionaryLiteral: elements) or appropriate init
     // TODO: try reserve capacity. perfomance tests
+    // Make Key = ErronInfoLiteralKey instead of String
     
     for (key, value) in elements {
 //      if let value {

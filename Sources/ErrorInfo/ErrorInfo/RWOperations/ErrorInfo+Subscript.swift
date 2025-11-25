@@ -17,7 +17,7 @@
 // The same trick with sub-separaation can be done for append() functions
 // Dictionary literal can then strictly be created with string literals, and when dynamic for strings another APIs are forced to be used.
 extension ErrorInfo {
-  // TODO: is it good idead to return .first as a default? In most cases it is what expected, as normally there will 1 va;ue for key
+  // TODO: is it good idea to return .first as a default? In most cases it is what expected, as normally there will 1 va;ue for key
   
   // First value for a given key.
   // public subscript(key: ErronInfoLiteralKey) -> (any ValueType)? {
@@ -43,16 +43,6 @@ extension ErrorInfo {
            addTypeInfo: .default,
            collisionSource: .onSubscript(keyKind: .literalConstant))
     }
-  }
-  
-  /// Instead of subscript overload with `String` key to prevent pollution of autocomplete for `ErronInfoLiteralKey` by tons of String methods.
-  public mutating func setValue(_ newValue: some ValueType, forKey dynamicKey: String) {
-    _add(key: dynamicKey,
-         value: newValue,
-         preserveNilValues: true,
-         insertIfEqual: false,
-         addTypeInfo: .default,
-         collisionSource: .onSubscript(keyKind: .dynamic))
   }
   
   @available(*, deprecated, message: "make autocomplete pollution")
