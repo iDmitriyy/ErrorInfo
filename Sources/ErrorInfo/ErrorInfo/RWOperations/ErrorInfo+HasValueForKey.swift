@@ -26,6 +26,10 @@ extension ErrorInfo {
 //    static let multipleNilInstances = Self(rawValue: 1 << 3)
     
     static let valueAndNil = Self(rawValue: 1 << 4)
+    
+    // case values(count:)
+    // case nilInstance(count:)
+    // case valueAndNil(valueCount: , nilInstancesCount:)
   }
   
   // public func keyValueLookupResult() -> KeyValueLookupResult {}
