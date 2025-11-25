@@ -52,5 +52,8 @@ struct IsEqualEqatableExistentialTests {
     
     #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1) as any BinaryInteger & Sendable,
                                                       b: UInt(1) as any BinaryInteger & Sendable) == false)
+    
+    // TODO: classes
+    // https://forums.swift.org/t/comparing-two-any-values-for-equality-is-this-the-simplest-implementation/73816/8
   }
 }
