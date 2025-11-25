@@ -8,6 +8,28 @@
 // MARK: HasValues ForKey
 
 extension ErrorInfo {
+  public struct KeyValueLookupResult: OptionSet, Sendable {
+    public var rawValue: UInt8
+    
+    public init(rawValue: UInt8) {
+      self.rawValue = rawValue
+    }
+    
+    static let nothing = Self([])
+    
+    static let value = Self(rawValue: 1 << 0)
+    
+//    static let multipleValues = Self(rawValue: 1 << 1)
+    
+    static let nilInstance = Self(rawValue: 1 << 2)
+    
+//    static let multipleNilInstances = Self(rawValue: 1 << 3)
+    
+    static let valueAndNil = Self(rawValue: 1 << 4)
+  }
+  
+  // public func keyValueLookupResult() -> KeyValueLookupResult {}
+  
   public func hasValues(forKey key: ErronInfoLiteralKey) -> Bool {
     _storage.hasValue(forKey: key.rawValue)
   }
