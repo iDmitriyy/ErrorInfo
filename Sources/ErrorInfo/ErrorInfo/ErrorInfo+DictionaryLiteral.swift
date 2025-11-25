@@ -21,28 +21,20 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
     // Make Key = ErronInfoLiteralKey instead of String
     
     for (key, value) in elements {
-//      if let value {
-//        add1(value)
-//      }
-//      
-//      add2(value)
-      // FIXME: 
-//      self._add(key: key,
-//                value: value,
-//                preserveNilValues: true,
-//                insertIfEqual: true,
-//                addTypeInfo: .default,
-//                collisionSource: .onCreateWithDictionaryLiteral)
+      if let value {
+        // TODO: _add() with optional value is used
+        _add(key: key,
+             value: value,
+             preserveNilValues: true,
+             insertIfEqual: true,
+             addTypeInfo: .default,
+             collisionSource: .onCreateWithDictionaryLiteral)
+      } else {
+        _addExistentialNil(key: key,
+                           preserveNilValues: true,
+                           insertIfEqual: true,
+                           collisionSource: .onCreateWithDictionaryLiteral)
+      }
     }
-    
-    
   }
-  
-//  func add1<T: ErrorInfoValueType>(_ v: T) {
-//    
-//  }
-//  
-//  func add2<T: ErrorInfoValueType>(_ v: T?) {
-//    
-//  }
 }

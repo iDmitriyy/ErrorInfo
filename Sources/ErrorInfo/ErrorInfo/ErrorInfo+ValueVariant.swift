@@ -22,7 +22,8 @@ extension ErrorInfo {
       Self(wrapped: .value(value))
     }
     
-    static func nilInstance(typeOfWrapped: any ErrorInfoValueType.Type) -> Self {
+    static func nilInstance(typeOfWrapped: any Sendable.Type) -> Self { // FIXME: change Sendable.Type -> ErrorInfoValueType.Type
+      // FIXME: `any Sendable.Type` & `(any Sendable).Type` is not the same. Explore this
       Self(wrapped: .typedNil(typeOfWrapped: typeOfWrapped))
     }
     

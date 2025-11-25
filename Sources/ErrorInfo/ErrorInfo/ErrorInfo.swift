@@ -68,4 +68,28 @@ extension ErrorInfo {
                                        insertIfEqual: insertIfEqual,
                                        collisionSource: collisionSource())
   }
+  
+  // SE-0352 Implicitly Opened Existentials
+  // https://github.com/swiftlang/swift-evolution/blob/main/proposals/0352-implicit-open-existentials.md
+  
+  // SE-0375
+  // Opening existential arguments to optional parameters
+  
+  internal mutating func _addExistentialNil(key: Key,
+                                            preserveNilValues: Bool,
+                                            insertIfEqual: Bool,
+                                            collisionSource: @autoclosure () -> CollisionSource) {
+    // TODO: put type TypeInfo
+    let valueVariant: _ValueVariant
+    if preserveNilValues {
+      valueVariant = .nilInstance(typeOfWrapped: (any ErrorInfoValueType).self)
+    } else {
+      return
+    }
+    
+    _storage.appendResolvingCollisions(key: key,
+                                       value: valueVariant,
+                                       insertIfEqual: insertIfEqual,
+                                       collisionSource: collisionSource())
+  }
 }

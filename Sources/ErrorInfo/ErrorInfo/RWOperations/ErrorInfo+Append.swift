@@ -16,7 +16,9 @@ extension ErrorInfo {
          preserveNilValues: true,
          insertIfEqual: false,
          addTypeInfo: .default,
-         collisionSource: .onSubscript(keyKind: .dynamic))
+         collisionSource: .onSubscript(keyKind: .dynamic)) // FIXME: .onSubscript source in append method.
+    // How can we solve the propblem of namespace noise in subscript with dynamicKey?
+    // May be it's ok to change collisionSource to .onAppend here
   }
   
   
