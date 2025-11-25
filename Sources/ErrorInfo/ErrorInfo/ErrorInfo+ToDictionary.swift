@@ -6,6 +6,7 @@
 //
 
 extension ErrorInfo {
+  // collapseNilInstances: Bool = false
   public func asStringDict(collisionSourceInterpolation: (StringBasedCollisionSource) -> String = { $0.defaultStringInterpolation() })
     -> [String: String] { // TODO: should be a protocol default imp
     var dict = [String: String](minimumCapacity: _storage.count)
