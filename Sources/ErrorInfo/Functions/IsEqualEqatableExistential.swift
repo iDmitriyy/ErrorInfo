@@ -2,7 +2,7 @@
 //  IsEqualEqatableExistential.swift
 //  ErrorInfo
 //
-//  Created by tmp on 26/11/2025.
+//  Created by Dmitriy Ignatyev on 26/11/2025.
 //
 
 extension ErrorInfoFuncs {
