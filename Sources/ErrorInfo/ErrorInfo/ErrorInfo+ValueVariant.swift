@@ -48,7 +48,7 @@ extension ErrorInfo {
         false
         
       case let (.value(lhsInstance), .value(rhsInstance)):
-        ErrorInfoFuncs.isEqualAnyEqatable(a: lhsInstance, b: rhsInstance)
+        ErrorInfoFuncs.isEqualEqatableExistential(a: lhsInstance, b: rhsInstance)
         
       case let (.nilInstance(lhsType), .nilInstance(rhsType)):
         lhsType == rhsType

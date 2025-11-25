@@ -118,22 +118,56 @@ extension ErrorInfoFuncs {
 
 internal protocol AnyOptionalProtocol {
   associatedtype Wrapped
+  
+  var asOptional: Wrapped? { get }
+}
+
+// TODO: utils file also have similar
+
+extension Optional: AnyOptionalProtocol {
+  // func wrappedType() -> Wrapped.Type { Wrapped.self }
+  
+  var asOptional: Wrapped? {
+    self
+//    switch self {
+//    case .none: nil
+//    case .some(let wrapped): wrapped
+//    }
+  }
 }
 
 extension AnyOptionalProtocol {
-  func wrappedType() -> Wrapped.Type { Wrapped.self }
-  func wrappedTypeAny() -> Any.Type { Wrapped.self }
+  internal func wrappedType() -> Wrapped.Type { Wrapped.self }
   
+  var _isNil: Bool { asOptional == nil }
   // With Int casted to AnyObject, is it possible to wrap this AnyObject to optional and then call flattened().wrappedType
   // to understand that originally it was Int?
+  
+//  @inlinable
+//  public func flattened<T>() -> Any?  {
+//    switch asOptional {
+//    case .none: nil
+//    case .some(let doubledOptionalValue): doubledOptionalValue.flattened()
+//    }
+//  }
 }
 
-// extension AnyOptionalProtocol {
-//  func flattened() -> Wrapped? {
-//
-//  }
-// }
-
-//extension Optional: AnyOptionalProtocol {
-//  func wrappedType() -> Wrapped.Type { Wrapped.self }
-//}
+extension AnyOptionalProtocol {
+  internal func rootWrappedType() -> Any.Type {
+//    var wrapedType: Any.Type = wrappedType()
+//    while let nextWrapedType = wrapedType as any AnyOptionalProtocol.self {
+//      
+//    }
+    let maybeValue = self.asOptional
+    
+    guard let value = maybeValue else { return maybeValue.wrappedType() }
+    
+//    guard let value1 = value as? any AnyOptionalProtocol else { return value.wrappedType() }
+//    guard let value1 = value as? any AnyOptionalProtocol else { return value.wrappedType() }
+//    guard let value2 = value1.wrappedInstance as? any AnyOptionalProtocol else { return value1.wrappedType() }
+//    guard let value3 = value2.wrappedInstance as? any AnyOptionalProtocol else { return value2.wrappedType() }
+//    
+//    return value3.wrappedType()
+    return maybeValue.wrappedType()
+  }
+}

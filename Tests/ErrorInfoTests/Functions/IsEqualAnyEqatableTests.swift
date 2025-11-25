@@ -6,7 +6,6 @@
 //
 
 @testable import ErrorInfo
-import Foundation
 import Testing
 
 struct IsEqualAnyEqatableTests {
@@ -35,9 +34,9 @@ struct IsEqualAnyEqatableTests {
     #expect(ErrorInfoFuncs.isEqualAnyEqatable(a: Optional<Optional<Int>>.none,
                                               b: Int(1)) == false)
     
-    
     #expect(ErrorInfoFuncs.isEqualAnyEqatable(a: Optional<Int>.none, b: Optional<Int>.none) == true)
     
+    print("")
     // FIXME: nil instances can be casted to each Optional<T>, no matter what T is.
     // However, for ErrorInfo purposes Optional<Int>.none & Optional<String>.none should not be equal.
     #expect(ErrorInfoFuncs.isEqualAnyEqatable(a: Optional<Int>.none, b: Optional<UInt>.none) == false)
@@ -55,9 +54,13 @@ struct IsEqualAnyEqatableTests {
     // 2 nil instances are equal if the Wrapped Type is equal. Mentally it is the same as flattening to a single level of
     // optionality.
     
+    let a1: Optional<Optional<Optional<Int>>> = nil
+    let a2: Optional<Optional<Optional<Int>>> = .some(nil)
+    let a3: Optional<Optional<Optional<Int>>> = .some(.some(nil))
+    
     #expect(ErrorInfoFuncs.isEqualAnyEqatable(a: Optional<Int>.none,
                                               b: Optional<Optional<Int>>.none) == true)
     #expect(ErrorInfoFuncs.isEqualAnyEqatable(a: Optional<Optional<Int>>.none,
-                                              b: Optional<Int>.none) == false)
+                                              b: Optional<Int>.none) == true)
   }
 }
