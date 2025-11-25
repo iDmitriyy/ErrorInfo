@@ -17,7 +17,9 @@ extension ErrorInfo {
     _storage.hasValue(forKey: key)
   }
   
-  // func hasCollisions() -> Bool {}
+  // public func hasCollisions() -> Bool {
+  //   _storage.contains // not use Sequence.contains, check perfomace of `contains` in multivaluesdict type
+  // }
   
   // func hasCollisions(forKey key: ErronInfoLiteralKey) -> Bool {}
   

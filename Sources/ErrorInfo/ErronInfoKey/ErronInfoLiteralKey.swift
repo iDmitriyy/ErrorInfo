@@ -32,16 +32,16 @@ extension ErronInfoLiteralKey {
   // TODO: perfomance: borrowing | consuming(copying), @const
   
   public static func + (lhs: Self, rhs: Self) -> Self {
-    Self(uncheckedString: lhs.rawValue + rhs.rawValue)
+    Self(uncheckedString: lhs.rawValue + "_" + rhs.rawValue)
   }
   
-  public static func + (lhs: Self, rhs: StaticString) -> Self {
-    Self(uncheckedString: lhs.rawValue + String(rhs))
-  }
-  
-  public static func + (lhs: StaticString, rhs: Self) -> Self {
-    Self(uncheckedString: String(lhs) + rhs.rawValue)
-  }
+//  public static func & (lhs: Self, rhs: Self) -> Self {
+//    Self(uncheckedString: lhs.rawValue + rhs.rawValue)
+//  }
+//  
+//  public static func ^ (lhs: Self, rhs: Self) -> Self {
+//    Self(uncheckedString: lhs.rawValue + rhs.rawValue.uppercasingFirstLetter())
+//  }
 }
 
 // TODO: add + - operators for Self.

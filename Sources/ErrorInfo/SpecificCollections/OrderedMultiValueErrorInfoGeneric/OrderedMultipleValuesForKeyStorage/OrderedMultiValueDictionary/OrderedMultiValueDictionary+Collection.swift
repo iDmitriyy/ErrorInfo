@@ -20,7 +20,7 @@ extension OrderedMultiValueDictionary: RandomAccessCollection { // ! RandomAcces
 }
 
 extension OrderedMultiValueDictionary {
-  /// Returns a Boolean value indicating whether the sequence contains valuess for a given key that satisfies the given predicate.
+  /// Returns a Boolean value indicating whether the sequence contains values for a given key that satisfies the given predicate.
   internal func containsValues<E>(forKey key: Key, where predicate: (Value) throws(E) -> Bool) rethrows -> Bool {
     if let allValuesForKeyIndices = _keyToEntryIndices[key] {
       // TODO: perfomance test

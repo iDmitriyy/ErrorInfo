@@ -33,7 +33,7 @@ extension ErrorInfo {
       }
       
       let value = instance[keyPath: keyPath]
-      self[key] = value // TODO: keyKind – case keyPath
+      self.setValue(value, forKey: key) // TODO: keyKind – case keyPath
     }
   }
     

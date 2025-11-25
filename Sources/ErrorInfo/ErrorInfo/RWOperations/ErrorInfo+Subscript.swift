@@ -18,10 +18,13 @@
 // Dictionary literal can then strictly be created with string literals, and when dynamic for strings another APIs are forced to be used.
 extension ErrorInfo {
   // TODO: is it good idead to return .first as a default? In most cases it is what expected, as normally there will 1 va;ue for key
+  
+  // First value for a given key.
   // public subscript(key: ErronInfoLiteralKey) -> (any ValueType)? {
   //   allValues(forKey: key)?.first
   // }
   //
+  // First value for a given key.
   // @_disfavoredOverload
   // public subscript(key: String) -> (any ValueType)? {
   //   allValues(forKey: key)?.first
@@ -42,8 +45,19 @@ extension ErrorInfo {
     }
   }
   
+  /// Instead of subscript overload with `String` key to prevent pollution of autocomplete for `ErronInfoLiteralKey` by tons of String methods.
+  public mutating func setValue(_ newValue: some ValueType, forKey dynamicKey: String) {
+    _add(key: dynamicKey,
+         value: newValue,
+         preserveNilValues: true,
+         insertIfEqual: false,
+         addTypeInfo: .default,
+         collisionSource: .onSubscript(keyKind: .dynamic))
+  }
+  
+  @available(*, deprecated, message: "make autocomplete pollution")
   @_disfavoredOverload
-  public subscript<V: ValueType>(key: String) -> V? {
+  public subscript<V: ValueType>(key: String) -> V? { // dynamicKey key:
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
     get {
       allValues(forKey: key)?.first as? V
@@ -56,5 +70,9 @@ extension ErrorInfo {
            addTypeInfo: .default,
            collisionSource: .onSubscript(keyKind: .dynamic))
     }
+  }
+  
+  mutating func foo(key _: String) {
+    // self[.debug + .message + .id] = 2
   }
 }
