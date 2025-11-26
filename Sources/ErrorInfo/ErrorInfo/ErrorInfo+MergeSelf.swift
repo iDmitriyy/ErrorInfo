@@ -15,53 +15,57 @@ extension ErrorInfo {
   // If there are 2 equal values in an ErrorInfo, someone explicitly added it. If so, these 2 instances should not be
   // deduplicated by default making a merge.
   // If there 2 equal values across several ErrorInfo & there is no collision of values inside errorinfo, then
-  // the should be deduplicated.
+  // the should caan be deduplicated by an option(func arg).
   
   // TODO: minimize CoW
-  public mutating func merge(omitEqualValues: Bool = true,
-                             with first: Self,
-                             _ otherDonators: Self...) {
-    // 1. reserve capacity
-    // 2.
-    
-//    for (key, wrappedValue) in first {
-//      self._add(key: key,
-//                value: wrappedValue.value,
-//                omitEqualValue: omitEqualValues,
-//                addTypeInfo: , // !! not meaningful here
-//                collisionSource: ) // wrappedValue.collisionSource & merge
-//    }
+  
+  // MARK: Instance mutating methods
+  
+  public mutating func merge(with firstDonator: Self,
+                             _ otherDonators: Self...,
+                             collisionSource mergeOrigin: CollisionSource.MergeOrigin = .fileLine()) {
+    self = Self._merged(recipient: self,
+                        donators: [firstDonator] + otherDonators,
+                        collisionSource: mergeOrigin)
+  }
+  
+//  public mutating func merge(with donators: [Self],
+//                             collisionSource mergeOrigin: CollisionSource.MergeOrigin = .fileLine()) {
+//    self = Self._merged(recipient: self,
+//                        donators: donators,
+//                        collisionSource: mergeOrigin)
+//  }
+  
+  // MARK: Static funcs
+  
+  public static func merged(_ recipient: Self,
+                            _ firstDonator: Self,
+                            _ otherDonators: [Self],
+                            collisionSource mergeOrigin: CollisionSource.MergeOrigin = .fileLine()) -> Self {
+    _merged(recipient: recipient,
+            donators: [firstDonator] + otherDonators,
+            collisionSource: mergeOrigin)
   }
 }
 
 extension ErrorInfo {
-//  public func unverifiedMapKeys(_ transform: (_ key: String) -> String) -> Self {
-//
-//  }
+  internal static func _merged(recipient: consuming Self, // TODO: consuming?
+                               donators: [Self],
+                               collisionSource mergeOrigin: CollisionSource.MergeOrigin) -> Self {
+    // TODO: reserve capacity
+    for donator in donators {
+      for (key, valueWrapper) in donator._storage {
+        recipient._storage
+          .appendResolvingCollisions(key: key,
+                                     value: valueWrapper.value,
+                                     insertIfEqual: true,
+                                     collisionSource: valueWrapper.collisionSource ?? .onMerge(origin: mergeOrigin))
+        // TODO: should collizion source be composite / indirect?
+        // Keep the most simple variant for now
+        // ["a": 1] merge with ["a": 1, a: "1"(collision#1)]
+        // result: ["a": 1, a: "1"(collision$1), a: "1"(collision#1)]
+      }
+    }
+    return recipient
+  }
 }
-
-// extension ErrorInfo {
-//  
-//
-//  public static func merge(_ otherInfos: Self..., to errorInfo: inout Self, line: UInt = #line) {
-//    ErrorInfoFuncs._mergeErrorInfo(&errorInfo.storage, with: otherInfos.map { $0.storage }, line: line)
-//  }
-//
-//  public static func merge(_ otherInfo: Self,
-//                           to errorInfo: inout Self,
-//                           addingKeyPrefix keyPrefix: String,
-//                           uppercasingFirstLetter uppercasing: Bool = true,
-//                           line: UInt = #line) {
-//    ErrorInfoFuncs.mergeErrorInfo(otherInfo.storage,
-//                                      to: &errorInfo.storage,
-//                                      addingKeyPrefix: keyPrefix,
-//                                      uppercasingFirstLetter: uppercasing,
-//                                      line: line)
-//  }
-//
-//  public static func merged(_ errorInfo: Self, _ otherInfos: Self..., line: UInt = #line) -> Self {
-//    var errorInfoRaw = errorInfo.storage
-//    ErrorInfoFuncs._mergeErrorInfo(&errorInfoRaw, with: otherInfos.map { $0.storage }, line: line)
-//    return Self(storage: errorInfoRaw)
-//  }
-// }
