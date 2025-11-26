@@ -32,7 +32,7 @@ func merge3<E: InformativeError>(errors: some Sequence<E>,
 
 // ?naming merge-FlatMap operation
 func merge2(errors: [StubError],
-            omitEqualValues: Bool,
+            omitEqualValues: Bool, // = false
             errorSignatureBuilder: (StubError) -> String = { $0.domain + "\($0.code)" },
             collisionSourceInterpolation: (StringBasedCollisionSource) -> String = { $0.defaultStringInterpolation() })
   -> OrderedDictionary<String, Int> {
@@ -136,6 +136,8 @@ func extractUniqueElements<T>(from values: NonEmptyArray<T>, equalFuncImp: (T, T
   return processed
 }
 
+/// O(2n)
+///
 /// ```
 /// let set1: Set<Int> = [1, 2, 3, 4, 5]
 /// let set2: Set<Int> = [3, 4, 5, 6]
