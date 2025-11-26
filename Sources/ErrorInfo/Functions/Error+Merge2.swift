@@ -101,18 +101,28 @@ func merge2(errors: [StubError],
 
 fileprivate func prepareValues<T>(_ values: NonEmptyArray<T>, removingEqualValues: Bool) -> NonEmptyArray<T> {
   guard removingEqualValues else { return values }
-  return extractApproximatelyUniqueElements(from: values)
+  return extractUniqueElements(from: values, equalFuncImp: ErrorInfoFuncs.isApproximatelyEqualAny)
 }
 
-func extractApproximatelyUniqueElements<T>(from values: NonEmptyArray<T>) -> NonEmptyArray<T> {
+/// worst case: O(n^2/2)
+/// best cases: O(n-1)
+///
+/// Example with processing steps:
+/// 01112323214
+/// 01    23232  4
+/// 01    233      4
+/// 01234             – output
+func extractUniqueElements<T>(from values: NonEmptyArray<T>, equalFuncImp: (T, T) -> Bool) -> NonEmptyArray<T> {
   // TODO: return NonEmptyArray<DiscontiguousSlice<[T]>> to prevemt heap allocation, slice: ~Escaping with `values` lifetime
   var processed: NonEmptyArray<T> = NonEmptyArray<T>(values.first)
+  // Improvement: wrap NonEquatable elements to Any[EqualityKind], and use Set, instead of elementwise comparison.
   
+  //
   var currentElement = values.first
   var nextElementsSlice = values.base.dropFirst()
   while !nextElementsSlice.isEmpty {
     let duplicatedElementsIndices = nextElementsSlice.indices(where: { nextElement in
-      ErrorInfoFuncs.isApproximatelyEqualAny(currentElement, nextElement)
+      equalFuncImp(currentElement, nextElement)
     })
     nextElementsSlice.removeSubranges(duplicatedElementsIndices) // ?? use DiscontiguousSlice<[T]>
     if let nextElement = nextElementsSlice.first {
@@ -125,9 +135,9 @@ func extractApproximatelyUniqueElements<T>(from values: NonEmptyArray<T>) -> Non
 }
 
 /// ```
-/// let set1 = [1, 2, 3, 4, 5]
-/// let set2 = [3, 4, 5, 6]
-/// let set3 = [4, 5, 7, 8]
+/// let set1: Set<Int> = [1, 2, 3, 4, 5]
+/// let set2: Set<Int> = [3, 4, 5, 6]
+/// let set3: Set<Int> = [4, 5, 7, 8]
 ///
 /// findCommonElements(inAnyOf: [set1, set2, set3])
 /// // Output: [3, 4, 5]
