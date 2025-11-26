@@ -116,22 +116,24 @@ func extractUniqueElements<T>(from values: NonEmptyArray<T>, equalFuncImp: (T, T
   // TODO: return NonEmptyArray<DiscontiguousSlice<[T]>> to prevemt heap allocation, slice: ~Escaping with `values` lifetime
   var processed: NonEmptyArray<T> = NonEmptyArray<T>(values.first)
   // Improvement: wrap NonEquatable elements to Any[EqualityKind], and use Set, instead of elementwise comparison.
-  
-  //
+  // TODO: try to use use Algorithms.UniquedSequence.init(base:, projections:)
+  // perfomance (may be best olgorithm will be different for different elements count)
   var currentElement = values.first
   var nextElementsSlice = values.base.dropFirst()
+  var uniqueElementsSlice = nextElementsSlice
   while !nextElementsSlice.isEmpty {
     let duplicatedElementsIndices = nextElementsSlice.indices(where: { nextElement in
       equalFuncImp(currentElement, nextElement)
     })
     nextElementsSlice.removeSubranges(duplicatedElementsIndices) // ?? use DiscontiguousSlice<[T]>
+    uniqueElementsSlice.removeSubranges(duplicatedElementsIndices)
     if let nextElement = nextElementsSlice.first {
       currentElement = nextElement
       nextElementsSlice = nextElementsSlice.dropFirst()
     }
   }
-  processed.append(contentsOf: nextElementsSlice)
-  return values
+  processed.append(contentsOf: uniqueElementsSlice)
+  return processed
 }
 
 /// ```

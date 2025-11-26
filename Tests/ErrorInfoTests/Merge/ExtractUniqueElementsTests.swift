@@ -6,8 +6,14 @@
 //
 
 @testable import ErrorInfo
+import NonEmpty
 import Testing
 
 struct ExtractUniqueElementsTests {
-  
+  @Test func basic() async throws {
+    let input = NonEmptyArray(1, 1,1,1,2,3,2,3,2,1,4)
+    let expected = NonEmptyArray(1, 2, 3, 4)
+    
+    #expect(extractUniqueElements(from: input, equalFuncImp: ==) == expected)
+  }
 }
