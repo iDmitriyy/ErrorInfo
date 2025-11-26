@@ -29,17 +29,23 @@ struct MergeChainTests {
     let error4 = ODError(code: 0, shortDomain: "NE2",
                          info: ["id": 4, "status": 4])
     
+    let errorsChain = [error4, error3, error2, error1, error0]
+    
     let expected: Dict = [
-      "value": 0,
-      "count": 0,
-      "count": 1,
-      "url": "https://192.168.0.1",
-      "id": 2,
+      "id": "4",
+      "status": 4,
+      
       "id": 3,
       "count": 3,
       "url": "https://192.168.0.3",
-      "id": "4",
-      "status": 4,
+      
+      "id": 2,
+      
+      "count": 1,
+      "url": "https://192.168.0.1",
+      
+      "value": 0,
+      "count": 0,
     ]
   }
 }
@@ -52,6 +58,6 @@ struct ErrorStub<Info> {
   init(code: Int, shortDomain: String, info: Info) {
     self.code = code
     self.shortDomain = shortDomain
-    self.errorInfo = info
+    errorInfo = info
   }
 }

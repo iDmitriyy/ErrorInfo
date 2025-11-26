@@ -80,6 +80,11 @@ extension ErronInfoLiteralKey {
   public static let instance = ErronInfoLiteralKey(uncheckedString: "instance")
   public static let object = ErronInfoLiteralKey(uncheckedString: "object")
   
+  public static let type = ErronInfoLiteralKey(uncheckedString: "type")
+  public static let valueType = ErronInfoLiteralKey(uncheckedString: "value_type")
+  public static let objectType = ErronInfoLiteralKey(uncheckedString: "object_type")
+  public static let instanceType = ErronInfoLiteralKey(uncheckedString: "instance_type")
+  
   public static let index = ErronInfoLiteralKey(uncheckedString: "index")
   public static let indices = ErronInfoLiteralKey(uncheckedString: "indices")
   
