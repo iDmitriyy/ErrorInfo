@@ -9,7 +9,7 @@ private import SwiftyKit
 private import Algorithms
 public import protocol InternalCollectionsUtilities._UniqueCollection
 
-struct StubError {
+struct ProtoError {
   let code: Int
   let domain: String
   let info: OrderedDictionary<String, Int>
@@ -25,15 +25,15 @@ func playMerge(errors: [any InformativeError]) {
 
 func merge3<E: InformativeError>(errors: some Sequence<E>,
                                  omitEqualValues: Bool,
-                                 errorSignatureBuilder: (StubError) -> String = { $0.domain + "\($0.code)" },
+                                 errorSignatureBuilder: (ProtoError) -> String = { $0.domain + "\($0.code)" },
                                  collisionSourceInterpolation: (StringBasedCollisionSource) -> String = { $0.defaultStringInterpolation() }) {
   
 }
 
 // ?naming merge-FlatMap operation
-func merge2(errors: [StubError],
+func merge2(errors: [ProtoError],
             omitEqualValues: Bool, // = false
-            errorSignatureBuilder: (StubError) -> String = { $0.domain + "\($0.code)" },
+            errorSignatureBuilder: (ProtoError) -> String = { $0.domain + "\($0.code)" },
             collisionSourceInterpolation: (StringBasedCollisionSource) -> String = { $0.defaultStringInterpolation() })
   -> OrderedDictionary<String, Int> {
   typealias Dict = OrderedDictionary<String, Int>
@@ -152,7 +152,8 @@ func findCommonElements<Unique>(across collections: [Unique]) -> Set<Unique.Elem
   guard collections.count > 1 else { return [] }
     
   var countedElements: [Unique.Element: Int] = [:]
-   do { // Unique collection types has count O(1):
+   do {
+     // Unique collection types has .count O(1):
      let capacity = collections.reduce(into: 0) { count, set in count += set.count }
      countedElements.reserveCapacity(capacity)
      // in most cases, keys across errorInfo instances are unique, thats why capacity for totalCount can be allocated.
