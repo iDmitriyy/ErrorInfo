@@ -98,13 +98,14 @@ public struct ValueWithCollisionWrapper<Value, CollisionSource> {
 
 extension ValueWithCollisionWrapper: Sendable where Value: Sendable, CollisionSource: Sendable {}
 
-public enum StringKeyKind: Sendable {
+public enum KeyOrigin: Sendable {
   case literalConstant
   
-  /// literalA + literalB ,  literalA + "stringLiteral"
+  /// When key is created from a compile time known string literal.
+  ///literalA + literalB ,  literalA + "stringLiteral"
   case combinedLiterals
   
-  /// when key is passed as a string interpolation of value or String that created at runtime
+  /// When key is generated at runtime, typically through string interpolation, json or other dynamic constructs.
   case dynamic
   
   case keyPath
@@ -136,15 +137,14 @@ public enum StringKeyKind: Sendable {
   }
 }
 
-extension ErrorInfo {
-  internal struct TaggedKey: Hashable, Sendable {
-    let string: String
-    let kind: StringKeyKind
-    
-    func hash(into hasher: inout Hasher) { hasher.combine(string) }
-    
-    static func == (lhs: Self, rhs: Self) -> Bool { lhs.string == rhs.string }
-  }
+/// `kind` not participate in hashing / equality
+internal struct KeyWithOrigin: Hashable, Sendable {
+  let string: String
+  let origin: KeyOrigin
+  // TODO: - tests
+  func hash(into hasher: inout Hasher) { hasher.combine(string) }
+  
+  static func == (lhs: Self, rhs: Self) -> Bool { lhs.string == rhs.string }
 }
 
 // fileprivate enum ValueWithCollisionWrapper<Value, Source> {
