@@ -29,7 +29,20 @@ struct MerrorInfoSourcesOptions {
   // omitEqualValuesInsideSource
   // omitEqualValuesAcrossSources
   // collapseNilValues
+  // addKeyTagsForKinds(.all, .allExceptLiterals | .literal, .combinedLiteral, .dynamic, .keyPath, .madified)
+  
+  struct KeyOptions {
+    
+  }
 }
+
+/// Add partial functionality of collisions resolution to dictionary
+struct DictionaryErrorInfoOverlay<Dict> {
+  private(set) var dictionary: Dict
+}
+
+// Before logging, typically some fields are added to summary info: "#log_file_line", "#log_throttling" ...
+// Such info can be added to a separate ErrorInfo instance and put first to `errorInfoSources` arg list.
 
 func summaryInfoMerge<E, V>(
   errorInfoSources: some BidirectionalCollection<E>, // TODO: .reversed support | tests
