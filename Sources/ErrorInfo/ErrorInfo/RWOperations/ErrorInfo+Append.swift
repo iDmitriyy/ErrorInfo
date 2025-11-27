@@ -12,11 +12,12 @@ extension ErrorInfo {
   @_disfavoredOverload
   public mutating func append(key dynamicKey: String, value newValue: (some ValueType)?) {
     _add(key: dynamicKey,
+         keyOrigin: .dynamic,
          value: newValue,
          preserveNilValues: true,
          insertIfEqual: false,
          addTypeInfo: .default,
-         collisionSource: .onSubscript(keyKind: .dynamic)) // FIXME: .onSubscript source in append method.
+         collisionSource: .onSubscript) // FIXME: .onSubscript source in append method.
     // How can we solve the propblem of namespace noise in subscript with dynamicKey?
     // May be it's ok to change collisionSource to .onAppend here
   }
@@ -26,11 +27,12 @@ extension ErrorInfo {
   public mutating func append(key literalKey: ErronInfoLiteralKey, value newValue: (some ValueType)?) {
     // deprecattion is used to guide users
     _add(key: literalKey.rawValue,
+         keyOrigin: literalKey.keyOrigin,
          value: newValue,
          preserveNilValues: true,
          insertIfEqual: false,
          addTypeInfo: .default,
-         collisionSource: .onSubscript(keyKind: .literalConstant))
+         collisionSource: .onSubscript)
   }
 }
 
@@ -42,10 +44,10 @@ extension ErrorInfo {
                                       insertIfEqual: Bool = false) {
     guard let value else { return }
     _appendWithDefaultTypeInfo(key: literalKey.rawValue,
+                               keyOrigin: literalKey.keyOrigin,
                                value: value,
                                preserveNilValues: true, // has no effect in this func
-                               insertIfEqual: insertIfEqual,
-                               keyKind: .literalConstant)
+                               insertIfEqual: insertIfEqual)
   }
   
   @_disfavoredOverload
@@ -54,10 +56,10 @@ extension ErrorInfo {
                                       insertIfEqual: Bool = false) {
     guard let value else { return }
     _appendWithDefaultTypeInfo(key: dynamicKey,
+                               keyOrigin: .dynamic,
                                value: value,
                                preserveNilValues: true, // has no effect in this func
-                               insertIfEqual: insertIfEqual,
-                               keyKind: .dynamic)
+                               insertIfEqual: insertIfEqual)
   }
 }
 
@@ -65,27 +67,28 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   public mutating func append(contentsOf sequence: some Sequence<(String, any ValueType)>, insertIfEqual: Bool = false) {
-    for (key, value) in sequence {
-      _appendWithDefaultTypeInfo(key: key,
+    for (dynamicKey, value) in sequence {
+      _appendWithDefaultTypeInfo(key: dynamicKey,
+                                 keyOrigin: .dynamic,
                                  value: value,
                                  preserveNilValues: true, // has no effect in this func
-                                 insertIfEqual: insertIfEqual,
-                                 keyKind: .dynamic)
+                                 insertIfEqual: insertIfEqual)
     }
   }
 }
 
 extension ErrorInfo {
-  private mutating func _appendWithDefaultTypeInfo(key: Key,
+  private mutating func _appendWithDefaultTypeInfo(key: String,
+                                                   keyOrigin: KeyOrigin,
                                                    value: any ValueType,
                                                    preserveNilValues: Bool, // always true at call sites, need if value become optional
-                                                   insertIfEqual: Bool,
-                                                   keyKind: CollisionSource.KeyKind) {
+                                                   insertIfEqual: Bool) {
     _add(key: key,
+         keyOrigin: keyOrigin,
          value: value,
          preserveNilValues: preserveNilValues,
          insertIfEqual: insertIfEqual,
          addTypeInfo: .default,
-         collisionSource: .onAppend(keyKind: keyKind))
+         collisionSource: .onAppend)
   }
 }

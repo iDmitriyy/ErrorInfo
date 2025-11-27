@@ -34,7 +34,14 @@ extension ErrorInfo {
       }
       
       let value = instance[keyPath: keyPath]
-      self.append(key: key, value: value) // TODO: keyKind – case keyPath
+      
+      _add(key: key,
+           keyOrigin: .keyPath,
+           value: value,
+           preserveNilValues: true,
+           insertIfEqual: false,
+           addTypeInfo: .default,
+           collisionSource: .onAppend)
     }
   }
     

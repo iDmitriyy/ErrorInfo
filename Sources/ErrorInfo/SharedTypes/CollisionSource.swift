@@ -8,8 +8,8 @@
 // TODO: make as struct with static functions
 
 public enum CollisionSource: Sendable {
-  case onSubscript(keyKind: KeyKind)
-  case onAppend(keyKind: KeyKind)
+  case onSubscript
+  case onAppend
   
   case onMerge(origin: MergeOrigin)
   
@@ -24,8 +24,8 @@ public enum CollisionSource: Sendable {
     let head = "!*!"
     let tail: String
     switch self {
-    case .onSubscript(let keyKind): tail = "onSubscript(keyKind: \(keyKind.defaultStringInterpolation()))"
-    case .onAppend(let keyKind): tail = "onAppend(keyKind: \(keyKind.defaultStringInterpolation()))"
+    case .onSubscript: tail = "onSubscript"
+    case .onAppend: tail = "onAppend"
     case let .onMerge(origin): return origin.defaultStringInterpolation(sourceString: "onMerge")
     case let .onAddPrefix(prefix): tail = "onAddPrefix(\"\(prefix)\")"
     case let .onAddSuffix(suffix): tail = "onAddSuffix(\"\(suffix)\")"
@@ -60,19 +60,6 @@ extension CollisionSource {
       return head + tail
     }
   }
-  
-  public enum KeyKind: Sendable {
-    case literalConstant
-    /// when key is passed as a string interpolation of value or String that created at runtime
-    case dynamic
-    
-    public func defaultStringInterpolation() -> String {
-      switch self {
-      case .literalConstant: "literal"
-      case .dynamic: "dynamic"
-      }
-    }
-  }
 }
 
 // MARK: - Value + Collision Wrapper
@@ -99,6 +86,10 @@ public struct ValueWithCollisionWrapper<Value, CollisionSource> {
 extension ValueWithCollisionWrapper: Sendable where Value: Sendable, CollisionSource: Sendable {}
 
 public enum KeyOrigin: Sendable {
+  // TODO: memory footprint : ?Int8 ?make as OptionSet
+  // Optionset can be private to protect from incorrect usage, e.g. not allow to conaint all options, but allow only
+  // valid combinations like literalConstant + modified
+  
   case literalConstant
   
   /// When key is created from a compile time known string literal.
@@ -138,13 +129,13 @@ public enum KeyOrigin: Sendable {
 }
 
 /// `kind` not participate in hashing / equality
-internal struct KeyWithOrigin: Hashable, Sendable {
-  let string: String
+@usableFromInline internal struct KeyWithOrigin: Hashable, Sendable {
+  @usableFromInline let string: String
   let origin: KeyOrigin
   // TODO: - tests
-  func hash(into hasher: inout Hasher) { hasher.combine(string) }
+  @usableFromInline func hash(into hasher: inout Hasher) { hasher.combine(string) }
   
-  static func == (lhs: Self, rhs: Self) -> Bool { lhs.string == rhs.string }
+  @usableFromInline static func == (lhs: Self, rhs: Self) -> Bool { lhs.string == rhs.string }
 }
 
 // fileprivate enum ValueWithCollisionWrapper<Value, Source> {

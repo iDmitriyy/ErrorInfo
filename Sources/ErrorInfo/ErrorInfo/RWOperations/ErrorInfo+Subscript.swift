@@ -30,35 +30,37 @@ extension ErrorInfo {
   //   allValues(forKey: key)?.first
   // }
   
-  public subscript<V: ValueType>(key: ErronInfoLiteralKey) -> V? {
+  public subscript<V: ValueType>(key literalKey: ErronInfoLiteralKey) -> V? {
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
     get {
-      allValues(forKey: key.rawValue)?.first as? V
+      allValues(forKey: literalKey.rawValue)?.first as? V
     }
     set {
-      _add(key: key.rawValue,
+      _add(key: literalKey.rawValue,
+           keyOrigin: literalKey.keyOrigin,
            value: newValue,
            preserveNilValues: true,
            insertIfEqual: false,
            addTypeInfo: .default,
-           collisionSource: .onSubscript(keyKind: .literalConstant))
+           collisionSource: .onSubscript)
     }
   }
   
   @available(*, deprecated, message: "make autocomplete pollution")
   @_disfavoredOverload
-  public subscript<V: ValueType>(key: String) -> V? { // dynamicKey key:
+  public subscript<V: ValueType>(key dynamicKey: String) -> V? { // dynamicKey key:
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
     get {
-      allValues(forKey: key)?.first as? V
+      allValues(forKey: dynamicKey)?.first as? V
     }
     set {
-      _add(key: key,
+      _add(key: dynamicKey,
+           keyOrigin: .dynamic,
            value: newValue,
            preserveNilValues: true,
            insertIfEqual: false,
            addTypeInfo: .default,
-           collisionSource: .onSubscript(keyKind: .dynamic))
+           collisionSource: .onSubscript)
     }
   }
   

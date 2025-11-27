@@ -34,13 +34,13 @@ extension ErrorInfo {
   
   // public func keyValueLookupResult() -> KeyValueLookupResult {}
   
-  public func hasValues(forKey key: ErronInfoLiteralKey) -> Bool {
-    _storage.hasValue(forKey: key.rawValue)
+  public func hasValues(forKey literalKey: ErronInfoLiteralKey) -> Bool {
+    _storage.hasValue(forKey: literalKey.rawValue)
   }
   
   @_disfavoredOverload
-  public func hasValues(forKey key: Key) -> Bool {
-    _storage.hasValue(forKey: key)
+  public func hasValues(forKey dynamicKey: String) -> Bool {
+    _storage.hasValue(forKey: dynamicKey)
   }
   
   // public func hasCollisions() -> Bool {

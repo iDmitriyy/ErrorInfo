@@ -12,7 +12,9 @@ public struct ErronInfoLiteralKey: Hashable, Sendable, CustomStringConvertible, 
   public var description: String { rawValue }
   
   public var debugDescription: String { rawValue } // TODO: ? rawValue.debugDescription
-    
+  
+  internal var keyOrigin: KeyOrigin { .literalConstant }
+  
   internal init(uncheckedString: String) {
     rawValue = uncheckedString
   }

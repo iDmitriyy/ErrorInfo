@@ -13,7 +13,7 @@ extension ErrorInfo {
     case collisions([Info])
     
     struct Info {
-      let key: TaggedKey
+      let key: KeyWithOrigin
       let values: [ValueWithCollisionWrapper<_Optional, CollisionSource>]
     }
   }

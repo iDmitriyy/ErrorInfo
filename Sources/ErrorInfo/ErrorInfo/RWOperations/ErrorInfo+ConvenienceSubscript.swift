@@ -69,11 +69,12 @@ extension ErrorInfo {
       }
       set {
         pointer.pointee._add(key: literalKey.rawValue,
+                             keyOrigin: literalKey.keyOrigin,
                              value: newValue,
                              preserveNilValues: preserveNilValues ?? self.preserveNilValues,
                              insertIfEqual: insertIfEqual ?? self.insertIfEqual,
                              addTypeInfo: typeInfoOptions,
-                             collisionSource: .onSubscript(keyKind: .literalConstant))
+                             collisionSource: .onSubscript)
       }
     }
     
@@ -89,29 +90,31 @@ extension ErrorInfo {
       }
       set {
         pointer.pointee._add(key: dynamicKey,
+                             keyOrigin: .dynamic,
                              value: newValue,
                              preserveNilValues: preserveNilValues ?? self.preserveNilValues,
                              insertIfEqual: insertIfEqual ?? self.insertIfEqual,
                              addTypeInfo: typeInfoOptions,
-                             collisionSource: .onSubscript(keyKind: .dynamic))
+                             collisionSource: .onSubscript)
       }
     }
     
     // MARK: - Replace AllValues ForKey
     
     @discardableResult
-    public mutating func replaceAllValues(forKey dynamicKey: Key,
+    public mutating func replaceAllValues(forKey dynamicKey: String,
                                           by newValue: any ValueType,
                                           preserveNilValues: Bool? = nil,
                                           insertIfEqual: Bool? = nil) -> ValuesForKey<any ValueType>? {
       let oldValues = pointer.pointee._storage.removeAllValues(forKey: dynamicKey)
       // collisions never happens when replacing
       pointer.pointee._add(key: dynamicKey,
+                           keyOrigin: .dynamic,
                            value: newValue,
                            preserveNilValues: preserveNilValues ?? self.preserveNilValues,
                            insertIfEqual: insertIfEqual ?? self.insertIfEqual,
                            addTypeInfo: typeInfoOptions,
-                           collisionSource: .onAppend(keyKind: .dynamic))
+                           collisionSource: .onAppend)
       return oldValues?._compactMap { $0.value.optionalValue }
     }
   }

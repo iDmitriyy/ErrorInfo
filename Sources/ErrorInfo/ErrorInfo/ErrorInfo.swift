@@ -48,7 +48,8 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
 
 extension ErrorInfo {
   /// The root appending function for public API imps. The term "_add" is chosen to visually / syntatically differentiate from family of public `append()`functions.
-  internal mutating func _add<V: ValueType>(key: Key,
+  internal mutating func _add<V: ValueType>(key: String,
+                                            keyOrigin _: KeyOrigin,
                                             value newValue: V?,
                                             preserveNilValues: Bool,
                                             insertIfEqual: Bool,
@@ -75,7 +76,8 @@ extension ErrorInfo {
   
   // SE-0375 Opening existential arguments to optional parameters
   
-  internal mutating func _addExistentialNil(key: Key,
+  internal mutating func _addExistentialNil(key: String,
+                                            keyOrigin _: KeyOrigin,
                                             preserveNilValues: Bool,
                                             insertIfEqual: Bool,
                                             collisionSource: @autoclosure () -> CollisionSource) {

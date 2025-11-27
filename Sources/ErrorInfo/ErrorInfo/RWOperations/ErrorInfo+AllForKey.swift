@@ -12,13 +12,13 @@
 extension ErrorInfo {
   // public func allValuesSlice(forKey key: Key) -> (some Sequence<Value>)? {}
   
-  public func allValues(forKey key: ErronInfoLiteralKey) -> ValuesForKey<any ValueType>? {
-    allValues(forKey: key.rawValue)
+  public func allValues(forKey literalKey: ErronInfoLiteralKey) -> ValuesForKey<any ValueType>? {
+    allValues(forKey: literalKey.rawValue)
   }
   
   @_disfavoredOverload
-  public func allValues(forKey key: Key) -> ValuesForKey<any ValueType>? {
-    _storage.allValues(forKey: key)?._compactMap { $0.value.optionalValue }
+  public func allValues(forKey dynamicKey: String) -> ValuesForKey<any ValueType>? {
+    _storage.allValues(forKey: dynamicKey)?._compactMap { $0.value.optionalValue }
   }
 }
 
@@ -26,13 +26,13 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   @discardableResult
-  public mutating func removeAllValues(forKey key: ErronInfoLiteralKey) -> ValuesForKey<any ValueType>? {
-    removeAllValues(forKey: key.rawValue)
+  public mutating func removeAllValues(forKey literalKey: ErronInfoLiteralKey) -> ValuesForKey<any ValueType>? {
+    removeAllValues(forKey: literalKey.rawValue)
   }
   
   @_disfavoredOverload @discardableResult
-  public mutating func removeAllValues(forKey key: Key) -> ValuesForKey<any ValueType>? {
-    _storage.removeAllValues(forKey: key)?._compactMap { $0.value.optionalValue }
+  public mutating func removeAllValues(forKey dynamicKey: String) -> ValuesForKey<any ValueType>? {
+    _storage.removeAllValues(forKey: dynamicKey)?._compactMap { $0.value.optionalValue }
   }
 }
 
@@ -44,23 +44,25 @@ extension ErrorInfo {
                                         by newValue: any ValueType) -> ValuesForKey<any ValueType>? {
     let oldValues = _storage.removeAllValues(forKey: literalKey.rawValue)
     _add(key: literalKey.rawValue,
+         keyOrigin: literalKey.keyOrigin,
          value: newValue,
          preserveNilValues: true, // has no effect in this func
          insertIfEqual: true, // has no effect in this func
          addTypeInfo: .default,
-         collisionSource: .onAppend(keyKind: .literalConstant)) // collisions must never happen using this func
+         collisionSource: .onAppend) // collisions must never happen using this func
     return oldValues?._compactMap { $0.value.optionalValue }
   }
   
   @_disfavoredOverload @discardableResult
-  public mutating func replaceAllValues(forKey dynamicKey: Key, by newValue: any ValueType) -> ValuesForKey<any ValueType>? {
+  public mutating func replaceAllValues(forKey dynamicKey: String, by newValue: any ValueType) -> ValuesForKey<any ValueType>? {
     let oldValues = _storage.removeAllValues(forKey: dynamicKey)
     _add(key: dynamicKey,
+         keyOrigin: .dynamic,
          value: newValue,
          preserveNilValues: true, // has no effect in this func
          insertIfEqual: true, // has no effect in this func
          addTypeInfo: .default,
-         collisionSource: .onAppend(keyKind: .dynamic)) // collisions must never happen using this func
+         collisionSource: .onAppend) // collisions must never happen using this func
     return oldValues?._compactMap { $0.value.optionalValue }
   }
 }
