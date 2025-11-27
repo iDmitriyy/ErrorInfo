@@ -124,7 +124,7 @@ struct OrderedMultiValueDictionaryTests {
     dict.append(key: "b", value: 2)
     dict.append(key: "a", value: 3)
 
-    let keys = Set(dict.keys)
+    let keys = Set(dict.uniqueKeys)
     #expect(keys == Set(["a", "b"]))
   }
 }

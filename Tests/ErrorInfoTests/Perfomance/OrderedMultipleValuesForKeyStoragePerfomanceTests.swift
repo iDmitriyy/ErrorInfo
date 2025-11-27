@@ -38,7 +38,7 @@ struct OrderedMultipleValuesForKeyStoragePerfomanceTests {
     let orderedMultiValueStorageOutput = performMeasuredAction(count: count) {
       var dict = OrderedMultipleValuesForKeyStorage<Int, Int, CollisionSource>()
       for element in elements {
-        dict.append(key: element, value: element, collisionSource: .onSubscript(keyKind: .dynamic))
+        dict.append(key: element, value: element, collisionSource: .onSubscript)
       }
       return dict
     }
