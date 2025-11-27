@@ -5,11 +5,9 @@
 //  Created by Dmitriy Ignatyev on 20/09/2025.
 //
 
-
 import SwiftCollectionsNonEmpty
 import OrderedCollections
 private import StdLibExtensions
-public import protocol InternalCollectionsUtilities._UniqueCollection
 
 // MARK: - Ordered MultiValueDictionary
 
@@ -20,8 +18,6 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   /// for `allValuesForKey` function
   /// stores indices for all values for a key
   internal private(set) var _keyToEntryIndices: Dictionary<Key, NonEmptyOrderedIndexSet> // TODO: ? use RangeSet instead of NonEmptyOrderedIndexSet?
-    
-  public var keys: some Collection<Key> & _UniqueCollection { _keyToEntryIndices.keys }
   
   public init() {
     _entries = []

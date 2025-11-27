@@ -18,7 +18,7 @@ public enum StringBasedCollisionSource: Sendable {
   case onKeysMapping(original: String, mapped: String)
   
   case onDictionaryConsumption(origin: MergeOrigin)
-  case onCreateWithDictionaryLiteral
+  case onCreateWithDictionaryLiteral // (firstKey: String)
   
   public func defaultStringInterpolation() -> String {
     let head = "!*!"
