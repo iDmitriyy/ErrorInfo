@@ -55,6 +55,11 @@ struct DictionaryErrorInfoOverlay<Dict> {
 
 // SwiftCollections.Uniqie can help make `collapse nil values` option. (UniquedSequence | projection)
 
+// Examples for:
+// - NSError
+// - Swift.Error
+// - ErrorsSuite
+
 func summaryInfoMerge<E, V>(
   errorInfoSources: some BidirectionalCollection<E>, // TODO: .reversed support | tests
   errorInfoKeyPath: KeyPath<E, ErrorInfo>,
@@ -87,6 +92,8 @@ func summaryInfoMerge<E, V>(
   for (infoSourceIndex, errorInfoSource) in errorInfoSources.enumerated() {
     let errorInfo = errorInfoSource[keyPath: errorInfoKeyPath]
     for (key, value) in errorInfo._storage {
+      let hasCrossErrorsCollision = crossCollisionKeys.contains(key)
+      
       // 3. Collisions
       // 3.1 If there is cross collision (the same key in info of several errors), then sourceSignature (e.g. error domain + code)
       // is added to key. If several errors have the same signature, then source index from errorInfoSources is also added.
@@ -95,8 +102,13 @@ func summaryInfoMerge<E, V>(
       // If there are equal collision sources for the same key (e.g. `.onSubscript`), a random suffix
       // will be added (by _putResolvingWithRandomSuffix() func).
       
-      let hasCrossErrorsCollision = crossCollisionKeys.contains(key)
       var augmentedKey = _StatefulKey(key)
+      
+      let shouldAddKeyKind = false
+      if shouldAddKeyKind {
+        // add key tag according to options
+      }
+      
       if hasCrossErrorsCollision {
         let sourceSignature = _unchecked_infoSourceSignatureForCrossCollision(infoSourceIndex: infoSourceIndex,
                                                                               allSourcesSignatures: allSourcesSignatures)
