@@ -66,10 +66,10 @@ extension Merge {
 
 extension Merge {
   func summaryInfo<E, V>(
-    errorInfoSources: some BidirectionalCollection<E>, // TODO: .reversed support | tests
-    errorInfoKeyPath: KeyPath<E, ErrorInfo>,
-    errorSignatureBuilder: (E) -> String,
-    valueTransform: (ErrorInfo._ValueVariant) -> V,
+    infoSources: some BidirectionalCollection<E>, // TODO: .reversed support | tests
+    infoKeyPath: KeyPath<E, ErrorInfo>,
+    infoSourceSignatureBuilder: (E) -> String,
+    valueTransform: (ErrorInfo._Optional) -> V,
     collisionSourceInterpolation: (StringBasedCollisionSource
     ) -> String = { $0.defaultStringInterpolation() },
   )
@@ -89,12 +89,12 @@ extension Merge {
     }
     
     // 1. Find collisions across errorInfo sources (typically it is errors)
-    let crossCollisionKeys = findCommonElements(across: errorInfoSources.map { $0[keyPath: errorInfoKeyPath].uniqueKeys })
+    let crossCollisionKeys = findCommonElements(across: infoSources.map { $0[keyPath: infoKeyPath].uniqueKeys })
     
     // 2. Iterate over key-value pairs in each errorInfo source.
-    lazy var allSourcesSignatures = errorInfoSources.map(errorSignatureBuilder)
-    for (infoSourceIndex, errorInfoSource) in errorInfoSources.enumerated() {
-      let errorInfo = errorInfoSource[keyPath: errorInfoKeyPath]
+    lazy var allSourcesSignatures = infoSources.map(infoSourceSignatureBuilder)
+    for (infoSourceIndex, errorInfoSource) in infoSources.enumerated() {
+      let errorInfo = errorInfoSource[keyPath: infoKeyPath]
       for (key, value) in errorInfo._storage {
         // 3. Collisions
         // 3.1 If there is cross collision (the same key in info of several errors), then sourceSignature (e.g. error domain + code)

@@ -8,10 +8,10 @@
 // MARK: - _ValueVariant
 
 extension ErrorInfo {
-  internal struct _ValueVariant: Sendable, ApproximatelyEquatable {
+  @usableFromInline internal struct _Optional: Sendable, ApproximatelyEquatable {
     private let wrapped: Variant
     
-    internal var optionalValue: (any ErrorInfoValueType)? {
+    @usableFromInline internal var optionalValue: (any ErrorInfoValueType)? {
       switch wrapped {
       case .value(let value): value
       case .nilInstance: nil
@@ -55,7 +55,7 @@ extension ErrorInfo {
       }
     }
     
-    internal static func isApproximatelyEqual(lhs: borrowing Self, rhs: borrowing Self) -> Bool {
+    @usableFromInline internal static func isApproximatelyEqual(lhs: borrowing Self, rhs: borrowing Self) -> Bool {
       switch (lhs.wrapped, rhs.wrapped) {
       case (.value, .nilInstance),
            (.nilInstance, .value):

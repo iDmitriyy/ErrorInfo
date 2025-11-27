@@ -14,15 +14,15 @@ extension ErrorInfo {
 }
 
 extension ErrorInfo {
+  struct ValuesWithMetaDataView {
+    
+  }
+  
   struct NonNilValuesView {
     
   }
   
   struct WithNilValuesView {
-    
-  }
-  
-  struct ValuesWithMetaDataView {
     
   }
 }

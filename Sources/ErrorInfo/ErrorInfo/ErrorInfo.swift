@@ -20,11 +20,11 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
   // Do it after all Slices will be comlpeted, as keeping collisionSource in separate dict need a way to somehow
   // store relation between values in slice and collision sources.
   // Another one case is with TypeInfo. Simply type info can be stored as a Bool flag or Empty() instance.
-  internal typealias BackingStorage = OrderedMultiValueErrorInfoGeneric<String, _ValueVariant>
+  @usableFromInline internal typealias BackingStorage = OrderedMultiValueErrorInfoGeneric<String, _Optional>
   public typealias ValueWrapper = ValueWithCollisionWrapper<any ValueType, CollisionSource>
   
   // FIXME: private(set)
-  internal var _storage: BackingStorage
+  @usableFromInline internal var _storage: BackingStorage
   
   private init(storage: BackingStorage) {
     _storage = storage
@@ -54,7 +54,7 @@ extension ErrorInfo {
                                             addTypeInfo _: TypeInfoOptions,
                                             collisionSource: @autoclosure () -> CollisionSource) {
     // TODO: put type TypeInfo
-    let valueVariant: _ValueVariant
+    let valueVariant: _Optional
     if let newValue {
       valueVariant = .value(newValue)
     } else if preserveNilValues {
@@ -79,7 +79,7 @@ extension ErrorInfo {
                                             insertIfEqual: Bool,
                                             collisionSource: @autoclosure () -> CollisionSource) {
     // TODO: put type TypeInfo
-    let valueVariant: _ValueVariant
+    let valueVariant: _Optional
     if preserveNilValues {
       valueVariant = .nilInstance(typeOfWrapped: (any ErrorInfoValueType).self)
     } else {

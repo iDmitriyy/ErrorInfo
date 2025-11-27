@@ -9,7 +9,7 @@
 import Testing
 
 struct ErrorInfoValueVariantTests {
-  typealias Variant = ErrorInfo._ValueVariant
+  typealias Variant = ErrorInfo._Optional
   
   @Test func equality() async throws {
     #expect(Variant.isApproximatelyEqual(lhs: .value(10), rhs: .value(10)))
