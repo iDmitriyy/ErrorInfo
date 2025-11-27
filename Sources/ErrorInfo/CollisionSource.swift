@@ -7,7 +7,7 @@
 
 // TODO: make as struct with static functions
 
-public enum StringBasedCollisionSource: Sendable {
+public enum CollisionSource: Sendable {
   case onSubscript(keyKind: KeyKind)
   case onAppend(keyKind: KeyKind)
   
@@ -37,7 +37,7 @@ public enum StringBasedCollisionSource: Sendable {
   }
 }
 
-extension StringBasedCollisionSource {
+extension CollisionSource {
   public enum MergeOrigin: Sendable, ExpressibleByStringLiteral {
     case fileLine(file: StaticString = #fileID, line: UInt = #line)
     case function(function: String = #function)

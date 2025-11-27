@@ -18,7 +18,7 @@ extension ErrorInfo {
   
   public init(legacyUserInfo: [String: Any],
               valueInterpolation: @Sendable (Any) -> String = { prettyDescriptionOfOptional(any: $0) },
-              collisionSource: @autoclosure () -> StringBasedCollisionSource.MergeOrigin = .fileLine()) {
+              collisionSource: @autoclosure () -> CollisionSource.MergeOrigin = .fileLine()) {
     self.init()
     
     legacyUserInfo.forEach { key, value in

@@ -14,7 +14,7 @@ extension ErrorInfo {
     
     struct Info {
       let key: TaggedKey
-      let values: [ValueWithCollisionWrapper<_Optional, StringBasedCollisionSource>]
+      let values: [ValueWithCollisionWrapper<_Optional, CollisionSource>]
     }
   }
 }

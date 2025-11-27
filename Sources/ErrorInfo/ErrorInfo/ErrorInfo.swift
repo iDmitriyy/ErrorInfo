@@ -11,8 +11,9 @@ import struct OrderedCollections.OrderedDictionary
 // TODO: - add overloads for Sendable AnyObjects & actors
 
 public struct ErrorInfo: Sendable { // ErrorInfoCollection
+  public typealias Element = (key: String, value: any ValueType)
+  
   public typealias ValueType = ErrorInfoValueType
-  public typealias CollisionSource = StringBasedCollisionSource
   
   // TODO: should CollisionSource be stored in BackingStorage? mostly always CollisionSource is nil
   // may be BackingStorage should keep a separate dict for keeping CollisionSource instances

@@ -6,8 +6,6 @@
 //
 
 extension ErrorInfo: Sequence {
-  public typealias Element = (key: String, value: any ValueType)
-  
   public struct Iterator: IteratorProtocol {
     @usableFromInline
     internal var base: BackingStorage.Iterator

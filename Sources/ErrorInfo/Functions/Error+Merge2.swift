@@ -70,7 +70,7 @@ extension Merge {
     infoKeyPath: KeyPath<E, ErrorInfo>,
     infoSourceSignatureBuilder: (E) -> String,
     valueTransform: (ErrorInfo._Optional) -> V,
-    collisionSourceInterpolation: (StringBasedCollisionSource
+    collisionSourceInterpolation: (CollisionSource
     ) -> String = { $0.defaultStringInterpolation() },
   )
     -> OrderedDictionary<String, V> {
@@ -193,7 +193,7 @@ private func _unchecked_infoSourceSignatureForCrossCollision(infoSourceIndex: In
 func merge2(errors: [ProtoError],
             omitEqualValues: Bool, // = false
             errorSignatureBuilder: (ProtoError) -> String = { $0.domain + "\($0.code)" },
-            collisionSourceInterpolation: (StringBasedCollisionSource) -> String = { $0.defaultStringInterpolation() })
+            collisionSourceInterpolation: (CollisionSource) -> String = { $0.defaultStringInterpolation() })
   -> OrderedDictionary<String, Int> {
   typealias Dict = OrderedDictionary<String, Int>
   typealias Key = Dict.Key
@@ -244,7 +244,7 @@ func merge2(errors: [ProtoError],
       
       if processedValues.count > 1 { // value collisions within concrete error instance
         for collidedValue in processedValues {
-          let collisionSource = StringBasedCollisionSource.onSubscript(keyKind: .dynamic) // !! get real one
+          let collisionSource = CollisionSource.onSubscript(keyKind: .dynamic) // !! get real one
           let collisionSourceString = collisionSourceInterpolation(collisionSource)
           augmentedKey.append(collisionSourceString)
           putResolvingCollisions(key: augmentedKey, value: collidedValue)

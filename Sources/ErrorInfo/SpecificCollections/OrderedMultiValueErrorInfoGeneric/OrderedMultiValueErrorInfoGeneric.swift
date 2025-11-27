@@ -18,7 +18,6 @@
 public struct OrderedMultiValueErrorInfoGeneric<Key: Hashable, Value: ApproximatelyEquatable>: Sequence {
   public typealias Element = (key: Key, value: ValueWrapper)
   public typealias ValueWrapper = ValueWithCollisionWrapper<Value, CollisionSource>
-  public typealias CollisionSource = StringBasedCollisionSource
   
   internal private(set) var _storage: OrderedMultipleValuesForKeyStorage<Key, Value, CollisionSource>
   

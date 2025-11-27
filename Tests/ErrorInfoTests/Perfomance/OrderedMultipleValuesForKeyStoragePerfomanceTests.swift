@@ -36,7 +36,7 @@ struct OrderedMultipleValuesForKeyStoragePerfomanceTests {
     // ~9.5x slower vs Swift.Dictionary
     // TODO: compare on optimized build
     let orderedMultiValueStorageOutput = performMeasuredAction(count: count) {
-      var dict = OrderedMultipleValuesForKeyStorage<Int, Int, StringBasedCollisionSource>()
+      var dict = OrderedMultipleValuesForKeyStorage<Int, Int, CollisionSource>()
       for element in elements {
         dict.append(key: element, value: element, collisionSource: .onSubscript(keyKind: .dynamic))
       }
