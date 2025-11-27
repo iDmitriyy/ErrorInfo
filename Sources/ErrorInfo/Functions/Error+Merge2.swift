@@ -25,15 +25,19 @@ func playMerge(errors: [any InformativeError]) {
 // Should ErrorInfo be codable? does json allow the same key several times?
 // ? Decode merged OrderedDictionary as Swift.Dectionary but with key-value ordering
 
-struct MerrorInfoSourcesOptions {
+enum MerrorInfoSourcesOptions {
   // omitEqualValuesInsideSource
   // omitEqualValuesAcrossSources
   // collapseNilValues
   // addKeyTagsForKinds(.all, .allExceptLiterals | .literal, .combinedLiteral, .dynamic, .keyPath, .madified)
-  
-  struct KeyOptions {
-    
-  }
+}
+
+
+struct MerrorInfoKeyTagOptions {}
+
+struct MerrorInfoNilOptions {
+  // keepAll
+  // collapse | with info is it a nil or a collapsed nil. "nil" "nil (collapsed)" "nil (collapsed, was: Int, String, Array)"
 }
 
 /// Add partial functionality of collisions resolution to dictionary
@@ -44,11 +48,17 @@ struct DictionaryErrorInfoOverlay<Dict> {
 // Before logging, typically some fields are added to summary info: "#log_file_line", "#log_throttling" ...
 // Such info can be added to a separate ErrorInfo instance and put first to `errorInfoSources` arg list.
 
+// Error-chain string (with log / merge / other options) can be added to remote config.
+// e.g.: add typeInfo, keyTags.
+
+// !! Make possible to provide Collection<(Key, Value)> for errorInfoSources arg and for errorInfoKeyPath arg
+
+// SwiftCollections.Uniqie can help make `collapse nil values` option. (UniquedSequence | projection)
+
 func summaryInfoMerge<E, V>(
   errorInfoSources: some BidirectionalCollection<E>, // TODO: .reversed support | tests
   errorInfoKeyPath: KeyPath<E, ErrorInfo>,
   omitEqualValues: Bool, // = false
-  collisionSource: StringBasedCollisionSource.MergeOrigin = .fileLine(),
   errorSignatureBuilder: (E) -> String,
   valueTransformer: (ErrorInfo._ValueVariant) -> V,
   collisionSourceInterpolation: (StringBasedCollisionSource
@@ -59,14 +69,14 @@ func summaryInfoMerge<E, V>(
   typealias Key = String
   typealias Value = any ErrorInfoValueType
   
-  var merged: OrderedDictionary<Key, V> = [:]
+  var summary: OrderedDictionary<Key, V> = [:]
   
   func putResolvingCollisions(key assumeModifiedKey: Key, value processedValue: V) {
     ErrorInfoDictFuncs.Merge._putResolvingWithRandomSuffix(processedValue,
                                                            assumeModifiedKey: assumeModifiedKey,
                                                            shouldOmitEqualValue: omitEqualValues,
                                                            suffixFirstChar: ErrorInfoMerge.suffixBeginningForMergeScalar,
-                                                           to: &merged)
+                                                           to: &summary)
   }
   
   // 1. Find collisions across errorInfo sources (typically it is errors)
@@ -77,8 +87,16 @@ func summaryInfoMerge<E, V>(
   for (infoSourceIndex, errorInfoSource) in errorInfoSources.enumerated() {
     let errorInfo = errorInfoSource[keyPath: errorInfoKeyPath]
     for (key, value) in errorInfo._storage {
+      // 3. Collisions
+      // 3.1 If there is cross collision (the same key in info of several errors), then sourceSignature (e.g. error domain + code)
+      // is added to key. If several errors have the same signature, then source index from errorInfoSources is also added.
+      // In such a way all keys across errorInfoSources become unique.
+      // 3.2 If the same key is met several times inside an errorInfo, then collisionSource interpolation is added to a key.
+      // If there are equal collision sources for the same key (e.g. `.onSubscript`), a random suffix
+      // will be added (by _putResolvingWithRandomSuffix() func).
+      
       let hasCrossErrorsCollision = crossCollisionKeys.contains(key)
-      var augmentedKey = StatefulKey(key)
+      var augmentedKey = _StatefulKey(key)
       if hasCrossErrorsCollision {
         let sourceSignature = _unchecked_infoSourceSignatureForCrossCollision(infoSourceIndex: infoSourceIndex,
                                                                               allSourcesSignatures: allSourcesSignatures)
@@ -110,10 +128,10 @@ func summaryInfoMerge<E, V>(
     } // end `for (key, value)`
   } // end `for (errorIndex, error)`
   
-  return merged
+  return summary
 }
 
-fileprivate struct StatefulKey {
+fileprivate struct _StatefulKey {
   private(set) var string: String
   private(set) var isSuffixAppended: Bool
   
@@ -129,6 +147,10 @@ fileprivate struct StatefulKey {
     }
     string.append(other)
   }
+  
+  // mutating func prepend(_ prefix: String) {
+  //   string = prefix + " " + string
+  // }
 }
 
 /// Decomposition of `merge` function. `allSourcesSignatures.count` must be equal to `errorInfoSources.count`
