@@ -16,7 +16,7 @@ struct ErronInfoLiteralKeyTests {
     #expect(stringOf(literal: "status" + "id") == "status_id")
   }
   
-  private func stringOf(literal: ErronInfoLiteralKey) -> String {
+  private func stringOf(literal: StringLiteralKey) -> String {
     String(describing: literal)
   }
 }

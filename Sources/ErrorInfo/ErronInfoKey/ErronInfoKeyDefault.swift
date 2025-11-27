@@ -27,157 +27,157 @@
 // Currently all these strings consume ~168Kb of binary size. replacing static lets by compile-time values might
 // reduce memory consumption
 
-extension ErronInfoLiteralKey {
+extension StringLiteralKey {
   // MARK: Common key prefixes
   
   /// e.g.: .invalid + .value, .invalid + .index
-  public static let invalid: ErronInfoLiteralKey = "invalid"
+  public static let invalid: StringLiteralKey = "invalid"
   /// e.g.: .unchecked + .value, .unchecked + .index
-  public static let unchecked: ErronInfoLiteralKey = "unchecked"
+  public static let unchecked: StringLiteralKey = "unchecked"
   /// e.g.: .unexpected + .value, .unexpected + .index
-  public static let unexpected: ErronInfoLiteralKey = "unexpected"
+  public static let unexpected: StringLiteralKey = "unexpected"
   
   /// e.g.: .debug + .timestamp
-  public static let debug: ErronInfoLiteralKey = "debug"
+  public static let debug: StringLiteralKey = "debug"
   /// e.g.: .raw + .status
-  public static let raw: ErronInfoLiteralKey = "raw"
+  public static let raw: StringLiteralKey = "raw"
   
   /// e.g.: .source + .state
-  public static let source: ErronInfoLiteralKey = "source"
+  public static let source: StringLiteralKey = "source"
   /// e.g.: .target + .state
-  public static let target: ErronInfoLiteralKey = "target"
+  public static let target: StringLiteralKey = "target"
   
   /// e.g.: .request + .duration
-  public static let request: ErronInfoLiteralKey = "request"
+  public static let request: StringLiteralKey = "request"
   /// e.g.: .response + .duration
-  public static let response: ErronInfoLiteralKey = "response"
+  public static let response: StringLiteralKey = "response"
   
   /// e.g.: .decoding + .duration
-  public static let decoding: ErronInfoLiteralKey = "decoding"
+  public static let decoding: StringLiteralKey = "decoding"
   /// e.g.: .encoding + .duration
-  public static let encoding: ErronInfoLiteralKey = "encoding"
+  public static let encoding: StringLiteralKey = "encoding"
 }
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
-extension ErronInfoLiteralKey {
+extension StringLiteralKey {
   // MARK: - Commonly used keys
   
-  public static let date: ErronInfoLiteralKey = "date"
-  public static let duration: ErronInfoLiteralKey = "duration"
-  public static let timestamp: ErronInfoLiteralKey = "timestamp"
+  public static let date: StringLiteralKey = "date"
+  public static let duration: StringLiteralKey = "duration"
+  public static let timestamp: StringLiteralKey = "timestamp"
   
-  public static let status: ErronInfoLiteralKey = "status"
-  public static let statusID: ErronInfoLiteralKey = "status_id"
-  public static let statusCode: ErronInfoLiteralKey = "status_code"
+  public static let status: StringLiteralKey = "status"
+  public static let statusID: StringLiteralKey = "status_id"
+  public static let statusCode: StringLiteralKey = "status_code"
   
-  public static let state: ErronInfoLiteralKey = "state"
+  public static let state: StringLiteralKey = "state"
   
-  public static let value: ErronInfoLiteralKey = "value"
-  public static let rawValue: ErronInfoLiteralKey = "raw_value"
-  public static let intValue: ErronInfoLiteralKey = "int_value"
-  public static let stringValue: ErronInfoLiteralKey = "string_value"
-  public static let instance: ErronInfoLiteralKey = "instance"
-  public static let object: ErronInfoLiteralKey = "object"
+  public static let value: StringLiteralKey = "value"
+  public static let rawValue: StringLiteralKey = "raw_value"
+  public static let intValue: StringLiteralKey = "int_value"
+  public static let stringValue: StringLiteralKey = "string_value"
+  public static let instance: StringLiteralKey = "instance"
+  public static let object: StringLiteralKey = "object"
   
-  public static let type: ErronInfoLiteralKey = "type"
-  public static let valueType: ErronInfoLiteralKey = "value_type"
-  public static let objectType: ErronInfoLiteralKey = "object_type"
-  public static let instanceType: ErronInfoLiteralKey = "instance_type"
+  public static let type: StringLiteralKey = "type"
+  public static let valueType: StringLiteralKey = "value_type"
+  public static let objectType: StringLiteralKey = "object_type"
+  public static let instanceType: StringLiteralKey = "instance_type"
   
-  public static let index: ErronInfoLiteralKey = "index"
-  public static let indices: ErronInfoLiteralKey = "indices"
+  public static let index: StringLiteralKey = "index"
+  public static let indices: StringLiteralKey = "indices"
   
-  public static let url: ErronInfoLiteralKey = "url"
-  public static let query: ErronInfoLiteralKey = "query"
-  public static let interpolation: ErronInfoLiteralKey = "interpolation"
+  public static let url: StringLiteralKey = "url"
+  public static let query: StringLiteralKey = "query"
+  public static let interpolation: StringLiteralKey = "interpolation"
   
-  public static let message: ErronInfoLiteralKey = "message"
-  public static let debugMessage: ErronInfoLiteralKey = "debug_message"
-  public static let localizedMessage: ErronInfoLiteralKey = "localized_message"
+  public static let message: StringLiteralKey = "message"
+  public static let debugMessage: StringLiteralKey = "debug_message"
+  public static let localizedMessage: StringLiteralKey = "localized_message"
   
-  public static let description: ErronInfoLiteralKey = "description"
-  public static let debugDescription: ErronInfoLiteralKey = "debug_description"
+  public static let description: StringLiteralKey = "description"
+  public static let debugDescription: StringLiteralKey = "debug_description"
   
-  public static let name: ErronInfoLiteralKey = "name"
-  public static let resource: ErronInfoLiteralKey = "resource"
+  public static let name: StringLiteralKey = "name"
+  public static let resource: StringLiteralKey = "resource"
   
-  public static let donator: ErronInfoLiteralKey = "donator"
-  public static let recipient: ErronInfoLiteralKey = "recipient"
+  public static let donator: StringLiteralKey = "donator"
+  public static let recipient: StringLiteralKey = "recipient"
   
-  public static let file: ErronInfoLiteralKey = "file"
-  public static let line: ErronInfoLiteralKey = "line"
-  public static let fileLine: ErronInfoLiteralKey = "file_line"
-  public static let function: ErronInfoLiteralKey = "function"
+  public static let file: StringLiteralKey = "file"
+  public static let line: StringLiteralKey = "line"
+  public static let fileLine: StringLiteralKey = "file_line"
+  public static let function: StringLiteralKey = "function"
   
-  public static let dataString: ErronInfoLiteralKey = "data_string"
-  public static let base64String: ErronInfoLiteralKey = "base64_string"
-  public static let bytesCount: ErronInfoLiteralKey = "bytes_count"
-  public static let dataBytesCount: ErronInfoLiteralKey = "data_bytes_count"
+  public static let dataString: StringLiteralKey = "data_string"
+  public static let base64String: StringLiteralKey = "base64_string"
+  public static let bytesCount: StringLiteralKey = "bytes_count"
+  public static let dataBytesCount: StringLiteralKey = "data_bytes_count"
 }
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
-extension ErronInfoLiteralKey {
+extension StringLiteralKey {
   // MARK: - Basic Information
   
-  public static let id: ErronInfoLiteralKey = "id"
-  public static let uuid: ErronInfoLiteralKey = "uuid"
-  public static let instanceID: ErronInfoLiteralKey = "instance_id"
-  public static let objectID: ErronInfoLiteralKey = "object_id"
+  public static let id: StringLiteralKey = "id"
+  public static let uuid: StringLiteralKey = "uuid"
+  public static let instanceID: StringLiteralKey = "instance_id"
+  public static let objectID: StringLiteralKey = "object_id"
 }
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
-extension ErronInfoLiteralKey {
+extension StringLiteralKey {
   // MARK: - Error Context
   
-  public static let errorCode: ErronInfoLiteralKey = "error_code"
-  public static let errorDomain: ErronInfoLiteralKey = "error_domain"
-  public static let errorDescription: ErronInfoLiteralKey = "error_description"
-  public static let errorDebugDescription: ErronInfoLiteralKey = "error_debug_description"
-  public static let errorMessage: ErronInfoLiteralKey = "error_message"
-  public static let errorLocalizedMessage: ErronInfoLiteralKey = "error_localized_message"
+  public static let errorCode: StringLiteralKey = "error_code"
+  public static let errorDomain: StringLiteralKey = "error_domain"
+  public static let errorDescription: StringLiteralKey = "error_description"
+  public static let errorDebugDescription: StringLiteralKey = "error_debug_description"
+  public static let errorMessage: StringLiteralKey = "error_message"
+  public static let errorLocalizedMessage: StringLiteralKey = "error_localized_message"
   
   /// e.g., network, database, validation
-  public static let errorType: ErronInfoLiteralKey = "error_type"
+  public static let errorType: StringLiteralKey = "error_type"
   
-  public static let failureReason: ErronInfoLiteralKey = "failure_reason"
-  public static let errorSource: ErronInfoLiteralKey = "error_source"
+  public static let failureReason: StringLiteralKey = "failure_reason"
+  public static let errorSource: StringLiteralKey = "error_source"
   
-  public static let severity: ErronInfoLiteralKey = "severity"
+  public static let severity: StringLiteralKey = "severity"
   
-  public static let underlyingError: ErronInfoLiteralKey = "underlying_error"
-  public static let exception: ErronInfoLiteralKey = "exception"
+  public static let underlyingError: StringLiteralKey = "underlying_error"
+  public static let exception: StringLiteralKey = "exception"
   
-  public static let retryAttemptsLimit: ErronInfoLiteralKey = "retry_attempts_limit"
-  public static let retryCount: ErronInfoLiteralKey = "retry_count"
-  public static let retryDelay: ErronInfoLiteralKey = "retry_delay"
+  public static let retryAttemptsLimit: StringLiteralKey = "retry_attempts_limit"
+  public static let retryCount: StringLiteralKey = "retry_count"
+  public static let retryDelay: StringLiteralKey = "retry_delay"
 }
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
-extension ErronInfoLiteralKey {
+extension StringLiteralKey {
   // MARK: - Network & Connectivity Information
   
-  public static let httpStatusCode: ErronInfoLiteralKey = "http_status_code"
+  public static let httpStatusCode: StringLiteralKey = "http_status_code"
   
-  public static let requestMethod: ErronInfoLiteralKey = "request_method"
-  public static let requestURL: ErronInfoLiteralKey = "request_url"
-  public static let requestBody: ErronInfoLiteralKey = "request_body"
+  public static let requestMethod: StringLiteralKey = "request_method"
+  public static let requestURL: StringLiteralKey = "request_url"
+  public static let requestBody: StringLiteralKey = "request_body"
   
-  public static let responseBody: ErronInfoLiteralKey = "response_body"
+  public static let responseBody: StringLiteralKey = "response_body"
 }
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
-extension ErronInfoLiteralKey {
+extension StringLiteralKey {
   // MARK: - App Usage Data
   
-  public static let hasPermission: ErronInfoLiteralKey = "has_permission"
-  public static let permissionStatus: ErronInfoLiteralKey = "permission_status"
+  public static let hasPermission: StringLiteralKey = "has_permission"
+  public static let permissionStatus: StringLiteralKey = "permission_status"
   
-  public static let isLoggedIn: ErronInfoLiteralKey = "is_logged_in"
-  public static let authenticationStatus: ErronInfoLiteralKey = "authentication_status"
-  public static let authorizationStatus: ErronInfoLiteralKey = "authorization_status"
+  public static let isLoggedIn: StringLiteralKey = "is_logged_in"
+  public static let authenticationStatus: StringLiteralKey = "authentication_status"
+  public static let authorizationStatus: StringLiteralKey = "authorization_status"
 }

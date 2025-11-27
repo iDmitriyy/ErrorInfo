@@ -24,7 +24,7 @@ extension ErrorInfo {
   
   
   @available(*, deprecated, message: "for literal keys use subscript instead, append() is intended for dynamic keys)")
-  public mutating func append(key literalKey: ErronInfoLiteralKey, value newValue: (some ValueType)?) {
+  public mutating func append(key literalKey: StringLiteralKey, value newValue: (some ValueType)?) {
     // deprecattion is used to guide users
     _add(key: literalKey.rawValue,
          keyOrigin: literalKey.keyOrigin,
@@ -40,7 +40,7 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   public mutating func appendIfNotNil(_ value: (any ValueType)?,
-                                      forKey literalKey: ErronInfoLiteralKey,
+                                      forKey literalKey: StringLiteralKey,
                                       insertIfEqual: Bool = false) {
     guard let value else { return }
     _appendWithDefaultTypeInfo(key: literalKey.rawValue,

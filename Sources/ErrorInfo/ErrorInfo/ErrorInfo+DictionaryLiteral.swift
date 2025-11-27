@@ -9,7 +9,7 @@
 
 extension ErrorInfo: ExpressibleByDictionaryLiteral {
   public typealias Value = (any ErrorInfoValueType)?
-  public typealias Key = ErronInfoLiteralKey
+  public typealias Key = StringLiteralKey
   // FIXME: can optional ErrorInfoValueType be used without conflict with ErrorInfoIterable protocol
   // Alternative: if optionals are impossible for DictionaryLiteral usage, then add functionBuilder initialization that allows
   // optional values

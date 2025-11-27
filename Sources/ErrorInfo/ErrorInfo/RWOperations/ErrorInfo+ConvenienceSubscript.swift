@@ -59,7 +59,7 @@ extension ErrorInfo {
     // MARK: - Subscript
     
     /// `omitEqualValue`has higher priority than provided in `appendWith(typeInfoOptions:, omitEqualValue:, append:)` function.
-    public subscript<V: ValueType>(key literalKey: ErronInfoLiteralKey,
+    public subscript<V: ValueType>(key literalKey: StringLiteralKey,
                      preserveNilValues: Bool? = nil,
                      insertIfEqual: Bool? = nil) -> V? {
       // TODO: ? borrowing get set

@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 16.04.2025.
 //
 
-public struct ErronInfoLiteralKey: Hashable, Sendable, CustomStringConvertible, CustomDebugStringConvertible {  
+public struct StringLiteralKey: Hashable, Sendable, CustomStringConvertible, CustomDebugStringConvertible {  
   /// A new instance initialized with `rawValue` will be equivalent to this instance.
   internal let rawValue: String
   
@@ -20,7 +20,7 @@ public struct ErronInfoLiteralKey: Hashable, Sendable, CustomStringConvertible, 
   }
 }
 
-extension ErronInfoLiteralKey: ExpressibleByStringLiteral { // TODO: try to make it zero-cost abstraction
+extension StringLiteralKey: ExpressibleByStringLiteral { // TODO: try to make it zero-cost abstraction
   public typealias StringLiteralType = StaticString
   // TODO: Check if there any costs for usinf StaticString instead of String as literal type.
   // StaticString completely closes the hole when ErronInfoKey can be initialized with dynamically formed string
@@ -30,7 +30,7 @@ extension ErronInfoLiteralKey: ExpressibleByStringLiteral { // TODO: try to make
   }
 }
 
-extension ErronInfoLiteralKey {  
+extension StringLiteralKey {  
   // TODO: perfomance: borrowing | consuming(copying), @const
   
   public static func + (lhs: Self, rhs: Self) -> Self {

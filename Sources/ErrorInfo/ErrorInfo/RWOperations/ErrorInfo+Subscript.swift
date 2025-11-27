@@ -30,7 +30,7 @@ extension ErrorInfo {
   //   allValues(forKey: key)?.first
   // }
   
-  public subscript<V: ValueType>(key literalKey: ErronInfoLiteralKey) -> V? {
+  public subscript<V: ValueType>(key literalKey: StringLiteralKey) -> V? {
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
     get {
       allValues(forKey: literalKey.rawValue)?.first as? V

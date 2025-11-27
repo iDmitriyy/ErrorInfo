@@ -34,7 +34,7 @@ extension ErrorInfo {
   
   // public func keyValueLookupResult() -> KeyValueLookupResult {}
   
-  public func hasValues(forKey literalKey: ErronInfoLiteralKey) -> Bool {
+  public func hasValues(forKey literalKey: StringLiteralKey) -> Bool {
     _storage.hasValue(forKey: literalKey.rawValue)
   }
   

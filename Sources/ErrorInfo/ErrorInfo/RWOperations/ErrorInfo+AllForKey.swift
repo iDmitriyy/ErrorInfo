@@ -12,7 +12,7 @@
 extension ErrorInfo {
   // public func allValuesSlice(forKey key: Key) -> (some Sequence<Value>)? {}
   
-  public func allValues(forKey literalKey: ErronInfoLiteralKey) -> ValuesForKey<any ValueType>? {
+  public func allValues(forKey literalKey: StringLiteralKey) -> ValuesForKey<any ValueType>? {
     allValues(forKey: literalKey.rawValue)
   }
   
@@ -26,7 +26,7 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   @discardableResult
-  public mutating func removeAllValues(forKey literalKey: ErronInfoLiteralKey) -> ValuesForKey<any ValueType>? {
+  public mutating func removeAllValues(forKey literalKey: StringLiteralKey) -> ValuesForKey<any ValueType>? {
     removeAllValues(forKey: literalKey.rawValue)
   }
   
@@ -40,7 +40,7 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   @discardableResult
-  public mutating func replaceAllValues(forKey literalKey: ErronInfoLiteralKey,
+  public mutating func replaceAllValues(forKey literalKey: StringLiteralKey,
                                         by newValue: any ValueType) -> ValuesForKey<any ValueType>? {
     let oldValues = _storage.removeAllValues(forKey: literalKey.rawValue)
     _add(key: literalKey.rawValue,
