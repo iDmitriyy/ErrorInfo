@@ -6,10 +6,10 @@
 //
 
 /// `kind` not participate in hashing / equality
-@usableFromInline internal struct KeyWithOrigin: Hashable, Sendable {
+@usableFromInline internal struct KeyWithOrigin: Hashable, Sendable { // TODO: - hash & == tests
   @usableFromInline let string: String
   let origin: KeyOrigin
-  // TODO: - tests
+  
   @usableFromInline func hash(into hasher: inout Hasher) { hasher.combine(string) }
   
   @usableFromInline static func == (lhs: Self, rhs: Self) -> Bool { lhs.string == rhs.string }

@@ -39,6 +39,8 @@ public struct TypeInfoOptions: OptionSet, Sendable { // add tests
   /// Implicitly means \`always\`, if option \`whenNil\` not passed.
   public static let allTypes = TypeInfoOptions(rawValue: 1 << 2)
   
+  // TODO: nonBuiltIn - casting values to diffrent types is expensive. Is getting dynamic of value is faster?
+  
   /// Everything except primitives contained in standard library – bool, integers, floating point, String, StaticString
   ///
   /// Implicitly means \`always\`, if option \`whenNil\` not passed.

@@ -10,16 +10,10 @@
 extension ErrorInfo: ExpressibleByDictionaryLiteral {
   public typealias Value = (any ErrorInfoValueType)?
   public typealias Key = StringLiteralKey
-  // FIXME: can optional ErrorInfoValueType be used without conflict with ErrorInfoIterable protocol
-  // Alternative: if optionals are impossible for DictionaryLiteral usage, then add functionBuilder initialization that allows
-  // optional values
   
   public init(dictionaryLiteral elements: (Key, Value)...) {
     self.init()
-    // TODO: OrderedMultipleValuesDictionaryLiteral(dictionaryLiteral: elements) or appropriate init
-    // TODO: try reserve capacity. perfomance tests
-    // Make Key = ErronInfoLiteralKey instead of String
-    
+    // Improvement: try reserve capacity. perfomance tests
     for (literalKey, value) in elements {
       if let value {
         // TODO: _add() with optional value is used

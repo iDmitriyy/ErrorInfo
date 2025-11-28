@@ -8,6 +8,9 @@
 import SwiftyKit
 //import StdLibExtensions
 
+// TODO: use something like `MutableMoveOnly` to mutate the same String buffer instead of multiple allocations when
+// transforms are combined
+
 public struct PrefixTransformFunc: Sendable {
   public typealias TransformFunc = @Sendable (_ key: String, _ prefix: String) -> String
   
