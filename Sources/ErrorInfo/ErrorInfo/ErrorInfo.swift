@@ -22,7 +22,7 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
   // store relation between values in slice and collision sources.
   // Another one case is with TypeInfo. Simply type info can be stored as a Bool flag or Empty() instance.
   @usableFromInline internal typealias BackingStorage = OrderedMultiValueErrorInfoGeneric<String, _Optional>
-  public typealias ValueWrapper = ValueWithCollisionWrapper<any ValueType, CollisionSource>
+  public typealias ValueWrapper = CollisionTaggedValue<any ValueType, CollisionSource>
   
   // FIXME: private(set)
   @usableFromInline internal var _storage: BackingStorage

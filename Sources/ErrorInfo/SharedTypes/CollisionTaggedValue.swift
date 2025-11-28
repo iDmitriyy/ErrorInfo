@@ -1,5 +1,5 @@
 //
-//  ValueWithCollisionWrapper.swift
+//  CollisionTaggedValue.swift
 //  ErrorInfo
 //
 //  Created by Dmitriy Ignatyev on 28/11/2025.
@@ -7,7 +7,7 @@
 
 // MARK: - Value + Collision Wrapper
 
-public struct ValueWithCollisionWrapper<Value, CollisionSource> {
+public struct CollisionTaggedValue<Value, CollisionSource> {
   public let value: Value
   public let collisionSource: CollisionSource?
   
@@ -26,4 +26,4 @@ public struct ValueWithCollisionWrapper<Value, CollisionSource> {
   }
 }
 
-extension ValueWithCollisionWrapper: Sendable where Value: Sendable, CollisionSource: Sendable {}
+extension CollisionTaggedValue: Sendable where Value: Sendable, CollisionSource: Sendable {}
