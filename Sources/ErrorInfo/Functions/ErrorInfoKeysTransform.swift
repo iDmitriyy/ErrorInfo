@@ -5,44 +5,6 @@
 //  Created by Dmitriy Ignatyev on 16.04.2025.
 //
 
-// extension ErronInfoKey {
-//  public func camelCased() -> Self {
-//    Self(uncheckedString: Self.fromAnyStyleToCamelCased(string: rawValue))
-//  }
-//
-//  public func pascalCased() -> Self {
-//    Self(uncheckedString: Self.fromAnyStyleToPascalCased(string: rawValue))
-//  }
-//
-//  public func snakeCased() -> Self {
-//    Self(uncheckedString: Self.fromAnyStyleToSnakeCased(string: rawValue))
-//  }
-//
-//  public func kebabCased() -> Self {
-//    Self(uncheckedString: Self.fromAnyStyleToKebabCased(string: rawValue))
-//  }
-// }
-
-// extension ErrorInfoProtocol {
-//  public func camelCasingKeys() -> String {
-//    fatalError()
-//  }
-//
-//  public func pascalCasingKeys() -> String {
-//    fatalError()
-//  }
-//
-//  public func snakeCasingKeys() -> String {
-//    fatalError()
-//  }
-//
-//  public func kebabCasingKeys() -> String {
-//    fatalError()
-//  }
-// }
-
-// extension DictionaryUnifyingRootProtocol {} // make static method to ErrorInfo for converting Dict?
-
 extension ErrorInfoFuncs {
   public static func fromAnyStyleToCamelCased(string: String) -> String {
     _toPascalOrCamelImp(string: string, firstCharTransform: { $0.lowercased() })
