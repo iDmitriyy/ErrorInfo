@@ -16,30 +16,30 @@ internal import typealias SwiftCollectionsNonEmpty.NonEmptyOrderedSet
 internal struct NonEmptyOrderedIndexSet: RandomAccessCollection {
   typealias Element = Int
   
-  internal private(set) var _storage: Storage
+  internal private(set) var _variant: _Variant
   
   internal static func single(index: Int) -> Self {
-    Self(_storage: .single(index: index))
+    Self(_variant: .single(index: index))
   }
   
   internal var startIndex: Int { 0 }
   
   internal var endIndex: Int {
-    switch _storage {
+    switch _variant {
     case .single: 1
     case .multiple(let indices): indices.endIndex
     }
   }
   
   var first: Element {
-    switch _storage {
+    switch _variant {
     case .single(let index): index
     case .multiple(let indices): indices.first
     }
   }
   
   internal subscript(position: Int) -> Element {
-    switch _storage {
+    switch _variant {
     case .single(let index):
       switch position {
       case 0: return index
@@ -51,25 +51,25 @@ internal struct NonEmptyOrderedIndexSet: RandomAccessCollection {
   }
   
   internal mutating func insert(_ newIndex: Int) {
-    switch _storage {
+    switch _variant {
     case .single(let currentIndex):
-      _storage = .multiple(indices: NonEmptyOrderedSet<Int>(elements: currentIndex, newIndex))
+      _variant = .multiple(indices: NonEmptyOrderedSet<Int>(elements: currentIndex, newIndex))
     case .multiple(var elements):
       elements.append(newIndex) // TODO: remove cow of elements
-      _storage = .multiple(indices: elements)
+      _variant = .multiple(indices: elements)
     }
   }
     
   @available(*, deprecated, message: "not optimal")
   internal var _asHeapNonEmptyOrderedSet: NonEmptyOrderedSet<Int> { // TODO: confrom Sequence protocol instead of this
-    switch _storage {
+    switch _variant {
     case let .single(index): NonEmptyOrderedSet<Int>(element: index)
     case let .multiple(indices): indices
     }
   }
   
   internal func asRangeSet<C>(for collection: C) -> RangeSet<Int> where C: Collection, C.Index == Int {
-    switch _storage {
+    switch _variant {
     case let .single(index): RangeSet(CollectionOfOne(index), within: collection)
     case let .multiple(indices): RangeSet(indices, within: collection)
     }
@@ -83,7 +83,7 @@ extension NonEmptyOrderedSet<Int> {
 }
 
 extension NonEmptyOrderedIndexSet {
-  internal enum Storage {
+  internal enum _Variant {
     case single(index: Int)
     case multiple(indices: NonEmptyOrderedSet<Int>)
   }
