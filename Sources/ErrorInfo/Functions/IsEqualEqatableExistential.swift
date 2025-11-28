@@ -6,9 +6,10 @@
 //
 
 extension ErrorInfoFuncs {
-  /// No Optional values can be passed as args.
+  /// Optional values can not be passed as args.
   /// Pevented by compiler as Optional doesn't conform to CustomStringConvertible, so `any ErrorInfoValueType` is guaranteed to be non-optional,
   internal static func isEqualEqatableExistential(a: any ErrorInfoValueType, b: any ErrorInfoValueType) -> Bool {
+    // Unpack existentials for type casting and comparing
     _isEqualEqatableExistential(a: a, b: b)
   }
   

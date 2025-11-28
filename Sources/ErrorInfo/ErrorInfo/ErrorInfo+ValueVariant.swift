@@ -62,7 +62,7 @@ extension ErrorInfo {
         false
         
       case let (.value(lhsInstance), .value(rhsInstance)):
-        ErrorInfoFuncs.isApproximatelyEqualAny(lhsInstance, rhsInstance)
+        ErrorInfoFuncs.isEqualAny(lhsInstance, rhsInstance)
         
       case let (.nilInstance(lhsType), .nilInstance(rhsType)):
         lhsType == rhsType

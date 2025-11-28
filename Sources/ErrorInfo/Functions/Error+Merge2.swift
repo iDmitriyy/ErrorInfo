@@ -260,7 +260,7 @@ func merge2(errors: [ProtoError],
 
 fileprivate func prepareValues<T>(_ values: NonEmptyArray<T>, removingEqualValues: Bool) -> NonEmptyArray<T> {
   guard removingEqualValues else { return values }
-  return extractUniqueElements(from: values, equalFuncImp: ErrorInfoFuncs.isApproximatelyEqualAny)
+  return extractUniqueElements(from: values, equalFuncImp: ErrorInfoFuncs.isEqualAny)
 }
 
 /// worst case: O(n^2/2)

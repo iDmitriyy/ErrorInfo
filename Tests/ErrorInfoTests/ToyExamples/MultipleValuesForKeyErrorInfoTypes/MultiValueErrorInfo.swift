@@ -40,7 +40,7 @@ struct AnyErrorInfoValue: ApproximatelyEquatable {
   let wrapped: any ErrorInfoValueType
   
   static func isApproximatelyEqual(lhs: borrowing AnyErrorInfoValue, rhs: borrowing AnyErrorInfoValue) -> Bool {
-    ErrorInfoFuncs.isApproximatelyEqualAny(lhs, rhs)
+    ErrorInfoFuncs.isEqualAny(lhs, rhs)
   }
 }
 

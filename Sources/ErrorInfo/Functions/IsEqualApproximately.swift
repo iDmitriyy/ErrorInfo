@@ -31,7 +31,7 @@ extension ErrorInfoFuncs {
   ///   - rhs: The right-hand value to compare.
   ///
   /// - Returns: `true` if the values are approximately equal; otherwise, `false`.
-  public static func isApproximatelyEqualAny<T>(_ lhs: T, _ rhs: T) -> Bool {
+  public static func isEqualAny<T>(_ lhs: T, _ rhs: T) -> Bool {
     isApproximatelyEqualDTypes(a: lhs, b: rhs)
   }
   

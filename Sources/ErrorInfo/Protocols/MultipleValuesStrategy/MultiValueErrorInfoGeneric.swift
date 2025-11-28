@@ -68,13 +68,13 @@ public enum ErrorInfoMultiValueContainer<T> {
     let elementsWithAppendedNew: () -> NonEmptyArray<T> // for defered / lazy computation
     switch self {
     case .single(let currentElement):
-      isEqualToCurrent = { ErrorInfoFuncs.isApproximatelyEqualAny(currentElement, newElement) }
+      isEqualToCurrent = { ErrorInfoFuncs.isEqualAny(currentElement, newElement) }
       elementsWithAppendedNew = { NonEmptyArray(currentElement, newElement) }
       
     case .multiple(var elements):
       isEqualToCurrent = {
         elements.contains(where: { currentElement in
-          ErrorInfoFuncs.isApproximatelyEqualAny(currentElement, newElement)
+          ErrorInfoFuncs.isEqualAny(currentElement, newElement)
         })
       }
             

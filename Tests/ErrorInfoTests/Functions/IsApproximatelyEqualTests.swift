@@ -27,7 +27,7 @@ struct IsApproximatelyEqualTests {
   }
   
   @Test func equalNumbers() throws {
-    ErrorInfoFuncs.isApproximatelyEqualAny("5" as Any, 5 as Any)
+    ErrorInfoFuncs.isEqualAny("5" as Any, 5 as Any)
     /*
      "5" Int(5)
      Int(5) UInt(5)
@@ -69,28 +69,28 @@ extension IsApproximatelyEqualTests {
   }
     
   @Test func `equatable Integers Equal`() {
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5, 5))
+    #expect(ErrorInfoFuncs.isEqualAny(5, 5))
     
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as Any, 5))
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as Any, 5 as Any))
+    #expect(ErrorInfoFuncs.isEqualAny(5 as Any, 5))
+    #expect(ErrorInfoFuncs.isEqualAny(5 as Any, 5 as Any))
     
     #expect(ErrorInfoFuncs.isApproximatelyEqualDTypes(a: 5 as AnyObject, b: 5))
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as AnyObject, 5 as AnyObject))
+    #expect(ErrorInfoFuncs.isEqualAny(5 as AnyObject, 5 as AnyObject))
     
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any Equatable, 5))
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any Equatable, 5 as any Equatable))
+    #expect(ErrorInfoFuncs.isEqualAny(5 as any Equatable, 5))
+    #expect(ErrorInfoFuncs.isEqualAny(5 as any Equatable, 5 as any Equatable))
     
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any Hashable, 5))
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any Hashable, 5 as any Hashable))
+    #expect(ErrorInfoFuncs.isEqualAny(5 as any Hashable, 5))
+    #expect(ErrorInfoFuncs.isEqualAny(5 as any Hashable, 5 as any Hashable))
     
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as AnyHashable, 5))
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as AnyHashable, 5 as AnyHashable))
+    #expect(ErrorInfoFuncs.isEqualAny(5 as AnyHashable, 5))
+    #expect(ErrorInfoFuncs.isEqualAny(5 as AnyHashable, 5 as AnyHashable))
     
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any CustomStringConvertible, 5))
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any CustomStringConvertible, 5 as any CustomStringConvertible))
+    #expect(ErrorInfoFuncs.isEqualAny(5 as any CustomStringConvertible, 5))
+    #expect(ErrorInfoFuncs.isEqualAny(5 as any CustomStringConvertible, 5 as any CustomStringConvertible))
     
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any ErrorInfoValueType, 5))
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any ErrorInfoValueType, 5 as any ErrorInfoValueType))
+    #expect(ErrorInfoFuncs.isEqualAny(5 as any ErrorInfoValueType, 5))
+    #expect(ErrorInfoFuncs.isEqualAny(5 as any ErrorInfoValueType, 5 as any ErrorInfoValueType))
     
     // TODO: + Optionaal(5)
     
@@ -100,40 +100,40 @@ extension IsApproximatelyEqualTests {
   }
     
   @Test func `equatable Integers NotEqual`() {
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(5, 6))
+    #expect(!ErrorInfoFuncs.isEqualAny(5, 6))
   }
     
   @Test func `equatable Strings Equal`() {
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny("hello", "hello"))
+    #expect(ErrorInfoFuncs.isEqualAny("hello", "hello"))
   }
     
   @Test func `equatable Strings NotEqual`() {
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny("hello", "world"))
+    #expect(!ErrorInfoFuncs.isEqualAny("hello", "world"))
   }
     
   @Test func `custom EquatableStruct Equal`() {
     let a = TestEquatable(value: 10)
     let b = TestEquatable(value: 10)
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(a, b))
+    #expect(ErrorInfoFuncs.isEqualAny(a, b))
   }
     
   @Test func `custom EquatableStruct NotEqual`() {
     let a = TestEquatable(value: 10)
     let b = TestEquatable(value: 11)
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a, b))
+    #expect(!ErrorInfoFuncs.isEqualAny(a, b))
   }
     
   @Test func `reference Types With Same Description`() {
     let a = TestNonEquatableStringConvertibleClass(id: 1)
     let b = TestNonEquatableStringConvertibleClass(id: 1)
     // If not Equatable, classes are compared by ===
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a, b))
+    #expect(!ErrorInfoFuncs.isEqualAny(a, b))
   }
     
   @Test func `reference Types With Different Description`() {
     let a = TestNonEquatableStringConvertibleClass(id: 1)
     let b = TestNonEquatableStringConvertibleClass(id: 2)
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a, b))
+    #expect(!ErrorInfoFuncs.isEqualAny(a, b))
   }
   
   @Test func `non Equatable Values With Same Description`() {
@@ -141,7 +141,7 @@ extension IsApproximatelyEqualTests {
     let a = NonEquatable()
     let b = NonEquatable()
     // Since NonEquatable is neither Equatable nor class with address, string describing will be same (likely type name)
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(a, b))
+    #expect(ErrorInfoFuncs.isEqualAny(a, b))
   }
   
   @Test func `non Equatable Values With Different Description`() {
@@ -156,13 +156,13 @@ extension IsApproximatelyEqualTests {
     
     // RefType instances are compared by === even if the conform to CustomStringConvertible
     
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a1, b))
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a2, b))
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a1, a2))
+    #expect(!ErrorInfoFuncs.isEqualAny(a1, b))
+    #expect(!ErrorInfoFuncs.isEqualAny(a2, b))
+    #expect(!ErrorInfoFuncs.isEqualAny(a1, a2))
     
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(a1, a1))
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(a2, a2))
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(b, b))
+    #expect(ErrorInfoFuncs.isEqualAny(a1, a1))
+    #expect(ErrorInfoFuncs.isEqualAny(a2, a2))
+    #expect(ErrorInfoFuncs.isEqualAny(b, b))
   }
   
   @Test func `non Equatable non StringConvertible Class`() {
@@ -173,9 +173,9 @@ extension IsApproximatelyEqualTests {
     let a = ClassType(value: "foo")
     let b = ClassType(value: "bar")
     
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a, b))
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(a, a))
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(b, b))
+    #expect(!ErrorInfoFuncs.isEqualAny(a, b))
+    #expect(ErrorInfoFuncs.isEqualAny(a, a))
+    #expect(ErrorInfoFuncs.isEqualAny(b, b))
   }
   
   @Test func `non Equatable StringConvertible ValueType`() {
@@ -194,26 +194,26 @@ extension IsApproximatelyEqualTests {
     // Different types are treated as not equal even if they have semantically same meaning
     #expect(!ErrorInfoFuncs.isApproximatelyEqualDTypes(a: a, b: b))
     
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as Any, b))
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as Any, b as Any))
+    #expect(!ErrorInfoFuncs.isEqualAny(a as Any, b))
+    #expect(!ErrorInfoFuncs.isEqualAny(a as Any, b as Any))
     
     #expect(!ErrorInfoFuncs.isApproximatelyEqualDTypes(a: a as AnyObject, b: b))
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as AnyObject, b as AnyObject))
+    #expect(!ErrorInfoFuncs.isEqualAny(a as AnyObject, b as AnyObject))
     
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as any Equatable, b))
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as any Equatable, b as any Equatable))
+    #expect(!ErrorInfoFuncs.isEqualAny(a as any Equatable, b))
+    #expect(!ErrorInfoFuncs.isEqualAny(a as any Equatable, b as any Equatable))
     
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as any Hashable, b))
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as any Hashable, b as any Hashable))
+    #expect(!ErrorInfoFuncs.isEqualAny(a as any Hashable, b))
+    #expect(!ErrorInfoFuncs.isEqualAny(a as any Hashable, b as any Hashable))
     
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as AnyHashable, b))
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as AnyHashable, b as AnyHashable))
+    #expect(!ErrorInfoFuncs.isEqualAny(a as AnyHashable, b))
+    #expect(!ErrorInfoFuncs.isEqualAny(a as AnyHashable, b as AnyHashable))
     
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as any CustomStringConvertible, b))
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as any CustomStringConvertible, b as any CustomStringConvertible))
+    #expect(!ErrorInfoFuncs.isEqualAny(a as any CustomStringConvertible, b))
+    #expect(!ErrorInfoFuncs.isEqualAny(a as any CustomStringConvertible, b as any CustomStringConvertible))
     
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as any ErrorInfoValueType, b))
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as any ErrorInfoValueType, b as any ErrorInfoValueType))
+    #expect(!ErrorInfoFuncs.isEqualAny(a as any ErrorInfoValueType, b))
+    #expect(!ErrorInfoFuncs.isEqualAny(a as any ErrorInfoValueType, b as any ErrorInfoValueType))
     
     // TODO: + Optionaal(b)
   }

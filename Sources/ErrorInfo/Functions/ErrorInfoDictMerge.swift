@@ -151,7 +151,7 @@ extension ErrorInfoDictFuncs.Merge {
     if let recipientValue = recipient[donatorKey] {
       let collidedKey = donatorKey
       // if collision happened, but values are equal, then we can keep existing value
-      lazy var isEqualToCurrent = ErrorInfoFuncs.isApproximatelyEqualAny(recipientValue, donatorValue)
+      lazy var isEqualToCurrent = ErrorInfoFuncs.isEqualAny(recipientValue, donatorValue)
       let resolvingResult: KeyCollisionResolvingResult<Dict.Key>
       if omitIfEqual, isEqualToCurrent {
         return
@@ -211,7 +211,7 @@ extension ErrorInfoDictFuncs.Merge {
     var modifiedKey = assumeModifiedKey
     var counter: Int = 0
     while let recipientAnotherValue = recipient[modifiedKey] { // condition mostly always should not happen
-      lazy var isEqualToCurrent = ErrorInfoFuncs.isApproximatelyEqualAny(recipientAnotherValue, value)
+      lazy var isEqualToCurrent = ErrorInfoFuncs.isEqualAny(recipientAnotherValue, value)
             
       if omitIfEqual, isEqualToCurrent { // if newly added value is equal to current, then keep only existing
         return // Early exit

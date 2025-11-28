@@ -13,8 +13,8 @@
  - move to separate package
  - create NonEmpty + SwiftCollections package
  
- - complete imp for isApproximatelyEqualAny
- - complete tests for isApproximatelyEqualAny
+ - complete imp for isEqualAny
+ - complete tests for isEqualAny
  
  - complete protocol hierarchy
  
