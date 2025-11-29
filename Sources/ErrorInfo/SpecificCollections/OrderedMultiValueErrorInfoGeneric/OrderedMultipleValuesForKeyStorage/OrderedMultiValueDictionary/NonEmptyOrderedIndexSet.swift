@@ -11,7 +11,7 @@ internal import typealias SwiftCollectionsNonEmpty.NonEmptyOrderedSet
 
 /// Introduced for implementing OrderedMultiValueDictionary. In most cases, Error-info types contain 1 value for a given key.
 /// When there are multiple values for key, multiple indices are also stored.
-/// This `NonEmpty Ordered IndexSet` stores single index inlined as a value type. h
+/// This `NonEmpty Ordered IndexSet` stores single index inlined as a value type.
 /// Heap allocated OrderedSet is only created when there are 2 or more indices.
 internal struct NonEmptyOrderedIndexSet: RandomAccessCollection {
   typealias Element = Int
