@@ -8,6 +8,7 @@
 import SwiftCollectionsNonEmpty
 import OrderedCollections
 private import StdLibExtensions
+private import Algorithms
 
 // MARK: - Ordered MultiValueDictionary
 
@@ -41,7 +42,7 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
       while !nextIndices.isEmpty {
         for entryIndex in nextIndices { // remove equal values
           let nextValue = _entries[entryIndex].value
-          if ErrorInfoFuncs.isApproximatelyEqualAny(currentValue, nextValue) {
+          if ErrorInfoFuncs.isEqualAny(currentValue, nextValue) {
             valueForKeyIndices.remove(entryIndex)
             entriesRangeSet.remove(entryIndex, within: _entries)
           }
@@ -68,6 +69,13 @@ extension OrderedMultiValueDictionary {
   public func hasValue(forKey key: Key) -> Bool {
     _keyToEntryIndices.hasValue(forKey: key)
   }
+  
+  public var hasMultipleValuesForAtLeastOneKey: Bool {
+    for indices in _keyToEntryIndices.values where indices.count > 1 {
+      return true
+    }
+    return false
+  }
 }
 
 // MARK: All Values For Key
@@ -85,41 +93,69 @@ extension OrderedMultiValueDictionary {
     guard let indexSet = _keyToEntryIndices[key] else { return nil }
     
     let valuesForKey: ValuesForKey<Value>
-    switch indexSet._storage {
+    switch indexSet._variant {
     case .single(let index): // Typically there is only one value for key
       valuesForKey = ValuesForKey(element: _entries[index].value)
        
     case .multiple(let indices):
-      var accumulator = Array<Value>(minimumCapacity: indices.count)
-      for index in indices.base {
-        accumulator.append(_entries[index].value)
-      }
-      valuesForKey = ValuesForKey(array: accumulator)
+      let valuesForKeyArray = indices.map { index in _entries[index].value }
+      valuesForKey = ValuesForKey(array: valuesForKeyArray)
     }
     return valuesForKey
   }
   
   @discardableResult
   public mutating func removeAllValues(forKey key: Key) -> ValuesForKey<Value>? {
-    guard let indexSet = _keyToEntryIndices.removeValue(forKey: key) else { return nil }
+    guard let indexSetForKey = _keyToEntryIndices.removeValue(forKey: key) else { return nil }
       
-    let oldValues: ValuesForKey<Value>
-    switch indexSet._storage {
+    let removedValues: ValuesForKey<Value>
+    switch indexSetForKey._variant {
     case .single(let index): // Typically there is only one value for key
       let removedElement = _entries.remove(at: index)
-      oldValues = ValuesForKey(element: removedElement.value)
+      removedValues = ValuesForKey(element: removedElement.value)
        
-    case .multiple(let indices):
-      var accumulator = Array<Value>(minimumCapacity: indices.count)
-      for index in indices.base {
-        accumulator.append(_entries[index].value)
-      }
-      // FIXME: recalculate indices in _keyToEntryIndices
-      let indicesToRemove = indices.asRangeSet(for: _entries)
-      _entries.removeSubranges(indicesToRemove)
-      oldValues = ValuesForKey(array: accumulator)
+    case .multiple(let indicesToRemove):
+      let removedValuesArray = indicesToRemove.map { index in _entries[index].value }
+      _entries.removeSubranges(indicesToRemove.asRangeSet(for: _entries))
+      removedValues = ValuesForKey(array: removedValuesArray)
     }
-    return oldValues
+    _rebuildKeyToEntryIndices()
+    return removedValues
+  }
+  
+  private mutating func _rebuildKeyToEntryIndices() {
+    _keyToEntryIndices = [:]
+    for (index, entry) in _entries.indexed() {
+      _insert(entryIndex: index, forKey: entry.key)
+    }
+  }
+  
+  public mutating func removeAll(where predicate: (_ key: Key, _ value: Value) -> Bool) {
+    self = self.filter { key, value in !predicate(key, value) }
+  }
+  
+//  public func indices(where predicate: (Element) throws -> Bool) rethrows -> RangeSet<Index> {
+//    RangeSet<Index>.init([], within: self)
+//  }
+//  
+//  public struct Index: Comparable {
+//    fileprivate let entryIndex: Int
+//    
+//    fileprivate init(entryIndex: Int) {
+//      self.entryIndex = entryIndex
+//    }
+//    
+//    public static func == (lhs: Self, rhs: Self) -> Bool { lhs == rhs }
+//    
+//    public static func < (lhs: Self, rhs: Self) -> Bool { lhs < rhs }
+//  }
+  
+  public func filter(_ isIncluded: (Element) -> Bool) -> Self {
+    var result: Self = [:]
+    for element in self where isIncluded(element) {
+      result.append(element)
+    }
+    return result
   }
 }
 
@@ -127,14 +163,17 @@ extension OrderedMultiValueDictionary {
 
 extension OrderedMultiValueDictionary {
   public mutating func append(key: Key, value: Value) {
-    let entryAppendingIndex = _entries.endIndex
-    if var indices = _keyToEntryIndices[key] {
-      indices.insert(entryAppendingIndex) // FIXME: remove CoW. _keyToEntryIndices[index].insert(index)
-      _keyToEntryIndices[key] = indices
-    } else {
-      _keyToEntryIndices[key] = .single(index: entryAppendingIndex)
-    }
+    let newEntryIndex = _entries.endIndex
+    _insert(entryIndex: newEntryIndex, forKey: key)
     _entries.append((key, value))
+  }
+  
+  private mutating func _insert(entryIndex: Int, forKey key: Key) {
+    if let bucketIndex = _keyToEntryIndices.index(forKey: key) {
+      _keyToEntryIndices.values[bucketIndex].insert(entryIndex)
+    } else {
+      _keyToEntryIndices[key] = .single(index: entryIndex)
+    }
   }
   
   public mutating func append(_ newElement: (Key, Value)) {

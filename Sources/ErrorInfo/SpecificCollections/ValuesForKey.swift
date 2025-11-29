@@ -6,6 +6,7 @@
 //
 
 private import enum SwiftyKit.Either
+import NonEmpty
 
 /// Store 1 element inline or heap allocated array.
 public struct ValuesForKey<Value>: Sequence { // TODO: make nonEmpty
@@ -13,7 +14,7 @@ public struct ValuesForKey<Value>: Sequence { // TODO: make nonEmpty
   
   internal init(element: Value) { _elements = .left(element) }
   
-  internal init(array: Array<Element>) { _elements = .right(array) }
+  internal init(array: NonEmptyArray<Element>) { _elements = .right(array.base) }
   
   internal var first: Value {
     switch _elements {
@@ -32,8 +33,11 @@ public struct ValuesForKey<Value>: Sequence { // TODO: make nonEmpty
         nil
       }
     case .right(let elements):
-      let transformedElements = elements.compactMap(transform)
-      return transformedElements.isEmpty ? nil : ValuesForKey<U>(array: transformedElements)
+      return if let transformed = NonEmptyArray(base: elements.compactMap(transform)) {
+        ValuesForKey<U>(array: transformed)
+      } else {
+        nil
+      }
     }
   }
   
