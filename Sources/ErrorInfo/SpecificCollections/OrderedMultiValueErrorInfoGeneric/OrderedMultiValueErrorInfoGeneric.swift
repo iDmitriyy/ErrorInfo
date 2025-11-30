@@ -16,8 +16,8 @@
  */
 
 public struct OrderedMultiValueErrorInfoGeneric<Key: Hashable, Value: ApproximatelyEquatable>: Sequence {
-  public typealias Element = (key: Key, value: ValueWrapper)
-  public typealias ValueWrapper = CollisionTaggedValue<Value, CollisionSource>
+  public typealias Element = (key: Key, value: TaggedValue)
+  public typealias TaggedValue = CollisionTaggedValue<Value, CollisionSource>
   
   internal private(set) var _storage: OrderedMultipleValuesForKeyStorage<Key, Value, CollisionSource>
   
@@ -43,12 +43,12 @@ extension OrderedMultiValueErrorInfoGeneric {
 extension OrderedMultiValueErrorInfoGeneric {
   // public func allValuesSlice(forKey key: Key) -> (some Sequence<Value>)? {}
   
-  public func allValues(forKey key: Key) -> ValuesForKey<ValueWrapper>? {
+  public func allValues(forKey key: Key) -> ValuesForKey<TaggedValue>? {
     _storage.allValues(forKey: key)
   }
   
   @discardableResult
-  internal mutating func removeAllValues(forKey key: Key) -> ValuesForKey<ValueWrapper>? {
+  internal mutating func removeAllValues(forKey key: Key) -> ValuesForKey<TaggedValue>? {
     _storage.removeAllValues(forKey: key)
   }
 }
