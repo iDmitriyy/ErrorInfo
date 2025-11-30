@@ -8,13 +8,14 @@
 private import enum SwiftyKit.Either
 import NonEmpty
 
-/// Store 1 element inline or heap allocated array.
+/// NonEmpty collection.
+/// Stores 1 element inline or a heap allocated NonEmptyArray of elements.
 public struct ValuesForKey<Value>: Sequence { // TODO: make nonEmpty
-  private let _elements: Either<Value, Array<Value>>
+  private let _elements: Either<Value, NonEmptyArray<Value>>
   
   internal init(element: Value) { _elements = .left(element) }
   
-  internal init(array: NonEmptyArray<Element>) { _elements = .right(array.base) }
+  internal init(array: NonEmptyArray<Element>) { _elements = .right(array) }
   
   internal var first: Value {
     switch _elements {
@@ -55,7 +56,7 @@ extension ValuesForKey {
   public init(__element: Value) { _elements = .left(__element) }
   
   @_spi(Testing)
-  public init(__array: Array<Element>) { _elements = .right(__array) }
+  public init(__array: NonEmptyArray<Element>) { _elements = .right(__array) }
 }
 
 //public struct ValuesForKeySlice<Value>: Sequence { or OrderedMultipleValuesForKeyStorageSlice

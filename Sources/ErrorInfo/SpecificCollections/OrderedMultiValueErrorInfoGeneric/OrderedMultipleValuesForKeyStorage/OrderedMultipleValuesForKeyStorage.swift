@@ -79,7 +79,7 @@ extension OrderedMultipleValuesForKeyStorage {
   
   public mutating func removeAllWhere(_ predicate: (_ key: Key, _ taggedValue: TaggedValue) -> Bool) {
     _muatbleVariant.mutateUnderlying(singleValueForKey: { singleValueForKeyDict in
-      singleValueForKeyDict.removeAll(where: { predicate($0.key, CollisionTaggedValue.value($0.value)) })
+      singleValueForKeyDict.removeAll(where: { predicate($0.key, TaggedValue.value($0.value)) })
     }, multiValueForKey: { multiValueForKeyDict in
       multiValueForKeyDict.removeAll(where: predicate)
     })
@@ -88,7 +88,7 @@ extension OrderedMultipleValuesForKeyStorage {
   public mutating func filter(_ isIncluded: (_ key: Key, _ taggedValue: TaggedValue) -> Bool) -> Self {
     switch _variant {
     case .left(let singleValueForKeyDict):
-      let filtered = singleValueForKeyDict.filter { isIncluded($0.key, CollisionTaggedValue.value($0.value)) }
+      let filtered = singleValueForKeyDict.filter { isIncluded($0.key, TaggedValue.value($0.value)) }
       return Self(_variant: _Variant(.left(filtered)))
 
     case .right(let multiValueForKeyDict):
