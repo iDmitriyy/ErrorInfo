@@ -95,9 +95,9 @@ extension OrderedMultipleValuesForKeyStorage {
         if singleValueForKeyDict.hasValue(forKey: newKey) {
           var multiValueForKeyDict = MultiValueForKeyDict()
           for (currentKey, currentValue) in singleValueForKeyDict {
-            multiValueForKeyDict.append(key: currentKey, value: WrappedValue.value(currentValue))
+            multiValueForKeyDict.append(key: currentKey, value: TaggedValue.value(currentValue))
           }
-          let newValueWrapped = WrappedValue.collidedValue(newValue, collisionSource: collisionSource())
+          let newValueWrapped = TaggedValue.collidedValue(newValue, collisionSource: collisionSource())
           multiValueForKeyDict.append(key: newKey, value: newValueWrapped)
           _variant = .right(multiValueForKeyDict)
         } else {
@@ -105,7 +105,7 @@ extension OrderedMultipleValuesForKeyStorage {
           _variant = .left(singleValueForKeyDict)
         }
       } else if multiValueForKeyDict != nil {
-        let newValueWrapped: WrappedValue = if multiValueForKeyDict.hasValue(forKey: newKey) {
+        let newValueWrapped: TaggedValue = if multiValueForKeyDict.hasValue(forKey: newKey) {
           .collidedValue(newValue, collisionSource: collisionSource())
         } else {
           .value(newValue)

@@ -133,23 +133,7 @@ extension OrderedMultiValueDictionary {
   public mutating func removeAll(where predicate: (_ key: Key, _ value: Value) -> Bool) {
     self = self.filter { key, value in !predicate(key, value) }
   }
-  
-//  public func indices(where predicate: (Element) throws -> Bool) rethrows -> RangeSet<Index> {
-//    RangeSet<Index>.init([], within: self)
-//  }
-//  
-//  public struct Index: Comparable {
-//    fileprivate let entryIndex: Int
-//    
-//    fileprivate init(entryIndex: Int) {
-//      self.entryIndex = entryIndex
-//    }
-//    
-//    public static func == (lhs: Self, rhs: Self) -> Bool { lhs == rhs }
-//    
-//    public static func < (lhs: Self, rhs: Self) -> Bool { lhs < rhs }
-//  }
-  
+    
   public func filter(_ isIncluded: (Element) -> Bool) -> Self {
     var result: Self = [:]
     for element in self where isIncluded(element) {

@@ -47,15 +47,15 @@ extension OrderedMultipleValuesForKeyStorage {
 
 extension OrderedMultipleValuesForKeyStorage {
   // TODO: perfomance test allValues vs allValuesSlice
-  internal func allValuesSlice(forKey key: Key) -> (some Sequence<WrappedValue>)? { // & ~Escapable
+  internal func allValuesSlice(forKey key: Key) -> (some Sequence<TaggedValue>)? { // & ~Escapable
     ValuesForKeySlice(_variant: _variant, key: key)
   }
   
-  internal func allValues(forKey key: Key) -> ValuesForKey<WrappedValue>? {
+  internal func allValues(forKey key: Key) -> ValuesForKey<TaggedValue>? {
     switch _variant {
     case .left(let singleValueForKeyDict):
       if let valueForKey = singleValueForKeyDict[key] {
-        ValuesForKey(element: WrappedValue.value(valueForKey))
+        ValuesForKey(element: TaggedValue.value(valueForKey))
       } else {
         nil
       }
@@ -65,10 +65,10 @@ extension OrderedMultipleValuesForKeyStorage {
   }
   
   @discardableResult
-  internal mutating func removeAllValues(forKey key: Key) -> ValuesForKey<WrappedValue>? {
+  internal mutating func removeAllValues(forKey key: Key) -> ValuesForKey<TaggedValue>? {
     _muatbleVariant.withResultMutateUnderlying(singleValueForKey: { singleValueForKeyDict in
       if let oldValue = singleValueForKeyDict.removeValue(forKey: key) {
-        ValuesForKey(element: WrappedValue.value(oldValue))
+        ValuesForKey(element: TaggedValue.value(oldValue))
       } else {
         nil
       }
@@ -77,7 +77,7 @@ extension OrderedMultipleValuesForKeyStorage {
     })
   }
   
-  public mutating func removeAllWhere(_ predicate: (_ key: Key, _ taggedValue: WrappedValue) -> Bool) {
+  public mutating func removeAllWhere(_ predicate: (_ key: Key, _ taggedValue: TaggedValue) -> Bool) {
     _muatbleVariant.mutateUnderlying(singleValueForKey: { singleValueForKeyDict in
       singleValueForKeyDict.removeAll(where: { predicate($0.key, CollisionTaggedValue.value($0.value)) })
     }, multiValueForKey: { multiValueForKeyDict in
@@ -85,7 +85,7 @@ extension OrderedMultipleValuesForKeyStorage {
     })
   }
   
-  public mutating func filter(_ isIncluded: (_ key: Key, _ taggedValue: WrappedValue) -> Bool) -> Self {
+  public mutating func filter(_ isIncluded: (_ key: Key, _ taggedValue: TaggedValue) -> Bool) -> Self {
     switch _variant {
     case .left(let singleValueForKeyDict):
       let filtered = singleValueForKeyDict.filter { isIncluded($0.key, CollisionTaggedValue.value($0.value)) }
@@ -133,4 +133,4 @@ extension OrderedMultipleValuesForKeyStorage {
 }
 
 // TODO: using of inlining seems reasonable only internally. For public types like ErrorInfo dynamic disptach might be ok
-// as it is fasr.
+// as it is fast.

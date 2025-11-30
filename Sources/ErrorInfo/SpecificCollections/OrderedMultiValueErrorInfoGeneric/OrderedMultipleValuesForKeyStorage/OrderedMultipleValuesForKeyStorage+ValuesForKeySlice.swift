@@ -11,7 +11,7 @@ internal import enum SwiftyKit.Either
 extension OrderedMultipleValuesForKeyStorage {
   // TODO: NonEmpty ValuesForKeySlice | NonEmpty sequence
   internal struct ValuesForKeySlice: Sequence { // TODO: ~Escapaable
-    internal typealias Element = WrappedValue
+    internal typealias Element = TaggedValue
     
     // TODO: AnySequence<Value> used becuase multiValueForKeyDict return opaque type for `allValues(forKey:)`
     private let _source: Either<AnySequence<Element>, AnySequence<Element>>
@@ -21,7 +21,7 @@ extension OrderedMultipleValuesForKeyStorage {
       case .left(let singleValueForKeyDict):
         guard let value = singleValueForKeyDict[key] else { return nil }
         let collectionOfOne = CollectionOfOne(value)
-        let adapter = IterationDeferredMapSequence(sequence: collectionOfOne, transform: { WrappedValue.value($0) })
+        let adapter = IterationDeferredMapSequence(sequence: collectionOfOne, transform: { TaggedValue.value($0) })
         _source = .left(AnySequence(adapter))
       case .right(let multiValueForKeyDict):
         guard let allValuesForKey = multiValueForKeyDict.allValuesSlice(forKey: key) else { return nil }
