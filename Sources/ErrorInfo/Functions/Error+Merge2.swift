@@ -65,22 +65,22 @@ extension Merge {
 // - ErrorsSuite
 
 extension Merge {
-  func summaryInfo<E, V>(
-    infoSources: some BidirectionalCollection<E>, // TODO: .reversed support | tests
-    infoKeyPath: KeyPath<E, ErrorInfo>,
-    infoSourceSignatureBuilder: (E) -> String,
-    valueTransform: (ErrorInfo._Optional) -> V,
+  func summaryInfo<S, V, W>(
+    infoSources: some BidirectionalCollection<S>, // TODO: .reversed support | tests
+    infoKeyPath: KeyPath<S, ErrorInfo>,
+    infoSourceSignatureBuilder: (S) -> String,
+    valueTransform: (ErrorInfo._Optional) -> W,
     collisionSourceInterpolation: (CollisionSource
     ) -> String = { $0.defaultStringInterpolation() },
   )
-    -> OrderedDictionary<String, V> {
+  -> OrderedDictionary<String, W> where S: Sequence, S.Element == (key: String, value: V) {
     // any ErrorInfoValueType change to V (e.g. to be Optional<any ErrorInfoValueType> or String)
     typealias Key = String
     typealias Value = any ErrorInfoValueType
     
-    var summary: OrderedDictionary<Key, V> = [:]
+    var summary: OrderedDictionary<Key, W> = [:]
     
-    func putResolvingCollisions(key assumeModifiedKey: Key, value processedValue: V) {
+    func putResolvingCollisions(key assumeModifiedKey: Key, value processedValue: W) {
       ErrorInfoDictFuncs.Merge._putResolvingWithRandomSuffix(processedValue,
                                                              assumeModifiedKey: assumeModifiedKey,
                                                              shouldOmitEqualValue: false,

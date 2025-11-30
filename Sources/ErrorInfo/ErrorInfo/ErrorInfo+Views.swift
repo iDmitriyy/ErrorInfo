@@ -14,15 +14,26 @@ extension ErrorInfo {
 }
 
 extension ErrorInfo {
-  struct ValuesWithMetaDataView {
-    
-  }
-  
   struct NonNilValuesView {
     
   }
   
   struct WithNilValuesView {
     
+  }
+}
+
+extension ErrorInfo {
+  public struct FullInfoView: Sequence {
+    public typealias Element = (KeyWithOrigin, CollisionTaggedValue<any ErrorInfoValueType, CollisionSource>)
+    private let base: ErrorInfo
+    
+    init(base: ErrorInfo) {
+      self.base = base
+    }
+    
+    public func makeIterator() -> some IteratorProtocol<Element> {
+      Array<Element>().makeIterator() // FIXME: implement
+    }
   }
 }

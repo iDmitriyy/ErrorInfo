@@ -6,13 +6,15 @@
 //
 
 /// `kind` not participate in hashing / equality
-@usableFromInline internal struct KeyWithOrigin: Hashable, Sendable { // TODO: - hash & == tests
-  @usableFromInline let string: String
-  let origin: KeyOrigin
+public struct KeyWithOrigin: Hashable, Sendable, CustomStringConvertible { // TODO: - hash & == tests
+  @usableFromInline internal let string: String
+  internal let origin: KeyOrigin
   
-  @usableFromInline func hash(into hasher: inout Hasher) { hasher.combine(string) }
+  public var description: String { string }
   
-  @usableFromInline static func == (lhs: Self, rhs: Self) -> Bool { lhs.string == rhs.string }
+  public func hash(into hasher: inout Hasher) { hasher.combine(string) }
+  
+  public static func == (lhs: Self, rhs: Self) -> Bool { lhs.string == rhs.string }
 }
 
 public enum KeyOrigin: Sendable {
@@ -42,7 +44,7 @@ public enum KeyOrigin: Sendable {
     case .dynamic: "dynamic"
     case .keyPath: "keyPath"
     case .modified(let original): "modified_\(original)"
-    case .unverifiedMapped(let original): "uverifiedMapped_\(original)"
+    case .unverifiedMapped(let original): "unverifiedMapped_\(original)"
     }
   }
   
