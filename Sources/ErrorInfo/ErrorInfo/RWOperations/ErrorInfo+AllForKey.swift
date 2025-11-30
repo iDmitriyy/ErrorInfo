@@ -48,7 +48,6 @@ extension ErrorInfo {
          value: newValue,
          preserveNilValues: true, // has no effect in this func
          insertIfEqual: true, // has no effect in this func
-         addTypeInfo: .default,
          collisionSource: .onAppend) // collisions must never happen using this func
     return oldValues?._compactMap { $0.value.optionalValue }
   }
@@ -61,7 +60,6 @@ extension ErrorInfo {
          value: newValue,
          preserveNilValues: true, // has no effect in this func
          insertIfEqual: true, // has no effect in this func
-         addTypeInfo: .default,
          collisionSource: .onAppend) // collisions must never happen using this func
     return oldValues?._compactMap { $0.value.optionalValue }
   }

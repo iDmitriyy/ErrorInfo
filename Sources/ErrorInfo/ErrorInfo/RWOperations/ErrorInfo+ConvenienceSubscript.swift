@@ -8,13 +8,11 @@
 // MARK: - With Custom TypeInfoOptions
 
 extension ErrorInfo {
-  public static func with(typeInfoOptions: TypeInfoOptions,
-                          preserveNilValues: Bool = true,
+  public static func with(preserveNilValues: Bool = true,
                           insertIfEqual: Bool = false,
-                          append: (consuming CustomTypeInfoOptionsView) -> Void) -> Self {
+                          append: (consuming CustomOptionsView) -> Void) -> Self {
     var info = Self()
-    info.appendWith(typeInfoOptions: typeInfoOptions,
-                    preserveNilValues: preserveNilValues,
+    info.appendWith(preserveNilValues: preserveNilValues,
                     insertIfEqual: insertIfEqual,
                     append: append)
     return info
@@ -25,14 +23,12 @@ extension ErrorInfo {
   ///   - typeInfoOptions:
   ///   - omitEqualValue: `omitEqualValue` in subscript has higher priority than this argument
   ///   - append:
-  public mutating func appendWith(typeInfoOptions: TypeInfoOptions,
-                                  preserveNilValues: Bool = true,
+  public mutating func appendWith(preserveNilValues: Bool = true,
                                   insertIfEqual: Bool = false,
-                                  append: (consuming CustomTypeInfoOptionsView) -> Void) {
+                                  append: (consuming CustomOptionsView) -> Void) {
     withUnsafeMutablePointer(to: &self) { pointer in
-      let view = CustomTypeInfoOptionsView(pointer: pointer,
+      let view = CustomOptionsView(pointer: pointer,
                                            insertIfEqual: insertIfEqual,
-                                           typeInfoOptions: typeInfoOptions,
                                            preserveNilValues: preserveNilValues)
       append(view)
     }
@@ -40,20 +36,17 @@ extension ErrorInfo {
 }
 
 extension ErrorInfo {
-  public struct CustomTypeInfoOptionsView: ~Copyable { // TODO: ~Escapable
+  public struct CustomOptionsView: ~Copyable { // TODO: ~Escapable
     private let pointer: UnsafeMutablePointer<ErrorInfo> // TODO: check CoW not triggered | inplace mutation
     private let insertIfEqual: Bool
     private let preserveNilValues: Bool
-    private let typeInfoOptions: TypeInfoOptions
     
     fileprivate init(pointer: UnsafeMutablePointer<ErrorInfo>,
                      insertIfEqual: Bool,
-                     typeInfoOptions: TypeInfoOptions,
                      preserveNilValues: Bool) {
       self.pointer = pointer
       self.insertIfEqual = insertIfEqual
       self.preserveNilValues = preserveNilValues
-      self.typeInfoOptions = typeInfoOptions
     }
     
     // MARK: - Subscript
@@ -73,7 +66,6 @@ extension ErrorInfo {
                              value: newValue,
                              preserveNilValues: preserveNilValues ?? self.preserveNilValues,
                              insertIfEqual: insertIfEqual ?? self.insertIfEqual,
-                             addTypeInfo: typeInfoOptions,
                              collisionSource: .onSubscript)
       }
     }
@@ -94,7 +86,6 @@ extension ErrorInfo {
                              value: newValue,
                              preserveNilValues: preserveNilValues ?? self.preserveNilValues,
                              insertIfEqual: insertIfEqual ?? self.insertIfEqual,
-                             addTypeInfo: typeInfoOptions,
                              collisionSource: .onSubscript)
       }
     }
@@ -113,7 +104,6 @@ extension ErrorInfo {
                            value: newValue,
                            preserveNilValues: preserveNilValues ?? self.preserveNilValues,
                            insertIfEqual: insertIfEqual ?? self.insertIfEqual,
-                           addTypeInfo: typeInfoOptions,
                            collisionSource: .onAppend)
       return oldValues?._compactMap { $0.value.optionalValue }
     }

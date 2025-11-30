@@ -16,7 +16,6 @@ extension ErrorInfo {
          value: newValue,
          preserveNilValues: true,
          insertIfEqual: false,
-         addTypeInfo: .default,
          collisionSource: .onSubscript) // FIXME: .onSubscript source in append method.
     // How can we solve the propblem of namespace noise in subscript with dynamicKey?
     // May be it's ok to change collisionSource to .onAppend here
@@ -31,7 +30,6 @@ extension ErrorInfo {
          value: newValue,
          preserveNilValues: true,
          insertIfEqual: false,
-         addTypeInfo: .default,
          collisionSource: .onSubscript)
   }
 }
@@ -88,7 +86,6 @@ extension ErrorInfo {
          value: value,
          preserveNilValues: preserveNilValues,
          insertIfEqual: insertIfEqual,
-         addTypeInfo: .default,
          collisionSource: .onAppend)
   }
 }

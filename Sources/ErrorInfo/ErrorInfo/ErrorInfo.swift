@@ -53,7 +53,6 @@ extension ErrorInfo {
                                             value newValue: V?,
                                             preserveNilValues: Bool,
                                             insertIfEqual: Bool,
-                                            addTypeInfo _: TypeInfoOptions,
                                             collisionSource: @autoclosure () -> CollisionSource) {
     // TODO: put type TypeInfo
     let valueVariant: _Optional

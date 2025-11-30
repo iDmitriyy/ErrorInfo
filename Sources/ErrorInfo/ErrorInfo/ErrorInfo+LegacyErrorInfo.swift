@@ -5,6 +5,8 @@
 //  Created by Dmitriy Ignatyev on 06/10/2025.
 //
 
+import Foundation
+
 extension ErrorInfo {
   //  public mutating func add(key: String, anyValue: Any, line: UInt = #line) {
   //    // use cases:

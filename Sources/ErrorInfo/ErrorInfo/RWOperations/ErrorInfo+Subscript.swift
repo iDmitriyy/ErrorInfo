@@ -41,7 +41,6 @@ extension ErrorInfo {
            value: newValue,
            preserveNilValues: true,
            insertIfEqual: false,
-           addTypeInfo: .default,
            collisionSource: .onSubscript)
     }
   }
@@ -59,7 +58,6 @@ extension ErrorInfo {
            value: newValue,
            preserveNilValues: true,
            insertIfEqual: false,
-           addTypeInfo: .default,
            collisionSource: .onSubscript)
     }
   }

@@ -22,7 +22,6 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
              value: value,
              preserveNilValues: true,
              insertIfEqual: true,
-             addTypeInfo: .default,
              collisionSource: .onCreateWithDictionaryLiteral)
       } else {
         _addExistentialNil(key: literalKey.rawValue,

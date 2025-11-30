@@ -42,7 +42,6 @@ extension ErrorInfo {
            value: value,
            preserveNilValues: true,
            insertIfEqual: false,
-           addTypeInfo: .default,
            collisionSource: .onAppend)
     }
   }
