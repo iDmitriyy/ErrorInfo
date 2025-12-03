@@ -105,7 +105,7 @@ extension ErrorInfo {
                            preserveNilValues: preserveNilValues ?? self.preserveNilValues,
                            insertIfEqual: insertIfEqual ?? self.insertIfEqual,
                            collisionSource: .onAppend)
-      return oldValues?._compactMap { $0.value.optionalValue }
+      return oldValues?._compactMap { $0.value.optional.optionalValue }
     }
   }
 }

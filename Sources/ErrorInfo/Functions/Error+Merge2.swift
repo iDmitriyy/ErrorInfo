@@ -138,7 +138,7 @@ extension Merge {
           augmentedKey.append(collisionString)
         }
         // value collisions within concrete error instance | crossCollisions
-        let adaptedValue = valueTransform(value.value)
+        let adaptedValue = valueTransform(value.value.optional)
         putResolvingCollisions(key: augmentedKey.string, value: adaptedValue)
       } // end `for (key, value)`
     } // end `for (errorIndex, error)`

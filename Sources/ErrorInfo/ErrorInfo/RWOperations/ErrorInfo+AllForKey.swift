@@ -18,7 +18,7 @@ extension ErrorInfo {
   
   @_disfavoredOverload
   public func allValues(forKey dynamicKey: String) -> ValuesForKey<any ValueType>? {
-    _storage.allValues(forKey: dynamicKey)?._compactMap { $0.value.optionalValue }
+    _storage.allValues(forKey: dynamicKey)?._compactMap { $0.value.optional.optionalValue }
   }
 }
 
@@ -32,7 +32,7 @@ extension ErrorInfo {
   
   @_disfavoredOverload @discardableResult
   public mutating func removeAllValues(forKey dynamicKey: String) -> ValuesForKey<any ValueType>? {
-    _storage.removeAllValues(forKey: dynamicKey)?._compactMap { $0.value.optionalValue }
+    _storage.removeAllValues(forKey: dynamicKey)?._compactMap { $0.value.optional.optionalValue }
   }
 }
 
@@ -49,7 +49,7 @@ extension ErrorInfo {
          preserveNilValues: true, // has no effect in this func
          insertIfEqual: true, // has no effect in this func
          collisionSource: .onAppend) // collisions must never happen using this func
-    return oldValues?._compactMap { $0.value.optionalValue }
+    return oldValues?._compactMap { $0.value.optional.optionalValue }
   }
   
   @_disfavoredOverload @discardableResult
@@ -61,6 +61,6 @@ extension ErrorInfo {
          preserveNilValues: true, // has no effect in this func
          insertIfEqual: true, // has no effect in this func
          collisionSource: .onAppend) // collisions must never happen using this func
-    return oldValues?._compactMap { $0.value.optionalValue }
+    return oldValues?._compactMap { $0.value.optional.optionalValue }
   }
 }

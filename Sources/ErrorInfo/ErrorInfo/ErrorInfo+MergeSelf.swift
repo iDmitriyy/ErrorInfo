@@ -63,7 +63,9 @@ extension ErrorInfo {
         // TODO: should collizion source be composite / indirect?
         // Keep the most simple variant for now
         // ["a": 1] merge with ["a": 1, a: "1"(collision#1)]
-        // result: ["a": 1, a: "1"(collision$1), a: "1"(collision#1)]
+        // result: ["a": 1, a: "1"(collision#2), a: "1"(collision#1)]
+        
+        // FIXME: - collisions counter (Int16 += | negative range)
       }
     }
     return recipient

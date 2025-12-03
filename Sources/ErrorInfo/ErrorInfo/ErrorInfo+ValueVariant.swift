@@ -8,8 +8,27 @@
 // MARK: - _ValueVariant
 
 extension ErrorInfo {
-  @usableFromInline internal struct _Optional: Sendable, ApproximatelyEquatable {
-    private let wrapped: Variant
+  @usableFromInline internal struct _Entry: Sendable, ApproximatelyEquatable { // typeprivate
+    @usableFromInline internal let optional: _Optional
+    internal let keyOrigin: KeyOrigin
+    
+    @usableFromInline internal static func isApproximatelyEqual(lhs: borrowing Self, rhs: borrowing Self) -> Bool {
+      switch (lhs.optional.wrapped, rhs.optional.wrapped) {
+      case (.value, .nilInstance),
+           (.nilInstance, .value):
+        false
+        
+      case let (.value(lhsInstance), .value(rhsInstance)):
+        ErrorInfoFuncs.isEqualAny(lhsInstance, rhsInstance)
+        
+      case let (.nilInstance(lhsType), .nilInstance(rhsType)):
+        lhsType == rhsType
+      }
+    }
+  }
+  
+  @usableFromInline internal struct _Optional: Sendable {
+    fileprivate let wrapped: Variant
     
     @usableFromInline internal var optionalValue: (any ErrorInfoValueType)? {
       switch wrapped {
@@ -55,21 +74,7 @@ extension ErrorInfo {
       }
     }
     
-    @usableFromInline internal static func isApproximatelyEqual(lhs: borrowing Self, rhs: borrowing Self) -> Bool {
-      switch (lhs.wrapped, rhs.wrapped) {
-      case (.value, .nilInstance),
-           (.nilInstance, .value):
-        false
-        
-      case let (.value(lhsInstance), .value(rhsInstance)):
-        ErrorInfoFuncs.isEqualAny(lhsInstance, rhsInstance)
-        
-      case let (.nilInstance(lhsType), .nilInstance(rhsType)):
-        lhsType == rhsType
-      }
-    }
-    
-    private enum Variant {
+    fileprivate enum Variant {
       case value(any ErrorInfoValueType)
       case nilInstance(typeOfWrapped: any Sendable.Type)
     }

@@ -18,7 +18,7 @@ extension ErrorInfo {
         key
       }
       // FIXME: use `withKeyAugmentationAdd(...)`
-      dict[key] = String(describing: wrappedValue.value)
+      dict[effectiveKey] = String(describing: wrappedValue.value)
     }
     return dict
   }

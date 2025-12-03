@@ -19,7 +19,7 @@ extension ErrorInfo: Sequence {
     public mutating func next() -> Element? {
       while let (key, valueWrapper) = base.next() {
         let maybeValue = valueWrapper.value
-        guard let value = maybeValue.optionalValue else { continue }
+        guard let value = maybeValue.optional.optionalValue else { continue }
         return (key, value)
       }
       return nil

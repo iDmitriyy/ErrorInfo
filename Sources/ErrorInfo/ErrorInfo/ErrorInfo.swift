@@ -21,8 +21,8 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
   // Do it after all Slices will be comlpeted, as keeping collisionSource in separate dict need a way to somehow
   // store relation between values in slice and collision sources.
   // Another one case is with TypeInfo. Simply type info can be stored as a Bool flag or Empty() instance.
-  @usableFromInline internal typealias BackingStorage = OrderedMultiValueErrorInfoGeneric<String, _Optional>
-  public typealias ValueWrapper = CollisionTaggedValue<any ValueType, CollisionSource>
+  @usableFromInline internal typealias BackingStorage = OrderedMultiValueErrorInfoGeneric<String, _Entry>
+  // public typealias ValueWrapper = CollisionTaggedValue<any ValueType, CollisionSource>
   
   // FIXME: private(set)
   @usableFromInline internal var _storage: BackingStorage
@@ -49,23 +49,23 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
 extension ErrorInfo {
   /// The root appending function for public API imps. The term "_add" is chosen to visually / syntatically differentiate from family of public `append()`functions.
   internal mutating func _add<V: ValueType>(key: String,
-                                            keyOrigin _: KeyOrigin,
+                                            keyOrigin: KeyOrigin,
                                             value newValue: V?,
                                             preserveNilValues: Bool,
                                             insertIfEqual: Bool,
                                             collisionSource: @autoclosure () -> CollisionSource) {
     // TODO: put type TypeInfo
-    let valueVariant: _Optional
+    let optional: _Optional
     if let newValue {
-      valueVariant = .value(newValue)
+      optional = .value(newValue)
     } else if preserveNilValues {
-      valueVariant = .nilInstance(typeOfWrapped: V.self)
+      optional = .nilInstance(typeOfWrapped: V.self)
     } else {
       return
     }
     
     _storage.appendResolvingCollisions(key: key,
-                                       value: valueVariant,
+                                       value: _Entry(optional: optional, keyOrigin: keyOrigin),
                                        insertIfEqual: insertIfEqual,
                                        collisionSource: collisionSource())
   }
@@ -76,20 +76,20 @@ extension ErrorInfo {
   // SE-0375 Opening existential arguments to optional parameters
   
   internal mutating func _addExistentialNil(key: String,
-                                            keyOrigin _: KeyOrigin,
+                                            keyOrigin: KeyOrigin,
                                             preserveNilValues: Bool,
                                             insertIfEqual: Bool,
                                             collisionSource: @autoclosure () -> CollisionSource) {
     // TODO: put type TypeInfo
-    let valueVariant: _Optional
+    let optional: _Optional
     if preserveNilValues {
-      valueVariant = .nilInstance(typeOfWrapped: (any ErrorInfoValueType).self)
+      optional = .nilInstance(typeOfWrapped: (any ErrorInfoValueType).self)
     } else {
       return
     }
     
     _storage.appendResolvingCollisions(key: key,
-                                       value: valueVariant,
+                                       value: _Entry(optional: optional, keyOrigin: keyOrigin),
                                        insertIfEqual: insertIfEqual,
                                        collisionSource: collisionSource())
   }
