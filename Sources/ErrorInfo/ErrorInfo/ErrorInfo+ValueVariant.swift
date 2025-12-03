@@ -27,7 +27,7 @@ extension ErrorInfo {
     }
   }
   
-  @usableFromInline internal struct _Optional: Sendable {
+  public struct _Optional: Sendable {
     fileprivate let wrapped: Variant
     
     @usableFromInline internal var optionalValue: (any ErrorInfoValueType)? {
