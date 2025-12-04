@@ -37,7 +37,15 @@ public enum Merge {}
 
 extension Merge {
   struct KeyTagOptions {
-    // addKeyTagsForKinds(.allKeyKinds, .allExceptLiterals | .literal, .combinedLiteral, .dynamic, .keyPath, .madified)
+    // addKeyTagsForKinds(.allKeyKinds, .allExceptLiterals | .literal, .combinedLiteral, .dynamic, .keyPath, .modified)
+    // default = .dynamic + .modified
+    
+    // 1. when (.onCillision, .always)
+    // 2. which origins to show
+    // 3. how (shortTag, fullName) => tagBuilder: (KeyOrigin) -> String
+    
+    //
+    // .onCollision(.allKeyOrigins), .whenNoCollision(.dynamic + .modified)
   }
   
   struct NilOptions {
@@ -63,6 +71,8 @@ extension Merge {
 // - NSError
 // - Swift.Error
 // - ErrorsSuite
+
+// arg: addPrefix prefixBuilder: (?) -> String = .errorSignature
 
 extension Merge {
   func summaryInfo<S, V, W>(
@@ -106,17 +116,22 @@ extension Merge {
         
         var augmentedKey = _StatefulKey(key)
         
+        let hasCollisionsWithinErrorInfo = false
+        
+        
         let shouldAddKeyKind = false
         if shouldAddKeyKind {
           // add key tag according to options
         }
         
-        let hasCrossErrorsCollision = crossCollisionKeys.contains(key)
-        if hasCrossErrorsCollision {
+        let hasCollisionAcrossErrorInfos = crossCollisionKeys.contains(key)
+        if hasCollisionAcrossErrorInfos {
           let sourceSignature = _unchecked_infoSourceSignatureForCrossCollision(infoSourceIndex: infoSourceIndex,
                                                                                 allSourcesSignatures: allSourcesSignatures)
           augmentedKey.append(sourceSignature)
         }
+        
+        
         
         // TODO: In this kind of summary-merge it is reasonable to provide an option if nil values with different Optional.Wrapped
         // types should be put to summary.

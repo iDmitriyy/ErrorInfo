@@ -12,8 +12,7 @@ private import struct OrderedCollections.OrderedDictionary
 ///
 /// Almost all time Error info instances has 1 value for each key. Until first collision happens, `OrderedDictionary` is used.
 /// When first collision happens, `OrderedDictionary` is replaced by `OrderedMultiValueDictionary`.
-@usableFromInline
-internal struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value, CollisionSource> {
+public struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value, CollisionSource> {
   @inlinable internal var _variant: Variant { _muatbleVariant._variant }
   
   // FIXME: private set
@@ -39,6 +38,20 @@ extension OrderedMultipleValuesForKeyStorage {
     switch _variant {
     case .left(let singleValueForKeyDict): singleValueForKeyDict.hasValue(forKey: key)
     case .right(let multiValueForKeyDict): multiValueForKeyDict.hasValue(forKey: key)
+    }
+  }
+  
+  internal var hasMultipleValuesForAtLeastOneKey: Bool {
+    switch _variant {
+    case .left: false
+    case .right(let multiValueForKeyDict): multiValueForKeyDict.hasMultipleValuesForAtLeastOneKey
+    }
+  }
+  
+  internal func hasMultipleValues(forKey key: Key) -> Bool {
+    switch _variant {
+    case .left: false
+    case .right(let multiValueForKeyDict): multiValueForKeyDict.hasMultipleValues(forKey: key)
     }
   }
 }
@@ -77,7 +90,7 @@ extension OrderedMultipleValuesForKeyStorage {
     })
   }
   
-  public mutating func removeAllWhere(_ predicate: (_ key: Key, _ taggedValue: TaggedValue) -> Bool) {
+  internal mutating func removeAllWhere(_ predicate: (_ key: Key, _ taggedValue: TaggedValue) -> Bool) {
     _muatbleVariant.mutateUnderlying(singleValueForKey: { singleValueForKeyDict in
       singleValueForKeyDict.removeAll(where: { predicate($0.key, TaggedValue.value($0.value)) })
     }, multiValueForKey: { multiValueForKeyDict in
@@ -85,7 +98,7 @@ extension OrderedMultipleValuesForKeyStorage {
     })
   }
   
-  public mutating func filter(_ isIncluded: (_ key: Key, _ taggedValue: TaggedValue) -> Bool) -> Self {
+  internal mutating func filter(_ isIncluded: (_ key: Key, _ taggedValue: TaggedValue) -> Bool) -> Self {
     switch _variant {
     case .left(let singleValueForKeyDict):
       let filtered = singleValueForKeyDict.filter { isIncluded($0.key, TaggedValue.value($0.value)) }
@@ -95,15 +108,6 @@ extension OrderedMultipleValuesForKeyStorage {
       let filtered: MultiValueForKeyDict = multiValueForKeyDict.filter(isIncluded)
       return Self(_variant: _Variant(.right(filtered)))
       //
-    }
-  }
-  
-  // Improvement: after removeAllWhere & filtering storage can be optimized to OrderedDict .left(OrderedDictionary)
-  
-  public var hasMultipleValuesForAtLeastOneKey: Bool {
-    switch _variant {
-    case .left: false
-    case .right(let multiValueForKeyDict): multiValueForKeyDict.hasMultipleValuesForAtLeastOneKey
     }
   }
 }
@@ -117,7 +121,7 @@ extension OrderedMultipleValuesForKeyStorage {
     _muatbleVariant.append(key: key, value: value, collisionSource: collisionSource())
   }
   
-  public mutating func append(_ newElement: (Key, Value), collisionSource: @autoclosure () -> CollisionSource) {
+  internal mutating func append(_ newElement: (Key, Value), collisionSource: @autoclosure () -> CollisionSource) {
     append(key: newElement.0, value: newElement.1, collisionSource: collisionSource())
   }
 }

@@ -10,12 +10,12 @@ internal import struct OrderedCollections.OrderedDictionary
 
 extension OrderedMultipleValuesForKeyStorage {
   // public ACL is for inlining
-  public typealias SingleValueForKeyDict = OrderedDictionary<Key, Value>
+  @usableFromInline internal typealias SingleValueForKeyDict = OrderedDictionary<Key, Value>
   
   public typealias TaggedValue = CollisionTaggedValue<Value, CollisionSource>
-  public typealias MultiValueForKeyDict = OrderedMultiValueDictionary<Key, TaggedValue>
+  @usableFromInline internal typealias MultiValueForKeyDict = OrderedMultiValueDictionary<Key, TaggedValue>
   
-  public typealias Variant = Either<SingleValueForKeyDict, MultiValueForKeyDict>
+  @usableFromInline internal typealias Variant = Either<SingleValueForKeyDict, MultiValueForKeyDict>
   
   public typealias Element = (key: Key, value: TaggedValue)
   

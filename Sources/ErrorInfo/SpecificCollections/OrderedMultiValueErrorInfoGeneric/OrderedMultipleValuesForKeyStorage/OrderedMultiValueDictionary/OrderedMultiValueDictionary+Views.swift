@@ -8,6 +8,6 @@
 public import protocol InternalCollectionsUtilities._UniqueCollection
 
 extension OrderedMultiValueDictionary {
-  public var uniqueKeys: some Collection<Key> & _UniqueCollection { _keyToEntryIndices.keys }
+  internal var uniqueKeys: some Collection<Key> & _UniqueCollection { _keyToEntryIndices.keys }
 }
 

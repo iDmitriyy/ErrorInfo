@@ -10,11 +10,12 @@ import NonEmpty
 
 /// NonEmpty collection.
 /// Stores 1 element inline or a heap allocated NonEmptyArray of elements.
-public struct ValuesForKey<Value>: Sequence { // TODO: make nonEmpty
+public struct ValuesForKey<Value>: Sequence {
   private let _elements: Either<Value, NonEmptyArray<Value>>
   
   internal init(element: Value) { _elements = .left(element) }
   
+  // FIXME: - NonEmptyArray here should contain at leas 2 elements
   internal init(array: NonEmptyArray<Element>) { _elements = .right(array) }
   
   internal var first: Value {
@@ -23,6 +24,9 @@ public struct ValuesForKey<Value>: Sequence { // TODO: make nonEmpty
     case .right(let elements): return elements.first! // FIXME: forced unwrapping
     }
   }
+  
+  // TODO:
+  // destrctured(first: Value, others: NonEmptyArray<Value>)
   
   /// Return nonEmpty instance
   internal func _compactMap<U>(_ transform: (Value) -> U?) -> ValuesForKey<U>? {

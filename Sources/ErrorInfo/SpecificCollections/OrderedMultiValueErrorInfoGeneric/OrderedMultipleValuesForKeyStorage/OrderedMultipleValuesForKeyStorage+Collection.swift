@@ -6,14 +6,14 @@
 //
 
 extension OrderedMultipleValuesForKeyStorage: Collection {
-  @inlinable internal var count: Int {
+  @inlinable public var count: Int {
     switch _variant {
     case .left(let singleValueForKeyDict): singleValueForKeyDict.count
     case .right(let multiValueForKeyDict): multiValueForKeyDict.count
     }
   }
   
-  @inlinable internal var isEmpty: Bool {
+  @inlinable public var isEmpty: Bool {
     switch _variant {
     case .left(let singleValueForKeyDict): singleValueForKeyDict.isEmpty
     case .right(let multiValueForKeyDict): multiValueForKeyDict.isEmpty
@@ -22,21 +22,21 @@ extension OrderedMultipleValuesForKeyStorage: Collection {
 }
 
 extension OrderedMultipleValuesForKeyStorage: RandomAccessCollection {
-  @inlinable internal var startIndex: Index {
+  @inlinable public var startIndex: Index {
     switch _variant {
     case .left(let singleValueForKeyDict): singleValueForKeyDict.startIndex
     case .right(let multiValueForKeyDict): multiValueForKeyDict.startIndex
     }
   }
   
-  @inlinable internal var endIndex: Index {
+  @inlinable public var endIndex: Index {
     switch _variant {
     case .left(let singleValueForKeyDict): singleValueForKeyDict.endIndex
     case .right(let multiValueForKeyDict): multiValueForKeyDict.endIndex
     }
   }
     
-  @inlinable internal subscript(position: Index) -> Element {
+  @inlinable public subscript(position: Index) -> Element {
     switch _variant {
     case .left(let singleValueForKeyDict):
       let (key, value) = singleValueForKeyDict[position]

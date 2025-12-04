@@ -20,12 +20,12 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   /// stores indices for all values for a key
   internal private(set) var _keyToEntryIndices: Dictionary<Key, NonEmptyOrderedIndexSet> // TODO: ? use RangeSet instead of NonEmptyOrderedIndexSet?
   
-  public init() {
+  @usableFromInline internal init() {
     _entries = []
     _keyToEntryIndices = [:]
   }
   
-  public init(minimumCapacity: Int) {
+  internal init(minimumCapacity: Int) {
     _entries = Array(minimumCapacity: minimumCapacity)
     _keyToEntryIndices = Dictionary(minimumCapacity: minimumCapacity)
   }
@@ -70,18 +70,23 @@ extension OrderedMultiValueDictionary {
     _keyToEntryIndices.hasValue(forKey: key)
   }
   
-  public var hasMultipleValuesForAtLeastOneKey: Bool {
-    for indices in _keyToEntryIndices.values where indices.count > 1 {
+  internal var hasMultipleValuesForAtLeastOneKey: Bool {
+    for entriesForKeyIndices in _keyToEntryIndices.values where entriesForKeyIndices.count > 1 {
       return true
     }
     return false
+  }
+  
+  internal func hasMultipleValues(forKey key: Key) -> Bool {
+    guard let entriesForKeyIndices = _keyToEntryIndices[key] else { return false }
+    return entriesForKeyIndices.count > 1
   }
 }
 
 // MARK: All Values For Key
 
 extension OrderedMultiValueDictionary {
-  public func allValuesSlice(forKey key: Key) -> (some Sequence<Value>)? { // & ~Escapable
+  internal func allValuesSlice(forKey key: Key) -> (some Sequence<Value>)? { // & ~Escapable
     if let allValuesForKeyIndices = _keyToEntryIndices[key] {
       ValuesForKeySlice(entries: _entries, valueIndices: allValuesForKeyIndices)
     } else {
@@ -89,7 +94,7 @@ extension OrderedMultiValueDictionary {
     }
   }
   
-  public func allValues(forKey key: Key) -> ValuesForKey<Value>? {
+  internal func allValues(forKey key: Key) -> ValuesForKey<Value>? {
     guard let indexSet = _keyToEntryIndices[key] else { return nil }
     
     let valuesForKey: ValuesForKey<Value>
@@ -105,7 +110,7 @@ extension OrderedMultiValueDictionary {
   }
   
   @discardableResult
-  public mutating func removeAllValues(forKey key: Key) -> ValuesForKey<Value>? {
+  internal mutating func removeAllValues(forKey key: Key) -> ValuesForKey<Value>? {
     guard let indexSetForKey = _keyToEntryIndices.removeValue(forKey: key) else { return nil }
       
     let removedValues: ValuesForKey<Value>
@@ -130,12 +135,12 @@ extension OrderedMultiValueDictionary {
     }
   }
   
-  public mutating func removeAll(where predicate: (_ key: Key, _ value: Value) -> Bool) {
+  internal mutating func removeAll(where predicate: (_ key: Key, _ value: Value) -> Bool) {
     self = self.filter { key, value in !predicate(key, value) }
   }
     
-  public func filter(_ isIncluded: (Element) -> Bool) -> Self {
-    var result: Self = [:]
+  internal func filter(_ isIncluded: (Element) -> Bool) -> Self {
+    var result: Self = Self()
     for element in self where isIncluded(element) {
       result.append(element)
     }
@@ -160,14 +165,28 @@ extension OrderedMultiValueDictionary {
     }
   }
   
-  public mutating func append(_ newElement: (Key, Value)) {
+  internal mutating func append(_ newElement: (Key, Value)) {
     append(key: newElement.0, value: newElement.1)
   }
 }
 
 extension OrderedMultiValueDictionary {
-  public mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
+  internal mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
     _entries.removeAll(keepingCapacity: keepCapacity)
     _keyToEntryIndices.removeAll(keepingCapacity: keepCapacity)
+  }
+}
+
+extension OrderedMultiValueDictionary {
+  internal func _checkInvariants() {
+    var entryIndicesCount: Int = 0
+    for (key, entryIndices) in _keyToEntryIndices {
+      for enryIndex in entryIndices {
+        let entry = _entries[enryIndex]
+        entry.key == key
+        entryIndicesCount += 1
+      }
+    }
+    _entries.count == entryIndicesCount
   }
 }
