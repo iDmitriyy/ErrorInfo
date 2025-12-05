@@ -15,7 +15,7 @@ extension ErrorInfo {
          keyOrigin: .dynamic,
          value: newValue,
          preserveNilValues: true,
-         insertIfEqual: false,
+         duplicatePolicy: .default,
          collisionSource: .onSubscript) // FIXME: .onSubscript source in append method.
     // How can we solve the propblem of namespace noise in subscript with dynamicKey?
     // May be it's ok to change collisionSource to .onAppend here
@@ -29,7 +29,7 @@ extension ErrorInfo {
          keyOrigin: literalKey.keyOrigin,
          value: newValue,
          preserveNilValues: true,
-         insertIfEqual: false,
+         duplicatePolicy: .default,
          collisionSource: .onSubscript)
   }
 }
@@ -39,38 +39,39 @@ extension ErrorInfo {
 extension ErrorInfo {
   public mutating func appendIfNotNil(_ value: (any ValueType)?,
                                       forKey literalKey: StringLiteralKey,
-                                      insertIfEqual: Bool = false) {
+                                      duplicatePolicy: ValueDuplicatePolicy = .ignoreEqual) {
     guard let value else { return }
     _appendWithDefaultTypeInfo(key: literalKey.rawValue,
                                keyOrigin: literalKey.keyOrigin,
                                value: value,
                                preserveNilValues: true, // has no effect in this func
-                               insertIfEqual: insertIfEqual)
+                               duplicatePolicy: duplicatePolicy)
   }
   
   @_disfavoredOverload
   public mutating func appendIfNotNil(_ value: (any ValueType)?,
                                       forKey dynamicKey: String,
-                                      insertIfEqual: Bool = false) {
+                                      duplicatePolicy: ValueDuplicatePolicy = .ignoreEqual) {
     guard let value else { return }
     _appendWithDefaultTypeInfo(key: dynamicKey,
                                keyOrigin: .dynamic,
                                value: value,
                                preserveNilValues: true, // has no effect in this func
-                               insertIfEqual: insertIfEqual)
+                               duplicatePolicy: duplicatePolicy)
   }
 }
 
 // MARK: Append ContentsOf
 
 extension ErrorInfo {
-  public mutating func append(contentsOf sequence: some Sequence<(String, any ValueType)>, insertIfEqual: Bool = false) {
+  public mutating func append(contentsOf sequence: some Sequence<(String, any ValueType)>,
+                              duplicatePolicy: ValueDuplicatePolicy) {
     for (dynamicKey, value) in sequence {
       _appendWithDefaultTypeInfo(key: dynamicKey,
                                  keyOrigin: .dynamic,
                                  value: value,
                                  preserveNilValues: true, // has no effect in this func
-                                 insertIfEqual: insertIfEqual)
+                                 duplicatePolicy: duplicatePolicy)
     }
   }
 }
@@ -80,12 +81,12 @@ extension ErrorInfo {
                                                    keyOrigin: KeyOrigin,
                                                    value: any ValueType,
                                                    preserveNilValues: Bool, // always true at call sites, need if value become optional
-                                                   insertIfEqual: Bool) {
+                                                   duplicatePolicy: ValueDuplicatePolicy) {
     _add(key: key,
          keyOrigin: keyOrigin,
          value: value,
          preserveNilValues: preserveNilValues,
-         insertIfEqual: insertIfEqual,
+         duplicatePolicy: duplicatePolicy,
          collisionSource: .onAppend)
   }
 }

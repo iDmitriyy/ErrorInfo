@@ -21,13 +21,13 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
              keyOrigin: literalKey.keyOrigin,
              value: value,
              preserveNilValues: true,
-             insertIfEqual: true,
+             duplicatePolicy: .keepEqual,
              collisionSource: .onCreateWithDictionaryLiteral)
       } else {
         _addExistentialNil(key: literalKey.rawValue,
                            keyOrigin: literalKey.keyOrigin,
                            preserveNilValues: true,
-                           insertIfEqual: true,
+                           duplicatePolicy: .keepEqual,
                            collisionSource: .onCreateWithDictionaryLiteral)
       }
     }

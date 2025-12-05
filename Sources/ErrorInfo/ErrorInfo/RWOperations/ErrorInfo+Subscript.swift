@@ -49,7 +49,7 @@ extension ErrorInfo {
            keyOrigin: literalKey.keyOrigin,
            value: newValue,
            preserveNilValues: true,
-           insertIfEqual: false,
+           duplicatePolicy: .default,
            collisionSource: .onSubscript)
     }
   }
@@ -66,12 +66,8 @@ extension ErrorInfo {
            keyOrigin: .dynamic,
            value: newValue,
            preserveNilValues: true,
-           insertIfEqual: false,
+           duplicatePolicy: .default,
            collisionSource: .onSubscript)
     }
-  }
-  
-  mutating func foo(key: String) {
-    
   }
 }

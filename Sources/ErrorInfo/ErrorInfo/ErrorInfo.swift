@@ -52,7 +52,7 @@ extension ErrorInfo {
                                             keyOrigin: KeyOrigin,
                                             value newValue: V?,
                                             preserveNilValues: Bool,
-                                            insertIfEqual: Bool,
+                                            duplicatePolicy: ValueDuplicatePolicy,
                                             collisionSource: @autoclosure () -> CollisionSource) {
     // TODO: put type TypeInfo
     let optional: _Optional
@@ -66,7 +66,7 @@ extension ErrorInfo {
     
     _storage.appendResolvingCollisions(key: key,
                                        value: _Entry(optional: optional, keyOrigin: keyOrigin),
-                                       insertIfEqual: insertIfEqual,
+                                       insertIfEqual: duplicatePolicy.insertIfEqual,
                                        collisionSource: collisionSource())
   }
   
@@ -78,7 +78,7 @@ extension ErrorInfo {
   internal mutating func _addExistentialNil(key: String,
                                             keyOrigin: KeyOrigin,
                                             preserveNilValues: Bool,
-                                            insertIfEqual: Bool,
+                                            duplicatePolicy: ValueDuplicatePolicy,
                                             collisionSource: @autoclosure () -> CollisionSource) {
     let optional: _Optional
     if preserveNilValues {
@@ -89,7 +89,7 @@ extension ErrorInfo {
     
     _storage.appendResolvingCollisions(key: key,
                                        value: _Entry(optional: optional, keyOrigin: keyOrigin),
-                                       insertIfEqual: insertIfEqual,
+                                       insertIfEqual: duplicatePolicy.insertIfEqual,
                                        collisionSource: collisionSource())
   }
 }
