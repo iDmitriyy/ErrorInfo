@@ -80,7 +80,6 @@ extension ErrorInfo {
                                             preserveNilValues: Bool,
                                             insertIfEqual: Bool,
                                             collisionSource: @autoclosure () -> CollisionSource) {
-    // TODO: put type TypeInfo
     let optional: _Optional
     if preserveNilValues {
       optional = .nilInstance(typeOfWrapped: (any ErrorInfoValueType).self)
@@ -92,5 +91,63 @@ extension ErrorInfo {
                                        value: _Entry(optional: optional, keyOrigin: keyOrigin),
                                        insertIfEqual: insertIfEqual,
                                        collisionSource: collisionSource())
+  }
+}
+
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// MARK: - Value Duplicate Policy
+
+/*
+ insertIfEqual: Bool
+ 
+ Useful to when:
+ - equal values represent different events. e.g. when the fact of having 2 equal values by itself is a useful
+ knowledge / signal.
+ - need to count occurrences of specific codes
+ 
+ Gener:
+ - repeated identical events
+ - equal payloads from different origins
+ 
+ info["message"] = "Timeout" // from database
+ ...
+ info["message"] = "Timeout" // from network
+ 
+ Replacements / alternative design thoughts / policy:
+ - equal but different collision sources
+ - equal but from different keyOrigins
+ 
+ - nil instance with different generic type
+ */
+extension ErrorInfo {
+  public struct ValueDuplicatePolicy: Sendable {
+    internal let insertIfEqual: Bool
+    
+    private init(insertIfEqual: Bool) {
+      self.insertIfEqual = insertIfEqual
+    }
+    
+    /// Skip equal values (default)
+    public static let ignoreEqual = Self(insertIfEqual: false) // rejectEqual
+    
+    /// Store duplicates even when equal
+    public static let keepEqual = Self(insertIfEqual: true) // allowEqual
+    
+    public static let `default` = ignoreEqual
+    
+    /// Keep duplicates only when collisionSource differs
+    // case keepIfCollisionSourceDiffers
+    // case keepIfKeyOriginsDiffers
+    // default = keepIfCollisionSourceDiffers || keepIfKeyOriginsDiffers
+    
+    /// Custom decision logic
+    // custom((_ existing: Entry, _ new: Entry) -> Bool)
+    
+    // updateByNew
+    
+    // seems to be out of scope of this options type. DuplicatePolicy for nil values should be the same as for values
+    // and regulated by preserveNilValues
+    // static let allowEqualNilValues  = Self(rawValue: 1 << 1)
   }
 }

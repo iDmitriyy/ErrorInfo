@@ -60,7 +60,7 @@ extension Merge {
   // If there are equal collision sources for the same key (e.g. `.onSubscript`), a random suffix
   // will be added (by _putResolvingWithRandomSuffix() func).
   
-  func summaryInfo<S, V, W>(
+  public func summaryInfo<S, V, W>(
     infoSources: some BidirectionalCollection<S>, // TODO: .reversed support | tests
     infoKeyPath: KeyPath<S, ErrorInfo>,
     annotationsFormat: KeyAnnotationsFormat,
@@ -226,6 +226,7 @@ extension Merge {
 }
 
 extension Merge {
+  
   fileprivate struct _StatefulKey: ~Copyable {
     private var string: String
     private var isSuffixAppended: Bool
