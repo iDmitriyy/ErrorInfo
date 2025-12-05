@@ -268,14 +268,14 @@ extension Merge {
                                          keyHasCollisionAcross: Bool,
                                          keyHasCollisionWithin: Bool,
                                          collisionSourceInterpolation: (CollisionSource) -> String) -> String {
-    let errorInfoSignatureComponent: String? = if keyHasCollisionAcross {
+    let errorInfoSignature: String? = if keyHasCollisionAcross {
       _unchecked_infoSourceSignatureForCrossCollision(infoSourceIndex: infoSourceIndex,
                                                       allSourcesSignatures: allSourcesSignatures)
     } else {
       nil
     }
     
-    let keyOriginComponent: String? = if keyHasCollisionAcross || keyHasCollisionWithin {
+    let keyOrigin: String? = if keyHasCollisionAcross || keyHasCollisionWithin {
       if annotationsFormat.keyOriginPolicy.whenCollision._isSuitableFor(keyOrigin: key.origin) {
         annotationsFormat.keyOriginInterpolation(key.origin)
       } else {
@@ -289,32 +289,20 @@ extension Merge {
       }
     }
     
-    let collisionSourceComponent: String? = if let collisionSource = value.collisionSource {
+    let collisionSource: String? = if let collisionSource = value.collisionSource {
       collisionSourceInterpolation(collisionSource)
     } else {
       nil
     }
     
-    let sorted = _sortedComponents(keyOrigin: keyOriginComponent,
-                                   collisionSource: collisionSourceComponent,
-                                   errorInfoSignature: errorInfoSignatureComponent,
-                                   ordering: annotationsFormat.annotationsOrder)
+    var annotationsBuffer = "" // TODO: ?append to key directly without allocationg annotationsBuffer
+    _appendAnnotations(keyOrigin: keyOrigin,
+                       collisionSource: collisionSource,
+                       errorInfoSignature: errorInfoSignature,
+                       annotationsFormat: annotationsFormat,
+                       to: &annotationsBuffer)
     
-    let joined = sorted.joined(separator: annotationsFormat.annotationsDelimiters.componentsSeparator)
-    
-    var annotationsString = ""
-    switch annotationsFormat.annotationsDelimiters.blockBoundary {
-    case let .onlySpacer(spacer):
-      annotationsString.append(spacer)
-      annotationsString.append(joined)
-    case let .enclosure(spacer, opening, closing):
-      annotationsString.append(spacer)
-      annotationsString.append(opening)
-      annotationsString.append(joined)
-      annotationsString.append(closing)
-    }
-    
-    return annotationsString
+    return annotationsBuffer
   }
   
   /// Decomposition of `merge` function. `allSourcesSignatures.count` must be equal to `errorInfoSources.count`. Index must be valid.
@@ -335,38 +323,6 @@ extension Merge {
     return sourceSignature
   }
   
-  /// Decomposition of `merge` function.
-  private func _sortedComponents(keyOrigin: String?,
-                                 collisionSource: String?,
-                                 errorInfoSignature: String?,
-                                 ordering requestedOrder: OrderedSet<Merge.AnnotationComponentKind>) -> [String] {
-    // Ensure all annotation kinds have defined order
-    lazy var allCases = Merge.AnnotationComponentKind.allCases
-    lazy var fullOrder: OrderedSet<Merge.AnnotationComponentKind> = if requestedOrder.count == allCases.count {
-      requestedOrder
-    } else {
-      requestedOrder.union(allCases)
-    }
-    
-    lazy var priorityByKind: [Merge.AnnotationComponentKind: Int] = {
-      var dict: [Merge.AnnotationComponentKind: Int] = Dictionary(minimumCapacity: fullOrder.count)
-      for (priority, kind) in fullOrder.indexed() {
-        dict[kind] = priority
-      }
-      return dict
-    }()
-
-    var components: [(priority: Int, value: String)] = []
-    
-    if let keyOrigin { components.append((priorityByKind[.keyOrigin]!, keyOrigin)) }
-    if let collisionSource { components.append((priorityByKind[.collisionSource]!, collisionSource)) }
-    if let errorInfoSignature { components.append((priorityByKind[.errorInfoSignature]!, errorInfoSignature)) }
-
-    return components
-      .sorted { $0.priority < $1.priority }
-      .map { $0.value }
-  }
-  
   // TODO: this imp might be faster
   // less allocations & computations than _sortedComponents
   private func _appendAnnotations(keyOrigin: String?,
@@ -374,14 +330,22 @@ extension Merge {
                                   errorInfoSignature: String?,
                                   annotationsFormat: KeyAnnotationsFormat,
                                   to recipient: inout String) {
-    // Ensure all annotation kinds have defined order
-    let allCases = Merge.AnnotationComponentKind.allCases
-    let fullOrder: OrderedSet<Merge.AnnotationComponentKind> = if annotationsFormat.annotationsOrder.count == allCases.count {
-      annotationsFormat.annotationsOrder
-    } else {
-      annotationsFormat.annotationsOrder.union(allCases)
+    // 1. Fast path: if all three components are nil, don't append anything
+    if keyOrigin == nil, collisionSource == nil, errorInfoSignature == nil { return }
+    
+    // 2. Compute the exhaustive order
+    let exhaustiveOrder: OrderedSet<Merge.AnnotationComponentKind>
+    do {
+      let allAnnotationKinds = Merge.AnnotationComponentKind.allCases
+      let requestedOrder = annotationsFormat.annotationsOrder
+      if requestedOrder.count == allAnnotationKinds.count {
+        exhaustiveOrder = requestedOrder
+      } else {
+        exhaustiveOrder = requestedOrder.union(allAnnotationKinds)
+      }
     }
     
+    // 3. Pre-append boundary (and keep closing delimiter)
     let closingDelimiter: Character?
     switch annotationsFormat.annotationsDelimiters.blockBoundary {
     case let .onlySpacer(spacer):
@@ -393,9 +357,10 @@ extension Merge {
       closingDelimiter = closing
     }
     
-    let lastComponentIndex = fullOrder.endIndex.advanced(by: -1)
-    // in most cases all components are nil
-    for (index, currentComponentKind) in fullOrder.enumerated() {
+    // 4. Append components in one tight loop
+    // in most cases all components are nil (as they are typically added when collision happen)
+    var needsSeparator = false // no separator is needed before first component
+    for (index, currentComponentKind) in exhaustiveOrder.enumerated() {
       let currentComponent: String? = switch currentComponentKind {
       case .keyOrigin: keyOrigin
       case .collisionSource: collisionSource
@@ -403,38 +368,21 @@ extension Merge {
       }
       
       if let currentComponent {
+        if needsSeparator {
+          recipient.append(annotationsFormat.annotationsDelimiters.componentsSeparator)
+        } else {
+          needsSeparator = true // when first non-nil component appears, toggle to true for next components
+        }
         recipient.append(currentComponent)
-        recipient.append(index < lastComponentIndex ? annotationsFormat.annotationsDelimiters.componentsSeparator : "")
       }
     }
     
+    // 5. Close enclosure if needed
     if let closingDelimiter { recipient.append(closingDelimiter) }
   }
 }
 
-// for (index, annotationKind) in fullOrder.indexed() {
-//  let currentComponent: String?
-//  switch annotationKind {
-//  case .keyOrigin:
-//    if let keyOrigin {
-//      recipient.append(keyOrigin)
-//      recipient.append(index < lastElementIndex ? separator : "")
-//    }
-//  case .collisionSource:
-//    if let collisionSource {
-//      recipient.append(collisionSource)
-//      recipient.append(index < lastElementIndex ? separator : "")
-//    }
-//  case .errorInfoSignature:
-//    if let errorInfoSignature {
-//      recipient.append(errorInfoSignature)
-//      recipient.append(index < lastElementIndex ? separator : "")
-//    }
-//  }
-// }
-
 extension Merge {
-  
   fileprivate struct _StatefulKey: ~Copyable {
     private var string: String
     private var isSuffixAppended: Bool
@@ -589,59 +537,18 @@ func findCommonElements<Unique>(across collections: [Unique]) -> Set<Unique.Elem
     let capacity = collections.reduce(into: 0) { count, set in count += set.count }
     countedElements.reserveCapacity(capacity)
     // in most cases, keys across errorInfo instances are unique, thats why capacity for totalCount can be allocated.
-    // If there are duplicated elements across collections, memory overhead will be minimal
+    // If there are duplicated elements across collections, memory overhead will be minimal in real scenarios.
   }
   
-//   var commonElementsCapacity: Int = 0
   for collectionOfUniqueElements in collections {
     for element in collectionOfUniqueElements {
       countedElements[element, default: 0] += 1
-      
-      // ?Improvement:
-//       var count = countedElements[element, default: 0]
-//       switch count {
-//       case 0:
-//         countedElements[element] = 1
-//       case 1:
-//         count += 1
-//         countedElements[element] = count
-//         // when element appears second time, it will be added to commonElements. So we can calc commonElements.Capacity
-      ////         commonElementsCapacity += 1
-//       default:
-//         // real count is not needed. It is needed to know if element was met twice
-//         break // optimize increment & subscript setter (hash calculatuon + value update)
-//       }
-    } // end for element
-  } // end for collection
+    }
+  }
   
   var commonElements: Set<Unique.Element> = []
-//   commonElements.reserveCapacity(commonElementsCapacity)
   for (element, count) in countedElements where count > 1 {
     commonElements.insert(element)
   }
   return commonElements
-}
-
-internal struct CountedSet<Element: Hashable> {
-  private var _storage: [Element: Int]
-//  add(_:)
-//  remove(_:)
-//  objectEnumerator()
-  
-  init() {
-    _storage = [:]
-  }
-  
-  init(_ sequence: some Sequence<Element>) {
-    self.init()
-    sequence.forEach { element in insert(element) }
-  }
-  
-  mutating func insert(_ newMember: Element) {
-    _storage[newMember, default: 0] += 1
-  }
-  
-  func count(for member: Element) -> Int {
-    _storage[member, default: 0]
-  }
 }
