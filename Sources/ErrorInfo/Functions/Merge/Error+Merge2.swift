@@ -108,13 +108,13 @@ extension Merge {
     internal func _isSuitableFor(keyOrigin: KeyOrigin) -> Bool {
       switch keyOrigin {
       case .literalConstant, .combinedLiterals:
-        self.contains(.literal)
+        contains(.literal)
       case .dynamic:
-        self.contains(.dynamic)
+        contains(.dynamic)
       case .keyPath:
-        self.contains(.keyPath)
+        contains(.keyPath)
       case .unverifiedMapped, .modified:
-        self.contains(.modified)
+        contains(.modified)
       }
     }
   }
@@ -370,10 +370,10 @@ extension Merge {
   // TODO: this imp might be faster
   // less allocations & computations than _sortedComponents
   private func _appendAnnotations(keyOrigin: String?,
-                                       collisionSource: String?,
-                                       errorInfoSignature: String?,
-                                       annotationsFormat: KeyAnnotationsFormat,
-                                       to recipient: inout String) {
+                                  collisionSource: String?,
+                                  errorInfoSignature: String?,
+                                  annotationsFormat: KeyAnnotationsFormat,
+                                  to recipient: inout String) {
     // Ensure all annotation kinds have defined order
     let allCases = Merge.AnnotationComponentKind.allCases
     let fullOrder: OrderedSet<Merge.AnnotationComponentKind> = if annotationsFormat.annotationsOrder.count == allCases.count {
@@ -381,8 +381,6 @@ extension Merge {
     } else {
       annotationsFormat.annotationsOrder.union(allCases)
     }
-    
-    
     
     let closingDelimiter: Character?
     switch annotationsFormat.annotationsDelimiters.blockBoundary {
@@ -395,7 +393,6 @@ extension Merge {
       closingDelimiter = closing
     }
     
-    let separator = annotationsFormat.annotationsDelimiters.componentsSeparator
     let lastComponentIndex = fullOrder.endIndex.advanced(by: -1)
     // in most cases all components are nil
     for (index, currentComponentKind) in fullOrder.enumerated() {
@@ -407,7 +404,7 @@ extension Merge {
       
       if let currentComponent {
         recipient.append(currentComponent)
-        recipient.append(index < lastComponentIndex ? separator : "")
+        recipient.append(index < lastComponentIndex ? annotationsFormat.annotationsDelimiters.componentsSeparator : "")
       }
     }
     
@@ -415,8 +412,7 @@ extension Merge {
   }
 }
 
-
-//for (index, annotationKind) in fullOrder.indexed() {
+// for (index, annotationKind) in fullOrder.indexed() {
 //  let currentComponent: String?
 //  switch annotationKind {
 //  case .keyOrigin:
@@ -435,7 +431,7 @@ extension Merge {
 //      recipient.append(index < lastElementIndex ? separator : "")
 //    }
 //  }
-//}
+// }
 
 extension Merge {
   
