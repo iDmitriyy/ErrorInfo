@@ -39,7 +39,7 @@ extension ErrorInfo {
   //   set(InternalRestrictionToken?) only {}
   // }
   
-  public subscript<V: ValueType>(key literalKey: StringLiteralKey) -> V? {
+  public subscript<V: ValueType>(_ literalKey: StringLiteralKey) -> V? {
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
     get {
       allValues(forKey: literalKey.rawValue)?.first as? V
@@ -56,13 +56,13 @@ extension ErrorInfo {
   
   @available(*, deprecated, message: "make autocomplete pollution")
   @_disfavoredOverload
-  public subscript<V: ValueType>(key dynamicKey: String) -> V? { // dynamicKey key:
+  public subscript<V: ValueType>(dynamicKey dynKey: String) -> V? { // dynamicKey key:
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
     get {
-      allValues(forKey: dynamicKey)?.first as? V
+      allValues(forKey: dynKey)?.first as? V
     }
     set {
-      _add(key: dynamicKey,
+      _add(key: dynKey,
            keyOrigin: .dynamic,
            value: newValue,
            preserveNilValues: true,
@@ -71,7 +71,7 @@ extension ErrorInfo {
     }
   }
   
-  mutating func foo(key _: String) {
-    // self[.debug + .message + .id] = 2
+  mutating func foo(key: String) {
+    
   }
 }

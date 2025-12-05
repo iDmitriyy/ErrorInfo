@@ -12,7 +12,7 @@ import Testing
 struct ErrorInfoSubscriptTests {
   @Test func subscriptKeyCollisionsForEqualValues() async throws {
     var errorInfo = ErrorInfo()
-    let key = "key"
+    let key: StringLiteralKey = "key"
     errorInfo[key] = 0
     errorInfo[key] = 0
     errorInfo[key] = 0
@@ -22,7 +22,7 @@ struct ErrorInfoSubscriptTests {
   
   @Test func subscriptKeyCollisionsForNotEqualValues() async throws {
     var errorInfo = ErrorInfo()
-    let key = "key"
+    let key: StringLiteralKey = "key"
     errorInfo[key] = 0
     errorInfo[key] = 1
     errorInfo[key] = 2

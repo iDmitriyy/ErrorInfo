@@ -9,27 +9,30 @@
 import Testing
 
 struct ErrorInfoValueVariantTests {
-  typealias Variant = ErrorInfo._Optional
+  private typealias _Optional = ErrorInfo._Optional
   
   @Test func equality() async throws {
-    #expect(Variant.isApproximatelyEqual(lhs: .value(10), rhs: .value(10)))
-    #expect(!Variant.isApproximatelyEqual(lhs: .value(Int(10)), rhs: .value(UInt(10))))
-    
-    #expect(Variant.isApproximatelyEqual(lhs: .value(10), rhs: .value(10 as any ErrorInfoValueType)))
+    let equalityFunc: (_Optional, _Optional) -> Bool = { $0 == $1 }
     
     
-    #expect(Variant.isApproximatelyEqual(lhs: .value(10), rhs: .value(10)))
+    #expect(equalityFunc(.value(10), .value(10)))
+    #expect(!equalityFunc(.value(Int(10)), .value(UInt(10))))
     
-    #expect(!Variant.isApproximatelyEqual(lhs: .value(10),
-                                         rhs: .nilInstance(typeOfWrapped: Int.self)))
+    #expect(equalityFunc(.value(10), .value(10 as any ErrorInfoValueType)))
     
-    #expect(Variant.isApproximatelyEqual(lhs: .nilInstance(typeOfWrapped: Int.self),
-                                         rhs: .nilInstance(typeOfWrapped: Int.self)))
     
-    #expect(!Variant.isApproximatelyEqual(lhs: .nilInstance(typeOfWrapped: Int.self),
-                                         rhs: .nilInstance(typeOfWrapped: UInt.self)))
+    #expect(equalityFunc(.value(10), .value(10)))
     
-    #expect(Variant.isApproximatelyEqual(lhs: .nilInstance(typeOfWrapped: Int.self as any ErrorInfoValueType.Type),
-                                         rhs: .nilInstance(typeOfWrapped: Int.self)))
+    #expect(!equalityFunc(.value(10),
+                          .nilInstance(typeOfWrapped: Int.self)))
+    
+    #expect(equalityFunc(.nilInstance(typeOfWrapped: Int.self),
+                         .nilInstance(typeOfWrapped: Int.self)))
+    
+    #expect(!equalityFunc(.nilInstance(typeOfWrapped: Int.self),
+                          .nilInstance(typeOfWrapped: UInt.self)))
+    
+    #expect(equalityFunc(.nilInstance(typeOfWrapped: Int.self as any ErrorInfoValueType.Type),
+                         .nilInstance(typeOfWrapped: Int.self)))
   }
 }

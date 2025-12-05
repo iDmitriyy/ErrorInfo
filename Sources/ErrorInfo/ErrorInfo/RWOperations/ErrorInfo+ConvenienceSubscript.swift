@@ -28,8 +28,8 @@ extension ErrorInfo {
                                   append: (consuming CustomOptionsView) -> Void) {
     withUnsafeMutablePointer(to: &self) { pointer in
       let view = CustomOptionsView(pointer: pointer,
-                                           insertIfEqual: insertIfEqual,
-                                           preserveNilValues: preserveNilValues)
+                                   insertIfEqual: insertIfEqual,
+                                   preserveNilValues: preserveNilValues)
       append(view)
     }
   }
@@ -53,8 +53,8 @@ extension ErrorInfo {
     
     /// `omitEqualValue`has higher priority than provided in `appendWith(typeInfoOptions:, omitEqualValue:, append:)` function.
     public subscript<V: ValueType>(key literalKey: StringLiteralKey,
-                     preserveNilValues: Bool? = nil,
-                     insertIfEqual: Bool? = nil) -> V? {
+                                   preserveNilValues: Bool? = nil,
+                                   insertIfEqual: Bool? = nil) -> V? {
       // TODO: ? borrowing get set
       @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
       get {
@@ -73,8 +73,8 @@ extension ErrorInfo {
     /// `omitEqualValue`has higher priority than provided in `appendWith(typeInfoOptions:, omitEqualValue:, append:)` function.
     @_disfavoredOverload
     public subscript<V: ValueType>(key dynamicKey: String,
-                     preserveNilValues: Bool? = nil,
-                     insertIfEqual: Bool? = nil) -> V? {
+                                   preserveNilValues: Bool? = nil,
+                                   insertIfEqual: Bool? = nil) -> V? {
       // TODO: ? borrowing get set
       @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
       get {

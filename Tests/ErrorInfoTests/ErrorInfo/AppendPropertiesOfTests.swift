@@ -19,7 +19,7 @@ struct AppendPropertiesOfTests {
     
     let product = Product(name: "Laptop", amount: 1)
     
-    info.appendProperties(of: product, keysPrefix: .valueName("product")) {
+    info.appendProperties(of: product, keysPrefix: .customName("product")) {
       \Product.name; \Product.amount
     }
     

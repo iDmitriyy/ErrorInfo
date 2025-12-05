@@ -15,7 +15,7 @@ struct NonEmptyOrderedIndexSetTests {
     var indexSet: NonEmptyOrderedIndexSet = .single(index: 1)
     indexSet.insert(3)
 
-    switch indexSet._storage {
+    switch indexSet._variant {
     case .single:
       Issue.record("Expected to transition to .multiple")
     case .multiple(let indices):
