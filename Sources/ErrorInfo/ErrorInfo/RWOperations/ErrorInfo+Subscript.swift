@@ -30,6 +30,15 @@ extension ErrorInfo {
   //   allValues(forKey: key)?.first
   // }
   
+  // set-only subscript will allow the following:
+  // info["key"] = someObject.property // ok
+  // info["key"] = nil // error: type can't be inferred | to remove value use removeValue(forKey:)
+  
+  // InternalRestrictionToken type is for making an overload that is useless except showing a warning "to remove value use removeValue(forKey:)"
+  // public subscript<V: ValueType>(key literalKey: StringLiteralKey) {
+  //   set(InternalRestrictionToken?) only {}
+  // }
+  
   public subscript<V: ValueType>(key literalKey: StringLiteralKey) -> V? {
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
     get {

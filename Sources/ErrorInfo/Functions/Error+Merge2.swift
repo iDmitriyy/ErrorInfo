@@ -104,6 +104,19 @@ extension Merge {
     public static let modified = Self(rawValue: 1 << 3)
     
     public static let allOrigins: Self = [.literal, .keyPath, .dynamic, .modified]
+    
+    internal func _isSuitableFor(keyOrigin: KeyOrigin) -> Bool {
+      switch keyOrigin {
+      case .literalConstant, .combinedLiterals:
+        self.contains(.literal)
+      case .dynamic:
+        self.contains(.dynamic)
+      case .keyPath:
+        self.contains(.keyPath)
+      case .unverifiedMapped, .modified:
+        self.contains(.modified)
+      }
+    }
   }
   
   /// Defines how the entire annotation block is visually attached..
@@ -191,9 +204,7 @@ extension Merge {
     // any ErrorInfoValueType change to V (e.g. to be Optional<any ErrorInfoValueType> or String)
     typealias Key = String
     typealias Value = any ErrorInfoValueType
-    
-    let annotationsOrder = annotationsFormat.annotationsOrder.union(AnnotationComponentKind.allCases)
-      
+          
     var summaryInfo: OrderedDictionary<Key, W> = [:]
     
     func putResolvingCollisions(key assumeModifiedKey: Key, value processedValue: W) {
@@ -212,36 +223,30 @@ extension Merge {
       for (key, value) in errorInfo.fullInfoView {
         let keyHasCollisionWithinErrorInfo = errorInfo._storage._storage.hasMultipleValues(forKey: key.string)
         let keyHasCollisionAcrossErrorInfos = crossCollisionKeys.contains(key.string)
+        let keyHasCollision = keyHasCollisionAcrossErrorInfos || keyHasCollisionWithinErrorInfo
         
         var augmentedKey = _StatefulKey(key.string)
-        
-        var annotationComponents: [String] = []
-        
-        let shouldAddKeyKind = false
-        if shouldAddKeyKind {
-          // add key tag according to options
+                
+        let errorInfoSignatureComponent: String? = if keyHasCollisionAcrossErrorInfos {
+          _unchecked_infoSourceSignatureForCrossCollision(infoSourceIndex: infoSourceIndex,
+                                                          allSourcesSignatures: allSourcesSignatures)
+        } else {
+          nil
         }
         
-        if keyHasCollisionAcrossErrorInfos {
-          let sourceSignature = _unchecked_infoSourceSignatureForCrossCollision(infoSourceIndex: infoSourceIndex,
-                                                                                allSourcesSignatures: allSourcesSignatures)
-          augmentedKey.append(sourceSignature)
+        let keyOriginComponent: String? = if keyHasCollision {
+          if annotationsFormat.keyOriginPolicy.whenCollision._isSuitableFor(keyOrigin: key.origin) {
+            annotationsFormat.keyOriginInterpolation(key.origin)
+          } else {
+            nil
+          }
+        } else {
+          if annotationsFormat.keyOriginPolicy.whenUnique._isSuitableFor(keyOrigin: key.origin) {
+            annotationsFormat.keyOriginInterpolation(key.origin)
+          } else {
+            nil
+          }
         }
-        
-        // for annotationKind in annotationsOrder { // weak implementation
-        //   switch annotationKind {
-        //   case .keyOrigin:
-        //     break
-        //   case .collisionSource:
-        //     break
-        //   case .errorInfoSignature:
-        //     break
-        //   }
-        // }
-        
-        let keyOrigin: String?
-        let collisionSource: String?
-        let errorInfoSignature: String?
         
         // TODO: In this kind of summary-merge it is reasonable to provide an option if nil values with different Optional.Wrapped
         // types should be put to summary.
@@ -258,12 +263,21 @@ extension Merge {
         //      let processedValues = prepareValues(NonEmptyArray(value), removingEqualValues: omitEqualValues)
         // TODO: processedValues contain all values for key which leads to incorrect ordering.
         
-        if let collisionSource = value.collisionSource {
-          let collisionString = collisionSourceInterpolation(collisionSource)
-          augmentedKey.append(collisionString)
+        let collisionSourceComponent: String? = if let collisionSource = value.collisionSource {
+          collisionSourceInterpolation(collisionSource)
+        } else {
+          nil
         }
+        
+        _sortedComponents(keyOrigin: keyOriginComponent,
+                          collisionSource: collisionSourceComponent,
+                          errorInfoSignature: errorInfoSignatureComponent,
+                          ordering: annotationsFormat.annotationsOrder)
+        
         // value collisions within concrete error instance | crossCollisions
         let adaptedValue = valueTransform(value.value)
+        
+        
         putResolvingCollisions(key: augmentedKey.finalizedString(), value: adaptedValue)
       } // end `for (key, value)`
     } // end `for (errorIndex, error)`
