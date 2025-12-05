@@ -37,7 +37,7 @@ public enum KeyOrigin: Sendable {
   
   indirect case modified(original: Self)
   
-  public func defaultStringInterpolation() -> String {
+  public func defaultInterpolation() -> String {
     switch self {
     case .literalConstant: "literal"
     case .combinedLiterals: "combinedLiterals"
@@ -48,14 +48,14 @@ public enum KeyOrigin: Sendable {
     }
   }
   
-  public func shortSign() -> String {
+  public func shortSignInterpolation() -> String {
     switch self {
-    case .literalConstant: "sl"
-    case .combinedLiterals: "csl"
+    case .literalConstant: "l"
+    case .combinedLiterals: "cl"
     case .dynamic: "dyn"
     case .keyPath: "kp"
-    case .modified(let original): "m_" + original.shortSign()
-    case .unverifiedMapped(let original): "um_" + original.shortSign()
+    case .modified(let original): "m_" + original.shortSignInterpolation()
+    case .unverifiedMapped(let original): "um_" + original.shortSignInterpolation()
     }
   }
 }

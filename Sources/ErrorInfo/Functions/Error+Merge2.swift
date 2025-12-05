@@ -36,21 +36,114 @@ enum MerrorInfoSourcesOptions {
 public enum Merge {}
 
 extension Merge {
-  struct KeyTagOptions {
-    // addKeyTagsForKinds(.allKeyKinds, .allExceptLiterals | .literal, .combinedLiteral, .dynamic, .keyPath, .modified)
-    // default = .dynamic + .modified
+  // KeyAnnotationFormat
+  
+  public struct KeyAnnotationsFormat: Sendable {
+    internal let annotationsOrder: OrderedSet<AnnotationComponentKind>
+    internal let annotationsDelimiters: AnnotationsBlockDelimiters
     
-    // 1. when (.onCillision, .always)
-    // 2. which origins to show
-    // 3. how (shortTag, fullName) => tagBuilder: (KeyOrigin) -> String
+    internal let keyOriginPolicy: KeyOriginAnnotationPolicy
+    internal let keyOriginInterpolation: @Sendable (KeyOrigin) -> String
     
-    //
-    // .onCollision(.allKeyOrigins), .whenNoCollision(.dynamic + .modified)
+    // TODO: - prependAllKeysWithErrorInfoSignature: Bool
+    // - name for component
+    
+    
+    public init(annotationsOrder: OrderedSet<AnnotationComponentKind>,
+                annotationsDelimiters: AnnotationsBlockDelimiters,
+                keyOriginPolicy: KeyOriginAnnotationPolicy,
+                keyOriginInterpolation: @Sendable @escaping (KeyOrigin) -> String) {
+      self.annotationsOrder = annotationsOrder
+      self.annotationsDelimiters = annotationsDelimiters
+      self.keyOriginPolicy = keyOriginPolicy
+      self.keyOriginInterpolation = keyOriginInterpolation
+    }
+    
+    public static let `default` = KeyAnnotationsFormat(annotationsOrder: AnnotationComponentKind.defaultOrdering,
+                                                       annotationsDelimiters: .default,
+                                                       keyOriginPolicy: .default,
+                                                       keyOriginInterpolation: { $0.shortSignInterpolation() })
   }
   
-  struct NilOptions {
-    // keepAll
-    // collapse | with info is it a nil or a collapsed nil. "nil" "nil (collapsed)" "nil (collapsed, was: Int, String, Array)"
+  /// In which order annotations will be added
+  public enum AnnotationComponentKind: Sendable, Hashable, CaseIterable {
+    case keyOrigin
+    case collisionSource
+    case errorInfoSignature
+    // case typeOfValue
+    
+    public static let defaultOrdering: OrderedSet<Self> = [.keyOrigin, .collisionSource, .errorInfoSignature]
+  }
+  
+  public struct KeyOriginAnnotationPolicy: Sendable {
+    public var whenUnique: KeyOriginOptions
+    public var whenCollision: KeyOriginOptions
+
+    public init(whenUnique: KeyOriginOptions,
+                whenCollision: KeyOriginOptions) {
+      self.whenUnique = whenUnique
+      self.whenCollision = whenCollision
+    }
+
+    public static let `default` = KeyOriginAnnotationPolicy(whenUnique: [],
+                                                            whenCollision: .allOrigins)
+  }
+  
+  public struct KeyOriginOptions: OptionSet, Sendable {
+    public let rawValue: UInt8
+    
+    public init(rawValue: UInt8) {
+      self.rawValue = rawValue
+    }
+    
+    public static let literal = Self(rawValue: 1 << 0)
+    
+    public static let keyPath = Self(rawValue: 1 << 1)
+    
+    public static let dynamic = Self(rawValue: 1 << 2)
+    
+    public static let modified = Self(rawValue: 1 << 3)
+    
+    public static let allOrigins: Self = [.literal, .keyPath, .dynamic, .modified]
+  }
+  
+  /// Defines how the entire annotation block is visually attached..
+  /// Examples:
+  /// Spacer-only form:
+  /// key | origin, collision
+  /// key • origin, collision
+  /// Enclosure form:
+  /// key [origin, collision]
+  /// key (origin, collision)
+  public enum AnnotationsBoundaryDelimiter: Sendable {
+    case onlySpacer(String)
+    case enclosure(spacer: String, opening: Character, closing: Character)
+        
+    static let verticalBar: Self = .onlySpacer(" | ")
+    
+    static let parentheses: Self = .enclosure(spacer: " ", opening: "(", closing: ")")
+  }
+  
+  public struct AnnotationsBlockDelimiters: Sendable {
+    /// How multiple annotation components are joined
+    /// Example: "origin, collision" or "origin | collision"
+    internal let componentsSeparator: String
+    /// How the entire block of these components is visually attached to the key, either:
+    /// via simple spacing: "key | origin, collision"
+    /// or via enclosure: "key [origin, collision]"
+    internal let blockBoundary: AnnotationsBoundaryDelimiter
+    
+    public init(componentsSeparator: String, blockBoundary: AnnotationsBoundaryDelimiter) {
+      self.componentsSeparator = componentsSeparator
+      self.blockBoundary = blockBoundary
+    }
+    
+    public static let `default` = Self(componentsSeparator: ", ", blockBoundary: .parentheses)
+  }
+  
+  struct NilFormat {
+    // literal
+    // literalWithType(delimiters: AnnotationsBoundaryDelimiter)
   }
 }
 
@@ -74,64 +167,83 @@ extension Merge {
 
 // arg: addPrefix prefixBuilder: (?) -> String = .errorSignature
 
+// error.domain.removingPrefix("ErrorDomain")
+
 extension Merge {
+  // 1. Find collisions across errorInfo sources (typically it is errors)
+  // 2. Iterate over key-value pairs in each errorInfo source.
+  // 3. Collisions
+  // 3.1 If there is cross collision (the same key in info of several errors), then sourceSignature (e.g. error domain + code)
+  // is added to key. If several errors have the same signature (rare in practice), then index from errorInfoSources is also added.
+  // In such a way key across errorInfoSources become unique.
+  // 3.2 If the same key is met several times inside an errorInfo, then collisionSource interpolation is added to a key.
+  // If there are equal collision sources for the same key (e.g. `.onSubscript`), a random suffix
+  // will be added (by _putResolvingWithRandomSuffix() func).
+  
   func summaryInfo<S, V, W>(
     infoSources: some BidirectionalCollection<S>, // TODO: .reversed support | tests
     infoKeyPath: KeyPath<S, ErrorInfo>,
+    annotationsFormat: KeyAnnotationsFormat,
     infoSourceSignatureBuilder: (S) -> String,
     valueTransform: (ErrorInfo._Optional) -> W,
-    collisionSourceInterpolation: (CollisionSource
-    ) -> String = { $0.defaultStringInterpolation() },
+    collisionSourceInterpolation: (CollisionSource) -> String = { $0.defaultStringInterpolation() },
   )
-  -> OrderedDictionary<String, W> where S: Sequence, S.Element == (key: String, value: V) {
+    -> OrderedDictionary<String, W> where S: Sequence, S.Element == (key: String, value: V) {
     // any ErrorInfoValueType change to V (e.g. to be Optional<any ErrorInfoValueType> or String)
     typealias Key = String
     typealias Value = any ErrorInfoValueType
     
-    var summary: OrderedDictionary<Key, W> = [:]
+      let annotationsOrder = annotationsFormat.annotationsOrder.union(AnnotationComponentKind.allCases)
+      
+    var summaryInfo: OrderedDictionary<Key, W> = [:]
     
     func putResolvingCollisions(key assumeModifiedKey: Key, value processedValue: W) {
       ErrorInfoDictFuncs.Merge._putResolvingWithRandomSuffix(processedValue,
                                                              assumeModifiedKey: assumeModifiedKey,
                                                              shouldOmitEqualValue: false,
                                                              suffixFirstChar: ErrorInfoMerge.suffixBeginningForMergeScalar,
-                                                             to: &summary)
+                                                             to: &summaryInfo)
     }
     
-    // 1. Find collisions across errorInfo sources (typically it is errors)
     let crossCollisionKeys = findCommonElements(across: infoSources.map { $0[keyPath: infoKeyPath].uniqueKeys })
     
-    // 2. Iterate over key-value pairs in each errorInfo source.
     lazy var allSourcesSignatures = infoSources.map(infoSourceSignatureBuilder)
     for (infoSourceIndex, errorInfoSource) in infoSources.enumerated() {
       let errorInfo = errorInfoSource[keyPath: infoKeyPath]
-      for (key, value) in errorInfo._storage {
-        // 3. Collisions
-        // 3.1 If there is cross collision (the same key in info of several errors), then sourceSignature (e.g. error domain + code)
-        // is added to key. If several errors have the same signature, then source index from errorInfoSources is also added.
-        // In such a way all keys across errorInfoSources become unique.
-        // 3.2 If the same key is met several times inside an errorInfo, then collisionSource interpolation is added to a key.
-        // If there are equal collision sources for the same key (e.g. `.onSubscript`), a random suffix
-        // will be added (by _putResolvingWithRandomSuffix() func).
+      for (key, value) in errorInfo.fullInfoView {
+        let keyHasCollisionWithinErrorInfo = errorInfo._storage._storage.hasMultipleValues(forKey: key.string)
+        let keyHasCollisionAcrossErrorInfos = crossCollisionKeys.contains(key.string)
         
-        var augmentedKey = _StatefulKey(key)
+        var augmentedKey = _StatefulKey(key.string)
         
-        let hasCollisionsWithinErrorInfo = false
-        
+        var annotationComponents: [String] = []
         
         let shouldAddKeyKind = false
         if shouldAddKeyKind {
           // add key tag according to options
         }
         
-        let hasCollisionAcrossErrorInfos = crossCollisionKeys.contains(key)
-        if hasCollisionAcrossErrorInfos {
+        if keyHasCollisionAcrossErrorInfos {
           let sourceSignature = _unchecked_infoSourceSignatureForCrossCollision(infoSourceIndex: infoSourceIndex,
                                                                                 allSourcesSignatures: allSourcesSignatures)
           augmentedKey.append(sourceSignature)
         }
         
         
+        // for annotationKind in annotationsOrder { // weak implementation
+        //   switch annotationKind {
+        //   case .keyOrigin:
+        //     break
+        //   case .collisionSource:
+        //     break
+        //   case .errorInfoSignature:
+        //     break
+        //   }
+        // }
+        
+        let keyOrigin: String?
+        let collisionSource: String?
+        let errorInfoSignature: String?
         
         // TODO: In this kind of summary-merge it is reasonable to provide an option if nil values with different Optional.Wrapped
         // types should be put to summary.
@@ -145,7 +257,7 @@ extension Merge {
         // will not contain approx. equal values. However, in general case this collisionSource should still be attached to the key
         // for handling the fact that collision occured. The total elimination of collisionSource can be done by passing additional
         // argument or option to this function
-  //      let processedValues = prepareValues(NonEmptyArray(value), removingEqualValues: omitEqualValues)
+        //      let processedValues = prepareValues(NonEmptyArray(value), removingEqualValues: omitEqualValues)
         // TODO: processedValues contain all values for key which leads to incorrect ordering.
         
         if let collisionSource = value.collisionSource {
@@ -153,20 +265,90 @@ extension Merge {
           augmentedKey.append(collisionString)
         }
         // value collisions within concrete error instance | crossCollisions
-        let adaptedValue = valueTransform(value.value.optional)
-        putResolvingCollisions(key: augmentedKey.string, value: adaptedValue)
+        let adaptedValue = valueTransform(value.value)
+        putResolvingCollisions(key: augmentedKey.finalizedString(), value: adaptedValue)
       } // end `for (key, value)`
     } // end `for (errorIndex, error)`
     
-    return summary
+    return summaryInfo
   }
+  
+  
 }
 
+extension Merge {
+//  fileprivate func _sortedComponents(keyOrigin: String?,
+//                                     collisionSource: String?,
+//                                     errorInfoSignature: String?,
+//                                     ordering requestedOrder: OrderedSet<Merge.AnnotationComponentKind>) -> [String] {
+//    let fullOrder = requestedOrder.union(Merge.AnnotationComponentKind.allCases)
+//    
+//    typealias OrderedComponent = (priority: Int, component: String?)
+//    
+//    var keyOrigin: OrderedComponent = (Int.max - 2, keyOrigin)
+//    var collisionSource: OrderedComponent = (Int.max - 1, collisionSource)
+//    var errorInfoSignature: OrderedComponent = (Int.max, errorInfoSignature)
+//    
+//    for (priority, annotationKind) in fullOrder.indexed() {
+//      switch annotationKind {
+//      case .keyOrigin: keyOrigin.priority = priority
+//      case .collisionSource: collisionSource.priority = priority
+//      case .errorInfoSignature: errorInfoSignature.priority = priority
+//      }
+//    }
+//    
+//    let sortedComponents = [
+//      keyOrigin,
+//      collisionSource,
+//      errorInfoSignature,
+//    ]
+//      .compactMap { (ordering, component) -> (ordering: Int, component: String)? in
+//        if let component {
+//          (ordering, component)
+//        } else {
+//          nil
+//        }
+//      }
+//      .sorted(by: { $0.ordering < $1.ordering })
+//      .map { $0.component }
+//    
+//    return sortedComponents
+//  }
+  
+  fileprivate func _sortedComponents(keyOrigin: String?,
+      collisionSource: String?,
+      errorInfoSignature: String?,
+      ordering requestedOrder: OrderedSet<Merge.AnnotationComponentKind>) -> [String] {
+      // Ensure all annotation kinds have defined order
+      let fullOrder = requestedOrder.union(Merge.AnnotationComponentKind.allCases)
 
+      // Build a dictionary: kind → priority (index)
+      var priorityByKind: [Merge.AnnotationComponentKind: Int] = [:]
+      priorityByKind.reserveCapacity(Merge.AnnotationComponentKind.allCases.count)
 
-fileprivate struct _StatefulKey {
-  private(set) var string: String
-  private(set) var isSuffixAppended: Bool
+      for (index, kind) in fullOrder.indexed() {
+          priorityByKind[kind] = index
+      }
+
+      // Build only the components that exist (non-nil)
+      var components: [(priority: Int, value: String)] = []
+      components.reserveCapacity(3)
+
+      if let keyOrigin      { components.append((priorityByKind[ .keyOrigin ]!,        keyOrigin)) }
+      if let collisionSource{ components.append((priorityByKind[ .collisionSource ]!,  collisionSource)) }
+      if let errorInfoSignature { components.append((priorityByKind[ .errorInfoSignature ]!, errorInfoSignature)) }
+
+      // Sort by priority and extract final strings
+      return components
+          .sorted { $0.priority < $1.priority }
+          .map { $0.value }
+  }
+
+}
+
+fileprivate struct _StatefulKey: ~Copyable {
+  private var string: String
+  private var isSuffixAppended: Bool
   
   init(_ string: String) {
     self.string = string
@@ -181,6 +363,10 @@ fileprivate struct _StatefulKey {
     string.append(other)
   }
   
+  consuming func finalizedString() -> String {
+    string
+  }
+  
   // mutating func prepend(_ prefix: String) {
   //   string = prefix + " " + string
   // }
@@ -193,8 +379,8 @@ private func _unchecked_infoSourceSignatureForCrossCollision(infoSourceIndex: In
                                                              allSourcesSignatures: [String]) -> String {
   var sourceSignature = allSourcesSignatures[infoSourceIndex]
   
-  for (index, signature) in allSourcesSignatures.enumerated() where index != infoSourceIndex {
-    if sourceSignature == signature {
+  for (index, otherSignature) in allSourcesSignatures.enumerated() where index != infoSourceIndex {
+    if sourceSignature == otherSignature {
       // if there are errors with equal signatures then append sourceIndex to understand (by index) from which of
       // similar errors the key-value is.
       sourceSignature.append("(\(infoSourceIndex))")
@@ -362,4 +548,28 @@ func findCommonElements<Unique>(across collections: [Unique]) -> Set<Unique.Elem
     commonElements.insert(element)
   }
   return commonElements
+}
+
+internal struct CountedSet<Element: Hashable> {
+  private var _storage: [Element: Int]
+//  add(_:)
+//  remove(_:)
+//  objectEnumerator()
+  
+  init() {
+    _storage = [:]
+  }
+  
+  init(_ sequence: some Sequence<Element>) {
+    self.init()
+    sequence.forEach { element in insert(element) }
+  }
+  
+  mutating func insert(_ newMember: Element) {
+    _storage[newMember, default: 0] += 1
+  }
+  
+  func count(for member: Element) -> Int {
+    _storage[member, default: 0]
+  }
 }

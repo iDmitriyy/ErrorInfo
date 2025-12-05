@@ -37,14 +37,14 @@ public struct TypeInfoOptions: OptionSet, Sendable { // add tests
   
   /// All types without any exceptions.
   /// Implicitly means \`always\`, if option \`whenNil\` not passed.
-  public static let allTypes = TypeInfoOptions(rawValue: 1 << 2)
+  public static let allTypes = Self(rawValue: 1 << 2)
   
   // TODO: nonBuiltIn - casting values to diffrent types is expensive. Is getting dynamic of value is faster?
   
   /// Everything except primitives contained in standard library – bool, integers, floating point, String, StaticString
   ///
   /// Implicitly means \`always\`, if option \`whenNil\` not passed.
-  public static let nonPrimitive = TypeInfoOptions(rawValue: 1 << 3)
+  public static let nonPrimitive = Self(rawValue: 1 << 3)
   
   /// Everything except primitives and standard library CustomStringConvertible builtin types: Colections, Ranges...
   ///
@@ -55,10 +55,10 @@ public struct TypeInfoOptions: OptionSet, Sendable { // add tests
   /// The listed above types defined at user site tend be rarely added to errorInfo and if it happens, then it might be good to be markered / handled.
   ///
   /// Another rationale is specifyng Int, Float, String and similar types makes noise and is practically meamingless / useless in general case.
-  public static let nonBuiltIn = TypeInfoOptions(rawValue: 1 << 4)
+  public static let nonBuiltIn = Self(rawValue: 1 << 4)
   
   /// Only Objects and Actors. Is a more narrow category than `nonPrimitive`
   ///
   /// Implicitly means \`always\`, if option \`whenNil\` not passed.
-  public static let onlyObjects = TypeInfoOptions(rawValue: 1 << 5)
+  public static let onlyObjects = Self(rawValue: 1 << 5)
 }
