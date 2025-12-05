@@ -8,8 +8,8 @@
 public import protocol InternalCollectionsUtilities._UniqueCollection
 
 extension ErrorInfo {
-  public var uniqueKeys: some Collection<String> & _UniqueCollection {
-    _storage.uniqueKeys
+  public var keys: some Collection<String> & _UniqueCollection {
+    _storage.keys
   }
 }
 

@@ -47,6 +47,8 @@ public enum Merge {}
 
 // error.domain.removingPrefix("ErrorDomain")
 
+// _specialize(elements, for: BitArray.SubSequence.self)
+
 extension Merge {
   // 1. Find collisions across errorInfo sources (typically it is errors)
   // 2. Iterate over key-value pairs in each errorInfo source.
@@ -69,8 +71,6 @@ extension Merge {
     -> OrderedDictionary<String, W> where S: Sequence, S.Element == (key: String, value: V) {
     // any ErrorInfoValueType change to V (e.g. to be Optional<any ErrorInfoValueType> or String)
     typealias Key = String
-    typealias Value = any ErrorInfoValueType
-          
     var summaryInfo: OrderedDictionary<Key, W> = [:]
     
     func putResolvingCollisions(key assumeModifiedKey: Key, value processedValue: W) {
@@ -81,7 +81,7 @@ extension Merge {
                                                              to: &summaryInfo)
     }
     
-    let crossCollisionKeys = findCommonElements(across: infoSources.map { $0[keyPath: infoKeyPath].uniqueKeys })
+    let crossCollisionKeys = findCommonElements(across: infoSources.map { $0[keyPath: infoKeyPath].keys })
     
     lazy var allSourcesSignatures = infoSources.map(infoSourceSignatureBuilder) // !! passed as arg, not lazy effectively
     for (infoSourceIndex, errorInfoSource) in infoSources.enumerated() {
@@ -126,18 +126,14 @@ extension Merge {
       nil
     }
     
-    let keyOrigin: String? = if keyHasCollisionAcross || keyHasCollisionWithin {
-      if annotationsFormat.keyOriginPolicy.whenCollision._isSuitableFor(keyOrigin: key.origin) {
-        annotationsFormat.keyOriginInterpolation(key.origin)
-      } else {
-        nil
-      }
+    let keyOriginPolicy = annotationsFormat.keyOriginPolicy
+    let keyHasCollision = keyHasCollisionAcross || keyHasCollisionWithin
+    let keyOriginOptions = keyHasCollision ? keyOriginPolicy.whenCollision : keyOriginPolicy.whenUnique
+    
+    let keyOrigin: String? = if keyOriginOptions.matches(keyOrigin: key.origin) {
+      annotationsFormat.keyOriginInterpolation(key.origin)
     } else {
-      if annotationsFormat.keyOriginPolicy.whenUnique._isSuitableFor(keyOrigin: key.origin) {
-        annotationsFormat.keyOriginInterpolation(key.origin)
-      } else {
-        nil
-      }
+      nil
     }
     
     let collisionSource: String? = if let collisionSource = value.collisionSource {

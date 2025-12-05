@@ -8,7 +8,7 @@
 public import protocol InternalCollectionsUtilities._UniqueCollection
 
 extension OrderedMultiValueErrorInfoGeneric {
-  public var uniqueKeys: some Collection<Key> & _UniqueCollection {
-    _storage.uniqueKeys
+  public var keys: some Collection<Key> & _UniqueCollection {
+    _storage.keys
   }
 }

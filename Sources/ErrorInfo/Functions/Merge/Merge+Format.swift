@@ -81,17 +81,15 @@ extension Merge {
     
     public static let allOrigins: Self = [.literal, .keyPath, .dynamic, .modified]
     
-    internal func _isSuitableFor(keyOrigin: KeyOrigin) -> Bool {
-      switch keyOrigin {
-      case .literalConstant, .combinedLiterals:
-        contains(.literal)
-      case .dynamic:
-        contains(.dynamic)
-      case .keyPath:
-        contains(.keyPath)
-      case .unverifiedMapped, .modified:
-        contains(.modified)
+    // Improvement: @inlineable
+    internal func matches(keyOrigin: KeyOrigin) -> Bool {
+      let mask: Self = switch keyOrigin {
+      case .literalConstant, .combinedLiterals: .literal
+      case .dynamic: .dynamic
+      case .keyPath: .keyPath
+      case .unverifiedMapped, .modified: .modified
       }
+      return contains(mask)
     }
   }
 }
