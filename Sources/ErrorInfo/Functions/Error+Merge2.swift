@@ -48,7 +48,6 @@ extension Merge {
     // TODO: - prependAllKeysWithErrorInfoSignature: Bool
     // - name for component
     
-    
     public init(annotationsOrder: OrderedSet<AnnotationComponentKind>,
                 annotationsDelimiters: AnnotationsBlockDelimiters,
                 keyOriginPolicy: KeyOriginAnnotationPolicy,
@@ -193,7 +192,7 @@ extension Merge {
     typealias Key = String
     typealias Value = any ErrorInfoValueType
     
-      let annotationsOrder = annotationsFormat.annotationsOrder.union(AnnotationComponentKind.allCases)
+    let annotationsOrder = annotationsFormat.annotationsOrder.union(AnnotationComponentKind.allCases)
       
     var summaryInfo: OrderedDictionary<Key, W> = [:]
     
@@ -228,7 +227,6 @@ extension Merge {
                                                                                 allSourcesSignatures: allSourcesSignatures)
           augmentedKey.append(sourceSignature)
         }
-        
         
         // for annotationKind in annotationsOrder { // weak implementation
         //   switch annotationKind {
@@ -272,78 +270,31 @@ extension Merge {
     
     return summaryInfo
   }
-  
-  
 }
 
 extension Merge {
-//  fileprivate func _sortedComponents(keyOrigin: String?,
-//                                     collisionSource: String?,
-//                                     errorInfoSignature: String?,
-//                                     ordering requestedOrder: OrderedSet<Merge.AnnotationComponentKind>) -> [String] {
-//    let fullOrder = requestedOrder.union(Merge.AnnotationComponentKind.allCases)
-//    
-//    typealias OrderedComponent = (priority: Int, component: String?)
-//    
-//    var keyOrigin: OrderedComponent = (Int.max - 2, keyOrigin)
-//    var collisionSource: OrderedComponent = (Int.max - 1, collisionSource)
-//    var errorInfoSignature: OrderedComponent = (Int.max, errorInfoSignature)
-//    
-//    for (priority, annotationKind) in fullOrder.indexed() {
-//      switch annotationKind {
-//      case .keyOrigin: keyOrigin.priority = priority
-//      case .collisionSource: collisionSource.priority = priority
-//      case .errorInfoSignature: errorInfoSignature.priority = priority
-//      }
-//    }
-//    
-//    let sortedComponents = [
-//      keyOrigin,
-//      collisionSource,
-//      errorInfoSignature,
-//    ]
-//      .compactMap { (ordering, component) -> (ordering: Int, component: String)? in
-//        if let component {
-//          (ordering, component)
-//        } else {
-//          nil
-//        }
-//      }
-//      .sorted(by: { $0.ordering < $1.ordering })
-//      .map { $0.component }
-//    
-//    return sortedComponents
-//  }
-  
-  fileprivate func _sortedComponents(keyOrigin: String?,
-      collisionSource: String?,
-      errorInfoSignature: String?,
-      ordering requestedOrder: OrderedSet<Merge.AnnotationComponentKind>) -> [String] {
-      // Ensure all annotation kinds have defined order
-      let fullOrder = requestedOrder.union(Merge.AnnotationComponentKind.allCases)
+  private func _sortedComponents(keyOrigin: String?,
+                                 collisionSource: String?,
+                                 errorInfoSignature: String?,
+                                 ordering requestedOrder: OrderedSet<Merge.AnnotationComponentKind>) -> [String] {
+    // Ensure all annotation kinds have defined order
+    let fullOrder = requestedOrder.union(Merge.AnnotationComponentKind.allCases)
+    
+    var priorityByKind: [Merge.AnnotationComponentKind: Int] = Dictionary(minimumCapacity: fullOrder.count)
+    for (priority, kind) in fullOrder.indexed() {
+      priorityByKind[kind] = priority
+    }
 
-      // Build a dictionary: kind → priority (index)
-      var priorityByKind: [Merge.AnnotationComponentKind: Int] = [:]
-      priorityByKind.reserveCapacity(Merge.AnnotationComponentKind.allCases.count)
+    var components: [(priority: Int, value: String)] = []
+    
+    if let keyOrigin { components.append((priorityByKind[.keyOrigin]!, keyOrigin)) }
+    if let collisionSource { components.append((priorityByKind[.collisionSource]!, collisionSource)) }
+    if let errorInfoSignature { components.append((priorityByKind[.errorInfoSignature]!, errorInfoSignature)) }
 
-      for (index, kind) in fullOrder.indexed() {
-          priorityByKind[kind] = index
-      }
-
-      // Build only the components that exist (non-nil)
-      var components: [(priority: Int, value: String)] = []
-      components.reserveCapacity(3)
-
-      if let keyOrigin      { components.append((priorityByKind[ .keyOrigin ]!,        keyOrigin)) }
-      if let collisionSource{ components.append((priorityByKind[ .collisionSource ]!,  collisionSource)) }
-      if let errorInfoSignature { components.append((priorityByKind[ .errorInfoSignature ]!, errorInfoSignature)) }
-
-      // Sort by priority and extract final strings
-      return components
-          .sorted { $0.priority < $1.priority }
-          .map { $0.value }
+    return components
+      .sorted { $0.priority < $1.priority }
+      .map { $0.value }
   }
-
 }
 
 fileprivate struct _StatefulKey: ~Copyable {
