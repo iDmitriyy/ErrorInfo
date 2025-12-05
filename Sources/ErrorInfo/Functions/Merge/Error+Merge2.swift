@@ -128,10 +128,10 @@ extension Merge {
   /// key [origin, collision]
   /// key (origin, collision)
   public enum AnnotationsBoundaryDelimiter: Sendable {
-    case onlySpacer(String)
+    case onlySpacer(spacer: String)
     case enclosure(spacer: String, opening: Character, closing: Character)
         
-    static let verticalBar: Self = .onlySpacer(" | ")
+    static let verticalBar: Self = .onlySpacer(spacer: " | ")
     
     static let parentheses: Self = .enclosure(spacer: " ", opening: "(", closing: ")")
   }
@@ -217,37 +217,15 @@ extension Merge {
     
     let crossCollisionKeys = findCommonElements(across: infoSources.map { $0[keyPath: infoKeyPath].uniqueKeys })
     
-    lazy var allSourcesSignatures = infoSources.map(infoSourceSignatureBuilder)
+    lazy var allSourcesSignatures = infoSources.map(infoSourceSignatureBuilder) // !! passed as arg, not lazy effectively
     for (infoSourceIndex, errorInfoSource) in infoSources.enumerated() {
       let errorInfo = errorInfoSource[keyPath: infoKeyPath]
       for (key, value) in errorInfo.fullInfoView {
-        let keyHasCollisionWithinErrorInfo = errorInfo._storage._storage.hasMultipleValues(forKey: key.string)
         let keyHasCollisionAcrossErrorInfos = crossCollisionKeys.contains(key.string)
-        let keyHasCollision = keyHasCollisionAcrossErrorInfos || keyHasCollisionWithinErrorInfo
+        let keyHasCollisionWithinErrorInfo = errorInfo._storage._storage.hasMultipleValues(forKey: key.string)
         
-        var augmentedKey = _StatefulKey(key.string)
+        var augmentedKey = key.string // _StatefulKey(key.string)
                 
-        let errorInfoSignatureComponent: String? = if keyHasCollisionAcrossErrorInfos {
-          _unchecked_infoSourceSignatureForCrossCollision(infoSourceIndex: infoSourceIndex,
-                                                          allSourcesSignatures: allSourcesSignatures)
-        } else {
-          nil
-        }
-        
-        let keyOriginComponent: String? = if keyHasCollision {
-          if annotationsFormat.keyOriginPolicy.whenCollision._isSuitableFor(keyOrigin: key.origin) {
-            annotationsFormat.keyOriginInterpolation(key.origin)
-          } else {
-            nil
-          }
-        } else {
-          if annotationsFormat.keyOriginPolicy.whenUnique._isSuitableFor(keyOrigin: key.origin) {
-            annotationsFormat.keyOriginInterpolation(key.origin)
-          } else {
-            nil
-          }
-        }
-        
         // TODO: In this kind of summary-merge it is reasonable to provide an option if nil values with different Optional.Wrapped
         // types should be put to summary.
         // TODO: add KeyKind.shortSign()
@@ -263,41 +241,120 @@ extension Merge {
         //      let processedValues = prepareValues(NonEmptyArray(value), removingEqualValues: omitEqualValues)
         // TODO: processedValues contain all values for key which leads to incorrect ordering.
         
-        let collisionSourceComponent: String? = if let collisionSource = value.collisionSource {
-          collisionSourceInterpolation(collisionSource)
-        } else {
-          nil
-        }
+        let annotationsSuffix = _unchecked_makeComponents(key: key,
+                                                          value: value,
+                                                          infoSourceIndex: infoSourceIndex,
+                                                          allSourcesSignatures: allSourcesSignatures,
+                                                          annotationsFormat: annotationsFormat,
+                                                          keyHasCollisionAcross: keyHasCollisionAcrossErrorInfos,
+                                                          keyHasCollisionWithin: keyHasCollisionWithinErrorInfo,
+                                                          collisionSourceInterpolation: collisionSourceInterpolation)
+        augmentedKey.append(annotationsSuffix)
         
-        _sortedComponents(keyOrigin: keyOriginComponent,
-                          collisionSource: collisionSourceComponent,
-                          errorInfoSignature: errorInfoSignatureComponent,
-                          ordering: annotationsFormat.annotationsOrder)
-        
-        // value collisions within concrete error instance | crossCollisions
         let adaptedValue = valueTransform(value.value)
-        
-        
-        putResolvingCollisions(key: augmentedKey.finalizedString(), value: adaptedValue)
+        putResolvingCollisions(key: augmentedKey, value: adaptedValue)
       } // end `for (key, value)`
     } // end `for (errorIndex, error)`
     
     return summaryInfo
   }
-}
-
-extension Merge {
+  
+  /// Decomposition of `merge` function. `
+  private func _unchecked_makeComponents(key: KeyWithOrigin,
+                                         value: CollisionTaggedValue<ErrorInfo._Optional, CollisionSource>,
+                                         infoSourceIndex: Int,
+                                         allSourcesSignatures: [String],
+                                         annotationsFormat: KeyAnnotationsFormat,
+                                         keyHasCollisionAcross: Bool,
+                                         keyHasCollisionWithin: Bool,
+                                         collisionSourceInterpolation: (CollisionSource) -> String) -> String {
+    let errorInfoSignatureComponent: String? = if keyHasCollisionAcross {
+      _unchecked_infoSourceSignatureForCrossCollision(infoSourceIndex: infoSourceIndex,
+                                                      allSourcesSignatures: allSourcesSignatures)
+    } else {
+      nil
+    }
+    
+    let keyOriginComponent: String? = if keyHasCollisionAcross || keyHasCollisionWithin {
+      if annotationsFormat.keyOriginPolicy.whenCollision._isSuitableFor(keyOrigin: key.origin) {
+        annotationsFormat.keyOriginInterpolation(key.origin)
+      } else {
+        nil
+      }
+    } else {
+      if annotationsFormat.keyOriginPolicy.whenUnique._isSuitableFor(keyOrigin: key.origin) {
+        annotationsFormat.keyOriginInterpolation(key.origin)
+      } else {
+        nil
+      }
+    }
+    
+    let collisionSourceComponent: String? = if let collisionSource = value.collisionSource {
+      collisionSourceInterpolation(collisionSource)
+    } else {
+      nil
+    }
+    
+    let sorted = _sortedComponents(keyOrigin: keyOriginComponent,
+                                   collisionSource: collisionSourceComponent,
+                                   errorInfoSignature: errorInfoSignatureComponent,
+                                   ordering: annotationsFormat.annotationsOrder)
+    
+    let joined = sorted.joined(separator: annotationsFormat.annotationsDelimiters.componentsSeparator)
+    
+    var annotationsString = ""
+    switch annotationsFormat.annotationsDelimiters.blockBoundary {
+    case let .onlySpacer(spacer):
+      annotationsString.append(spacer)
+      annotationsString.append(joined)
+    case let .enclosure(spacer, opening, closing):
+      annotationsString.append(spacer)
+      annotationsString.append(opening)
+      annotationsString.append(joined)
+      annotationsString.append(closing)
+    }
+    
+    return annotationsString
+  }
+  
+  /// Decomposition of `merge` function. `allSourcesSignatures.count` must be equal to `errorInfoSources.count`. Index must be valid.
+  ///
+  /// returns: e.g.: NE2 | ME12(0)
+  private func _unchecked_infoSourceSignatureForCrossCollision(infoSourceIndex: Int,
+                                                               allSourcesSignatures: [String]) -> String {
+    var sourceSignature = allSourcesSignatures[infoSourceIndex]
+    
+    for (index, otherSignature) in allSourcesSignatures.enumerated() where index != infoSourceIndex {
+      if sourceSignature == otherSignature {
+        // if there are errors with equal signatures then append sourceIndex to understand (by index) from which of
+        // similar errors the key-value is.
+        sourceSignature.append("(\(infoSourceIndex))")
+        return sourceSignature
+      }
+    }
+    return sourceSignature
+  }
+  
+  /// Decomposition of `merge` function.
   private func _sortedComponents(keyOrigin: String?,
                                  collisionSource: String?,
                                  errorInfoSignature: String?,
                                  ordering requestedOrder: OrderedSet<Merge.AnnotationComponentKind>) -> [String] {
     // Ensure all annotation kinds have defined order
-    let fullOrder = requestedOrder.union(Merge.AnnotationComponentKind.allCases)
-    
-    var priorityByKind: [Merge.AnnotationComponentKind: Int] = Dictionary(minimumCapacity: fullOrder.count)
-    for (priority, kind) in fullOrder.indexed() {
-      priorityByKind[kind] = priority
+    lazy var allCases = Merge.AnnotationComponentKind.allCases
+    lazy var fullOrder: OrderedSet<Merge.AnnotationComponentKind> = if requestedOrder.count == allCases.count {
+      requestedOrder
+    } else {
+      requestedOrder.union(allCases)
     }
+    
+    lazy var priorityByKind: [Merge.AnnotationComponentKind: Int] = {
+      var dict: [Merge.AnnotationComponentKind: Int] = Dictionary(minimumCapacity: fullOrder.count)
+      for (priority, kind) in fullOrder.indexed() {
+        dict[kind] = priority
+      }
+      return dict
+    }()
 
     var components: [(priority: Int, value: String)] = []
     
@@ -309,50 +366,104 @@ extension Merge {
       .sorted { $0.priority < $1.priority }
       .map { $0.value }
   }
+  
+  // TODO: this imp might be faster
+  // less allocations & computations than _sortedComponents
+  private func _appendAnnotations(keyOrigin: String?,
+                                       collisionSource: String?,
+                                       errorInfoSignature: String?,
+                                       annotationsFormat: KeyAnnotationsFormat,
+                                       to recipient: inout String) {
+    // Ensure all annotation kinds have defined order
+    let allCases = Merge.AnnotationComponentKind.allCases
+    let fullOrder: OrderedSet<Merge.AnnotationComponentKind> = if annotationsFormat.annotationsOrder.count == allCases.count {
+      annotationsFormat.annotationsOrder
+    } else {
+      annotationsFormat.annotationsOrder.union(allCases)
+    }
+    
+    
+    
+    let closingDelimiter: Character?
+    switch annotationsFormat.annotationsDelimiters.blockBoundary {
+    case let .onlySpacer(spacer):
+      recipient.append(spacer)
+      closingDelimiter = nil
+    case let .enclosure(spacer, opening, closing):
+      recipient.append(spacer)
+      recipient.append(opening)
+      closingDelimiter = closing
+    }
+    
+    let separator = annotationsFormat.annotationsDelimiters.componentsSeparator
+    let lastComponentIndex = fullOrder.endIndex.advanced(by: -1)
+    // in most cases all components are nil
+    for (index, currentComponentKind) in fullOrder.enumerated() {
+      let currentComponent: String? = switch currentComponentKind {
+      case .keyOrigin: keyOrigin
+      case .collisionSource: collisionSource
+      case .errorInfoSignature: errorInfoSignature
+      }
+      
+      if let currentComponent {
+        recipient.append(currentComponent)
+        recipient.append(index < lastComponentIndex ? separator : "")
+      }
+    }
+    
+    if let closingDelimiter { recipient.append(closingDelimiter) }
+  }
 }
 
-fileprivate struct _StatefulKey: ~Copyable {
-  private var string: String
-  private var isSuffixAppended: Bool
-  
-  init(_ string: String) {
-    self.string = string
-    isSuffixAppended = false
-  }
-  
-  mutating func append(_ other: String) {
-    if !isSuffixAppended {
-      string.append(" | ")
-      isSuffixAppended = true
-    }
-    string.append(other)
-  }
-  
-  consuming func finalizedString() -> String {
-    string
-  }
-  
-  // mutating func prepend(_ prefix: String) {
-  //   string = prefix + " " + string
-  // }
-}
 
-/// Decomposition of `merge` function. `allSourcesSignatures.count` must be equal to `errorInfoSources.count`
-///
-/// returns: e.g.: NE2 | ME12(0)
-private func _unchecked_infoSourceSignatureForCrossCollision(infoSourceIndex: Int,
-                                                             allSourcesSignatures: [String]) -> String {
-  var sourceSignature = allSourcesSignatures[infoSourceIndex]
+//for (index, annotationKind) in fullOrder.indexed() {
+//  let currentComponent: String?
+//  switch annotationKind {
+//  case .keyOrigin:
+//    if let keyOrigin {
+//      recipient.append(keyOrigin)
+//      recipient.append(index < lastElementIndex ? separator : "")
+//    }
+//  case .collisionSource:
+//    if let collisionSource {
+//      recipient.append(collisionSource)
+//      recipient.append(index < lastElementIndex ? separator : "")
+//    }
+//  case .errorInfoSignature:
+//    if let errorInfoSignature {
+//      recipient.append(errorInfoSignature)
+//      recipient.append(index < lastElementIndex ? separator : "")
+//    }
+//  }
+//}
+
+extension Merge {
   
-  for (index, otherSignature) in allSourcesSignatures.enumerated() where index != infoSourceIndex {
-    if sourceSignature == otherSignature {
-      // if there are errors with equal signatures then append sourceIndex to understand (by index) from which of
-      // similar errors the key-value is.
-      sourceSignature.append("(\(infoSourceIndex))")
-      return sourceSignature
+  fileprivate struct _StatefulKey: ~Copyable {
+    private var string: String
+    private var isSuffixAppended: Bool
+    
+    init(_ string: String) {
+      self.string = string
+      isSuffixAppended = false
     }
+    
+    mutating func append(_ other: String) {
+      if !isSuffixAppended {
+        string.append(" | ")
+        isSuffixAppended = true
+      }
+      string.append(other)
+    }
+    
+    consuming func finalizedString() -> String {
+      string
+    }
+    
+    // mutating func prepend(_ prefix: String) {
+    //   string = prefix + " " + string
+    // }
   }
-  return sourceSignature
 }
 
 // ?naming merge-FlatMap operation
@@ -430,7 +541,7 @@ fileprivate func prepareValues<T>(_ values: NonEmptyArray<T>, removingEqualValue
 }
 
 /// worst case: O(n^2/2)
-/// best cases: O(n-1)
+/// best case: O(n-1)
 ///
 /// Example with processing steps:
 /// 01112323214
