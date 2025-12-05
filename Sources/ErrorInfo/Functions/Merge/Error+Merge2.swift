@@ -9,19 +9,9 @@ private import SwiftyKit
 private import Algorithms
 import protocol InternalCollectionsUtilities._UniqueCollection
 
-struct ProtoError {
-  let code: Int
-  let domain: String
-  let info: OrderedDictionary<String, Int>
-}
-
 /// Add partial functionality of collisions resolution to dictionary
 struct DictionaryErrorInfoOverlay<Dict> {
   private(set) var dictionary: Dict
-}
-
-func playMerge(errors: [any InformativeError]) {
-  _ = errors
 }
 
 // Should ErrorInfo be codable? does json allow the same key several times?
@@ -34,130 +24,6 @@ enum MerrorInfoSourcesOptions {
 }
 
 public enum Merge {}
-
-extension Merge {
-  // KeyAnnotationFormat
-  
-  public struct KeyAnnotationsFormat: Sendable {
-    internal let annotationsOrder: OrderedSet<AnnotationComponentKind>
-    internal let annotationsDelimiters: AnnotationsBlockDelimiters
-    
-    internal let keyOriginPolicy: KeyOriginAnnotationPolicy
-    internal let keyOriginInterpolation: @Sendable (KeyOrigin) -> String
-    
-    // TODO: - prependAllKeysWithErrorInfoSignature: Bool
-    // - name for component
-    
-    public init(annotationsOrder: OrderedSet<AnnotationComponentKind>,
-                annotationsDelimiters: AnnotationsBlockDelimiters,
-                keyOriginPolicy: KeyOriginAnnotationPolicy,
-                keyOriginInterpolation: @Sendable @escaping (KeyOrigin) -> String) {
-      self.annotationsOrder = annotationsOrder
-      self.annotationsDelimiters = annotationsDelimiters
-      self.keyOriginPolicy = keyOriginPolicy
-      self.keyOriginInterpolation = keyOriginInterpolation
-    }
-    
-    public static let `default` = KeyAnnotationsFormat(annotationsOrder: AnnotationComponentKind.defaultOrdering,
-                                                       annotationsDelimiters: .default,
-                                                       keyOriginPolicy: .default,
-                                                       keyOriginInterpolation: { $0.shortSignInterpolation() })
-  }
-  
-  /// In which order annotations will be added
-  public enum AnnotationComponentKind: Sendable, Hashable, CaseIterable {
-    case keyOrigin
-    case collisionSource
-    case errorInfoSignature
-    // case typeOfValue
-    
-    public static let defaultOrdering: OrderedSet<Self> = [.keyOrigin, .collisionSource, .errorInfoSignature]
-  }
-  
-  public struct KeyOriginAnnotationPolicy: Sendable {
-    public var whenUnique: KeyOriginOptions
-    public var whenCollision: KeyOriginOptions
-
-    public init(whenUnique: KeyOriginOptions,
-                whenCollision: KeyOriginOptions) {
-      self.whenUnique = whenUnique
-      self.whenCollision = whenCollision
-    }
-
-    public static let `default` = KeyOriginAnnotationPolicy(whenUnique: [],
-                                                            whenCollision: .allOrigins)
-  }
-  
-  public struct KeyOriginOptions: OptionSet, Sendable {
-    public let rawValue: UInt8
-    
-    public init(rawValue: UInt8) {
-      self.rawValue = rawValue
-    }
-    
-    public static let literal = Self(rawValue: 1 << 0)
-    
-    public static let keyPath = Self(rawValue: 1 << 1)
-    
-    public static let dynamic = Self(rawValue: 1 << 2)
-    
-    public static let modified = Self(rawValue: 1 << 3)
-    
-    public static let allOrigins: Self = [.literal, .keyPath, .dynamic, .modified]
-    
-    internal func _isSuitableFor(keyOrigin: KeyOrigin) -> Bool {
-      switch keyOrigin {
-      case .literalConstant, .combinedLiterals:
-        contains(.literal)
-      case .dynamic:
-        contains(.dynamic)
-      case .keyPath:
-        contains(.keyPath)
-      case .unverifiedMapped, .modified:
-        contains(.modified)
-      }
-    }
-  }
-  
-  /// Defines how the entire annotation block is visually attached..
-  /// Examples:
-  /// Spacer-only form:
-  /// key | origin, collision
-  /// key • origin, collision
-  /// Enclosure form:
-  /// key [origin, collision]
-  /// key (origin, collision)
-  public enum AnnotationsBoundaryDelimiter: Sendable {
-    case onlySpacer(spacer: String)
-    case enclosure(spacer: String, opening: Character, closing: Character)
-        
-    static let verticalBar: Self = .onlySpacer(spacer: " | ")
-    
-    static let parentheses: Self = .enclosure(spacer: " ", opening: "(", closing: ")")
-  }
-  
-  public struct AnnotationsBlockDelimiters: Sendable {
-    /// How multiple annotation components are joined
-    /// Example: "origin, collision" or "origin | collision"
-    internal let componentsSeparator: String
-    /// How the entire block of these components is visually attached to the key, either:
-    /// via simple spacing: "key | origin, collision"
-    /// or via enclosure: "key [origin, collision]"
-    internal let blockBoundary: AnnotationsBoundaryDelimiter
-    
-    public init(componentsSeparator: String, blockBoundary: AnnotationsBoundaryDelimiter) {
-      self.componentsSeparator = componentsSeparator
-      self.blockBoundary = blockBoundary
-    }
-    
-    public static let `default` = Self(componentsSeparator: ", ", blockBoundary: .parentheses)
-  }
-  
-  struct NilFormat {
-    // literal
-    // literalWithType(delimiters: AnnotationsBoundaryDelimiter)
-  }
-}
 
 // !! there should be an ability te remove duplicated values for the same key inside / across errorInfoSources, but the
 // knowledge that this duplicates happened should be put to the result dictionary.
@@ -226,21 +92,6 @@ extension Merge {
         
         var augmentedKey = key.string // _StatefulKey(key.string)
                 
-        // TODO: In this kind of summary-merge it is reasonable to provide an option if nil values with different Optional.Wrapped
-        // types should be put to summary.
-        // TODO: add KeyKind.shortSign()
-        // TODO: collisionSource arg unused
-        
-        // will be multiple values for key later when MultivalueDict types used
-        // TODO: use a slice or view to prevent heap allocation
-        // TODO: after removingEqualValues there may be collisionSources, e.g. after  removingEqualValues there will be only
-        // 1 value with collisionSource. This collisionSource can be skipped as the value is unique and result dictionary
-        // will not contain approx. equal values. However, in general case this collisionSource should still be attached to the key
-        // for handling the fact that collision occured. The total elimination of collisionSource can be done by passing additional
-        // argument or option to this function
-        //      let processedValues = prepareValues(NonEmptyArray(value), removingEqualValues: omitEqualValues)
-        // TODO: processedValues contain all values for key which leads to incorrect ordering.
-        
         let annotationsSuffix = _unchecked_makeComponents(key: key,
                                                           value: value,
                                                           infoSourceIndex: infoSourceIndex,
@@ -323,8 +174,6 @@ extension Merge {
     return sourceSignature
   }
   
-  // TODO: this imp might be faster
-  // less allocations & computations than _sortedComponents
   private func _appendAnnotations(keyOrigin: String?,
                                   collisionSource: String?,
                                   errorInfoSignature: String?,
@@ -360,7 +209,7 @@ extension Merge {
     // 4. Append components in one tight loop
     // in most cases all components are nil (as they are typically added when collision happen)
     var needsSeparator = false // no separator is needed before first component
-    for (index, currentComponentKind) in exhaustiveOrder.enumerated() {
+    for currentComponentKind in exhaustiveOrder {
       let currentComponent: String? = switch currentComponentKind {
       case .keyOrigin: keyOrigin
       case .collisionSource: collisionSource
@@ -408,80 +257,6 @@ extension Merge {
     //   string = prefix + " " + string
     // }
   }
-}
-
-// ?naming merge-FlatMap operation
-func merge2(errors: [ProtoError],
-            omitEqualValues: Bool, // = false
-            errorSignatureBuilder: (ProtoError) -> String = { $0.domain + "\($0.code)" },
-            collisionSourceInterpolation: (CollisionSource) -> String = { $0.defaultStringInterpolation() })
-  -> OrderedDictionary<String, Int> {
-  typealias Dict = OrderedDictionary<String, Int>
-  typealias Key = Dict.Key
-  typealias Value = Dict.Value
-  
-  var merged: OrderedDictionary<Key, Value> = [:]
-    
-  func putResolvingCollisions(key assumeModifiedKey: Key, value processedValue: Value) {
-    ErrorInfoDictFuncs.Merge._putResolvingWithRandomSuffix(processedValue,
-                                                           assumeModifiedKey: assumeModifiedKey,
-                                                           shouldOmitEqualValue: omitEqualValues,
-                                                           suffixFirstChar: ErrorInfoMerge.suffixBeginningForMergeScalar,
-                                                           to: &merged)
-  }
-  
-  let crossErrorsCollisionKeys = findCommonElements(across: errors.map { $0.info.keys })
-  lazy var errorSignatures = errors.map(errorSignatureBuilder)
-  for (errorIndex, error) in errors.enumerated() {
-    for (key, value) in error.info {
-      // will be multiple values for key later when MultivalueDict types used
-      // TODO: use a slice or view to prevent heap allocation
-      let processedValues = prepareValues(NonEmptyArray(value), removingEqualValues: omitEqualValues)
-      let hasCrossErrorsCollision = crossErrorsCollisionKeys.contains(key)
-      // TODO: processedValues contain all values for key which leads to incorrect ordering.
-      // TODO: after removingEqualValues there may be collisionSources, e.g. after  removingEqualValues there will be only
-      // 1 value with collisionSource. This collisionSource can be skipped as the value is unique and result dictionary
-      // will not contain approx. equal values. However, in general case this collisionSource should still be attached to the key
-      // for handling the fact that collision occured. The total elimination of collisionSource can be done by passing additional
-      // argument or option to this function
-      var augmentedKey: String = key
-      if hasCrossErrorsCollision {
-        let errorSignature = errorSignatures[errorIndex]
-        augmentedKey.append(errorSignature)
-        // TODO: In this kind of summary-merge it is reasonable to provide an option if nil values with different Optional.Wrapped
-        // types should be put to summary.
-        var allTheRestSignaturesIndices = RangeSet(errorSignatures.indices)
-        allTheRestSignaturesIndices.remove(errorIndex, within: errorSignatures)
-        
-        let isContinedInErrorWithEqualSignature = errorSignatures[allTheRestSignaturesIndices].contains(errorSignature)
-        if isContinedInErrorWithEqualSignature {
-          // if there are errors with same signatures then append errorIndex to understand from which of similar errors
-          // the key-value is
-          augmentedKey.append("(\(errorIndex))")
-        }
-      } else {
-        ()
-      }
-      
-      if processedValues.count > 1 { // value collisions within concrete error instance
-        for collidedValue in processedValues {
-          let collisionSource = CollisionSource.onSubscript // !! get real one
-          let collisionSourceString = collisionSourceInterpolation(collisionSource)
-          augmentedKey.append(collisionSourceString)
-          putResolvingCollisions(key: augmentedKey, value: collidedValue)
-        }
-      } else {
-        putResolvingCollisions(key: augmentedKey, value: processedValues.first)
-      }
-    } // end `for (key, value)`
-  } // end `for (errorIndex, error)`
-  
-  return merged
-}
-
-fileprivate func prepareValues<T>(_ values: NonEmptyArray<T>, removingEqualValues: Bool) -> NonEmptyArray<T> {
-  guard removingEqualValues else { return values }
-  return extractUniqueElements(from: values, equalFuncImp: ErrorInfoFuncs.isEqualAny)
 }
 
 /// worst case: O(n^2/2)
