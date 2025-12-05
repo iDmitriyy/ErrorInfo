@@ -18,5 +18,10 @@ extension OrderedMultipleValuesForKeyStorage {
     }
   }
   
-  // public var allKeys: some Collection | naming: allKeys, keys
+  internal var allKeys: some Collection<Key> {
+    switch _variant {
+    case .left(let singleValueForKeyDict): ContiguousArray(singleValueForKeyDict.keys)
+    case .right(let multiValueForKeyDict): ContiguousArray(multiValueForKeyDict.allKeys)
+    }
+  }
 }

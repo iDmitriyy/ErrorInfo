@@ -9,5 +9,9 @@ internal import protocol InternalCollectionsUtilities._UniqueCollection
 
 extension OrderedMultiValueDictionary {
   internal var keys: some Collection<Key> & _UniqueCollection { _keyToEntryIndices.keys }
+  
+  internal var allKeys: some Collection<Key> {
+    _keyToEntryIndices.map { $0.key } // Improvement: eliminate allocation
+  }
 }
 
