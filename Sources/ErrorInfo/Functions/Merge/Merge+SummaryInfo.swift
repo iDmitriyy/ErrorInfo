@@ -83,7 +83,9 @@ extension Merge {
     
     let crossCollisionKeys = findCommonElements(across: infoSources.map { $0[keyPath: infoKeyPath].keys })
     
-    lazy var allSourcesSignatures = infoSources.map(infoSourceSignatureBuilder) // !! passed as arg, not lazy effectively
+    // Improvement: allSourcesSignatures passed as arg, not lazy effectively
+    lazy var allSourcesSignatures = infoSources.map(infoSourceSignatureBuilder)
+      
     for (infoSourceIndex, errorInfoSource) in infoSources.enumerated() {
       let errorInfo = errorInfoSource[keyPath: infoKeyPath]
       for (key, value) in errorInfo.fullInfoView {
@@ -136,11 +138,7 @@ extension Merge {
       nil
     }
     
-    let collisionSource: String? = if let collisionSource = value.collisionSource {
-      collisionSourceInterpolation(collisionSource)
-    } else {
-      nil
-    }
+    let collisionSource: String? = value.collisionSource.map(collisionSourceInterpolation)
     
     var annotationsBuffer = "" // TODO: ?append to key directly without allocationg annotationsBuffer
     _appendAnnotations(keyOrigin: keyOrigin,
@@ -323,3 +321,43 @@ func findCommonElements<Unique>(across collections: [Unique]) -> Set<Unique.Elem
   }
   return commonElements
 }
+
+// JM4 ["decodingDate": date0, // collide with ME14
+//      "T.Type": type0, // collide with NE2
+//      "id": 0, // collide with ME14 & NE2
+//      "uid" 9, // collide with ME14 & NE2, but value is equal with ME14
+//      "jm":  "jm"]
+// ME14 ["decodingDate": date1,
+//       "timeStamp": time0, // collide with NE2
+//       "id": 1,
+//       "uid" 9,
+//       "me": "me"]
+// NE2 ["T.Type": type1,
+//      "timeStamp": time1,
+//      "id": 2,
+//      "uid" 0,
+//      "ne": "ne"]
+// =>
+// [
+//   "decodingDate_JM4": date0
+//   "T.Type_JM4": type0
+//   "id_JM4": 0
+//   "jm": "jm"
+//   "decodingDate_ME14": date1
+//   "timeStamp_ME14": time0
+//   "id_ME14": 1
+//   "me": "me"
+//   "T.Type_NE2": type1
+//   "timeStamp_NE2": time1
+//   "id_NE2": 2
+//   "ne": "ne"
+// ]
+
+/*
+ NSCocoaErrorDomain
+ NSURLErrorDomain
+ kCFErrorDomainPOSIX
+ kCFErrorDomainOSStatus
+ kCFErrorDomainMach
+ SKErrorDomain
+ */

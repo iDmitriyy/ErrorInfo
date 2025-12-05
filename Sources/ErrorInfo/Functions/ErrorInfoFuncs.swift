@@ -27,6 +27,10 @@ extension ErrorInfoFuncs {
       return String(keyPathString[nextAfterDotIndex...])
     }
   }
+  
+  internal static func fileLineString(file: StaticString, line: UInt) -> String {
+    String(file) + ":\(line)"
+  }
 }
 
 extension ErrorInfoFuncs {

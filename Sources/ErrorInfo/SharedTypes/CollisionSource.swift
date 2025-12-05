@@ -53,7 +53,7 @@ extension CollisionSource {
     fileprivate func defaultStringInterpolation(sourceString: String) -> String {
       let head = "!*!" + sourceString
       let tail: String = switch self {
-      case let .fileLine(file, line): "(" + "at: \(file):\(line)" + ")"
+      case let .fileLine(file, line): "(" + "at: " + ErrorInfoFuncs.fileLineString(file: file, line: line) + ")"
       case let .function(function): "(" + "inFunction: \(function)" + ")"
       case let .custom(origin): "(" + "origin: \(origin)" + ")"
       }
