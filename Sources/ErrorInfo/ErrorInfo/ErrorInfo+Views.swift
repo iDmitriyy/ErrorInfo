@@ -11,6 +11,10 @@ extension ErrorInfo {
   public var keys: some Collection<String> & _UniqueCollection {
     _storage.keys
   }
+  
+  public var allKeys: some Collection<String> {
+    _storage._storage.allKeys
+  }
 }
 
 extension ErrorInfo {
