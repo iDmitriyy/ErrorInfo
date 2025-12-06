@@ -138,7 +138,9 @@ extension ErrorInfo {
     
     /// Keep duplicates only when collisionSource differs
     // case keepIfCollisionSourceDiffers
+    
     // case keepIfKeyOriginsDiffers
+    
     // default = keepIfCollisionSourceDiffers || keepIfKeyOriginsDiffers
     
     /// Custom decision logic
@@ -146,8 +148,6 @@ extension ErrorInfo {
     
     // updateByNew
     
-    // seems to be out of scope of this options type. DuplicatePolicy for nil values should be the same as for values
-    // and regulated by preserveNilValues
-    // static let allowEqualNilValues  = Self(rawValue: 1 << 1)
+    // DuplicatePolicy for nil values should be the same as for values and regulated by preserveNilValues
   }
 }

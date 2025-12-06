@@ -57,7 +57,7 @@ extension Merge {
   // is added to key. If several errors have the same signature (rare in practice), then index from errorInfoSources is also added.
   // In such a way key across errorInfoSources become unique.
   // 3.2 If the same key is met several times inside an errorInfo, then collisionSource interpolation is added to a key.
-  // If there are equal collision sources for the same key (e.g. `.onSubscript`), a random suffix
+  // If there are equal collision sources for the same key (e.g. `.onSubscript`), a random suffix
   // will be added (by _putResolvingWithRandomSuffix() func).
   
   public static func summaryInfo<S, V, W>(
@@ -87,18 +87,13 @@ extension Merge {
     
     for (infoSourceIndex, errorInfo) in context.errorInfos.enumerated() {
       for (key, value) in errorInfo.fullInfoView {
-        let keyHasCollisionAcrossErrorInfos = context.duplicatesAcrossSources.contains(key.string)
-        let keyHasCollisionWithinErrorInfo = context.duplicatesWithinSources[infoSourceIndex].contains(key.string)
-        
         var augmentedKey = key.string // _StatefulKey(key.string)
                 
         let annotationsSuffix = _unchecked_makeComponents(key: key,
                                                           value: value,
                                                           infoSourceIndex: infoSourceIndex,
-                                                          allSourcesSignatures: context.sourcesSignatures,
+                                                          context: context,
                                                           annotationsFormat: annotationsFormat,
-                                                          keyHasCollisionAcross: keyHasCollisionAcrossErrorInfos,
-                                                          keyHasCollisionWithin: keyHasCollisionWithinErrorInfo,
                                                           collisionSourceInterpolation: collisionSourceInterpolation)
         augmentedKey.append(annotationsSuffix)
         
@@ -109,21 +104,28 @@ extension Merge {
     
     return summaryInfo
   }
-  
+}
+
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// MARK: - Key Annotations
+
+extension Merge {
   /// Decomposition of `merge` function. `
   private static func _unchecked_makeComponents(key: KeyWithOrigin,
                                                 value: CollisionTaggedValue<ErrorInfo._Optional, CollisionSource>,
                                                 infoSourceIndex: Int,
-                                                allSourcesSignatures: [String],
+                                                context: borrowing SummaryPreparationContext,
                                                 annotationsFormat: KeyAnnotationsFormat,
-                                                keyHasCollisionAcross: Bool,
-                                                keyHasCollisionWithin: Bool,
                                                 collisionSourceInterpolation: (CollisionSource) -> String) -> String {
+    let keyHasCollisionAcross = context.keyDuplicatesAcrossSources.contains(key.string)
+    let keyHasCollisionWithin = context.keyDuplicatesWithinSources[infoSourceIndex].contains(key.string)
+    
     let errorInfoSignature: String? = if keyHasCollisionAcross {
       // Improvement: allSourcesSignatures passed as arg, not lazy effectively.
       // allSourcesSignatures shoul be lazily created
-      _unchecked_infoSourceSignatureForCrossCollision(infoSourceIndex: infoSourceIndex,
-                                                      allSourcesSignatures: allSourcesSignatures)
+      _infoSourceSignatureForCrossCollision(infoSourceIndex: infoSourceIndex,
+                                            allSourcesSignatures: context.sourcesSignatures)
     } else {
       nil
     }
@@ -153,8 +155,8 @@ extension Merge {
   /// Decomposition of `merge` function. `allSourcesSignatures.count` must be equal to `errorInfoSources.count`. Index must be valid.
   ///
   /// returns: e.g.: NE2 | ME12(0)
-  private static func _unchecked_infoSourceSignatureForCrossCollision(infoSourceIndex: Int,
-                                                                      allSourcesSignatures: [String]) -> String {
+  private static func _infoSourceSignatureForCrossCollision(infoSourceIndex: Int,
+                                                            allSourcesSignatures: [String]) -> String {
     var sourceSignature = allSourcesSignatures[infoSourceIndex]
     
     for (index, otherSignature) in allSourcesSignatures.enumerated() where index != infoSourceIndex {
@@ -231,8 +233,8 @@ extension Merge {
 
 extension Merge {
   private struct SummaryPreparationContext: ~Copyable {
-    let duplicatesAcrossSources: Set<String>
-    let duplicatesWithinSources: [Set<String>]
+    let keyDuplicatesAcrossSources: Set<String>
+    let keyDuplicatesWithinSources: [Set<String>]
     let sourcesSignatures: [String]
     let errorInfos: [ErrorInfo]
   }
@@ -244,51 +246,14 @@ extension Merge {
     
     let duplicates = findDuplicateElements(in: errorInfos.map { $0.allKeys })
         
-    return SummaryPreparationContext(duplicatesAcrossSources: duplicates.duplicatesAcrossSources,
-                                     duplicatesWithinSources: duplicates.duplicatesWithinSources,
+    return SummaryPreparationContext(keyDuplicatesAcrossSources: duplicates.duplicatesAcrossSources,
+                                     keyDuplicatesWithinSources: duplicates.duplicatesWithinSources,
                                      sourcesSignatures: infoSources.map(infoSourceSignatureBuilder),
                                      errorInfos: errorInfos)
   }
   
-  /// O(2n)
-  ///
-  /// ```
-  /// let set1: Set<Int> = [1, 2, 3, 4, 5]
-  /// let set2: Set<Int> = [3, 4, 5, 6]
-  /// let set3: Set<Int> = [4, 5, 7, 8]
-  ///
-  /// findCommonElements(inAnyOf: [set1, set2, set3])
-  /// // Output: [3, 4, 5]
-  /// // because 3 appears in 2 sets, 4 and 5 appear in all 3
-  /// ```
-  private static func findCommonElements<Unique>(across collections: [Unique]) -> Set<Unique.Element>
-    where Unique: Collection & _UniqueCollection, Unique.Element: Hashable {
-    guard collections.count > 1 else { return [] }
-      
-    var countedElements: [Unique.Element: Int] = [:]
-    do {
-      // Unique collection types has .count O(1):
-      let capacity = collections.reduce(into: 0) { count, set in count += set.count }
-      countedElements.reserveCapacity(capacity)
-      // in most cases, keys across errorInfo instances are unique, thats why capacity for totalCount can be allocated.
-      // If there are duplicated elements across collections, memory overhead will be minimal in real scenarios.
-    }
-    
-    for collectionOfUniqueElements in collections {
-      for element in collectionOfUniqueElements {
-        countedElements[element, default: 0] += 1
-      }
-    }
-    
-    var commonElements: Set<Unique.Element> = []
-    for (element, count) in countedElements where count > 1 {
-      commonElements.insert(element)
-    }
-    return commonElements
-  }
-  
   /// Analyzes a group of collections and detects duplicate elements both within each collection and across different collections.
-
+  ///
   /// Pperforms two levels of duplicate detection:
   ///
   /// 1. **Duplicates across sources**
@@ -484,4 +449,43 @@ func extractUniqueElements<T>(from values: NonEmptyArray<T>, equalFuncImp: (T, T
  kCFErrorDomainOSStatus
  kCFErrorDomainMach
  SKErrorDomain
+ */
+
+/*
+ /// O(2n)
+ ///
+ /// ```
+ /// let set1: Set<Int> = [1, 2, 3, 4, 5]
+ /// let set2: Set<Int> = [3, 4, 5, 6]
+ /// let set3: Set<Int> = [4, 5, 7, 8]
+ ///
+ /// findCommonElements(inAnyOf: [set1, set2, set3])
+ /// // Output: [3, 4, 5]
+ /// // because 3 appears in 2 sets, 4 and 5 appear in all 3
+ /// ```
+ private static func findCommonElements<Unique>(across collections: [Unique]) -> Set<Unique.Element>
+   where Unique: Collection & _UniqueCollection, Unique.Element: Hashable {
+   guard collections.count > 1 else { return [] }
+     
+   var countedElements: [Unique.Element: Int] = [:]
+   do {
+     // Unique collection types has .count O(1):
+     let capacity = collections.reduce(into: 0) { count, set in count += set.count }
+     countedElements.reserveCapacity(capacity)
+     // in most cases, keys across errorInfo instances are unique, thats why capacity for totalCount can be allocated.
+     // If there are duplicated elements across collections, memory overhead will be minimal in real scenarios.
+   }
+   
+   for collectionOfUniqueElements in collections {
+     for element in collectionOfUniqueElements {
+       countedElements[element, default: 0] += 1
+     }
+   }
+   
+   var commonElements: Set<Unique.Element> = []
+   for (element, count) in countedElements where count > 1 {
+     commonElements.insert(element)
+   }
+   return commonElements
+ }
  */
