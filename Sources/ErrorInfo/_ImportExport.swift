@@ -22,10 +22,17 @@
 @_exported public import protocol GeneralizedCollections.DictionaryProtocol
 @_exported public import protocol GeneralizedCollections.EmptyInitializableWithCapacityDictionary
 
+// MARK: - @retroactive
+
+public import protocol InternalCollectionsUtilities._UniqueCollection
+
+extension AnyCollection: @retroactive _UniqueCollection {}
+
+
 internal import typealias NonEmpty.NonEmptyString
 
 extension NonEmptyString {
-  init(element: Element) {
-    fatalError()
+  init(element: Character) {
+    self.init(element)
   }
 }

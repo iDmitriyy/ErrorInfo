@@ -10,18 +10,16 @@ import Collections
 
 extension OrderedMultipleValuesForKeyStorage {
   public var keys: some Collection<Key> & _UniqueCollection {
-    // TODO: OrderedSet initialization can be eliminated
-    // make AnyUniqueCollection
     switch _variant {
-    case .left(let singleValueForKeyDict): OrderedSet(singleValueForKeyDict.keys)
-    case .right(let multiValueForKeyDict): OrderedSet(multiValueForKeyDict.keys)
+    case .left(let singleValueForKeyDict): AnyCollection(singleValueForKeyDict.keys)
+    case .right(let multiValueForKeyDict): AnyCollection(multiValueForKeyDict.keys)
     }
   }
   
   internal var allKeys: some Collection<Key> {
     switch _variant {
-    case .left(let singleValueForKeyDict): ContiguousArray(singleValueForKeyDict.keys)
-    case .right(let multiValueForKeyDict): ContiguousArray(multiValueForKeyDict.allKeys)
+    case .left(let singleValueForKeyDict): AnyCollection(singleValueForKeyDict.keys)
+    case .right(let multiValueForKeyDict): AnyCollection(multiValueForKeyDict.allKeys)
     }
   }
 }

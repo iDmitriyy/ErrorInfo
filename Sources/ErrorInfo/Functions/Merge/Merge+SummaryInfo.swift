@@ -89,12 +89,12 @@ extension Merge {
       for (key, value) in errorInfo.fullInfoView {
         var augmentedKey = key.string // _StatefulKey(key.string)
                 
-        let annotationsSuffix = _unchecked_makeComponents(key: key,
-                                                          value: value,
-                                                          infoSourceIndex: infoSourceIndex,
-                                                          context: context,
-                                                          annotationsFormat: annotationsFormat,
-                                                          collisionSourceInterpolation: collisionSourceInterpolation)
+        let annotationsSuffix = _makeAnnotations(key: key,
+                                                 value: value,
+                                                 infoSourceIndex: infoSourceIndex,
+                                                 context: context,
+                                                 annotationsFormat: annotationsFormat,
+                                                 collisionSourceInterpolation: collisionSourceInterpolation)
         augmentedKey.append(annotationsSuffix)
         
         let adaptedValue = valueTransform(value.value)
@@ -112,20 +112,20 @@ extension Merge {
 
 extension Merge {
   /// Decomposition of `merge` function. `
-  private static func _unchecked_makeComponents(key: KeyWithOrigin,
-                                                value: CollisionTaggedValue<ErrorInfo._Optional, CollisionSource>,
-                                                infoSourceIndex: Int,
-                                                context: borrowing SummaryPreparationContext,
-                                                annotationsFormat: KeyAnnotationsFormat,
-                                                collisionSourceInterpolation: (CollisionSource) -> String) -> String {
+  private static func _makeAnnotations(key: KeyWithOrigin,
+                                       value: CollisionTaggedValue<ErrorInfo._Optional, CollisionSource>,
+                                       infoSourceIndex: Int,
+                                       context: borrowing SummaryPreparationContext,
+                                       annotationsFormat: KeyAnnotationsFormat,
+                                       collisionSourceInterpolation: (CollisionSource) -> String) -> String {
     let keyHasCollisionAcross = context.keyDuplicatesAcrossSources.contains(key.string)
     let keyHasCollisionWithin = context.keyDuplicatesWithinSources[infoSourceIndex].contains(key.string)
     
     let errorInfoSignature: String? = if keyHasCollisionAcross {
       // Improvement: sourcesSignatures passed as arg, not lazy.
       // sourcesSignatures should be lazily created
-      _infoSourceSignatureForCrossCollision(infoSourceIndex: infoSourceIndex,
-                                            allSourcesSignatures: context.sourcesSignatures)
+      _resolveSourceUniqueSignature(forSourceAtIndex: infoSourceIndex,
+                                    rawSourceSignatures: context.sourcesSignatures)
     } else {
       nil
     }
@@ -155,18 +155,18 @@ extension Merge {
   /// Decomposition of `merge` function. `allSourcesSignatures.count` must be equal to `errorInfoSources.count`. Index must be valid.
   ///
   /// returns: e.g.: NE2 | ME12(0)
-  private static func _infoSourceSignatureForCrossCollision(infoSourceIndex: Int,
-                                                            allSourcesSignatures: [String]) -> String {
-    var sourceSignature = allSourcesSignatures[infoSourceIndex]
-    
-    for (index, otherSignature) in allSourcesSignatures.enumerated() where index != infoSourceIndex {
+  private static func _resolveSourceUniqueSignature(forSourceAtIndex infoSourceIndex: Int,
+                                                    rawSourceSignatures: [String]) -> String {
+    let sourceSignature = rawSourceSignatures[infoSourceIndex]
+    for index in rawSourceSignatures.indices where index != infoSourceIndex {
+      let otherSignature = rawSourceSignatures[index]
       if sourceSignature == otherSignature {
         // if there are errors with equal signatures then append sourceIndex to understand (by index) from which of
         // similar errors the key-value is.
-        sourceSignature.append("(\(infoSourceIndex))")
-        return sourceSignature
+        return sourceSignature + "(\(infoSourceIndex))"
       }
     }
+    
     return sourceSignature
   }
   
@@ -175,7 +175,7 @@ extension Merge {
                                          errorInfoSignature: String?,
                                          annotationsFormat: KeyAnnotationsFormat,
                                          to recipient: inout String) {
-    // 1. Fast path: if all three components are nil, don't append anything
+    // 1. Fast path
     if keyOrigin == nil, collisionSource == nil, errorInfoSignature == nil { return }
     
     // 2. Compute the exhaustive order
@@ -190,20 +190,19 @@ extension Merge {
       }
     }
     
-    // 3. Pre-append boundary (and keep closing delimiter)
+    // 3. Pre-append boundary and keep closing delimiter
     let closingDelimiter: Character?
     switch annotationsFormat.annotationsDelimiters.blockBoundary {
     case let .onlySpacer(spacer):
       recipient.append(spacer)
       closingDelimiter = nil
     case let .enclosure(spacer, opening, closing):
-      recipient.append(spacer)
-      recipient.append(opening)
+      recipient.append(spacer); recipient.append(opening)
       closingDelimiter = closing
     }
     
-    // 4. Append components in one tight loop
-    // in most cases all components are nil (as they are typically added when collision happen)
+    // 4. Append components in one tight loop.
+    // In most cases all components are nil (as they are typically added when collision happen)
     var needsSeparator = false // no separator is needed before first component
     for currentComponentKind in exhaustiveOrder {
       let currentComponent: String? = switch currentComponentKind {
@@ -239,13 +238,42 @@ extension Merge {
     let errorInfos: [ErrorInfo]
   }
   
-  private static func prepareMergeContext<S>(infoSources: some BidirectionalCollection<S>,
+  private static func prepareMergeContext<S>(infoSources: [S],
                                              infoKeyPath: KeyPath<S, ErrorInfo>,
                                              infoSourceSignatureBuilder: (S) -> String) -> SummaryPreparationContext {
     let errorInfos: [ErrorInfo] = infoSources.map { $0[keyPath: infoKeyPath] }
     
     let duplicates = findDuplicateElements(in: errorInfos.map { $0.allKeys })
-        
+    
+    // Improvement: build sourcesSignatures lazily
+    // let sourcesSignaturesBuilder: () -> [String] = {
+    //   infoSources.map(infoSourceSignatureBuilder)
+    // }
+    
+    // TODO: if keyDuplicatesAcrossSources is not empty, then sourceSignature + "(\(infoSourceIndex))" will be done
+    // and can be prepared early.
+    // May be keyDuplicatesAcrossSources should be a Dict instead of Set. Keys are effectively a set with O(1) check.
+    // Values contain NonEmptySet with raw signatures.
+    // But!: typically cross collisions are met not often, and when occur there is typiclly one.
+    // When cross collision happen then at least 2 sourcesSignatures will be
+    
+    // if keyDuplicatesAcrossSources is empty then sourcesSignatures = infoSources.map(infoSourceSignatureBuilder)
+    // otherwise for sourcesSignatures use another algorithm that append index for equal signatures.
+    
+    // More effectively, this can be done during findDuplicateElements:
+    // 1. remember indices of infoSources with cross collisions
+    // 2.1 if these indices empty then `infoSources.map(infoSourceSignatureBuilder)`
+    // 2.3 else
+    // var sourcesSignatures = Array<String>(minimumCapacity: infoSources.count)
+    // for index in infoSources.indices {
+    //   let signature: String = if sourceIndicesWithCrossCollisions.contains(index) {
+    //     infoSourceSignatureBuilder(infoSources[index])
+    //   } else {
+    //     infoSourceSignatureBuilder(infoSources[index]) + "(\(index))"
+    //   }
+    //   sourcesSignatures.append(signature)
+    // }
+    
     return SummaryPreparationContext(keyDuplicatesAcrossSources: duplicates.duplicatesAcrossSources,
                                      keyDuplicatesWithinSources: duplicates.duplicatesWithinSources,
                                      sourcesSignatures: infoSources.map(infoSourceSignatureBuilder),
