@@ -10,12 +10,14 @@ private import Algorithms
 import protocol InternalCollectionsUtilities._UniqueCollection
 
 /// Add partial functionality of collisions resolution to dictionary
-struct DictionaryErrorInfoOverlay<Dict> {
+struct DictionaryErrorInfoOverlay<Dict> { // – it is the same as LegacyErrorInfo. Can generically be done.
   private(set) var dictionary: Dict
 }
 
 // Should ErrorInfo be codable? does json allow the same key several times?
 // ? Decode merged OrderedDictionary as Swift.Dectionary but with key-value ordering
+
+// line: UInt = #line -> UInt16 (65k lines per file seems enough for average usage) | test file size in script
 
 enum MerrorInfoSourcesOptions {
   // omitEqualValuesInsideSource
@@ -60,6 +62,26 @@ extension Merge {
   // If there are equal collision sources for the same key (e.g. `.onSubscript`), a random suffix
   // will be added (by _putResolvingWithRandomSuffix() func).
   
+  /// Example:
+  /// ```
+  ///    Info Source 0                        Info Source 1
+  /// +------------------+                 +------------------+
+  /// |   NSCocoaError   |                 |    NSURLError    |
+  /// |------------------|                 |------------------|
+  /// | key1: 1          |        +        | key2: B          |
+  /// | key2: A          |                 | key3: 3          |
+  /// +------------------+                 +------------------+
+  ///                             |
+  ///                             v
+  ///        +-----------------------------------------+
+  ///        |  Summary Info with resolved collisions  |
+  ///        |-----------------------------------------|
+  ///        | "key1"           : 1                    |
+  ///        | "key2 (NSCocoa)" : A // (from Source 0) |
+  ///        | "key2 (NSURL)"   : B // (from Source 1) |
+  ///        | "key3"           : 3                    |
+  ///        +-----------------------------------------+
+  /// ```
   public static func summaryInfo<S, W>(
     infoSources: [S], // TODO: .reversed support | tests
     infoKeyPath: KeyPath<S, ErrorInfo>,
@@ -71,7 +93,7 @@ extension Merge {
     -> OrderedDictionary<String, W> {
     // any ErrorInfoValueType change to V (e.g. to be Optional<any ErrorInfoValueType> or String)
     typealias Key = String
-      
+    
     var summaryInfo: OrderedDictionary<Key, W> = [:]
     func putResolvingCollisions(key assumeModifiedKey: Key, value processedValue: W) {
       ErrorInfoDictFuncs.Merge._putResolvingWithRandomSuffix(processedValue,
@@ -231,6 +253,7 @@ extension Merge {
 // MARK: - Context
 
 extension Merge {
+  /// infoSources.count and keyDuplicatesWithinSources.count, sourcesSignatures.count, errorInfos.count MUST be equal
   private struct SummaryPreparationContext: ~Copyable {
     let keyDuplicatesAcrossSources: Set<String>
     let keyDuplicatesWithinSources: [Set<String>]
@@ -335,7 +358,7 @@ extension Merge {
     guard collections.count > 1 else { return ([], []) }
       
     /// Tracks how many distinct collections contain each element
-    var globalOccurrenceCount: [C.Element: Int]
+    var globalOccurrenceCount: [C.Element: Int] // | CountedMultiSet
     do {
       // Unique collection types has .count O(1):
       let totalApproxCount = collections.reduce(into: 0) { count, set in count += set.count }
@@ -348,7 +371,7 @@ extension Merge {
     var duplicatesWithinSources = [Set<C.Element>](minimumCapacity: collections.count)
       
     for collection in collections {
-      var localCounts: [C.Element: Int] = [:]
+      var localCounts: [C.Element: Int] = [:] // | CountedMultiSet
       for element in collection {
         let isFirstOccurrenceInThisCollection = !localCounts.hasValue(forKey: element)
         if isFirstOccurrenceInThisCollection {
