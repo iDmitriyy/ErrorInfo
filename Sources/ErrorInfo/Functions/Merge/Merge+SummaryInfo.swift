@@ -88,7 +88,7 @@ extension Merge {
     infoSources: [S], // TODO: .reversed support | tests
     infoKeyPath: KeyPath<S, ErrorInfo>,
     annotationsFormat: KeyAnnotationsFormat,
-    infoSourceSignatureBuilder: (S) -> String,
+    infoSourceSignatureBuilder: @escaping (S) -> String,
     valueTransform: (ErrorInfo._Optional) -> W,
     collisionSourceInterpolation: (CollisionSource) -> String = { $0.defaultStringInterpolation() },
   )
@@ -105,7 +105,8 @@ extension Merge {
                                                              to: &summaryInfo)
     }
     
-    let context = prepareMergeContext(infoSources: infoSources,
+    // context is a var only because of mutating get / lazy var
+    var context = prepareMergeContext(infoSources: infoSources,
                                       infoKeyPath: infoKeyPath,
                                       infoSourceSignatureBuilder: infoSourceSignatureBuilder)
     
@@ -116,7 +117,7 @@ extension Merge {
         let annotationsSuffix = _makeAnnotations(key: key,
                                                  value: value,
                                                  infoSourceIndex: infoSourceIndex,
-                                                 context: context,
+                                                 context: &context,
                                                  annotationsFormat: annotationsFormat,
                                                  collisionSourceInterpolation: collisionSourceInterpolation)
         augmentedKey.append(annotationsSuffix)
@@ -139,20 +140,14 @@ extension Merge {
   private static func _makeAnnotations(key: KeyWithOrigin,
                                        value: CollisionTaggedValue<ErrorInfo._Optional, CollisionSource>,
                                        infoSourceIndex: Int,
-                                       context: borrowing SummaryPreparationContext,
+                                       context: inout SummaryPreparationContext,
                                        annotationsFormat: KeyAnnotationsFormat,
                                        collisionSourceInterpolation: (CollisionSource) -> String) -> String {
     let keyHasCollisionAcross = context.keyDuplicatesAcrossSources.contains(key.string)
     let keyHasCollisionWithin = context.keyDuplicatesWithinSources[infoSourceIndex].contains(key.string)
     
-    let errorInfoSignature: String? = if keyHasCollisionAcross {
-      // Improvement: sourcesSignatures passed as arg, not lazy.
-      // sourcesSignatures should be lazily created
-      _resolveSourceUniqueSignature(forSourceAtIndex: infoSourceIndex,
-                                    rawSourceSignatures: context.sourcesSignatures)
-    } else {
-      nil
-    }
+    // When there is cross collision, add sourcesSignature to distinguish the same key from different errors
+    let errorInfoSignature: String? = keyHasCollisionAcross ? context.uniqueSourcesSignatures[infoSourceIndex] : nil
     
     let keyOriginPolicy = annotationsFormat.keyOriginPolicy
     let keyHasCollision = keyHasCollisionAcross || keyHasCollisionWithin
@@ -175,25 +170,7 @@ extension Merge {
     
     return annotationsBuffer
   }
-  
-  /// Decomposition of `merge` function. `allSourcesSignatures.count` must be equal to `errorInfoSources.count`. Index must be valid.
-  ///
-  /// returns: e.g.: NE2 | ME12(0)
-  private static func _resolveSourceUniqueSignature(forSourceAtIndex infoSourceIndex: Int,
-                                                    rawSourceSignatures: [String]) -> String {
-    let sourceSignature = rawSourceSignatures[infoSourceIndex]
-    for index in rawSourceSignatures.indices where index != infoSourceIndex {
-      let otherSignature = rawSourceSignatures[index]
-      if sourceSignature == otherSignature {
-        // if there are errors with equal signatures then append sourceIndex to understand (by index) from which of
-        // similar errors the key-value is.
-        return sourceSignature + "(\(infoSourceIndex))"
-      }
-    }
     
-    return sourceSignature
-  }
-  
   private static func _appendAnnotations(keyOrigin: String?,
                                          collisionSource: String?,
                                          errorInfoSignature: String?,
@@ -259,53 +236,37 @@ extension Merge {
   private struct SummaryPreparationContext: ~Copyable {
     let keyDuplicatesAcrossSources: Set<String>
     let keyDuplicatesWithinSources: [Set<String>]
-    let sourcesSignatures: [String]
+    
+    private let _generateUniqueSourceSignatures: () -> [String]
+    private(set) lazy var uniqueSourcesSignatures: [String] = _generateUniqueSourceSignatures()
+    
     let errorInfos: [ErrorInfo]
+    
+    init(keyDuplicatesAcrossSources: Set<String>,
+         keyDuplicatesWithinSources: [Set<String>],
+         generateUniqueSourceSignatures: @escaping () -> [String],
+         errorInfos: [ErrorInfo]) {
+      self.keyDuplicatesAcrossSources = keyDuplicatesAcrossSources
+      self.keyDuplicatesWithinSources = keyDuplicatesWithinSources
+      _generateUniqueSourceSignatures = generateUniqueSourceSignatures
+      self.errorInfos = errorInfos
+    }
   }
   
   private static func prepareMergeContext<S>(infoSources: [S],
                                              infoKeyPath: KeyPath<S, ErrorInfo>,
-                                             infoSourceSignatureBuilder: (S) -> String) -> SummaryPreparationContext {
+                                             infoSourceSignatureBuilder: @escaping (S) -> String) -> SummaryPreparationContext {
     let errorInfos: [ErrorInfo] = infoSources.map { $0[keyPath: infoKeyPath] }
     
     let duplicates = findDuplicateElements(in: errorInfos.map { $0.allKeys })
-    
-    // Improvement: build sourcesSignatures lazily
-    // let sourcesSignaturesBuilder: () -> [String] = {
-    //   infoSources.map(infoSourceSignatureBuilder)
-    // }
-    
-    // TODO: if keyDuplicatesAcrossSources is not empty, then sourceSignature + "(\(infoSourceIndex))" will be done
-    // and can be prepared early.
-    // May be keyDuplicatesAcrossSources should be a Dict instead of Set. Keys are effectively a set with O(1) check.
-    // Values contain NonEmptySet with raw signatures.
-    // But!: typically cross collisions are met not often, and when occur there is typiclly one.
-    // When cross collision happen then at least 2 sourcesSignatures will be
-    
-    // if keyDuplicatesAcrossSources is empty then sourcesSignatures = infoSources.map(infoSourceSignatureBuilder)
-    // otherwise for sourcesSignatures use another algorithm that append index for equal signatures.
-    
-    // More effectively, this can be done during findDuplicateElements:
-    // 1. remember indices of infoSources with cross collisions
-    // 2.1 if these indices empty then `infoSources.map(infoSourceSignatureBuilder)`
-    // 2.3 else
-    // var sourcesSignatures = Array<String>(minimumCapacity: infoSources.count)
-    // for index in infoSources.indices {
-    //   let signature: String = if sourceIndicesWithCrossCollisions.contains(index) {
-    //     infoSourceSignatureBuilder(infoSources[index])
-    //   } else {
-    //     infoSourceSignatureBuilder(infoSources[index]) + "(\(index))"
-    //   }
-    //   sourcesSignatures.append(signature)
-    // }
-    
+        
     let generateUniqueSourceSignatures: () -> [String] = {
       _generateUniqueSignatures(forSources: infoSources, buildSignatureForSource: infoSourceSignatureBuilder)
     }
     
     return SummaryPreparationContext(keyDuplicatesAcrossSources: duplicates.duplicatesAcrossSources,
                                      keyDuplicatesWithinSources: duplicates.duplicatesWithinSources,
-                                     sourcesSignatures: infoSources.map(infoSourceSignatureBuilder),
+                                     generateUniqueSourceSignatures: generateUniqueSourceSignatures,
                                      errorInfos: errorInfos)
   }
   
@@ -323,8 +284,8 @@ extension Merge {
         let status = signatureStatuses.values[occurenceIndex]
         switch status {
         case .isFirstOccurrence(let previousIndex):
-          // Update the firstly created signature with an indexed version
-          uniqueSignatures[previousIndex] =  makeIndexedSignature(rawSignature: rawSignature, index: previousIndex)
+          // When a duplicate happens, replace initially created rawSignature with an indexed version
+          uniqueSignatures[previousIndex] = makeIndexedSignature(rawSignature: rawSignature, index: previousIndex)
           signatureStatuses.values[occurenceIndex] = .alreadyMadeUnique
         case .alreadyMadeUnique:
           break
