@@ -194,48 +194,6 @@ extension Merge {
     return sourceSignature
   }
   
-  private static func _generateUniqueSignatures<S>(forSources sources: [S],
-                                                   buildSignatureForSource: (S) -> String) -> [String] {
-    var signatureStatues: [String: _SignatureStatus] = Dictionary(minimumCapacity: sources.count)
-    var uniqueSignatures: [String] = Array(minimumCapacity: sources.count)
-    
-    for index in sources.indices {
-      let rawSignature = buildSignatureForSource(sources[index])
-      
-      let signatureToAppend: String
-      // Check if the raw signature already exists in the signature status map
-      if let occurenceIndex = signatureStatues.index(forKey: rawSignature) {
-        let status = signatureStatues.values[occurenceIndex]
-        switch status {
-        case .isFirstOccurrence(let previousIndex):
-          // Update the firstly created signature with an indexed version
-          uniqueSignatures[previousIndex] =  makeIndexedSignature(rawSignature: rawSignature, index: previousIndex)
-          signatureStatues.values[occurenceIndex] = .alreadyMadeUnique
-        case .alreadyMadeUnique:
-          break
-        }
-        
-        // Add the new indexed signature for this occurrence of duplicated rawSignature
-        signatureToAppend = makeIndexedSignature(rawSignature: rawSignature, index: index)
-      } else {
-        signatureStatues[rawSignature] = .isFirstOccurrence(atIndex: index)
-        signatureToAppend = rawSignature
-      }
-      uniqueSignatures.append(signatureToAppend)
-    }
-    
-    return uniqueSignatures
-  }
-  
-  private static func makeIndexedSignature(rawSignature: String, index: Int) -> String {
-    rawSignature + "(\(index))"
-  }
-  
-  private enum _SignatureStatus {
-    case isFirstOccurrence(atIndex: Int)
-    case alreadyMadeUnique
-  }
-  
   private static func _appendAnnotations(keyOrigin: String?,
                                          collisionSource: String?,
                                          errorInfoSignature: String?,
@@ -341,10 +299,56 @@ extension Merge {
     //   sourcesSignatures.append(signature)
     // }
     
+    let generateUniqueSourceSignatures: () -> [String] = {
+      _generateUniqueSignatures(forSources: infoSources, buildSignatureForSource: infoSourceSignatureBuilder)
+    }
+    
     return SummaryPreparationContext(keyDuplicatesAcrossSources: duplicates.duplicatesAcrossSources,
                                      keyDuplicatesWithinSources: duplicates.duplicatesWithinSources,
                                      sourcesSignatures: infoSources.map(infoSourceSignatureBuilder),
                                      errorInfos: errorInfos)
+  }
+  
+  private static func _generateUniqueSignatures<S>(forSources sources: [S],
+                                                   buildSignatureForSource: (S) -> String) -> [String] {
+    var signatureStatuses: [String: _SignatureStatus] = Dictionary(minimumCapacity: sources.count)
+    var uniqueSignatures: [String] = Array(minimumCapacity: sources.count)
+    
+    for sourceIndex in sources.indices {
+      let rawSignature = buildSignatureForSource(sources[sourceIndex])
+      
+      let signatureToAppend: String
+      // Check if the raw signature already exists in the signature status map
+      if let occurenceIndex = signatureStatuses.index(forKey: rawSignature) {
+        let status = signatureStatuses.values[occurenceIndex]
+        switch status {
+        case .isFirstOccurrence(let previousIndex):
+          // Update the firstly created signature with an indexed version
+          uniqueSignatures[previousIndex] =  makeIndexedSignature(rawSignature: rawSignature, index: previousIndex)
+          signatureStatuses.values[occurenceIndex] = .alreadyMadeUnique
+        case .alreadyMadeUnique:
+          break
+        }
+        
+        // Add the new indexed signature for this occurrence of duplicated rawSignature
+        signatureToAppend = makeIndexedSignature(rawSignature: rawSignature, index: sourceIndex)
+      } else {
+        signatureStatuses[rawSignature] = .isFirstOccurrence(atIndex: sourceIndex)
+        signatureToAppend = rawSignature
+      }
+      uniqueSignatures.append(signatureToAppend)
+    }
+    
+    return uniqueSignatures
+  }
+  
+  private static func makeIndexedSignature(rawSignature: String, index: Int) -> String {
+    rawSignature + "(\(index))"
+  }
+  
+  private enum _SignatureStatus {
+    case isFirstOccurrence(atIndex: Int)
+    case alreadyMadeUnique
   }
   
   /// Analyzes a group of collections and detects duplicate elements both within each collection and across different collections.
