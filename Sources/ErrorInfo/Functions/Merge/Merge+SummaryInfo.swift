@@ -9,6 +9,8 @@ private import SwiftyKit
 private import Algorithms
 import protocol InternalCollectionsUtilities._UniqueCollection
 
+import Foundation
+
 /// Add partial functionality of collisions resolution to dictionary
 struct DictionaryErrorInfoOverlay<Dict> { // – it is the same as LegacyErrorInfo. Can generically be done.
   private(set) var dictionary: Dict
@@ -64,23 +66,23 @@ extension Merge {
   
   /// Example:
   /// ```
-  ///    Info Source 0                        Info Source 1
-  /// +------------------+                 +------------------+
-  /// |   NSCocoaError   |                 |    NSURLError    |
-  /// |------------------|                 |------------------|
-  /// | key1: 1          |        +        | key2: B          |
-  /// | key2: A          |                 | key3: 3          |
-  /// +------------------+                 +------------------+
-  ///                             |
-  ///                             v
-  ///        +-----------------------------------------+
-  ///        |  Summary Info with resolved collisions  |
-  ///        |-----------------------------------------|
-  ///        | "key1"           : 1                    |
-  ///        | "key2 (NSCocoa)" : A // (from Source 0) |
-  ///        | "key2 (NSURL)"   : B // (from Source 1) |
-  ///        | "key3"           : 3                    |
-  ///        +-----------------------------------------+
+  ///     Info Source 0                           Info Source 1
+  /// +--------------------+                 +--------------------+
+  /// |NSCocoaError code 17|                 | NSURLError code 6  |
+  /// |--------------------|                 |--------------------|
+  /// | key1: 1            |        +        | key2: B            |
+  /// | key2: A            |                 | key3: 3            |
+  /// +--------------------+                 +--------------------+
+  ///                               |
+  ///                               v
+  ///        +--------------------------------------------+
+  ///        |  Summary Info with resolved collisions     |
+  ///        |--------------------------------------------|
+  ///        | "key1"              : 1                    |
+  ///        | "key2 (NSCocoa.17)" : A // (from Source 0) |
+  ///        | "key2 (NSURL.6)"    : B // (from Source 1) |
+  ///        | "key3"              : 3                    |
+  ///        +--------------------------------------------+
   /// ```
   public static func summaryInfo<S, W>(
     infoSources: [S], // TODO: .reversed support | tests
@@ -190,6 +192,48 @@ extension Merge {
     }
     
     return sourceSignature
+  }
+  
+  private static func _generateUniqueSignatures<S>(forSources sources: [S],
+                                                   buildSignatureForSource: (S) -> String) -> [String] {
+    var signatureStatues: [String: _SignatureStatus] = Dictionary(minimumCapacity: sources.count)
+    var uniqueSignatures: [String] = Array(minimumCapacity: sources.count)
+    
+    for index in sources.indices {
+      let rawSignature = buildSignatureForSource(sources[index])
+      
+      let signatureToAppend: String
+      // Check if the raw signature already exists in the signature status map
+      if let occurenceIndex = signatureStatues.index(forKey: rawSignature) {
+        let status = signatureStatues.values[occurenceIndex]
+        switch status {
+        case .isFirstOccurrence(let previousIndex):
+          // Update the firstly created signature with an indexed version
+          uniqueSignatures[previousIndex] =  makeIndexedSignature(rawSignature: rawSignature, index: previousIndex)
+          signatureStatues.values[occurenceIndex] = .alreadyMadeUnique
+        case .alreadyMadeUnique:
+          break
+        }
+        
+        // Add the new indexed signature for this occurrence of duplicated rawSignature
+        signatureToAppend = makeIndexedSignature(rawSignature: rawSignature, index: index)
+      } else {
+        signatureStatues[rawSignature] = .isFirstOccurrence(atIndex: index)
+        signatureToAppend = rawSignature
+      }
+      uniqueSignatures.append(signatureToAppend)
+    }
+    
+    return uniqueSignatures
+  }
+  
+  private static func makeIndexedSignature(rawSignature: String, index: Int) -> String {
+    rawSignature + "(\(index))"
+  }
+  
+  private enum _SignatureStatus {
+    case isFirstOccurrence(atIndex: Int)
+    case alreadyMadeUnique
   }
   
   private static func _appendAnnotations(keyOrigin: String?,
@@ -500,6 +544,13 @@ func extractUniqueElements<T>(from values: NonEmptyArray<T>, equalFuncImp: (T, T
  kCFErrorDomainOSStatus
  kCFErrorDomainMach
  SKErrorDomain
+ 
+ NSCocoaErrorDomain
+ NSPOSIXErrorDomain
+ NSOSStatusErrorDomain
+ NSMachErrorDomain
+ NSStreamSOCKSErrorDomain
+ NSStreamSocketSSLErrorDomain
  */
 
 /*
