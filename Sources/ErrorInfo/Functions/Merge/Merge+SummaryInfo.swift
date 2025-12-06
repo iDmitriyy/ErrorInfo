@@ -60,7 +60,7 @@ extension Merge {
   // If there are equal collision sources for the same key (e.g. `.onSubscript`), a random suffix
   // will be added (by _putResolvingWithRandomSuffix() func).
   
-  public static func summaryInfo<S, V, W>(
+  public static func summaryInfo<S, W>(
     infoSources: [S], // TODO: .reversed support | tests
     infoKeyPath: KeyPath<S, ErrorInfo>,
     annotationsFormat: KeyAnnotationsFormat,
@@ -68,7 +68,7 @@ extension Merge {
     valueTransform: (ErrorInfo._Optional) -> W,
     collisionSourceInterpolation: (CollisionSource) -> String = { $0.defaultStringInterpolation() },
   )
-    -> OrderedDictionary<String, W> where S: Sequence, S.Element == (key: String, value: V) {
+    -> OrderedDictionary<String, W> {
     // any ErrorInfoValueType change to V (e.g. to be Optional<any ErrorInfoValueType> or String)
     typealias Key = String
       
@@ -122,8 +122,8 @@ extension Merge {
     let keyHasCollisionWithin = context.keyDuplicatesWithinSources[infoSourceIndex].contains(key.string)
     
     let errorInfoSignature: String? = if keyHasCollisionAcross {
-      // Improvement: allSourcesSignatures passed as arg, not lazy effectively.
-      // allSourcesSignatures shoul be lazily created
+      // Improvement: sourcesSignatures passed as arg, not lazy.
+      // sourcesSignatures should be lazily created
       _infoSourceSignatureForCrossCollision(infoSourceIndex: infoSourceIndex,
                                             allSourcesSignatures: context.sourcesSignatures)
     } else {
