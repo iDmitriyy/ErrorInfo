@@ -42,3 +42,5 @@ for target: PackageDescription.Target in package.targets {
     $0 = settings
   }(&target.swiftSettings)
 }
+
+// -enable-module-selectors-in-module-interface flag to the OTHER_SWIFT_FLAGS build setting.

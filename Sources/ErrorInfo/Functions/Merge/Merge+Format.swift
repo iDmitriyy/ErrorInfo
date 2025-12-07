@@ -13,25 +13,21 @@ extension Merge {
     internal let annotationsDelimiters: AnnotationsBlockDelimiters
     
     internal let keyOriginPolicy: KeyOriginAnnotationPolicy
-    internal let keyOriginInterpolation: @Sendable (KeyOrigin) -> String
     
     // TODO: - prependAllKeysWithErrorInfoSignature: Bool
     // - name for component
     
     public init(annotationsOrder: OrderedSet<AnnotationComponentKind>,
                 annotationsDelimiters: AnnotationsBlockDelimiters,
-                keyOriginPolicy: KeyOriginAnnotationPolicy,
-                keyOriginInterpolation: @Sendable @escaping (KeyOrigin) -> String) {
+                keyOriginPolicy: KeyOriginAnnotationPolicy) {
       self.annotationsOrder = annotationsOrder
       self.annotationsDelimiters = annotationsDelimiters
       self.keyOriginPolicy = keyOriginPolicy
-      self.keyOriginInterpolation = keyOriginInterpolation
     }
     
     public static let `default` = KeyAnnotationsFormat(annotationsOrder: AnnotationComponentKind.defaultOrdering,
                                                        annotationsDelimiters: .default,
-                                                       keyOriginPolicy: .default,
-                                                       keyOriginInterpolation: { $0.shortSignInterpolation() })
+                                                       keyOriginPolicy: .default)
   }
   
   /// In which order annotations will be added
@@ -60,8 +56,9 @@ extension Merge {
       self.whenCollision = whenCollision
     }
 
-    public static let `default` = KeyOriginAnnotationPolicy(whenUnique: [],
-                                                            whenCollision: .allOrigins)
+    public static let `default` = KeyOriginAnnotationPolicy(whenUnique: [], whenCollision: .allOrigins)
+    
+    public static let neverAdd = KeyOriginAnnotationPolicy(whenUnique: [], whenCollision: [])
   }
   
   public struct KeyOriginOptions: OptionSet, Sendable {

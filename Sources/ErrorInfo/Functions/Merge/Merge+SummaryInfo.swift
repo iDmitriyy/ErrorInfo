@@ -66,6 +66,24 @@ extension Merge {
   
   typealias EICollection<Key, Value> = Collection<(key: Key, value: Value)>
   
+  /// Representing the availability of collision metadata for an element.
+  /// When CollisionSource is available, the `available` case is used with the corresponding key path to access the metadata.
+  /// When CollisionSource is not available, the `notAvailable` case is used to indicate the absence of collision information.
+  public enum CollisionAvailability<Element> {
+    case available(keyPath: KeyPath<Element, CollisionSource?>,
+                   interpolation: (CollisionSource) -> String = { $0.defaultStringInterpolation() })
+    case notAvailable
+  }
+  
+  /// Representing the availability of key origin metadata for an element.
+  /// When KeyOrigin metadata is available, the `available` case is used with the corresponding key path to access the metadata.
+  /// When KeyOrigin is not available, the `notAvailable` case is used to indicate the absence of key origin information.
+  public enum KeyOriginAvailability<Element> {
+    case available(keyPath: KeyPath<Element, KeyOrigin>,
+                   interpolation: (KeyOrigin) -> String = { $0.shortSignInterpolation() })
+    case notAvailable
+  }
+  
   /// Example:
   /// ```
   ///     Info Source 0                           Info Source 1
@@ -86,18 +104,17 @@ extension Merge {
   ///        | "key3"              : 3                    |
   ///        +--------------------------------------------+
   /// ```
-  public static func summaryInfo<S, K, V, W>(
-    infoSources: [S], // TODO: .reversed support | tests
-    infoKeyPath: KeyPath<S, some Collection<(key: K, value: V)>>,
+  public static func summaryInfo<S, K, V, EInfSeq, W>(
+    infoSources: [S],
+    infoKeyPath: KeyPath<S, EInfSeq>,
     keyStringPath: KeyPath<K, String>,
-    keyOriginPath: KeyPath<K, KeyOrigin>?,
-    valueCollisionPath: KeyPath<V, CollisionSource?>?,
+    keyOriginAvailability: KeyOriginAvailability<EInfSeq.Element>,
+    collisionAvailability: CollisionAvailability<EInfSeq.Element>,
     annotationsFormat: KeyAnnotationsFormat,
     infoSourceSignatureBuilder: @escaping (S) -> String,
     valueTransform: (V) -> W,
-    collisionSourceInterpolation: (CollisionSource) -> String = { $0.defaultStringInterpolation() },
   )
-    -> OrderedDictionary<String, W> {
+    -> OrderedDictionary<String, W> where EInfSeq: Collection<(key: K, value: V)> {
     // any ErrorInfoValueType change to V (e.g. to be Optional<any ErrorInfoValueType> or String)
     typealias Key = String
     
@@ -117,35 +134,30 @@ extension Merge {
                                       infoSourceSignatureBuilder: infoSourceSignatureBuilder)
     
     for (infoSourceIndex, errorInfo) in context.errorInfos.enumerated() {
-      for (key, value) in errorInfo {
-        let keyString = key[keyPath: keyStringPath]
+      for element in errorInfo {
+        let keyString = element.key[keyPath: keyStringPath]
         
         var augmentedKey = keyString // _StatefulKey(key.string)
                 
-        let collisionSource: CollisionSource? = if let valueCollisionPath {
-          value[keyPath: valueCollisionPath]
-        } else {
-          nil
-        }
-        
-        // keyOrigin & collisionSource made as optionals. Hiwever, this shoul better by abstracted at a type level.
-        // Something like case .unavailable can be passed to _makeAnnotations then.
-        
-        let annotationsSuffix = _makeAnnotations(keyString: keyString,
-                                                 keyOrigin: keyOriginPath.map { key[keyPath: $0] },
-                                                 collisionSource: collisionSource,
-                                                 infoSourceIndex: infoSourceIndex,
+        let annotationsSuffix = _makeAnnotations(infoSourceIndex: infoSourceIndex,
+                                                 element: element,
                                                  context: &context,
-                                                 annotationsFormat: annotationsFormat,
-                                                 collisionInterpolation: collisionSourceInterpolation)
+                                                 keyString: keyString,
+                                                 keyOriginAvailability: keyOriginAvailability,
+                                                 collisionAvailability: collisionAvailability,
+                                                 annotationsFormat: annotationsFormat)
         augmentedKey.append(annotationsSuffix)
         
-        let adaptedValue = valueTransform(value)
+        let adaptedValue = valueTransform(element.value)
         putResolvingCollisions(key: augmentedKey, value: adaptedValue)
       } // end `for (key, value)`
     } // end `for (errorIndex, error)`
     
     return summaryInfo
+  }
+  
+  enum PropertyAvailability<R> {
+    case keyOrigin(keyPath: KeyPath<R, KeyOrigin>)
   }
 }
 
@@ -155,13 +167,15 @@ extension Merge {
 
 extension Merge {
   /// Decomposition of `merge` function. `
-  private static func _makeAnnotations(keyString: String,
-                                       keyOrigin: KeyOrigin?,
-                                       collisionSource: CollisionSource?,
-                                       infoSourceIndex: Int,
-                                       context: inout SummaryPreparationContext<some Any>,
-                                       annotationsFormat: KeyAnnotationsFormat,
-                                       collisionInterpolation: (CollisionSource) -> String) -> String {
+  private static func _makeAnnotations<K, V>(
+    infoSourceIndex: Int,
+    element: (key: K, value: V),
+    context: inout SummaryPreparationContext<some Any>,
+    keyString: String,
+    keyOriginAvailability: KeyOriginAvailability<(key: K, value: V)>,
+    collisionAvailability: CollisionAvailability<(key: K, value: V)>,
+    annotationsFormat: KeyAnnotationsFormat,
+  ) -> String {
     let keyHasCollisionAcross = context.keyDuplicatesAcrossSources.contains(keyString)
     let keyHasCollisionWithin = context.keyDuplicatesWithinSources[infoSourceIndex].contains(keyString)
     
@@ -169,21 +183,30 @@ extension Merge {
     let errorInfoSignature: String? = keyHasCollisionAcross ? context.uniqueSourcesSignatures[infoSourceIndex] : nil
     
     let keyOriginString: String?
-    if let keyOrigin {
-      let keyOriginPolicy = annotationsFormat.keyOriginPolicy
+    switch keyOriginAvailability {
+    case let .available(keyPath, interpolation):
       let keyHasCollision = keyHasCollisionAcross || keyHasCollisionWithin
+      let keyOriginPolicy = annotationsFormat.keyOriginPolicy
       let keyOriginOptions = keyHasCollision ? keyOriginPolicy.whenCollision : keyOriginPolicy.whenUnique
       
+      let keyOrigin = element[keyPath: keyPath]
       keyOriginString = if keyOriginOptions.matches(keyOrigin: keyOrigin) {
-        annotationsFormat.keyOriginInterpolation(keyOrigin)
+        interpolation(keyOrigin)
       } else {
         nil
       }
-    } else {
+    case .notAvailable:
       keyOriginString = nil
     }
-    
-    let collisionSource: String? = collisionSource.map(collisionInterpolation)
+        
+    let collisionSource: String?
+    switch collisionAvailability {
+    case let .available(keyPath, interpolation):
+      let collision: CollisionSource? = element[keyPath: keyPath]
+      collisionSource = collision.map(interpolation)
+    case .notAvailable:
+      collisionSource = nil
+    }
     
     var annotationsBuffer = "" // TODO: ?append to key directly without allocationg annotationsBuffer
     _appendAnnotations(keyOrigin: keyOriginString,
@@ -368,8 +391,7 @@ extension Merge {
   ///     corresponding input collection.
   ///
   /// - Complexity:
-  ///   Time: **O(N)**
-  ///   Space: **O(N)**
+  ///   **O(N)**
   ///
   /// # Examples
   ///
@@ -383,7 +405,7 @@ extension Merge {
   /// let result = findDuplicateElements(in: collections)
   ///
   /// // Elements that appear in ≥2 different collections:
-  /// result.duplicatesAcrossSources        // {1, 3}
+  /// result.duplicatesAcrossSources // [1, 3]
   ///
   /// // Per-collection duplicates:
   /// // Collection #0: [1,2,3] → none
