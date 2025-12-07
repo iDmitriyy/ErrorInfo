@@ -128,6 +128,9 @@ extension Merge {
           nil
         }
         
+        // keyOrigin & collisionSource made as optionals. Hiwever, this shoul better by abstracted at a type level.
+        // Something like case .unavailable can be passed to _makeAnnotations then.
+        
         let annotationsSuffix = _makeAnnotations(keyString: keyString,
                                                  keyOrigin: keyOriginPath.map { key[keyPath: $0] },
                                                  collisionSource: collisionSource,
