@@ -89,7 +89,9 @@ extension Merge {
   public static func summaryInfo<S, K, V, W>(
     infoSources: [S], // TODO: .reversed support | tests
     infoKeyPath: KeyPath<S, some Collection<(key: K, value: V)>>,
-    keyString: KeyPath<K, String>,
+    keyStringPath: KeyPath<K, String>,
+    keyOriginPath: KeyPath<K, KeyOrigin>?,
+    valueCollisionPath: KeyPath<V, CollisionSource?>?,
     annotationsFormat: KeyAnnotationsFormat,
     infoSourceSignatureBuilder: @escaping (S) -> String,
     valueTransform: (V) -> W,
@@ -111,22 +113,31 @@ extension Merge {
     // context is a var only because of mutating get / lazy var
     var context = prepareMergeContext(infoSources: infoSources,
                                       infoKeyPath: infoKeyPath,
-                                      keyString: keyString,
+                                      keyString: keyStringPath,
                                       infoSourceSignatureBuilder: infoSourceSignatureBuilder)
     
     for (infoSourceIndex, errorInfo) in context.errorInfos.enumerated() {
       for (key, value) in errorInfo {
-        var augmentedKey = key[keyPath: keyString] // _StatefulKey(key.string)
+        let keyString = key[keyPath: keyStringPath]
+        
+        var augmentedKey = keyString // _StatefulKey(key.string)
                 
-        let annotationsSuffix = _makeAnnotations(key: key,
-                                                 value: value,
+        let collisionSource: CollisionSource? = if let valueCollisionPath {
+          value[keyPath: valueCollisionPath]
+        } else {
+          nil
+        }
+        
+        let annotationsSuffix = _makeAnnotations(keyString: keyString,
+                                                 keyOrigin: keyOriginPath.map { key[keyPath: $0] },
+                                                 collisionSource: collisionSource,
                                                  infoSourceIndex: infoSourceIndex,
                                                  context: &context,
                                                  annotationsFormat: annotationsFormat,
                                                  collisionInterpolation: collisionSourceInterpolation)
         augmentedKey.append(annotationsSuffix)
         
-        let adaptedValue = valueTransform(value.value)
+        let adaptedValue = valueTransform(value)
         putResolvingCollisions(key: augmentedKey, value: adaptedValue)
       } // end `for (key, value)`
     } // end `for (errorIndex, error)`
@@ -141,32 +152,38 @@ extension Merge {
 
 extension Merge {
   /// Decomposition of `merge` function. `
-  private static func _makeAnnotations(key: KeyWithOrigin,
-                                       value: CollisionTaggedValue<ErrorInfo._Optional, CollisionSource>,
+  private static func _makeAnnotations(keyString: String,
+                                       keyOrigin: KeyOrigin?,
+                                       collisionSource: CollisionSource?,
                                        infoSourceIndex: Int,
                                        context: inout SummaryPreparationContext<some Any>,
                                        annotationsFormat: KeyAnnotationsFormat,
                                        collisionInterpolation: (CollisionSource) -> String) -> String {
-    let keyHasCollisionAcross = context.keyDuplicatesAcrossSources.contains(key.string)
-    let keyHasCollisionWithin = context.keyDuplicatesWithinSources[infoSourceIndex].contains(key.string)
+    let keyHasCollisionAcross = context.keyDuplicatesAcrossSources.contains(keyString)
+    let keyHasCollisionWithin = context.keyDuplicatesWithinSources[infoSourceIndex].contains(keyString)
     
     // When there is cross collision, add sourcesSignature to distinguish the same key from different errors
     let errorInfoSignature: String? = keyHasCollisionAcross ? context.uniqueSourcesSignatures[infoSourceIndex] : nil
     
-    let keyOriginPolicy = annotationsFormat.keyOriginPolicy
-    let keyHasCollision = keyHasCollisionAcross || keyHasCollisionWithin
-    let keyOriginOptions = keyHasCollision ? keyOriginPolicy.whenCollision : keyOriginPolicy.whenUnique
-    
-    let keyOrigin: String? = if keyOriginOptions.matches(keyOrigin: key.origin) {
-      annotationsFormat.keyOriginInterpolation(key.origin)
+    let keyOriginString: String?
+    if let keyOrigin {
+      let keyOriginPolicy = annotationsFormat.keyOriginPolicy
+      let keyHasCollision = keyHasCollisionAcross || keyHasCollisionWithin
+      let keyOriginOptions = keyHasCollision ? keyOriginPolicy.whenCollision : keyOriginPolicy.whenUnique
+      
+      keyOriginString = if keyOriginOptions.matches(keyOrigin: keyOrigin) {
+        annotationsFormat.keyOriginInterpolation(keyOrigin)
+      } else {
+        nil
+      }
     } else {
-      nil
+      keyOriginString = nil
     }
     
-    let collisionSource: String? = value.collisionSource.map(collisionInterpolation)
+    let collisionSource: String? = collisionSource.map(collisionInterpolation)
     
     var annotationsBuffer = "" // TODO: ?append to key directly without allocationg annotationsBuffer
-    _appendAnnotations(keyOrigin: keyOrigin,
+    _appendAnnotations(keyOrigin: keyOriginString,
                        collisionSource: collisionSource,
                        errorInfoSignature: errorInfoSignature,
                        annotationsFormat: annotationsFormat,
@@ -258,16 +275,16 @@ extension Merge {
   }
   
   private static func prepareMergeContext<S, K, V, ErrInfo>(infoSources: [S],
-                                                          infoKeyPath: KeyPath<S, ErrInfo>,
-                                                          keyString: KeyPath<K, String>,
-                                                          infoSourceSignatureBuilder: @escaping (S) -> String)
-  -> SummaryPreparationContext<ErrInfo> where ErrInfo: EICollection<K, V> {
+                                                            infoKeyPath: KeyPath<S, ErrInfo>,
+                                                            keyString: KeyPath<K, String>,
+                                                            infoSourceSignatureBuilder: @escaping (S) -> String)
+    -> SummaryPreparationContext<ErrInfo> where ErrInfo: EICollection<K, V> {
     let errorInfos = infoSources.map { $0[keyPath: infoKeyPath] }
     
     // let duplicates = findDuplicateElements(in: errorInfos.map { $0.allKeys })
-      let duplicates = findDuplicateElements(in: errorInfos.map { errorInfo in
-        AnyCollectionProjectable(base: errorInfo, elementProjection: { element in element.key[keyPath: keyString] })
-      })
+    let duplicates = findDuplicateElements(in: errorInfos.map { errorInfo in
+      AnyCollectionProjectable(base: errorInfo, elementProjection: { element in element.key[keyPath: keyString] })
+    })
         
     let generateUniqueSourceSignatures: () -> [String] = {
       _generateUniqueSignatures(forSources: infoSources, buildSignatureForSource: infoSourceSignatureBuilder)
