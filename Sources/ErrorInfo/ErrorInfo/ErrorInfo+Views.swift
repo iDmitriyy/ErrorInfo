@@ -8,38 +8,19 @@
 public import protocol InternalCollectionsUtilities._UniqueCollection
 
 extension ErrorInfo {
-  public var keys: some Collection<String> & _UniqueCollection {
-    _storage.keys
-  }
+  public var keys: some Collection<String> & _UniqueCollection { _storage.keys }
   
-  public var allKeys: some Collection<String> {
-    _storage._storage.allKeys
-  }
+  public var allKeys: some Collection<String> { _storage._storage.allKeys }
 }
 
 extension ErrorInfo {
-  public var fullInfoView: FullInfoView { FullInfoView(base: self) }
+  public typealias FullInfoElement = (key: KeyWithOrigin, value: CollisionTaggedValue<_Optional, CollisionSource>)
   
-  public struct FullInfoView: Sequence {
-    public typealias Element = (key: KeyWithOrigin, value: CollisionTaggedValue<_Optional, CollisionSource>)
-    
-    private let base: ErrorInfo
-    
-    internal init(base: ErrorInfo) {
-      self.base = base
-    }
-    
-    public func makeIterator() -> some IteratorProtocol<Element> {
-      var iterator = base._storage.makeIterator()
-      
-      return AnyIterator {
-        guard let (key, entry) = iterator.next() else { return nil }
-        
-        let keyWithOrigin = KeyWithOrigin(string: key, origin: entry.value.keyOrigin)
-        let collisionTaggedValue = CollisionTaggedValue(value: entry.value.optional, collisionSource: entry.collisionSource)
-        
-        return (keyWithOrigin, collisionTaggedValue)
-      }
-    }
+  public var fullInfoView: some Sequence<FullInfoElement> {
+    AnySequenceProjectable(base: _storage, elementProjection: { key, entry in
+      let keyWithOrigin = KeyWithOrigin(string: key, origin: entry.value.keyOrigin)
+      let collisionTaggedValue = CollisionTaggedValue(value: entry.value.optional, collisionSource: entry.collisionSource)
+      return (keyWithOrigin, collisionTaggedValue)
+    })
   }
 }

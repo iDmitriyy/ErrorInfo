@@ -64,6 +64,8 @@ extension Merge {
   // If there are equal collision sources for the same key (e.g. `.onSubscript`), a random suffix
   // will be added (by _putResolvingWithRandomSuffix() func).
   
+  typealias EICollection<Key, Value> = Collection<(key: Key, value: Value)>
+  
   /// Example:
   /// ```
   ///     Info Source 0                           Info Source 1
@@ -84,12 +86,13 @@ extension Merge {
   ///        | "key3"              : 3                    |
   ///        +--------------------------------------------+
   /// ```
-  public static func summaryInfo<S, W>(
+  public static func summaryInfo<S, K, V, W>(
     infoSources: [S], // TODO: .reversed support | tests
-    infoKeyPath: KeyPath<S, ErrorInfo>,
+    infoKeyPath: KeyPath<S, some Collection<(key: K, value: V)>>,
+    keyString: KeyPath<K, String>,
     annotationsFormat: KeyAnnotationsFormat,
     infoSourceSignatureBuilder: @escaping (S) -> String,
-    valueTransform: (ErrorInfo._Optional) -> W,
+    valueTransform: (V) -> W,
     collisionSourceInterpolation: (CollisionSource) -> String = { $0.defaultStringInterpolation() },
   )
     -> OrderedDictionary<String, W> {
@@ -108,18 +111,19 @@ extension Merge {
     // context is a var only because of mutating get / lazy var
     var context = prepareMergeContext(infoSources: infoSources,
                                       infoKeyPath: infoKeyPath,
+                                      keyString: keyString,
                                       infoSourceSignatureBuilder: infoSourceSignatureBuilder)
     
     for (infoSourceIndex, errorInfo) in context.errorInfos.enumerated() {
-      for (key, value) in errorInfo.fullInfoView {
-        var augmentedKey = key.string // _StatefulKey(key.string)
+      for (key, value) in errorInfo {
+        var augmentedKey = key[keyPath: keyString] // _StatefulKey(key.string)
                 
         let annotationsSuffix = _makeAnnotations(key: key,
                                                  value: value,
                                                  infoSourceIndex: infoSourceIndex,
                                                  context: &context,
                                                  annotationsFormat: annotationsFormat,
-                                                 collisionSourceInterpolation: collisionSourceInterpolation)
+                                                 collisionInterpolation: collisionSourceInterpolation)
         augmentedKey.append(annotationsSuffix)
         
         let adaptedValue = valueTransform(value.value)
@@ -140,9 +144,9 @@ extension Merge {
   private static func _makeAnnotations(key: KeyWithOrigin,
                                        value: CollisionTaggedValue<ErrorInfo._Optional, CollisionSource>,
                                        infoSourceIndex: Int,
-                                       context: inout SummaryPreparationContext,
+                                       context: inout SummaryPreparationContext<some Any>,
                                        annotationsFormat: KeyAnnotationsFormat,
-                                       collisionSourceInterpolation: (CollisionSource) -> String) -> String {
+                                       collisionInterpolation: (CollisionSource) -> String) -> String {
     let keyHasCollisionAcross = context.keyDuplicatesAcrossSources.contains(key.string)
     let keyHasCollisionWithin = context.keyDuplicatesWithinSources[infoSourceIndex].contains(key.string)
     
@@ -159,7 +163,7 @@ extension Merge {
       nil
     }
     
-    let collisionSource: String? = value.collisionSource.map(collisionSourceInterpolation)
+    let collisionSource: String? = value.collisionSource.map(collisionInterpolation)
     
     var annotationsBuffer = "" // TODO: ?append to key directly without allocationg annotationsBuffer
     _appendAnnotations(keyOrigin: keyOrigin,
@@ -233,19 +237,19 @@ extension Merge {
 
 extension Merge {
   /// infoSources.count and keyDuplicatesWithinSources.count, sourcesSignatures.count, errorInfos.count MUST be equal
-  private struct SummaryPreparationContext: ~Copyable {
+  private struct SummaryPreparationContext<ErrInfo>: ~Copyable {
     let keyDuplicatesAcrossSources: Set<String>
     let keyDuplicatesWithinSources: [Set<String>]
     
     private let _generateUniqueSourceSignatures: () -> [String]
     private(set) lazy var uniqueSourcesSignatures: [String] = _generateUniqueSourceSignatures()
     
-    let errorInfos: [ErrorInfo]
+    let errorInfos: [ErrInfo]
     
     init(keyDuplicatesAcrossSources: Set<String>,
          keyDuplicatesWithinSources: [Set<String>],
          generateUniqueSourceSignatures: @escaping () -> [String],
-         errorInfos: [ErrorInfo]) {
+         errorInfos: [ErrInfo]) {
       self.keyDuplicatesAcrossSources = keyDuplicatesAcrossSources
       self.keyDuplicatesWithinSources = keyDuplicatesWithinSources
       _generateUniqueSourceSignatures = generateUniqueSourceSignatures
@@ -253,12 +257,17 @@ extension Merge {
     }
   }
   
-  private static func prepareMergeContext<S>(infoSources: [S],
-                                             infoKeyPath: KeyPath<S, ErrorInfo>,
-                                             infoSourceSignatureBuilder: @escaping (S) -> String) -> SummaryPreparationContext {
-    let errorInfos: [ErrorInfo] = infoSources.map { $0[keyPath: infoKeyPath] }
+  private static func prepareMergeContext<S, K, V, ErrInfo>(infoSources: [S],
+                                                          infoKeyPath: KeyPath<S, ErrInfo>,
+                                                          keyString: KeyPath<K, String>,
+                                                          infoSourceSignatureBuilder: @escaping (S) -> String)
+  -> SummaryPreparationContext<ErrInfo> where ErrInfo: EICollection<K, V> {
+    let errorInfos = infoSources.map { $0[keyPath: infoKeyPath] }
     
-    let duplicates = findDuplicateElements(in: errorInfos.map { $0.allKeys })
+    // let duplicates = findDuplicateElements(in: errorInfos.map { $0.allKeys })
+      let duplicates = findDuplicateElements(in: errorInfos.map { errorInfo in
+        AnyCollectionProjectable(base: errorInfo, elementProjection: { element in element.key[keyPath: keyString] })
+      })
         
     let generateUniqueSourceSignatures: () -> [String] = {
       _generateUniqueSignatures(forSources: infoSources, buildSignatureForSource: infoSourceSignatureBuilder)
@@ -369,6 +378,7 @@ extension Merge {
     /// Tracks how many distinct collections contain each element
     var globalOccurrenceCount: [C.Element: Int] // | CountedMultiSet
     do {
+      // TODO: - not Unique now, fix comments
       // Unique collection types has .count O(1):
       let totalApproxCount = collections.reduce(into: 0) { count, set in count += set.count }
       globalOccurrenceCount = Dictionary(minimumCapacity: totalApproxCount)
