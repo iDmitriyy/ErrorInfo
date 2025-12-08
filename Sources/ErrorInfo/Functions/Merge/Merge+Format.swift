@@ -40,7 +40,10 @@ extension Merge {
     public static let defaultOrdering: OrderedSet<Self> = [.keyOrigin, .collisionSource, .errorInfoSignature]
   }
   
-  public enum KeysPrefix<InfoSource> {
+  // TODO: By default annotations should be added with name for AnnotationComponentKind
+  // userd_id (keyType: .literal, collision: onMerge(fileLine: MainScreen.Swift:31), sourceSignature: NSCocoa.17)
+  
+  public enum KeysPrefixOption<InfoSource> {
     case noPrefix
     // case sourceSignature(boundaryDelimiter: AnnotationsBoundaryDelimiter) // uncomment of someone need it
     case custom(keyPrefixBuilder: (_ infoSource: InfoSource, _ sourceIndex: Int, _ keyIndex: Int) -> String,
