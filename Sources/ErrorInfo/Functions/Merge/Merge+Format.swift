@@ -8,6 +8,10 @@
 public import struct OrderedCollections.OrderedSet
 
 extension Merge {
+  public enum Format {}
+}
+
+extension Merge.Format {
   public struct KeyAnnotationsFormat: Sendable {
     internal let annotationsOrder: OrderedSet<AnnotationComponentKind>
     internal let annotationsDelimiters: AnnotationsBlockDelimiters
@@ -54,7 +58,7 @@ extension Merge {
 
 // MARK: - Key Origin
 
-extension Merge {
+extension Merge.Format {
   public struct KeyOriginAnnotationPolicy: Sendable {
     public var whenUnique: KeyOriginOptions
     public var whenCollision: KeyOriginOptions
@@ -104,7 +108,7 @@ extension Merge {
 
 // MARK: - Delimiters
 
-extension Merge {
+extension Merge.Format {
   /// Defines how the entire annotation block is visually attached..
   /// Examples:
   /// Spacer-only form:
@@ -144,7 +148,7 @@ extension Merge {
 
 // MARK: - Nil
 
-extension Merge {
+extension Merge.Format {
   public enum NilFormat {
     case literal
     case literalWithType(delimiters: AnnotationsBoundaryDelimiter)

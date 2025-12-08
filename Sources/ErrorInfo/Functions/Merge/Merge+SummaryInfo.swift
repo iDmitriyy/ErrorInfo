@@ -29,6 +29,10 @@ enum MerrorInfoSourcesOptions {
 
 public enum Merge {}
 
+extension Merge {
+  internal enum Summary {}
+}
+
 // !! there should be an ability te remove duplicated values for the same key inside / across errorInfoSources, but the
 // knowledge that this duplicates happened should be put to the result dictionary.
 
@@ -63,9 +67,7 @@ extension Merge {
   // 3.2 If the same key is met several times inside an errorInfo, then collisionSource interpolation is added to a key.
   // If there are equal collision sources for the same key (e.g. `.onSubscript`), a random suffix
   // will be added (by _putResolvingWithRandomSuffix() func).
-  
-  typealias EICollection<Key, Value> = Collection<(key: Key, value: Value)>
-  
+    
   /// Representing the availability of collision metadata for an element.
   /// When CollisionSource is available, the `available` case is used with the corresponding key path to access the metadata.
   /// When CollisionSource is not available, the `notAvailable` case is used to indicate the absence of collision information.
@@ -115,10 +117,10 @@ extension Merge {
     infoSources: [S],
     infoKeyPath: KeyPath<S, EInfSeq>,
     keyStringPath: KeyPath<K, String>,
-    keysPrefixOption: KeysPrefixOption<S>,
     keyOriginAvailability: KeyOriginAvailability<EInfSeq.Element>,
     collisionAvailability: CollisionAvailability<EInfSeq.Element>,
-    annotationsFormat: KeyAnnotationsFormat,
+    keysPrefixOption: Format.KeysPrefixOption<S>,
+    annotationsFormat: Format.KeyAnnotationsFormat,
     randomGenerator: consuming some RandomNumberGenerator & Sendable,
     infoSourceSignatureBuilder: @escaping (S) -> String,
     valueTransform: (V) -> W,
@@ -149,8 +151,8 @@ extension Merge {
                                                 elementIndex: elementIndex,
                                                 keyStringPath: keyStringPath,
                                                 context: &context,
-                                                annotationsFormat: annotationsFormat,
                                                 keysPrefixOption: keysPrefixOption,
+                                                annotationsFormat: annotationsFormat,
                                                 keyOriginAvailability: keyOriginAvailability,
                                                 collisionAvailability: collisionAvailability)
         
@@ -184,8 +186,8 @@ extension Merge {
     elementIndex: Int,
     keyStringPath: KeyPath<K, String>,
     context: inout SummaryPreparationContext<some Any>,
-    annotationsFormat: KeyAnnotationsFormat,
-    keysPrefixOption: KeysPrefixOption<S>,
+    keysPrefixOption: Format.KeysPrefixOption<S>,
+    annotationsFormat: Format.KeyAnnotationsFormat,
     keyOriginAvailability: KeyOriginAvailability<(key: K, value: V)>,
     collisionAvailability: CollisionAvailability<(key: K, value: V)>,
   ) -> String {
@@ -232,7 +234,7 @@ extension Merge {
   }
   
   /// **[Decomposition of `augmentedIfNeededKey(...)`]** function.
-  private static func _determinePrefix<S>(keysPrefixOption: KeysPrefixOption<S>,
+  private static func _determinePrefix<S>(keysPrefixOption: Format.KeysPrefixOption<S>,
                                           infoSource: S,
                                           infoSourceIndex: Int,
                                           elementIndex: Int) -> String? {
@@ -255,7 +257,7 @@ extension Merge {
   /// // output:                "[err1] "
   /// // So a key "id" becomes: "[err1] id"
   /// ```
-  private static func _makePrefixString(_ input: (component: String, blockBoundary: AnnotationsBoundaryDelimiter)) -> String {
+  private static func _makePrefixString(_ input: (component: String, blockBoundary: Format.AnnotationsBoundaryDelimiter)) -> String {
     let (component, blockBoundary) = input
     
     var prefix = ""
@@ -286,7 +288,7 @@ extension Merge {
                                                 keyOriginAvailability: KeyOriginAvailability<(key: K, value: V)>,
                                                 keyHasCollisionAcross: Bool,
                                                 keyHasCollisionWithin: Bool,
-                                                annotationsFormat: KeyAnnotationsFormat) -> String? {
+                                                annotationsFormat: Format.KeyAnnotationsFormat) -> String? {
     switch keyOriginAvailability {
     case let .available(keyOriginPath, interpolation):
       let keyHasCollision = keyHasCollisionAcross || keyHasCollisionWithin
@@ -329,16 +331,16 @@ extension Merge {
   private static func _appendSuffixAnnotations(keyOrigin: String?,
                                                collisionSource: String?,
                                                errorInfoSignature: String?,
-                                               annotationsFormat: KeyAnnotationsFormat,
+                                               annotationsFormat: Format.KeyAnnotationsFormat,
                                                to recipient: inout String) {
     // 1. Fast path
     if keyOrigin == nil, collisionSource == nil, errorInfoSignature == nil { return }
     
     // 2. Compute the exhaustive order
-    let exhaustiveOrder: OrderedSet<Merge.AnnotationComponentKind>
+    let exhaustiveOrder: OrderedSet<Merge.Format.AnnotationComponentKind>
     do {
       // Improvement: is `.allCases` computed or static? Should be initialized once (_const / compileTime value)
-      let allAnnotationKinds = Merge.AnnotationComponentKind.allCases
+      let allAnnotationKinds = Merge.Format.AnnotationComponentKind.allCases
       let requestedOrder = annotationsFormat.annotationsOrder
       if requestedOrder.count == allAnnotationKinds.count {
         exhaustiveOrder = requestedOrder
