@@ -115,7 +115,7 @@ extension Merge {
     infoSources: [S],
     infoKeyPath: KeyPath<S, EInfSeq>,
     keyStringPath: KeyPath<K, String>,
-    prefixForAllKeys: KeysPrefix<S>,
+    keysPrefixOption: KeysPrefixOption<S>,
     keyOriginAvailability: KeyOriginAvailability<EInfSeq.Element>,
     collisionAvailability: CollisionAvailability<EInfSeq.Element>,
     annotationsFormat: KeyAnnotationsFormat,
@@ -153,7 +153,7 @@ extension Merge {
                                                  keyStringPath: keyStringPath,
                                                  context: &context,
                                                  annotationsFormat: annotationsFormat,
-                                                 prefixForAllKeys: prefixForAllKeys,
+                                                 keysPrefixOption: keysPrefixOption,
                                                  keyOriginAvailability: keyOriginAvailability,
                                                  collisionAvailability: collisionAvailability)
         
@@ -188,7 +188,7 @@ extension Merge {
     keyStringPath: KeyPath<K, String>,
     context: inout SummaryPreparationContext<some Any>,
     annotationsFormat: KeyAnnotationsFormat,
-    prefixForAllKeys: KeysPrefix<S>,
+    keysPrefixOption: KeysPrefixOption<S>,
     keyOriginAvailability: KeyOriginAvailability<(key: K, value: V)>,
     collisionAvailability: CollisionAvailability<(key: K, value: V)>,
   ) -> String {
@@ -198,7 +198,7 @@ extension Merge {
     let keyHasCollisionWithin = context.keyDuplicatesWithinSources[infoSourceIndex].contains(keyString)
     
     let prefixInput: (component: String, blockBoundary: AnnotationsBoundaryDelimiter)?
-    switch prefixForAllKeys {
+    switch keysPrefixOption {
     case .noPrefix:
       prefixInput = nil
     // case let .sourceSignature(boundaryDelimiter): break
