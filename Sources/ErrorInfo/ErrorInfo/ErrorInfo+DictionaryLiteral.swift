@@ -40,4 +40,8 @@ extension ErrorInfo {
   // func mutating appendKeyValues(_ literal: KeyValuePairs<Key, Value>) {
   //
   // }
+  
+  // public static func += <S: Sequence>(lhs: inout Self, rhs: S) where Element == S.Element {
+  
+  // }
 }
