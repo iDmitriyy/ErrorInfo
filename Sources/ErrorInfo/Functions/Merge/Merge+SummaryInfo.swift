@@ -60,8 +60,16 @@ extension Merge {
   }
   
   enum PropertyAvailability<R, T> {
-    case available(keyPath: KeyPath<R, T>, interpolation: (T) -> String)
+    case available(keyPath: KeyPath<R, T>, interpolation: Interpolation<T>)
     case notAvailable
+  }
+  
+  public struct Interpolation<T> {
+    let interpolation: (KeyOrigin) -> String
+    
+    // extension Interpolation where T == KeyOrigin {
+    //   default = Interpolation { $0.shortSignInterpolation }
+    // }
   }
 }
 
@@ -70,17 +78,37 @@ extension Merge {
 }
 
 extension Merge {
-  // 1. Find collisions across errorInfo sources (typically it is errors)
-  // 2. Iterate over key-value pairs in each errorInfo source.
-  // 3. Collisions
-  // 3.1 If there is cross collision (the same key in info of several errors), then sourceSignature (e.g. error domain + code)
-  // is added to key. If several errors have the same signature (rare in practice), then index from errorInfoSources is also added.
-  // In such a way key across errorInfoSources become unique.
-  // 3.2 If the same key is met several times inside an errorInfo, then collisionSource interpolation is added to a key.
-  // If there are equal collision sources for the same key (e.g. `.onSubscript`), a random suffix
-  // will be added (by _putResolvingWithRandomSuffix() func).
-    
-  /// Example:
+  /// Merges key-value pairs from multiple error info sources, handling potential key collisions in a systematic way.
+  /// It augments the keys to ensure uniqueness across sources and resolves conflicts by annotating them with metadata such as error source signatures
+  /// and collision information.
+  ///
+  /// # Key Features
+  /// - **Collision Handling Across Sources:** If the same key appears in multiple error info sources, the key is augmented with a source-specific
+  ///   signature (e.g., error domain and code).
+  ///   In case some of the sources have identical signatures (rare in practice), an index is appended to source signatures to distinguish them.
+  ///
+  /// - **Collision Handling Within Sources:** If a key appears multiple times within a single error info source, it is annotated with a
+  ///   collision source (such as `onSubscript`).
+  ///
+  /// - **Customizable Key Prefixing:** Allows you to specify custom key prefixes for each error info source or omit prefixes entirely.
+  ///   This is controlled by the `keysPrefixOption` parameter.
+  ///
+  /// - **Customizable Annotations for Keys:** Keys can be annotated with additional metadata such as the `key's origin`, `collision source`,
+  ///   and `error info signature`.
+  ///   This is controlled by the `annotationsFormat`, `keyOriginAvailability` and `collisionAvailability` parameters.
+  ///
+  /// - **Value Transformation:** The function provides a way to transform the values associated with each key. For instance, you can change the value types
+  ///   (e.g., from `String` to `Optional<String>`, or apply any other transformation) using the `valueTransform` closure.
+  ///
+  /// - **Collision Resolution with Random Suffix:** If key collisions still persists after handling across and within-source collisions (highly unlikely in practice),
+  ///   a random suffix is appended to the key to ensure its uniqueness.
+  ///   This step is a fallback mechanism, ensuring that even in edge cases, keys remain unique.
+  ///   This rarely happens, but the function accounts for it by checking if the augmented key already exists in the resulting dictionary and then
+  ///   appending a random suffix if necessary.
+  ///
+  /// - Returns:A merged dictionary with transformed values and unique keys, where collisions are resolved with appropriate key annotations.
+  ///
+  /// # Example
   /// ```
   ///     Info Source 0                           Info Source 1
   /// +--------------------+                 +--------------------+
@@ -92,7 +120,7 @@ extension Merge {
   ///                               |
   ///                               v
   ///        +--------------------------------------------+
-  ///        |  Summary Info with resolved collisions     |
+  ///        |   Summary Info with resolved collisions    |
   ///        |--------------------------------------------|
   ///        | "key1"              : 1                    |
   ///        | "key2 (NSCocoa.17)" : A // (from Source 0) |
@@ -123,7 +151,7 @@ extension Merge {
                                                               to: &summaryInfo)
     }
     
-    // context is a var only because of mutating get / lazy var
+    // context is a var only because of `mutating get` / lazy var
     var context = _Summary.prepareMergeContext(infoSources: infoSources,
                                                infoKeyPath: infoKeyPath,
                                                keyString: keyStringPath,
