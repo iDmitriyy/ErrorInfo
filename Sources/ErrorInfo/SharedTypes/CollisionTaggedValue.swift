@@ -9,12 +9,18 @@
 
 public struct CollisionTaggedValue<Value, CollisionSource> {
   public let value: Value
-  public let collisionSource: CollisionSource?
+  public var collisionSource: CollisionSource? { _collisionSource?.wrapped }
+  
+  // CollisionSource memory footprint is quite large. memoryLayout size == 33, stride == 40 at the moment of writing.
+  // Consuming 40bytes for each value where in fact collisionSource mostly often is nil is ineffective.
+  // Thats why store optional HeapBox, which takes only 8 bytes (64-bit pointer)
+  
+  @usableFromInline internal let _collisionSource: HeapBox<CollisionSource>?
   
   @inlinable
   internal init(value: Value, collisionSource: CollisionSource?) {
     self.value = value
-    self.collisionSource = collisionSource
+    self._collisionSource = collisionSource.map(HeapBox.init)
   }
   
   @inlinable
@@ -29,6 +35,12 @@ public struct CollisionTaggedValue<Value, CollisionSource> {
 extension CollisionTaggedValue: Sendable where Value: Sendable, CollisionSource: Sendable {}
 
 
-internal final class HeapBox<T> {
+@usableFromInline internal final class HeapBox<T> {
+  @usableFromInline internal let wrapped: T
   
+  @inlinable internal init(_ wrapped: T) {
+    self.wrapped = wrapped
+  }
 }
+
+extension HeapBox: Sendable where T: Sendable {}
