@@ -43,7 +43,7 @@ extension Merge {
   public enum KeysPrefix<InfoSource> {
     case noPrefix
     // case sourceSignature(boundaryDelimiter: AnnotationsBoundaryDelimiter) // uncomment of someone need it
-    case custom(prefixBuilder: (_ infoSource: InfoSource, _ atIndex: Int) -> String,
+    case custom(keyPrefixBuilder: (_ infoSource: InfoSource, _ sourceIndex: Int, _ keyIndex: Int) -> String,
                 boundaryDelimiter: AnnotationsBoundaryDelimiter)
   }
 }

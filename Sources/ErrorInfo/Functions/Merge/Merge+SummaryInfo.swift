@@ -89,6 +89,8 @@ extension Merge {
     case notAvailable
   }
   
+  // Improvement: using of KeyPath can be slow. Replacing them with closures may have perfpmance boost.
+  
   /// Example:
   /// ```
   ///     Info Source 0                           Info Source 1
@@ -122,10 +124,11 @@ extension Merge {
   )
     -> OrderedDictionary<String, W> where EInfSeq: Collection<(key: K, value: V)> {
     // any ErrorInfoValueType change to V (e.g. to be Optional<any ErrorInfoValueType> or String)
-    typealias Key = String
-    
-    var summaryInfo: OrderedDictionary<Key, W> = [:]
-    func putResolvingCollisions(key assumeModifiedKey: Key, value processedValue: W) {
+    var summaryInfo: OrderedDictionary<String, W> = [:]
+    func putResolvingCollisions(key assumeModifiedKey: String, value processedValue: W) {
+      // FIXME: - shouldOmitEqualValue – causes `isEqualAny` equality check, which is iverhead here.
+      // Semantically here all keys are made unique. Even if error happens in algorithm, no need to campare values, just
+      // add ranmdomsuffix to key.
       ErrorInfoDictFuncs.Merge._putResolvingWithRandomSuffix(processedValue,
                                                              assumeModifiedKey: assumeModifiedKey,
                                                              shouldOmitEqualValue: false,
@@ -139,22 +142,19 @@ extension Merge {
                                       keyString: keyStringPath,
                                       infoSourceSignatureBuilder: infoSourceSignatureBuilder)
     
-    for (infoSourceIndex, errorInfo) in context.errorInfos.enumerated() {
-      for element in errorInfo {
-        let keyString = element.key[keyPath: keyStringPath]
-        
-        var augmentedKey = keyString // _StatefulKey(key.string)
-                
-        let annotationsSuffix = _makeAnnotations(infoSources: infoSources,
+    for infoSourceIndex in infoSources.indices {
+      let errorInfo = context.errorInfos[infoSourceIndex]
+      for (elementIndex, element) in errorInfo.enumerated() {
+        let augmentedKey = _augmentedIfNeededKey(infoSources: infoSources,
                                                  infoSourceIndex: infoSourceIndex,
                                                  element: element,
+                                                 elementIndex: elementIndex,
+                                                 keyStringPath: keyStringPath,
                                                  context: &context,
+                                                 annotationsFormat: annotationsFormat,
                                                  prefixForAllKeys: prefixForAllKeys,
-                                                 keyString: keyString,
                                                  keyOriginAvailability: keyOriginAvailability,
-                                                 collisionAvailability: collisionAvailability,
-                                                 annotationsFormat: annotationsFormat)
-        augmentedKey.append(annotationsSuffix)
+                                                 collisionAvailability: collisionAvailability)
         
         let adaptedValue = valueTransform(element.value)
         putResolvingCollisions(key: augmentedKey, value: adaptedValue)
@@ -167,35 +167,46 @@ extension Merge {
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
-// MARK: - Key Annotations
+// MARK: - Key Augmentation (prefix / suffix annotations)
 
 extension Merge {
-  /// Decomposition of `merge` function. `
-  private static func _makeAnnotations<S, K, V>(
+  /// **[Decomposition of `summaryInfo`]** function. This is the central formatting function inside the merge algorithm.
+  ///
+  /// Produces the final, fully-augmented key that will be placed into the resulting merged dictionary.
+  /// It performs all key transformations:
+  /// - add prefix (if configured)
+  /// - detect collisions
+  /// - add unique source signature when necessary
+  /// - optionally annotate origin or collision metadata
+  /// - append all suffix annotations in the correct order
+  private static func _augmentedIfNeededKey<S, K, V>(
     infoSources: [S],
     infoSourceIndex: Int,
     element: (key: K, value: V),
+    elementIndex: Int,
+    keyStringPath: KeyPath<K, String>,
     context: inout SummaryPreparationContext<some Any>,
+    annotationsFormat: KeyAnnotationsFormat,
     prefixForAllKeys: KeysPrefix<S>,
-    keyString: String,
     keyOriginAvailability: KeyOriginAvailability<(key: K, value: V)>,
     collisionAvailability: CollisionAvailability<(key: K, value: V)>,
-    annotationsFormat: KeyAnnotationsFormat,
   ) -> String {
+    let keyString = element.key[keyPath: keyStringPath]
+    
     let keyHasCollisionAcross = context.keyDuplicatesAcrossSources.contains(keyString)
     let keyHasCollisionWithin = context.keyDuplicatesWithinSources[infoSourceIndex].contains(keyString)
-    
-    var prefixBuffer = "" // TODO: ?append to key directly without allocationg prefixBuffer
     
     let prefixInput: (component: String, blockBoundary: AnnotationsBoundaryDelimiter)?
     switch prefixForAllKeys {
     case .noPrefix:
       prefixInput = nil
     // case let .sourceSignature(boundaryDelimiter): break
-    case let .custom(prefixBuilder, boundaryDelimiter):
-      let component = prefixBuilder(infoSources[infoSourceIndex], infoSourceIndex)
+    case let .custom(keyPrefixBuilder, boundaryDelimiter):
+      let component = keyPrefixBuilder(infoSources[infoSourceIndex], infoSourceIndex, elementIndex)
       prefixInput = (component, boundaryDelimiter)
     }
+    
+    let prefix: String? = prefixInput.map(_makePrefixString)
     
     // When there is cross collision, add sourcesSignature to distinguish the same key from different errors
     let errorInfoSignature: String? = keyHasCollisionAcross ? context.uniqueSourcesSignatures[infoSourceIndex] : nil
@@ -226,17 +237,38 @@ extension Merge {
       collisionSource = nil
     }
     
-    var annotationsBuffer = "" // TODO: ?append to key directly without allocationg annotationsBuffer
-    
+    // Improvement: resultKey.reserveCapacity | reduce CoW / copy | wrap to ~Copyable
+    // all strings can be more efficiently concatenated. The concrete effective way depends on if-else branching, including
+    // _appendSuffixAnnotations function.
+    var resultKey: String = ""
+    if let prefix {
+      resultKey.append(prefix)
+      resultKey.append(keyString)
+    } else {
+      resultKey = keyString
+    }
     _appendSuffixAnnotations(keyOrigin: keyOriginString,
-                       collisionSource: collisionSource,
-                       errorInfoSignature: errorInfoSignature,
-                       annotationsFormat: annotationsFormat,
-                       to: &annotationsBuffer)
-    
-    return annotationsBuffer
+                             collisionSource: collisionSource,
+                             errorInfoSignature: errorInfoSignature,
+                             annotationsFormat: annotationsFormat,
+                             to: &resultKey)
+    return resultKey
   }
-    
+  
+  /// **[Decomposition of `summaryInfo`]** function.  Builds the suffix part for the key from optional annotations.
+  /// It inserts them in the order defined by `annotationsFormat` and wraps them using the configured delimiters.
+  /// Nothing is added if all components are nil.
+  ///
+  /// # Example
+  ///```
+  /// var key = "id"
+  /// _appendSuffixAnnotations(keyOrigin: "literal",
+  ///                          collisionSource: "onSubscript",
+  ///                          errorInfoSignature: nil,
+  ///                          annotationsFormat: .default,
+  ///                          to: &key)
+  /// // "id (literal, onSubscript)"
+  /// ```
   private static func _appendSuffixAnnotations(keyOrigin: String?,
                                                collisionSource: String?,
                                                errorInfoSignature: String?,
@@ -248,6 +280,7 @@ extension Merge {
     // 2. Compute the exhaustive order
     let exhaustiveOrder: OrderedSet<Merge.AnnotationComponentKind>
     do {
+      // Improvement: is `.allCases` computed or static? Should be initialized once (_const / compileTime value)
       let allAnnotationKinds = Merge.AnnotationComponentKind.allCases
       let requestedOrder = annotationsFormat.annotationsOrder
       if requestedOrder.count == allAnnotationKinds.count {
@@ -264,7 +297,8 @@ extension Merge {
       recipient.append(spacer)
       closingDelimiter = nil
     case let .enclosure(spacer, opening, closing):
-      recipient.append(spacer); recipient.append(opening)
+      recipient.append(spacer)
+      recipient.append(opening)
       closingDelimiter = closing
     }
     
@@ -292,8 +326,18 @@ extension Merge {
     if let closingDelimiter { recipient.append(closingDelimiter) }
   }
   
-  private static func _makePrefixString(_ input: (component: String, blockBoundary: AnnotationsBoundaryDelimiter)?) -> String {
-    guard let (component, blockBoundary) = input else { return "" }
+  /// **[Decomposition of `summaryInfo`]** function.  Builds the prefix text for a key.
+  ///
+  /// # Example
+  /// ```
+  /// _makePrefixString(("err1",
+  ///                   .enclosure(spacer: " ", opening: "[", closing: "]")))
+  ///
+  /// // output:                "[err1] "
+  /// // So a key "id" becomes: "[err1] id"
+  /// ```
+  private static func _makePrefixString(_ input: (component: String, blockBoundary: AnnotationsBoundaryDelimiter)) -> String {
+    let (component, blockBoundary) = input
     
     var prefix = ""
     
@@ -303,7 +347,9 @@ extension Merge {
     case let .onlySpacer(spacer):
       closingDelimiter = nil
       spacerStr = spacer
+    // Improvement: prefix.reserveCapacity(spacer.utf8.count + component.utf8.count)
     case let .enclosure(spacer, opening, closing):
+      // Improvement: prefix.reserveCapacity(opening.utf8.count + component.utf8.count + closing.utf8.count + spacer.utf8.count)
       prefix.append(opening)
       closingDelimiter = closing
       spacerStr = spacer
@@ -345,6 +391,15 @@ extension Merge {
     }
   }
   
+  /// **[Decomposition of `summaryInfo`]** function.
+  ///
+  /// Builds a compact structure with all preprocessing results needed by the main loop in `summaryInfo function`, including:
+  /// - keys duplicated across different sources
+  /// - keys duplicated within each source
+  /// - a lazily-computed list of unique source signatures
+  /// - the extracted errorInfos collections
+  ///
+  /// This context lets `_augmentedIfNeededKey` function quickly determine how to annotate keys.
   private static func prepareMergeContext<S, K, V, ErrInfo>(infoSources: [S],
                                                             infoKeyPath: KeyPath<S, ErrInfo>,
                                                             keyString: KeyPath<K, String>,
@@ -366,7 +421,34 @@ extension Merge {
                                      generateUniqueSourceSignatures: generateUniqueSourceSignatures,
                                      errorInfos: errorInfos)
   }
-  
+    
+  /// Generates a unique string signature for each source. If multiple sources produce the same raw signature, they are disambiguated by appending an index suffix.
+  ///
+  /// If no duplicates are found, the raw signature is used as is. When duplicates occur, each duplicate gets a unique version by adding
+  /// an index (e.g., `signature(0)`, `signature(2)`).
+  ///
+  /// # Example without duplicates:
+  /// ```swift
+  /// let sources = [error1, error2, error3]
+  /// let buildRawSignature = {
+  ///   $0.domain + ".\($0.code)"
+  /// }
+  ///
+  /// _generateUniqueSignatures(forSources: sources, buildSignatureForSource: buildRawSignature)
+  /// // ["NSURL.6", "NSCocoa.17", "NSCocoa.18"]
+  /// ```
+  ///
+  /// # Example with duplicates:
+  /// ```swift
+  /// // error1 and error3 have the same domain and code (and raw signature)
+  /// let sources = [error1, error2, error3]
+  /// let buildRawSignature = {
+  ///   $0.domain.replacingOccurrences(of: "ErrorDomain", with: "") + ".\($0.code)"
+  /// }
+  ///
+  /// _generateUniqueSignatures(forSources: sources, buildSignatureForSource: buildRawSignature)
+  /// // ["NSURL.6(0)", "NSCocoa.17", "NSURL.6(2)"]
+  /// ```
   private static func _generateUniqueSignatures<S>(forSources sources: [S],
                                                    buildSignatureForSource: (S) -> String) -> [String] {
     var signatureStatuses: [String: _SignatureStatus] = Dictionary(minimumCapacity: sources.count)
@@ -409,7 +491,8 @@ extension Merge {
     case alreadyMadeUnique
   }
   
-  /// Analyzes a group of collections and detects duplicate elements both within each collection and across different collections.
+  /// **[Decomposition of `summaryInfo`]** function. Analyzes a group of collections and detects duplicate elements both within each collection
+  /// and across different collections.
   ///
   /// Pperforms two levels of duplicate detection:
   ///
@@ -475,7 +558,7 @@ extension Merge {
     
     /// Tracks duplicates *within* each collection
     var duplicatesWithinSources = [Set<C.Element>](minimumCapacity: collections.count)
-      
+    
     for collection in collections {
       var localCounts: [C.Element: Int] = [:] // | CountedMultiSet
       for element in collection {
@@ -504,69 +587,6 @@ extension Merge {
 }
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
-
-extension Merge {
-  
-  fileprivate struct _StatefulKey: ~Copyable {
-    private var string: String
-    private var isSuffixAppended: Bool
-    
-    init(_ string: String) {
-      self.string = string
-      isSuffixAppended = false
-    }
-    
-    mutating func append(_ other: String) {
-      if !isSuffixAppended {
-        string.append(" | ")
-        isSuffixAppended = true
-      }
-      string.append(other)
-    }
-    
-    consuming func finalizedString() -> String {
-      string
-    }
-    
-    // mutating func prepend(_ prefix: String) {
-    //   string = prefix + " " + string
-    // }
-  }
-}
-
-// ===-------------------------------------------------------------------------------------------------------------------=== //
-
-/// worst case: O(n^2/2)
-/// best case: O(n-1)
-///
-/// Example with processing steps:
-/// 01112323214
-/// 01    23232  4
-/// 01    233      4
-/// 01234             – output
-func extractUniqueElements<T>(from values: NonEmptyArray<T>, equalFuncImp: (T, T) -> Bool) -> NonEmptyArray<T> {
-  // TODO: return NonEmptyArray<DiscontiguousSlice<[T]>> to prevemt heap allocation, slice: ~Escaping with `values` lifetime
-  var processed: NonEmptyArray<T> = NonEmptyArray<T>(values.first)
-  // Improvement: wrap NonEquatable elements to Any[EqualityKind], and use Set, instead of elementwise comparison.
-  // TODO: try to use use Algorithms.UniquedSequence.init(base:, projections:)
-  // perfomance (may be best olgorithm will be different for different elements count)
-  var currentElement = values.first
-  var nextElementsSlice = values.base.dropFirst()
-  var uniqueElementsSlice = nextElementsSlice
-  while !nextElementsSlice.isEmpty {
-    let duplicatedElementsIndices = nextElementsSlice.indices(where: { nextElement in
-      equalFuncImp(currentElement, nextElement)
-    })
-    nextElementsSlice.removeSubranges(duplicatedElementsIndices) // ?? use DiscontiguousSlice<[T]>
-    uniqueElementsSlice.removeSubranges(duplicatedElementsIndices)
-    if let nextElement = nextElementsSlice.first {
-      currentElement = nextElement
-      nextElementsSlice = nextElementsSlice.dropFirst()
-    }
-  }
-  processed.append(contentsOf: uniqueElementsSlice)
-  return processed
-}
 
 // JM4 ["decodingDate": date0, // collide with ME14
 //      "T.Type": type0, // collide with NE2
@@ -651,5 +671,37 @@ func extractUniqueElements<T>(from values: NonEmptyArray<T>, equalFuncImp: (T, T
      commonElements.insert(element)
    }
    return commonElements
+ }
+ 
+ /// worst case: O(n^2/2)
+ /// best case: O(n-1)
+ ///
+ /// Example with processing steps:
+ /// 01112323214
+ /// 01    23232  4
+ /// 01    233      4
+ /// 01234             – output
+ func extractUniqueElements<T>(from values: NonEmptyArray<T>, equalFuncImp: (T, T) -> Bool) -> NonEmptyArray<T> {
+   // TODO: return NonEmptyArray<DiscontiguousSlice<[T]>> to prevemt heap allocation, slice: ~Escaping with `values` lifetime
+   var processed: NonEmptyArray<T> = NonEmptyArray<T>(values.first)
+   // Improvement: wrap NonEquatable elements to Any[EqualityKind], and use Set, instead of elementwise comparison.
+   // TODO: try to use use Algorithms.UniquedSequence.init(base:, projections:)
+   // perfomance (may be best olgorithm will be different for different elements count)
+   var currentElement = values.first
+   var nextElementsSlice = values.base.dropFirst()
+   var uniqueElementsSlice = nextElementsSlice
+   while !nextElementsSlice.isEmpty {
+     let duplicatedElementsIndices = nextElementsSlice.indices(where: { nextElement in
+       equalFuncImp(currentElement, nextElement)
+     })
+     nextElementsSlice.removeSubranges(duplicatedElementsIndices) // ?? use DiscontiguousSlice<[T]>
+     uniqueElementsSlice.removeSubranges(duplicatedElementsIndices)
+     if let nextElement = nextElementsSlice.first {
+       currentElement = nextElement
+       nextElementsSlice = nextElementsSlice.dropFirst()
+     }
+   }
+   processed.append(contentsOf: uniqueElementsSlice)
+   return processed
  }
  */

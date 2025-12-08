@@ -209,7 +209,7 @@ extension ErrorInfoDictFuncs.Merge {
     // 1. assumeWasModifiedDonatorKey was not really modified
     // 2. assumeWasModifiedDonatorKey was modified but also has a collision with another existing key of recipient
     var modifiedKey = assumeModifiedKey
-    var counter: Int = 0
+    var counter: UInt8 = 0
     while let recipientAnotherValue = recipient[modifiedKey] { // condition mostly always should not happen
       lazy var isEqualToCurrent = ErrorInfoFuncs.isEqualAny(recipientAnotherValue, value)
             
