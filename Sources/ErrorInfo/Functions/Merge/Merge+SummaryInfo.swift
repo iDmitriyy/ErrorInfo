@@ -376,6 +376,12 @@ extension Merge._Summary {
       closingDelimiter = closing
     }
     
+    let makeName: (Merge.Format.AnnotationComponentKind) -> String?
+    switch annotationsFormat.annotationNameOption {
+    case .noNames: makeName = { _ in nil }
+    case let .withNames(separator, nameForComponent): makeName = { separator + nameForComponent($0) }
+    }
+    
     // 4. Append components in one tight loop.
     // In most cases all components are nil (as they are typically added when collision happen)
     var needsSeparator = false // no separator is needed before first component
@@ -391,6 +397,10 @@ extension Merge._Summary {
           recipient.append(annotationsFormat.annotationsDelimiters.componentsSeparator)
         } else {
           needsSeparator = true // when first non-nil component appears, toggle to true for next components
+        }
+        
+        if let name = makeName(currentComponentKind) {
+          recipient.append(name)
         }
         recipient.append(currentComponent)
       }

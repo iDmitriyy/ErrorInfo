@@ -14,20 +14,22 @@ extension Merge.Format {
     
     internal let keyOriginPolicy: KeyOriginAnnotationPolicy
     
-    // TODO: - prependAllKeysWithErrorInfoSignature: Bool
-    // - name for component
+    internal let annotationNameOption: AnnotationNameOption
     
     public init(annotationsOrder: OrderedSet<AnnotationComponentKind>,
                 annotationsDelimiters: AnnotationsBlockDelimiters,
-                keyOriginPolicy: KeyOriginAnnotationPolicy) {
+                keyOriginPolicy: KeyOriginAnnotationPolicy,
+                annotationNameOption: AnnotationNameOption) {
       self.annotationsOrder = annotationsOrder
       self.annotationsDelimiters = annotationsDelimiters
       self.keyOriginPolicy = keyOriginPolicy
+      self.annotationNameOption = annotationNameOption
     }
     
     public static let `default` = KeyAnnotationsFormat(annotationsOrder: AnnotationComponentKind.defaultOrdering,
                                                        annotationsDelimiters: .default,
-                                                       keyOriginPolicy: .default)
+                                                       keyOriginPolicy: .default,
+                                                       annotationNameOption: .default)
   }
   
   /// In which order annotations will be added
@@ -37,16 +39,30 @@ extension Merge.Format {
     case errorInfoSignature
     // case typeOfValue
     
+    public var defaultName: String {
+      switch self {
+      case .keyOrigin: "keyOrigin"
+      case .collisionSource: "collision"
+      case .errorInfoSignature: "sourceSignature"
+      }
+    }
+    
     public static let defaultOrdering: OrderedSet<Self> = [.keyOrigin, .collisionSource, .errorInfoSignature]
   }
   
-  // TODO: By default annotations should be added with name for AnnotationComponentKind
-  // userd_id (keyType: .literal, collision: onMerge(fileLine: MainScreen.Swift:31), sourceSignature: NSCocoa.17)
+  /// `"userd_id (keyOrigin: .literal, collision: onMerge(fileLine: MainScreen.Swift:31), sourceSignature: NSCocoa.17)"`
+  public enum AnnotationNameOption: Sendable {
+    case noNames
+    case withNames(separator: String, nameForComponent: @Sendable (AnnotationComponentKind) -> String)
+    
+    public static let `default`: AnnotationNameOption = .withNames(separator: ": ",
+                                                                   nameForComponent: { $0.defaultName })
+  }
   
-  public enum KeysPrefixOption<InfoSource> {
+  public enum KeysPrefixOption<InfoSource>: Sendable {
     case noPrefix
     case customPrefix(boundaryDelimiter: AnnotationsBoundaryDelimiter,
-                      keyPrefixBuilder: (_ infoSource: InfoSource, _ sourceIndex: Int, _ keyIndex: Int) -> String)
+                      keyPrefixBuilder: @Sendable (_ infoSource: InfoSource, _ sourceIndex: Int, _ keyIndex: Int) -> String)
   }
 }
 
