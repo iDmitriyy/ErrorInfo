@@ -127,9 +127,6 @@ extension Merge {
     // any ErrorInfoValueType change to V (e.g. to be Optional<any ErrorInfoValueType> or String)
     var summaryInfo: OrderedDictionary<String, W> = [:]
     func putResolvingCollisions(key assumeModifiedKey: String, value processedValue: W) {
-      // FIXME: - shouldOmitEqualValue – causes `isEqualAny` equality check, which is iverhead here.
-      // Semantically here all keys are made unique. Even if error happens in algorithm, no need to campare values, just
-      // add ranmdomsuffix to key.
       ErrorInfoDictFuncs.Merge._putAugmentingWithRandomSuffix(assumeModifiedKey: assumeModifiedKey,
                                                               value: processedValue,
                                                               suffixFirstChar: ErrorInfoMerge.suffixBeginningForMergeScalar,
@@ -146,16 +143,16 @@ extension Merge {
     for infoSourceIndex in infoSources.indices {
       let errorInfo = context.errorInfos[infoSourceIndex]
       for (elementIndex, element) in errorInfo.enumerated() {
-        let augmentedKey = _augmentedIfNeededKey(infoSources: infoSources,
-                                                 infoSourceIndex: infoSourceIndex,
-                                                 element: element,
-                                                 elementIndex: elementIndex,
-                                                 keyStringPath: keyStringPath,
-                                                 context: &context,
-                                                 annotationsFormat: annotationsFormat,
-                                                 keysPrefixOption: keysPrefixOption,
-                                                 keyOriginAvailability: keyOriginAvailability,
-                                                 collisionAvailability: collisionAvailability)
+        let augmentedKey = augmentedIfNeededKey(infoSources: infoSources,
+                                                infoSourceIndex: infoSourceIndex,
+                                                element: element,
+                                                elementIndex: elementIndex,
+                                                keyStringPath: keyStringPath,
+                                                context: &context,
+                                                annotationsFormat: annotationsFormat,
+                                                keysPrefixOption: keysPrefixOption,
+                                                keyOriginAvailability: keyOriginAvailability,
+                                                collisionAvailability: collisionAvailability)
         
         let adaptedValue = valueTransform(element.value)
         putResolvingCollisions(key: augmentedKey, value: adaptedValue)
@@ -171,7 +168,7 @@ extension Merge {
 // MARK: - Key Augmentation (prefix / suffix annotations)
 
 extension Merge {
-  /// **[Decomposition of `summaryInfo`]** function. This is the central formatting function inside the merge algorithm.
+  /// **[Decomposition of `summaryInfo(...)`]** function. This is the central formatting function inside the merge algorithm.
   ///
   /// Produces the final, fully-augmented key that will be placed into the resulting merged dictionary.
   /// It performs all key transformations:
@@ -180,7 +177,7 @@ extension Merge {
   /// - add unique source signature when necessary
   /// - optionally annotate origin or collision metadata
   /// - append all suffix annotations in the correct order
-  private static func _augmentedIfNeededKey<S, K, V>(
+  private static func augmentedIfNeededKey<S, K, V>(
     infoSources: [S],
     infoSourceIndex: Int,
     element: (key: K, value: V),
@@ -194,49 +191,27 @@ extension Merge {
   ) -> String {
     let keyString = element.key[keyPath: keyStringPath]
     
+    // Determine collision status
     let keyHasCollisionAcross = context.keyDuplicatesAcrossSources.contains(keyString)
     let keyHasCollisionWithin = context.keyDuplicatesWithinSources[infoSourceIndex].contains(keyString)
     
-    let prefixInput: (component: String, blockBoundary: AnnotationsBoundaryDelimiter)?
-    switch keysPrefixOption {
-    case .noPrefix:
-      prefixInput = nil
-    // case let .sourceSignature(boundaryDelimiter): break
-    case let .custom(keyPrefixBuilder, boundaryDelimiter):
-      let component = keyPrefixBuilder(infoSources[infoSourceIndex], infoSourceIndex, elementIndex)
-      prefixInput = (component, boundaryDelimiter)
-    }
+    // Determine prefix
+    let prefix = _determinePrefix(keysPrefixOption: keysPrefixOption,
+                                  infoSource: infoSources[infoSourceIndex],
+                                  infoSourceIndex: infoSourceIndex,
+                                  elementIndex: elementIndex)
     
-    let prefix: String? = prefixInput.map(_makePrefixString)
-    
-    // When there is cross collision, add sourcesSignature to distinguish the same key from different errors
+    // When there is cross collision, add sourceSignature to distinguish the same key from info of different errors
     let errorInfoSignature: String? = keyHasCollisionAcross ? context.uniqueSourcesSignatures[infoSourceIndex] : nil
     
-    let keyOriginString: String?
-    switch keyOriginAvailability {
-    case let .available(keyPath, interpolation):
-      let keyHasCollision = keyHasCollisionAcross || keyHasCollisionWithin
-      let keyOriginPolicy = annotationsFormat.keyOriginPolicy
-      let keyOriginOptions = keyHasCollision ? keyOriginPolicy.whenCollision : keyOriginPolicy.whenUnique
-      
-      let keyOrigin = element[keyPath: keyPath]
-      keyOriginString = if keyOriginOptions.matches(keyOrigin: keyOrigin) {
-        interpolation(keyOrigin)
-      } else {
-        nil
-      }
-    case .notAvailable:
-      keyOriginString = nil
-    }
+    // Determine key origin string
+    let keyOrigin = _determineKeyOrigin(element: element,
+                                        keyOriginAvailability: keyOriginAvailability,
+                                        keyHasCollisionAcross: keyHasCollisionAcross,
+                                        keyHasCollisionWithin: keyHasCollisionWithin,
+                                        annotationsFormat: annotationsFormat)
         
-    let collisionSource: String?
-    switch collisionAvailability {
-    case let .available(keyPath, interpolation):
-      let collision: CollisionSource? = element[keyPath: keyPath]
-      collisionSource = collision.map(interpolation)
-    case .notAvailable:
-      collisionSource = nil
-    }
+    let collisionSource = _determineCollisionSource(collisionAvailability: collisionAvailability, element: element)
     
     // Improvement: resultKey.reserveCapacity | reduce CoW / copy | wrap to ~Copyable
     // all strings can be more efficiently concatenated. The concrete effective way depends on if-else branching, including
@@ -248,7 +223,7 @@ extension Merge {
     } else {
       resultKey = keyString
     }
-    _appendSuffixAnnotations(keyOrigin: keyOriginString,
+    _appendSuffixAnnotations(keyOrigin: keyOrigin,
                              collisionSource: collisionSource,
                              errorInfoSignature: errorInfoSignature,
                              annotationsFormat: annotationsFormat,
@@ -256,7 +231,88 @@ extension Merge {
     return resultKey
   }
   
-  /// **[Decomposition of `summaryInfo`]** function.  Builds the suffix part for the key from optional annotations.
+  /// **[Decomposition of `augmentedIfNeededKey(...)`]** function.
+  private static func _determinePrefix<S>(keysPrefixOption: KeysPrefixOption<S>,
+                                          infoSource: S,
+                                          infoSourceIndex: Int,
+                                          elementIndex: Int) -> String? {
+    switch keysPrefixOption {
+    case .noPrefix:
+      return nil
+    case let .custom(keyPrefixBuilder, boundaryDelimiter):
+      let component = keyPrefixBuilder(infoSource, infoSourceIndex, elementIndex)
+      return _makePrefixString((component, boundaryDelimiter))
+    }
+  }
+  
+  /// **[Decomposition of `augmentedIfNeededKey(...)`]** function.  Builds the prefix text for a key.
+  ///
+  /// # Example
+  /// ```
+  /// _makePrefixString(("err1",
+  ///                   .enclosure(spacer: " ", opening: "[", closing: "]")))
+  ///
+  /// // output:                "[err1] "
+  /// // So a key "id" becomes: "[err1] id"
+  /// ```
+  private static func _makePrefixString(_ input: (component: String, blockBoundary: AnnotationsBoundaryDelimiter)) -> String {
+    let (component, blockBoundary) = input
+    
+    var prefix = ""
+    
+    let closingDelimiter: Character?
+    let spacerStr: String
+    switch blockBoundary {
+    case let .onlySpacer(spacer):
+      closingDelimiter = nil
+      spacerStr = spacer
+      // Improvement: prefix.reserveCapacity(spacer.utf8.count + component.utf8.count)
+      
+    case let .enclosure(spacer, opening, closing):
+      // Improvement: prefix.reserveCapacity(opening.utf8.count + component.utf8.count + closing.utf8.count + spacer.utf8.count)
+      prefix.append(opening)
+      closingDelimiter = closing
+      spacerStr = spacer
+    }
+    
+    prefix.append(component)
+    if let closingDelimiter { prefix.append(closingDelimiter) }
+    prefix.append(spacerStr)
+    return prefix
+  }
+  
+  /// **[Decomposition of `augmentedIfNeededKey(...)`]** function.
+  private static func _determineKeyOrigin<K, V>(element: (key: K, value: V),
+                                                keyOriginAvailability: KeyOriginAvailability<(key: K, value: V)>,
+                                                keyHasCollisionAcross: Bool,
+                                                keyHasCollisionWithin: Bool,
+                                                annotationsFormat: KeyAnnotationsFormat) -> String? {
+    switch keyOriginAvailability {
+    case let .available(keyPath, interpolation):
+      let keyHasCollision = keyHasCollisionAcross || keyHasCollisionWithin
+      let keyOriginPolicy = annotationsFormat.keyOriginPolicy
+      let keyOriginOptions = keyHasCollision ? keyOriginPolicy.whenCollision : keyOriginPolicy.whenUnique
+          
+      let keyOrigin = element[keyPath: keyPath]
+      return keyOriginOptions.matches(keyOrigin: keyOrigin) ? interpolation(keyOrigin) : nil
+    case .notAvailable:
+      return nil
+    }
+  }
+  
+  /// **[Decomposition of `augmentedIfNeededKey(...)`]** function.
+  private static func _determineCollisionSource<K, V>(collisionAvailability: CollisionAvailability<(key: K, value: V)>,
+                                                      element: (key: K, value: V)) -> String? {
+    switch collisionAvailability {
+    case let .available(keyPath, interpolation):
+      let collision: CollisionSource? = element[keyPath: keyPath]
+      return collision.map(interpolation)
+    case .notAvailable:
+      return nil
+    }
+  }
+  
+  /// **[Decomposition of `augmentedIfNeededKey(...)`]** function.  Builds the suffix part for the key from optional annotations.
   /// It inserts them in the order defined by `annotationsFormat` and wraps them using the configured delimiters.
   /// Nothing is added if all components are nil.
   ///
@@ -326,44 +382,6 @@ extension Merge {
     // 5. Close enclosure if needed
     if let closingDelimiter { recipient.append(closingDelimiter) }
   }
-  
-  /// **[Decomposition of `summaryInfo`]** function.  Builds the prefix text for a key.
-  ///
-  /// # Example
-  /// ```
-  /// _makePrefixString(("err1",
-  ///                   .enclosure(spacer: " ", opening: "[", closing: "]")))
-  ///
-  /// // output:                "[err1] "
-  /// // So a key "id" becomes: "[err1] id"
-  /// ```
-  private static func _makePrefixString(_ input: (component: String, blockBoundary: AnnotationsBoundaryDelimiter)) -> String {
-    let (component, blockBoundary) = input
-    
-    var prefix = ""
-    
-    let closingDelimiter: Character?
-    let spacerStr: String
-    switch blockBoundary {
-    case let .onlySpacer(spacer):
-      closingDelimiter = nil
-      spacerStr = spacer
-    // Improvement: prefix.reserveCapacity(spacer.utf8.count + component.utf8.count)
-    case let .enclosure(spacer, opening, closing):
-      // Improvement: prefix.reserveCapacity(opening.utf8.count + component.utf8.count + closing.utf8.count + spacer.utf8.count)
-      prefix.append(opening)
-      closingDelimiter = closing
-      spacerStr = spacer
-    }
-    
-    prefix.append(component)
-    
-    if let closingDelimiter { prefix.append(closingDelimiter) }
-    
-    prefix.append(spacerStr)
-    
-    return prefix
-  }
 }
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
@@ -371,7 +389,7 @@ extension Merge {
 // MARK: - Context
 
 extension Merge {
-  /// infoSources.count and keyDuplicatesWithinSources.count, sourcesSignatures.count, errorInfos.count MUST be equal
+  /// infoSources.count and keyDuplicatesWithinSources.count, sourcesSignatures.count, errorInfos.count **MUST** be equal
   private struct SummaryPreparationContext<ErrInfo>: ~Copyable {
     let keyDuplicatesAcrossSources: Set<String>
     let keyDuplicatesWithinSources: [Set<String>]
@@ -392,7 +410,7 @@ extension Merge {
     }
   }
   
-  /// **[Decomposition of `summaryInfo`]** function.
+  /// **[Decomposition of `summaryInfo(...)`]** function.
   ///
   /// Builds a compact structure with all preprocessing results needed by the main loop in `summaryInfo function`, including:
   /// - keys duplicated across different sources
@@ -405,7 +423,7 @@ extension Merge {
                                                             infoKeyPath: KeyPath<S, ErrInfo>,
                                                             keyString: KeyPath<K, String>,
                                                             infoSourceSignatureBuilder: @escaping (S) -> String)
-    -> SummaryPreparationContext<ErrInfo> where ErrInfo: EICollection<K, V> {
+    -> SummaryPreparationContext<ErrInfo> where ErrInfo: Collection<(key: K, value: V)> {
     let errorInfos = infoSources.map { $0[keyPath: infoKeyPath] }
     
     // let duplicates = findDuplicateElements(in: errorInfos.map { $0.allKeys })
@@ -423,7 +441,8 @@ extension Merge {
                                      errorInfos: errorInfos)
   }
     
-  /// Generates a unique string signature for each source. If multiple sources produce the same raw signature, they are disambiguated by appending an index suffix.
+  /// **[Decomposition of `summaryInfo(...)`]** function. Generates a unique string signature for each source.
+  /// If multiple sources produce the same raw signature, they are disambiguated by appending an index suffix.
   ///
   /// If no duplicates are found, the raw signature is used as is. When duplicates occur, each duplicate gets a unique version by adding
   /// an index (e.g., `signature(0)`, `signature(2)`).
@@ -432,7 +451,7 @@ extension Merge {
   /// ```swift
   /// let sources = [error1, error2, error3]
   /// let buildRawSignature = {
-  ///   $0.domain + ".\($0.code)"
+  ///   $0.domain.replacingOccurrences(of: "ErrorDomain", with: "") + ".\($0.code)"
   /// }
   ///
   /// _generateUniqueSignatures(forSources: sources, buildSignatureForSource: buildRawSignature)
@@ -483,6 +502,7 @@ extension Merge {
     return uniqueSignatures
   }
   
+  /// **[Decomposition of `summaryInfo(...)`]** function.
   private static func makeIndexedSignature(rawSignature: String, index: Int) -> String {
     rawSignature + "(\(index))"
   }
@@ -492,7 +512,7 @@ extension Merge {
     case alreadyMadeUnique
   }
   
-  /// **[Decomposition of `summaryInfo`]** function. Analyzes a group of collections and detects duplicate elements both within each collection
+  /// **[Decomposition of `summaryInfo(...)`]** function. Analyzes a group of collections and detects duplicate elements both within each collection
   /// and across different collections.
   ///
   /// Pperforms two levels of duplicate detection:
