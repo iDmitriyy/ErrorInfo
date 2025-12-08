@@ -129,11 +129,10 @@ extension Merge {
       // FIXME: - shouldOmitEqualValue – causes `isEqualAny` equality check, which is iverhead here.
       // Semantically here all keys are made unique. Even if error happens in algorithm, no need to campare values, just
       // add ranmdomsuffix to key.
-      ErrorInfoDictFuncs.Merge._putResolvingWithRandomSuffix(processedValue,
-                                                             assumeModifiedKey: assumeModifiedKey,
-                                                             shouldOmitEqualValue: false,
-                                                             suffixFirstChar: ErrorInfoMerge.suffixBeginningForMergeScalar,
-                                                             to: &summaryInfo)
+      ErrorInfoDictFuncs.Merge._putAugmentingWithRandomSuffix(assumeModifiedKey: assumeModifiedKey,
+                                                              value: processedValue,
+                                                              suffixFirstChar: ErrorInfoMerge.suffixBeginningForMergeScalar,
+                                                              to: &summaryInfo)
     }
           
     // context is a var only because of mutating get / lazy var
@@ -556,7 +555,7 @@ extension Merge {
       // If there are duplicated elements across collections, memory overhead will be minimal in real scenarios.
     }
     
-    /// Tracks duplicates *within* each collection
+    /// Tracks duplicates within each collection
     var duplicatesWithinSources = [Set<C.Element>](minimumCapacity: collections.count)
     
     for collection in collections {

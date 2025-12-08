@@ -114,15 +114,27 @@ extension ErrorInfoDictFuncs.Merge {
   }
   
   /// decomposition subroutine of func withResolvingCollisionsAdd()
-  internal static func _putResolvingWithRandomSuffix<Dict>(_ value: Dict.Value,
-                                                           assumeModifiedKey: Dict.Key,
-                                                           shouldOmitEqualValue: Bool,
-                                                           suffixFirstChar: UnicodeScalar,
-                                                           to recipient: inout Dict)
+  internal static func _putAugmentingWithRandomSuffix<Dict>(_ value: Dict.Value,
+                                                            assumeModifiedKey: Dict.Key,
+                                                            shouldOmitEqualValue: Bool,
+                                                            suffixFirstChar: UnicodeScalar,
+                                                            to recipient: inout Dict)
     where Dict: DictionaryProtocol, Dict.Key == String {
     _putAugmentingWithRandomSuffix(assumeModifiedKey: assumeModifiedKey,
                                    value: value,
                                    shouldOmitEqualValue: shouldOmitEqualValue,
+                                   suffixSeparator: String(suffixFirstChar),
+                                   randomSuffix: ErrorInfoFuncs.randomSuffix,
+                                   to: &recipient)
+  }
+  
+  internal static func _putAugmentingWithRandomSuffix<Dict>(assumeModifiedKey: Dict.Key,
+                                                            value: Dict.Value,
+                                                            suffixFirstChar: UnicodeScalar,
+                                                            to recipient: inout Dict)
+    where Dict: DictionaryProtocol, Dict.Key == String {
+    _putAugmentingWithRandomSuffix(assumeModifiedKey: assumeModifiedKey,
+                                   value: value,
                                    suffixSeparator: String(suffixFirstChar),
                                    randomSuffix: ErrorInfoFuncs.randomSuffix,
                                    to: &recipient)
@@ -209,7 +221,7 @@ extension ErrorInfoDictFuncs.Merge {
     // 1. assumeWasModifiedDonatorKey was not really modified
     // 2. assumeWasModifiedDonatorKey was modified but also has a collision with another existing key of recipient
     var modifiedKey = assumeModifiedKey
-    var counter: UInt8 = 0
+    var needToAddSuffixSeparator = true
     while let recipientAnotherValue = recipient[modifiedKey] { // condition mostly always should not happen
       lazy var isEqualToCurrent = ErrorInfoFuncs.isEqualAny(recipientAnotherValue, value)
             
@@ -219,19 +231,53 @@ extension ErrorInfoDictFuncs.Merge {
         let randomSuffix = randomSuffix()
         
         let suffix = mutate(value: Dict.Key()) { // counter == 0 ? String(suffixFirstChar) + randomSuffix : randomSuffix
-          if counter == 0 {
+          if needToAddSuffixSeparator {
             $0.append(contentsOf: suffixSeparator) // suffixSeparator can be empty, which is effectively an absence of it
             $0.append(contentsOf: randomSuffix.rawValue)
+            needToAddSuffixSeparator = false
           } else {
             $0 = randomSuffix.rawValue
           }
         }
         
         modifiedKey.append(contentsOf: suffix) // modifiedKey += suffix
-        counter += 1
         // example: 3 error-info instances with decodingDate key
         // "decodingDate_don0_file_line_SourceFileName_81_#9vT"
       }
+    } // end while
+    recipient[modifiedKey] = value
+  }
+  
+  internal static func _putAugmentingWithRandomSuffix<Dict>(assumeModifiedKey: Dict.Key,
+                                                            value: Dict.Value,
+                                                            suffixSeparator: some Collection<Dict.Key.Element>,
+                                                            randomSuffix: @Sendable () -> NonEmpty<Dict.Key>,
+                                                            to recipient: inout Dict)
+    where Dict: DictionaryProtocol, Dict.Key: RangeReplaceableCollection {
+    // Here we can can only make an assumtption that donator key was modified on the client side.
+    // While it should always happen, there is no guarantee.
+    
+    // So there are 2 possible collision variants here:
+    // 1. assumeWasModifiedDonatorKey was not really modified
+    // 2. assumeWasModifiedDonatorKey was modified but also has a collision with another existing key of recipient
+    var modifiedKey = assumeModifiedKey
+    var needToAddSuffixSeparator = true
+    while let recipientAnotherValue = recipient[modifiedKey] { // condition mostly always should not happen
+      let randomSuffix = randomSuffix()
+      
+      let suffix = mutate(value: Dict.Key()) { // counter == 0 ? String(suffixFirstChar) + randomSuffix : randomSuffix
+        if needToAddSuffixSeparator {
+          $0.append(contentsOf: suffixSeparator) // suffixSeparator can be empty, which is effectively an absence of it
+          $0.append(contentsOf: randomSuffix.rawValue)
+          needToAddSuffixSeparator = false
+        } else {
+          $0 = randomSuffix.rawValue
+        }
+      }
+      
+      modifiedKey.append(contentsOf: suffix) // modifiedKey += suffix
+      // example: 3 error-info instances with decodingDate key
+      // "decodingDate_don0_file_line_SourceFileName_81_#9vT"
     } // end while
     recipient[modifiedKey] = value
   }
@@ -240,32 +286,4 @@ extension ErrorInfoDictFuncs.Merge {
   // withKeyAugmentationAdd() function get a RandomNumberGenerator instance from merge() func.
   // This way RandomNumberGenerator for a merge() operation
   // This can also help to write test for _putAugmentingWithRandomSuffix func
-  
-  /// For integer types.
-  /// .builtInAddSuffix<Never>
-  /// If resolve result didn't make key mutation, an infinite recursion can occur
-//  public static func unsafe_WithKeyMutationAdd<Dict, C>(keyValue donatorKeyValue: Dict.Element,
-//                                                            to recipient: inout Dict,
-//                                                           donatorIndex: some BinaryInteger & CustomStringConvertible,
-//                                                            identity: C,
-//                                                            resolve: (ResolvingInput<Dict.Key, Dict.Value, C>) -> ResolvingResult<Dict.Key>)
-//  where Dict: DictionaryUnifyingProtocol {
-//
-//  }
 }
-
-//  private static func _makeInput<Dict>(collidedKey: String,
-//                       recipientValue: Dict.Value,
-//                        donatorValue: Dict.Value,
-//                        valuesAreEqual: Bool,
-//                        donatorIndex: some BinaryInteger & CustomStringConvertible,
-//                        fileLine: StaticFileLine)
-//    -> ResolvingInput<Dict.Key, Dict.Value> where Dict: DictionaryUnifyingProtocol, Dict.Key == String {
-//      let element = KeyCollisionResolvingInput.Element(key: collidedKey,
-//                                                       existingValue: recipientValue,
-//                                                       beingAddedValue: donatorValue)
-//      return KeyCollisionResolvingInput(element: element,
-//                                                           areValuesApproximatelyEqual: valuesAreEqual,
-//                                                           donatorIndex: donatorIndex,
-//                                                           fileLine: fileLine)
-//  }

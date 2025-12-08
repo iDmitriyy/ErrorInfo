@@ -33,11 +33,11 @@ extension ErrorInfoDictFuncs {
     // such self-collisions are something unexpected, so keep all values (shouldOmitEqualValue = false) in this case
     for (key, value) in dict {
       let prefixedKey = transform(key: key, prefix: keyPrefix)
-      Merge._putResolvingWithRandomSuffix(value,
-                                          assumeModifiedKey: prefixedKey,
-                                          shouldOmitEqualValue: false,
-                                          suffixFirstChar: ErrorInfoMerge.suffixBeginningForMergeScalar,
-                                          to: &prefixedKeysDict)
+      Merge._putAugmentingWithRandomSuffix(value,
+                                           assumeModifiedKey: prefixedKey,
+                                           shouldOmitEqualValue: false,
+                                           suffixFirstChar: ErrorInfoMerge.suffixBeginningForMergeScalar,
+                                           to: &prefixedKeysDict)
     }
     return dict = prefixedKeysDict
   }
