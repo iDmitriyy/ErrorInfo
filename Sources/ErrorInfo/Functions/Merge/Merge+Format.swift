@@ -39,6 +39,13 @@ extension Merge {
     
     public static let defaultOrdering: OrderedSet<Self> = [.keyOrigin, .collisionSource, .errorInfoSignature]
   }
+  
+  public enum KeysPrefix<InfoSource> {
+    case noPrefix
+    // case sourceSignature(boundaryDelimiter: AnnotationsBoundaryDelimiter) // uncomment of someone need it
+    case custom(prefixBuilder: (_ infoSource: InfoSource, _ atIndex: Int) -> String,
+                boundaryDelimiter: AnnotationsBoundaryDelimiter)
+  }
 }
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //

@@ -84,6 +84,11 @@ extension Merge {
     case notAvailable
   }
   
+  enum PropertyAvailability<R, T> {
+    case available(keyPath: KeyPath<R, T>, interpolation: (T) -> String)
+    case notAvailable
+  }
+  
   /// Example:
   /// ```
   ///     Info Source 0                           Info Source 1
@@ -108,6 +113,7 @@ extension Merge {
     infoSources: [S],
     infoKeyPath: KeyPath<S, EInfSeq>,
     keyStringPath: KeyPath<K, String>,
+    prefixForAllKeys: KeysPrefix<S>,
     keyOriginAvailability: KeyOriginAvailability<EInfSeq.Element>,
     collisionAvailability: CollisionAvailability<EInfSeq.Element>,
     annotationsFormat: KeyAnnotationsFormat,
@@ -126,7 +132,7 @@ extension Merge {
                                                              suffixFirstChar: ErrorInfoMerge.suffixBeginningForMergeScalar,
                                                              to: &summaryInfo)
     }
-    
+          
     // context is a var only because of mutating get / lazy var
     var context = prepareMergeContext(infoSources: infoSources,
                                       infoKeyPath: infoKeyPath,
@@ -139,9 +145,11 @@ extension Merge {
         
         var augmentedKey = keyString // _StatefulKey(key.string)
                 
-        let annotationsSuffix = _makeAnnotations(infoSourceIndex: infoSourceIndex,
+        let annotationsSuffix = _makeAnnotations(infoSources: infoSources,
+                                                 infoSourceIndex: infoSourceIndex,
                                                  element: element,
                                                  context: &context,
+                                                 prefixForAllKeys: prefixForAllKeys,
                                                  keyString: keyString,
                                                  keyOriginAvailability: keyOriginAvailability,
                                                  collisionAvailability: collisionAvailability,
@@ -155,10 +163,6 @@ extension Merge {
     
     return summaryInfo
   }
-  
-  enum PropertyAvailability<R> {
-    case keyOrigin(keyPath: KeyPath<R, KeyOrigin>)
-  }
 }
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
@@ -167,10 +171,12 @@ extension Merge {
 
 extension Merge {
   /// Decomposition of `merge` function. `
-  private static func _makeAnnotations<K, V>(
+  private static func _makeAnnotations<S, K, V>(
+    infoSources: [S],
     infoSourceIndex: Int,
     element: (key: K, value: V),
     context: inout SummaryPreparationContext<some Any>,
+    prefixForAllKeys: KeysPrefix<S>,
     keyString: String,
     keyOriginAvailability: KeyOriginAvailability<(key: K, value: V)>,
     collisionAvailability: CollisionAvailability<(key: K, value: V)>,
@@ -178,6 +184,18 @@ extension Merge {
   ) -> String {
     let keyHasCollisionAcross = context.keyDuplicatesAcrossSources.contains(keyString)
     let keyHasCollisionWithin = context.keyDuplicatesWithinSources[infoSourceIndex].contains(keyString)
+    
+    var prefixBuffer = "" // TODO: ?append to key directly without allocationg prefixBuffer
+    
+    let prefixInput: (component: String, blockBoundary: AnnotationsBoundaryDelimiter)?
+    switch prefixForAllKeys {
+    case .noPrefix:
+      prefixInput = nil
+    // case let .sourceSignature(boundaryDelimiter): break
+    case let .custom(prefixBuilder, boundaryDelimiter):
+      let component = prefixBuilder(infoSources[infoSourceIndex], infoSourceIndex)
+      prefixInput = (component, boundaryDelimiter)
+    }
     
     // When there is cross collision, add sourcesSignature to distinguish the same key from different errors
     let errorInfoSignature: String? = keyHasCollisionAcross ? context.uniqueSourcesSignatures[infoSourceIndex] : nil
@@ -209,7 +227,8 @@ extension Merge {
     }
     
     var annotationsBuffer = "" // TODO: ?append to key directly without allocationg annotationsBuffer
-    _appendAnnotations(keyOrigin: keyOriginString,
+    
+    _appendSuffixAnnotations(keyOrigin: keyOriginString,
                        collisionSource: collisionSource,
                        errorInfoSignature: errorInfoSignature,
                        annotationsFormat: annotationsFormat,
@@ -218,11 +237,11 @@ extension Merge {
     return annotationsBuffer
   }
     
-  private static func _appendAnnotations(keyOrigin: String?,
-                                         collisionSource: String?,
-                                         errorInfoSignature: String?,
-                                         annotationsFormat: KeyAnnotationsFormat,
-                                         to recipient: inout String) {
+  private static func _appendSuffixAnnotations(keyOrigin: String?,
+                                               collisionSource: String?,
+                                               errorInfoSignature: String?,
+                                               annotationsFormat: KeyAnnotationsFormat,
+                                               to recipient: inout String) {
     // 1. Fast path
     if keyOrigin == nil, collisionSource == nil, errorInfoSignature == nil { return }
     
@@ -271,6 +290,32 @@ extension Merge {
     
     // 5. Close enclosure if needed
     if let closingDelimiter { recipient.append(closingDelimiter) }
+  }
+  
+  private static func _makePrefixString(_ input: (component: String, blockBoundary: AnnotationsBoundaryDelimiter)?) -> String {
+    guard let (component, blockBoundary) = input else { return "" }
+    
+    var prefix = ""
+    
+    let closingDelimiter: Character?
+    let spacerStr: String
+    switch blockBoundary {
+    case let .onlySpacer(spacer):
+      closingDelimiter = nil
+      spacerStr = spacer
+    case let .enclosure(spacer, opening, closing):
+      prefix.append(opening)
+      closingDelimiter = closing
+      spacerStr = spacer
+    }
+    
+    prefix.append(component)
+    
+    if let closingDelimiter { prefix.append(closingDelimiter) }
+    
+    prefix.append(spacerStr)
+    
+    return prefix
   }
 }
 
