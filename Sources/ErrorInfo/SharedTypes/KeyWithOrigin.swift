@@ -25,7 +25,7 @@ public enum KeyOrigin: Sendable {
   case literalConstant
   
   /// When key is created from a compile time known string literal.
-  ///literalA + literalB ,  literalA + "stringLiteral"
+  /// literalA + literalB ,  literalA + "stringLiteral"
   case combinedLiterals
   
   /// When key is generated at runtime, typically through string interpolation, json or other dynamic constructs.
@@ -59,3 +59,9 @@ public enum KeyOrigin: Sendable {
     }
   }
 }
+
+//extension StringLiteralKey {
+//  internal var asKeyWithOrigin: KeyWithOrigin {
+//    KeyWithOrigin(string: rawValue, origin: keyOrigin)
+//  }
+//}

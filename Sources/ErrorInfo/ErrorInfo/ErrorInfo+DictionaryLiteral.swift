@@ -33,3 +33,11 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
     }
   }
 }
+
+extension ErrorInfo {
+  // TODO: literal or function builder
+  
+  // func mutating appendKeyValues(_ literal: KeyValuePairs<Key, Value>) {
+  //
+  // }
+}
