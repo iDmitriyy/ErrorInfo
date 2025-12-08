@@ -239,7 +239,7 @@ extension Merge {
     switch keysPrefixOption {
     case .noPrefix:
       return nil
-    case let .custom(keyPrefixBuilder, boundaryDelimiter):
+    case let .customPrefix(boundaryDelimiter, keyPrefixBuilder):
       let component = keyPrefixBuilder(infoSource, infoSourceIndex, elementIndex)
       return _makePrefixString((component, boundaryDelimiter))
     }
@@ -288,12 +288,12 @@ extension Merge {
                                                 keyHasCollisionWithin: Bool,
                                                 annotationsFormat: KeyAnnotationsFormat) -> String? {
     switch keyOriginAvailability {
-    case let .available(keyPath, interpolation):
+    case let .available(keyOriginPath, interpolation):
       let keyHasCollision = keyHasCollisionAcross || keyHasCollisionWithin
       let keyOriginPolicy = annotationsFormat.keyOriginPolicy
       let keyOriginOptions = keyHasCollision ? keyOriginPolicy.whenCollision : keyOriginPolicy.whenUnique
           
-      let keyOrigin = element[keyPath: keyPath]
+      let keyOrigin = element[keyPath: keyOriginPath]
       return keyOriginOptions.matches(keyOrigin: keyOrigin) ? interpolation(keyOrigin) : nil
     case .notAvailable:
       return nil
