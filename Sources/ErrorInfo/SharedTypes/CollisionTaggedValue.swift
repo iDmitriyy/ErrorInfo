@@ -27,3 +27,8 @@ public struct CollisionTaggedValue<Value, CollisionSource> {
 }
 
 extension CollisionTaggedValue: Sendable where Value: Sendable, CollisionSource: Sendable {}
+
+
+internal final class HeapBox<T> {
+  
+}

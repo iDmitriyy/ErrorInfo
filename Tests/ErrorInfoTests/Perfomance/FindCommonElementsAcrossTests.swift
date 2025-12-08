@@ -16,12 +16,12 @@ struct FindCommonElementsAcrossTests {
   let set3: Set<String> = (400...500).map(String.init(describing:)).apply(Set.init)
   let set4: Set<String> = (0...550).map(String.init(describing:)).apply(Set.init)
   
-  @Test func findCommonElements_() {
-    let output = performMeasuredAction(count: 100) {
-      findCommonElements(across: [set0, set1, set2, set3, set4])
-    }
-    
-    // on debug builds:
-    print(output.duration)
-  }
+  // @Test func findCommonElements_() {
+  //   let output = performMeasuredAction(count: 100) {
+  //     findCommonElements(across: [set0, set1, set2, set3, set4])
+  //   }
+  //
+  //   // on debug builds:
+  //   print(output.duration)
+  // }
 }

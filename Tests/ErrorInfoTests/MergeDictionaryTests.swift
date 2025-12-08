@@ -19,12 +19,15 @@ struct MergeDictionaryTests {
     var dict: [String: Int] = ["0": 0]
     let fileLine = StaticFileLine(fileID: "MergeDictionaryTests", line: 15)
     let omitEqualValue = true
+    var randomGenerator = SystemRandomNumberGenerator()
+    
     ErrorInfoDictFuncs.Merge
       .withKeyAugmentationAdd(keyValue: ("0", 0),
                               to: &dict,
                               donatorIndex: 0,
                               omitEqualValue: omitEqualValue,
                               identity: fileLine,
+                              randomGenerator: &randomGenerator,
                               resolve: { input in
                                 .modifyDonatorKey(input.element.key)
                               })
@@ -34,6 +37,7 @@ struct MergeDictionaryTests {
                               donatorIndex: 1,
                               omitEqualValue: omitEqualValue,
                               identity: fileLine,
+                              randomGenerator: &randomGenerator,
                               resolve: { input in
                                 .modifyDonatorKey(input.element.key)
                               })

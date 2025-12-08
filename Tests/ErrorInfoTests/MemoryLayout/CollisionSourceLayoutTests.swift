@@ -14,6 +14,6 @@ struct CollisionSourceLayoutTests {
     
     let tuple = VariadicTuple(memoryLayout.size, memoryLayout.stride)
     
-    print("")
+    print(tuple)
   }
 }
