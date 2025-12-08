@@ -13,10 +13,12 @@ public enum ErrorInfoDictFuncs {}
 // MARK: Add Key Prefix
 
 extension ErrorInfoDictFuncs {
-  public static func addKeyPrefix<V, Dict>(_ keyPrefix: String,
-                                           toKeysOf dict: inout Dict,
-                                           transform: PrefixTransformFunc)
-    where Dict: DictionaryProtocol<String, V>, Dict: EmptyInitializableWithCapacityDictionary {
+  public static func addKeyPrefix<V, Dict>(
+    _ keyPrefix: String,
+    toKeysOf dict: inout Dict,
+    randomGenerator: consuming some RandomNumberGenerator & Sendable = SystemRandomNumberGenerator(),
+    transform: PrefixTransformFunc,
+  ) where Dict: DictionaryProtocol<String, V>, Dict: EmptyInitializableWithCapacityDictionary {
     var prefixedKeysDict = Dict(minimumCapacity: dict.count)
     
     // Adding prefix is similar to merge operation, except that key collisions can happen between own keys after they are transformed.
@@ -37,6 +39,7 @@ extension ErrorInfoDictFuncs {
                                            assumeModifiedKey: prefixedKey,
                                            shouldOmitEqualValue: false,
                                            suffixFirstChar: ErrorInfoMerge.suffixBeginningForMergeScalar,
+                                           randomGenerator: &randomGenerator,
                                            to: &prefixedKeysDict)
     }
     return dict = prefixedKeysDict

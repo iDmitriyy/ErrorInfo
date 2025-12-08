@@ -34,26 +34,27 @@ private let allPrintableNoWhitespaceAsciiSet: Set<UInt8> = mutate(value: Set<UIn
 }
 
 extension ErrorInfoFuncs {
-  internal static func randomSuffix() -> NonEmptyString {
+  @Sendable internal static func randomSuffix(generator: inout some RandomNumberGenerator) -> NonEmptyString {
     // 11,451,456 combinations ,
     // duplicated string statistically created after several thousands for count = 4
     // for count == 3 duplicate appears in range 200-1000 calls in average
-    randomPrintableAsciiCharsString(count: 4)
+    randomPrintableAsciiCharsString(count: 4, randomGenerator: &generator)
   }
   
   ///
   /// Ascii codes in range 33...126 – all printable symbols except space.
-  private static func randomPrintableAsciiCharsString(count: Int) -> NonEmptyString {
+  private static func randomPrintableAsciiCharsString(count: Int,
+                                                      randomGenerator: inout some RandomNumberGenerator) -> NonEmptyString {
     let count = count.boundedWith(1, .max)
-        
+    
     let zeroIndexChar = Character(UnicodeScalar(alphaNumericAsciiSet.randomElement()!))
     var result: NonEmptyString = NonEmptyString(element: zeroIndexChar)
     for index in 1..<count {
       let randomAsciiNumber: UInt8 = if index == 0 || index == count - 1 {
-        alphaNumericAsciiSet.randomElement()!
+        alphaNumericAsciiSet.randomElement(using: &randomGenerator)!
       } else {
         // in the middle of the string extended charset is used
-        allPrintableNoWhitespaceAsciiSet.randomElement()!
+        allPrintableNoWhitespaceAsciiSet.randomElement(using: &randomGenerator)!
       }
       
       result.append(Character(UnicodeScalar(randomAsciiNumber)))

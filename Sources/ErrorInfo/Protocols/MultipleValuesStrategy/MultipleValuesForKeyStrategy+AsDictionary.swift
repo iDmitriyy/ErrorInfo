@@ -22,10 +22,12 @@ extension ErrorInfoMultipleValuesForKeyStrategy where Self: ErrorInfoPartialColl
 //  @_specialize(where I == String, D == Dictionary<String, String>)
 //  @_specialize(where Key == String, Value == String)
   /// Key-augmentation merge strategy.
-  func asGenericDict<I, D>(omitEqualValue: Bool,
-                           collisionSource: I,
-                           resolve: (KeyCollisionResolvingInput<Key, Value, I>) -> KeyCollisionResolvingResult<Key>)
-    -> D where D: DictionaryProtocol<Key, Value>, D: EmptyInitializableWithCapacityDictionary {
+  func asGenericDict<I, D>(
+    omitEqualValue: Bool,
+    collisionSource: I,
+    randomGenerator: consuming some RandomNumberGenerator & Sendable = SystemRandomNumberGenerator(),
+    resolve: (KeyCollisionResolvingInput<Key, Value, I>) -> KeyCollisionResolvingResult<Key>,
+  ) -> D where D: DictionaryProtocol<Key, Value>, D: EmptyInitializableWithCapacityDictionary {
     var recipient = D(minimumCapacity: count)
     
     for keyValue in keyValuesView {
@@ -34,6 +36,7 @@ extension ErrorInfoMultipleValuesForKeyStrategy where Self: ErrorInfoPartialColl
                                                       donatorIndex: 0,
                                                       omitEqualValue: omitEqualValue,
                                                       identity: collisionSource,
+                                                      randomGenerator: &randomGenerator,
                                                       resolve: resolve)
     }
     

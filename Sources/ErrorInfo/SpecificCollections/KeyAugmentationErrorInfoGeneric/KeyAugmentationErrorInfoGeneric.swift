@@ -40,18 +40,18 @@ public struct KeyAugmentationErrorInfoGeneric<D> where D: DictionaryProtocol, D:
 
 extension KeyAugmentationErrorInfoGeneric {
   /// For usage in subscript imps.
-  public mutating func appendResolvingCollisions(augmentingIfNeededKey key: D.Key,
-                                                 value: D.Value,
-                                                 omitEqualValue: Bool,
-                                                 suffixSeparator: D.Key,
-                                                 randomSuffix: @Sendable () -> NonEmpty<D.Key>) {
-    ErrorInfoDictFuncs.Merge._putAugmentingWithRandomSuffix(assumeModifiedKey: key,
-                                                            value: value,
-                                                            shouldOmitEqualValue: omitEqualValue,
-                                                            suffixSeparator: suffixSeparator,
-                                                            randomSuffix: randomSuffix,
-                                                            to: &_storage)
-  }
+//  public mutating func appendResolvingCollisions(augmentingIfNeededKey key: D.Key,
+//                                                 value: D.Value,
+//                                                 omitEqualValue: Bool,
+//                                                 suffixSeparator: D.Key,
+//                                                 randomSuffix: @Sendable () -> NonEmpty<D.Key>) {
+//    ErrorInfoDictFuncs.Merge._putAugmentingWithRandomSuffix(assumeModifiedKey: key,
+//                                                            value: value,
+//                                                            shouldOmitEqualValue: omitEqualValue,
+//                                                            suffixSeparator: suffixSeparator,
+//                                                            randomSuffix: randomSuffix,
+//                                                            to: &_storage)
+//  }
   
 //  mutating func mergeWith(other: Self,
 //                          donatorIndex: some BinaryInteger,

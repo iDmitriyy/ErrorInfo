@@ -119,6 +119,7 @@ extension Merge {
     keyOriginAvailability: KeyOriginAvailability<EInfSeq.Element>,
     collisionAvailability: CollisionAvailability<EInfSeq.Element>,
     annotationsFormat: KeyAnnotationsFormat,
+    randomGenerator: consuming some RandomNumberGenerator & Sendable,
     infoSourceSignatureBuilder: @escaping (S) -> String,
     valueTransform: (V) -> W,
   )
@@ -132,9 +133,10 @@ extension Merge {
       ErrorInfoDictFuncs.Merge._putAugmentingWithRandomSuffix(assumeModifiedKey: assumeModifiedKey,
                                                               value: processedValue,
                                                               suffixFirstChar: ErrorInfoMerge.suffixBeginningForMergeScalar,
+                                                              randomGenerator: &randomGenerator,
                                                               to: &summaryInfo)
     }
-          
+    
     // context is a var only because of mutating get / lazy var
     var context = prepareMergeContext(infoSources: infoSources,
                                       infoKeyPath: infoKeyPath,
@@ -259,7 +261,7 @@ extension Merge {
   /// Nothing is added if all components are nil.
   ///
   /// # Example
-  ///```
+  /// ```
   /// var key = "id"
   /// _appendSuffixAnnotations(keyOrigin: "literal",
   ///                          collisionSource: "onSubscript",
