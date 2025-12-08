@@ -8,6 +8,11 @@
 // ?? can It be done as typeaalias
 // LegacyErrorInfo = GenericValueErrorInfo<String, Any>
 
+/// Add partial functionality of collisions resolution to dictionary
+struct DictionaryErrorInfoOverlay<Dict> { // – it is the same as LegacyErrorInfo. Can generically be done.
+  private(set) var dictionary: Dict
+}
+
 public struct LegacyErrorInfo: IterableErrorInfo {
   public typealias Key = String
   public typealias Value = Any

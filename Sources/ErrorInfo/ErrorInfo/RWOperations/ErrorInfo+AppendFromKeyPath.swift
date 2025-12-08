@@ -41,7 +41,7 @@ extension ErrorInfo {
            keyOrigin: .keyPath,
            value: value,
            preserveNilValues: true,
-           duplicatePolicy: .default,
+           duplicatePolicy: .defaultForAppending,
            collisionSource: .onAppend)
     }
   }

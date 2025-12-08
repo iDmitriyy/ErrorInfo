@@ -11,27 +11,10 @@ import protocol InternalCollectionsUtilities._UniqueCollection
 
 import Foundation
 
-/// Add partial functionality of collisions resolution to dictionary
-struct DictionaryErrorInfoOverlay<Dict> { // – it is the same as LegacyErrorInfo. Can generically be done.
-  private(set) var dictionary: Dict
-}
-
 // Should ErrorInfo be codable? does json allow the same key several times?
 // ? Decode merged OrderedDictionary as Swift.Dectionary but with key-value ordering
 
 // line: UInt = #line -> UInt16 (65k lines per file seems enough for average usage) | test file size in script
-
-enum MerrorInfoSourcesOptions {
-  // omitEqualValuesInsideSource
-  // omitEqualValuesAcrossSources
-  // collapseNilValues
-}
-
-public enum Merge {}
-
-extension Merge {
-  internal enum Summary {}
-}
 
 // !! there should be an ability te remove duplicated values for the same key inside / across errorInfoSources, but the
 // knowledge that this duplicates happened should be put to the result dictionary.
@@ -58,16 +41,6 @@ extension Merge {
 // _specialize(elements, for: BitArray.SubSequence.self)
 
 extension Merge {
-  // 1. Find collisions across errorInfo sources (typically it is errors)
-  // 2. Iterate over key-value pairs in each errorInfo source.
-  // 3. Collisions
-  // 3.1 If there is cross collision (the same key in info of several errors), then sourceSignature (e.g. error domain + code)
-  // is added to key. If several errors have the same signature (rare in practice), then index from errorInfoSources is also added.
-  // In such a way key across errorInfoSources become unique.
-  // 3.2 If the same key is met several times inside an errorInfo, then collisionSource interpolation is added to a key.
-  // If there are equal collision sources for the same key (e.g. `.onSubscript`), a random suffix
-  // will be added (by _putResolvingWithRandomSuffix() func).
-    
   /// Representing the availability of collision metadata for an element.
   /// When CollisionSource is available, the `available` case is used with the corresponding key path to access the metadata.
   /// When CollisionSource is not available, the `notAvailable` case is used to indicate the absence of collision information.
@@ -90,9 +63,23 @@ extension Merge {
     case available(keyPath: KeyPath<R, T>, interpolation: (T) -> String)
     case notAvailable
   }
-  
-  // Improvement: using of KeyPath can be slow. Replacing them with closures may have perfpmance boost.
-  
+}
+
+extension Merge {
+  internal enum _Summary {}
+}
+
+extension Merge {
+  // 1. Find collisions across errorInfo sources (typically it is errors)
+  // 2. Iterate over key-value pairs in each errorInfo source.
+  // 3. Collisions
+  // 3.1 If there is cross collision (the same key in info of several errors), then sourceSignature (e.g. error domain + code)
+  // is added to key. If several errors have the same signature (rare in practice), then index from errorInfoSources is also added.
+  // In such a way key across errorInfoSources become unique.
+  // 3.2 If the same key is met several times inside an errorInfo, then collisionSource interpolation is added to a key.
+  // If there are equal collision sources for the same key (e.g. `.onSubscript`), a random suffix
+  // will be added (by _putResolvingWithRandomSuffix() func).
+    
   /// Example:
   /// ```
   ///     Info Source 0                           Info Source 1
@@ -137,24 +124,24 @@ extension Merge {
     }
     
     // context is a var only because of mutating get / lazy var
-    var context = prepareMergeContext(infoSources: infoSources,
-                                      infoKeyPath: infoKeyPath,
-                                      keyString: keyStringPath,
-                                      infoSourceSignatureBuilder: infoSourceSignatureBuilder)
-    
+    var context = _Summary.prepareMergeContext(infoSources: infoSources,
+                                               infoKeyPath: infoKeyPath,
+                                               keyString: keyStringPath,
+                                               infoSourceSignatureBuilder: infoSourceSignatureBuilder)
+    // Improvement: using of KeyPaths can be slow. Replacing them with closures may have perfpmance boost.
     for infoSourceIndex in infoSources.indices {
       let errorInfo = context.errorInfos[infoSourceIndex]
       for (elementIndex, element) in errorInfo.enumerated() {
-        let augmentedKey = augmentedIfNeededKey(infoSources: infoSources,
-                                                infoSourceIndex: infoSourceIndex,
-                                                element: element,
-                                                elementIndex: elementIndex,
-                                                keyStringPath: keyStringPath,
-                                                context: &context,
-                                                keysPrefixOption: keysPrefixOption,
-                                                annotationsFormat: annotationsFormat,
-                                                keyOriginAvailability: keyOriginAvailability,
-                                                collisionAvailability: collisionAvailability)
+        let augmentedKey = _Summary.augmentedIfNeededKey(infoSources: infoSources,
+                                                         infoSourceIndex: infoSourceIndex,
+                                                         element: element,
+                                                         elementIndex: elementIndex,
+                                                         keyStringPath: keyStringPath,
+                                                         context: &context,
+                                                         keysPrefixOption: keysPrefixOption,
+                                                         annotationsFormat: annotationsFormat,
+                                                         keyOriginAvailability: keyOriginAvailability,
+                                                         collisionAvailability: collisionAvailability)
         
         let adaptedValue = valueTransform(element.value)
         putResolvingCollisions(key: augmentedKey, value: adaptedValue)
@@ -169,7 +156,7 @@ extension Merge {
 
 // MARK: - Key Augmentation (prefix / suffix annotations)
 
-extension Merge {
+extension Merge._Summary {
   /// **[Decomposition of `summaryInfo(...)`]** function. This is the central formatting function inside the merge algorithm.
   ///
   /// Produces the final, fully-augmented key that will be placed into the resulting merged dictionary.
@@ -179,17 +166,17 @@ extension Merge {
   /// - add unique source signature when necessary
   /// - optionally annotate origin or collision metadata
   /// - append all suffix annotations in the correct order
-  private static func augmentedIfNeededKey<S, K, V>(
+  fileprivate static func augmentedIfNeededKey<S, K, V>(
     infoSources: [S],
     infoSourceIndex: Int,
     element: (key: K, value: V),
     elementIndex: Int,
     keyStringPath: KeyPath<K, String>,
     context: inout SummaryPreparationContext<some Any>,
-    keysPrefixOption: Format.KeysPrefixOption<S>,
-    annotationsFormat: Format.KeyAnnotationsFormat,
-    keyOriginAvailability: KeyOriginAvailability<(key: K, value: V)>,
-    collisionAvailability: CollisionAvailability<(key: K, value: V)>,
+    keysPrefixOption: Merge.Format.KeysPrefixOption<S>,
+    annotationsFormat: Merge.Format.KeyAnnotationsFormat,
+    keyOriginAvailability: Merge.KeyOriginAvailability<(key: K, value: V)>,
+    collisionAvailability: Merge.CollisionAvailability<(key: K, value: V)>,
   ) -> String {
     let keyString = element.key[keyPath: keyStringPath]
     
@@ -234,7 +221,7 @@ extension Merge {
   }
   
   /// **[Decomposition of `augmentedIfNeededKey(...)`]** function.
-  private static func _determinePrefix<S>(keysPrefixOption: Format.KeysPrefixOption<S>,
+  private static func _determinePrefix<S>(keysPrefixOption: Merge.Format.KeysPrefixOption<S>,
                                           infoSource: S,
                                           infoSourceIndex: Int,
                                           elementIndex: Int) -> String? {
@@ -257,7 +244,7 @@ extension Merge {
   /// // output:                "[err1] "
   /// // So a key "id" becomes: "[err1] id"
   /// ```
-  private static func _makePrefixString(_ input: (component: String, blockBoundary: Format.AnnotationsBoundaryDelimiter)) -> String {
+  private static func _makePrefixString(_ input: (component: String, blockBoundary: Merge.Format.AnnotationsBoundaryDelimiter)) -> String {
     let (component, blockBoundary) = input
     
     var prefix = ""
@@ -285,10 +272,10 @@ extension Merge {
   
   /// **[Decomposition of `augmentedIfNeededKey(...)`]** function.
   private static func _determineKeyOrigin<K, V>(element: (key: K, value: V),
-                                                keyOriginAvailability: KeyOriginAvailability<(key: K, value: V)>,
+                                                keyOriginAvailability: Merge.KeyOriginAvailability<(key: K, value: V)>,
                                                 keyHasCollisionAcross: Bool,
                                                 keyHasCollisionWithin: Bool,
-                                                annotationsFormat: Format.KeyAnnotationsFormat) -> String? {
+                                                annotationsFormat: Merge.Format.KeyAnnotationsFormat) -> String? {
     switch keyOriginAvailability {
     case let .available(keyOriginPath, interpolation):
       let keyHasCollision = keyHasCollisionAcross || keyHasCollisionWithin
@@ -303,7 +290,7 @@ extension Merge {
   }
   
   /// **[Decomposition of `augmentedIfNeededKey(...)`]** function.
-  private static func _determineCollisionSource<K, V>(collisionAvailability: CollisionAvailability<(key: K, value: V)>,
+  private static func _determineCollisionSource<K, V>(collisionAvailability: Merge.CollisionAvailability<(key: K, value: V)>,
                                                       element: (key: K, value: V)) -> String? {
     switch collisionAvailability {
     case let .available(keyPath, interpolation):
@@ -331,7 +318,7 @@ extension Merge {
   private static func _appendSuffixAnnotations(keyOrigin: String?,
                                                collisionSource: String?,
                                                errorInfoSignature: String?,
-                                               annotationsFormat: Format.KeyAnnotationsFormat,
+                                               annotationsFormat: Merge.Format.KeyAnnotationsFormat,
                                                to recipient: inout String) {
     // 1. Fast path
     if keyOrigin == nil, collisionSource == nil, errorInfoSignature == nil { return }
@@ -390,9 +377,9 @@ extension Merge {
 
 // MARK: - Context
 
-extension Merge {
+extension Merge._Summary {
   /// infoSources.count and keyDuplicatesWithinSources.count, sourcesSignatures.count, errorInfos.count **MUST** be equal
-  private struct SummaryPreparationContext<ErrInfo>: ~Copyable {
+  fileprivate struct SummaryPreparationContext<ErrInfo>: ~Copyable {
     let keyDuplicatesAcrossSources: Set<String>
     let keyDuplicatesWithinSources: [Set<String>]
     
@@ -421,10 +408,10 @@ extension Merge {
   /// - the extracted errorInfos collections
   ///
   /// This context lets `_augmentedIfNeededKey` function quickly determine how to annotate keys.
-  private static func prepareMergeContext<S, K, V, ErrInfo>(infoSources: [S],
-                                                            infoKeyPath: KeyPath<S, ErrInfo>,
-                                                            keyString: KeyPath<K, String>,
-                                                            infoSourceSignatureBuilder: @escaping (S) -> String)
+  fileprivate static func prepareMergeContext<S, K, V, ErrInfo>(infoSources: [S],
+                                                                infoKeyPath: KeyPath<S, ErrInfo>,
+                                                                keyString: KeyPath<K, String>,
+                                                                infoSourceSignatureBuilder: @escaping (S) -> String)
     -> SummaryPreparationContext<ErrInfo> where ErrInfo: Collection<(key: K, value: V)> {
     let errorInfos = infoSources.map { $0[keyPath: infoKeyPath] }
     

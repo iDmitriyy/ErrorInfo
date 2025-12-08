@@ -7,10 +7,6 @@
 
 public import struct OrderedCollections.OrderedSet
 
-extension Merge {
-  public enum Format {}
-}
-
 extension Merge.Format {
   public struct KeyAnnotationsFormat: Sendable {
     internal let annotationsOrder: OrderedSet<AnnotationComponentKind>

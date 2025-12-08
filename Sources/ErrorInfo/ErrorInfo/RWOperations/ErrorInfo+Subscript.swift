@@ -49,7 +49,7 @@ extension ErrorInfo {
            keyOrigin: literalKey.keyOrigin,
            value: newValue,
            preserveNilValues: true,
-           duplicatePolicy: .default,
+           duplicatePolicy: .defaultForAppending,
            collisionSource: .onSubscript)
     }
   }
@@ -66,7 +66,7 @@ extension ErrorInfo {
            keyOrigin: .dynamic,
            value: newValue,
            preserveNilValues: true,
-           duplicatePolicy: .default,
+           duplicatePolicy: .defaultForAppending,
            collisionSource: .onSubscript)
     }
   }

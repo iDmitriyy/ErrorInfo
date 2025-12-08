@@ -15,16 +15,9 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
   
   public typealias ValueType = ErrorInfoValueType
   
-  // TODO: should CollisionSource be stored in BackingStorage? mostly always CollisionSource is nil
-  // may be BackingStorage should keep a separate dict for keeping CollisionSource instances
-  // check memory consuption for both cases.
-  // Do it after all Slices will be comlpeted, as keeping collisionSource in separate dict need a way to somehow
-  // store relation between values in slice and collision sources.
-  // Another one case is with TypeInfo. Simply type info can be stored as a Bool flag or Empty() instance.
   @usableFromInline internal typealias BackingStorage = OrderedMultiValueErrorInfoGeneric<String, _Entry>
-  // public typealias ValueWrapper = CollisionTaggedValue<any ValueType, CollisionSource>
   
-  // FIXME: private(set)
+  // TODO: private(set)
   @usableFromInline internal var _storage: BackingStorage
   
   private init(storage: BackingStorage) {
@@ -128,13 +121,15 @@ extension ErrorInfo {
       self.insertIfEqual = insertIfEqual
     }
     
-    /// Skip equal values (default)
-    public static let ignoreEqual = Self(insertIfEqual: false) // rejectEqual
+    public static let defaultForAppending = rejectEqual
+    
+    /// Skip equal values
+    public static let rejectEqual = Self(insertIfEqual: false)
     
     /// Store duplicates even when equal
-    public static let keepEqual = Self(insertIfEqual: true) // allowEqual
+    public static let allowEqual = Self(insertIfEqual: true)
     
-    public static let `default` = ignoreEqual
+    // updateByNew
     
     /// Keep duplicates only when collisionSource differs
     // case keepIfCollisionSourceDiffers
@@ -145,8 +140,6 @@ extension ErrorInfo {
     
     /// Custom decision logic
     // custom((_ existing: Entry, _ new: Entry) -> Bool)
-    
-    // updateByNew
     
     // DuplicatePolicy for nil values should be the same as for values and regulated by preserveNilValues
   }

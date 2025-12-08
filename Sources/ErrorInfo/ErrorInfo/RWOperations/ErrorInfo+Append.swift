@@ -15,7 +15,7 @@ extension ErrorInfo {
          keyOrigin: .dynamic,
          value: newValue,
          preserveNilValues: true,
-         duplicatePolicy: .default,
+         duplicatePolicy: .defaultForAppending,
          collisionSource: .onSubscript) // FIXME: .onSubscript source in append method.
     // How can we solve the propblem of namespace noise in subscript with dynamicKey?
     // May be it's ok to change collisionSource to .onAppend here
@@ -29,7 +29,7 @@ extension ErrorInfo {
          keyOrigin: literalKey.keyOrigin,
          value: newValue,
          preserveNilValues: true,
-         duplicatePolicy: .default,
+         duplicatePolicy: .defaultForAppending,
          collisionSource: .onSubscript)
   }
 }
@@ -39,7 +39,7 @@ extension ErrorInfo {
 extension ErrorInfo {
   public mutating func appendIfNotNil(_ value: (any ValueType)?,
                                       forKey literalKey: StringLiteralKey,
-                                      duplicatePolicy: ValueDuplicatePolicy = .ignoreEqual) {
+                                      duplicatePolicy: ValueDuplicatePolicy = .rejectEqual) {
     guard let value else { return }
     _appendWithDefaultTypeInfo(key: literalKey.rawValue,
                                keyOrigin: literalKey.keyOrigin,
@@ -51,7 +51,7 @@ extension ErrorInfo {
   @_disfavoredOverload
   public mutating func appendIfNotNil(_ value: (any ValueType)?,
                                       forKey dynamicKey: String,
-                                      duplicatePolicy: ValueDuplicatePolicy = .ignoreEqual) {
+                                      duplicatePolicy: ValueDuplicatePolicy = .rejectEqual) {
     guard let value else { return }
     _appendWithDefaultTypeInfo(key: dynamicKey,
                                keyOrigin: .dynamic,

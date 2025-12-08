@@ -9,7 +9,7 @@
 
 extension ErrorInfo {
   public static func with(preserveNilValues: Bool = true,
-                          duplicatePolicy: ValueDuplicatePolicy = .ignoreEqual,
+                          duplicatePolicy: ValueDuplicatePolicy = .rejectEqual,
                           append: (consuming CustomOptionsView) -> Void) -> Self {
     var info = Self()
     info.appendWith(preserveNilValues: preserveNilValues,
@@ -24,7 +24,7 @@ extension ErrorInfo {
   ///   - omitEqualValue: `omitEqualValue` in subscript has higher priority than this argument
   ///   - append:
   public mutating func appendWith(preserveNilValues: Bool = true,
-                                  duplicatePolicy: ValueDuplicatePolicy = .ignoreEqual,
+                                  duplicatePolicy: ValueDuplicatePolicy = .rejectEqual,
                                   append: (consuming CustomOptionsView) -> Void) {
     withUnsafeMutablePointer(to: &self) { pointer in
       let view = CustomOptionsView(pointer: pointer,

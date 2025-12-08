@@ -47,7 +47,7 @@ extension ErrorInfo {
          keyOrigin: literalKey.keyOrigin,
          value: newValue,
          preserveNilValues: true, // has no effect in this func
-         duplicatePolicy: .keepEqual, // has no effect in this func
+         duplicatePolicy: .allowEqual, // has no effect in this func
          collisionSource: .onAppend) // collisions must never happen using this func
     return oldValues?._compactMap { $0.value.optional.optionalValue }
   }
@@ -59,7 +59,7 @@ extension ErrorInfo {
          keyOrigin: .dynamic,
          value: newValue,
          preserveNilValues: true, // has no effect in this func
-         duplicatePolicy: .keepEqual, // has no effect in this func
+         duplicatePolicy: .allowEqual, // has no effect in this func
          collisionSource: .onAppend) // collisions must never happen using this func
     return oldValues?._compactMap { $0.value.optional.optionalValue }
   }
