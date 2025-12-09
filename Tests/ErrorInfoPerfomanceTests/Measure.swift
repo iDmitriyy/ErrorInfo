@@ -53,3 +53,8 @@ struct VariadicTuple<each T> {
     self.elements = (repeat each elements)
   }
 }
+
+@inline(never) @_optimize(none)
+public func blackHole<T>(_ thing: T) {
+  _ = thing
+}

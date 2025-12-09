@@ -128,19 +128,19 @@ extension Merge {
   ///        | "key3"              : 3                    |
   ///        +--------------------------------------------+
   /// ```
-  public static func summaryInfo<S, K, V, EInfSeq, W>(
+  public static func summaryInfo<S, K, V, EInf, W>(
     infoSources: [S],
-    infoKeyPath: KeyPath<S, EInfSeq>,
-    keyStringPath: KeyPath<K, String>,
-    keyOriginAvailability: KeyOriginAvailability<EInfSeq.Element>,
-    collisionAvailability: CollisionAvailability<EInfSeq.Element>,
+    infoKeyPath: KeyPath<S, EInf>,
+    elementKeyStringPath: KeyPath<K, String>,
+    keyOriginAvailability: KeyOriginAvailability<EInf.Element>,
+    collisionAvailability: CollisionAvailability<EInf.Element>,
     keysPrefixOption: Format.KeysPrefixOption<S>,
     annotationsFormat: Format.KeyAnnotationsFormat,
     randomGenerator: consuming some RandomNumberGenerator & Sendable,
     infoSourceSignatureBuilder: @escaping (S) -> String,
     valueTransform: (V) -> W,
   )
-    -> OrderedDictionary<String, W> where EInfSeq: Collection<(key: K, value: V)> {
+    -> OrderedDictionary<String, W> where EInf: Collection<(key: K, value: V)> {
     // any ErrorInfoValueType change to V (e.g. to be Optional<any ErrorInfoValueType> or String)
     var summaryInfo: OrderedDictionary<String, W> = [:]
     func putResolvingCollisions(key assumeModifiedKey: String, value processedValue: W) {
@@ -154,7 +154,7 @@ extension Merge {
     // context is a var only because of `mutating get` / lazy var
     var context = _Summary.prepareMergeContext(infoSources: infoSources,
                                                infoKeyPath: infoKeyPath,
-                                               keyString: keyStringPath,
+                                               keyString: elementKeyStringPath,
                                                infoSourceSignatureBuilder: infoSourceSignatureBuilder)
     // Improvement: using of KeyPaths can be slow. Replacing them with closures may have perfpmance boost.
     for infoSourceIndex in infoSources.indices {
@@ -164,7 +164,7 @@ extension Merge {
                                                          infoSourceIndex: infoSourceIndex,
                                                          element: element,
                                                          elementIndex: elementIndex,
-                                                         keyStringPath: keyStringPath,
+                                                         keyStringPath: elementKeyStringPath,
                                                          context: &context,
                                                          keysPrefixOption: keysPrefixOption,
                                                          annotationsFormat: annotationsFormat,
