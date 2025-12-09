@@ -45,7 +45,7 @@ extension ErrorInfo {
   internal static func _merged(recipient: consuming Self, // TODO: consuming?
                                donators: [Self],
                                collisionSource mergeOrigin: CollisionSource.Origin) -> Self {
-    // TODO: reserve capacity
+    // Improvement: reserve capacity
     for donator in donators {
       for (key, valueWrapper) in donator._storage {
         recipient._storage

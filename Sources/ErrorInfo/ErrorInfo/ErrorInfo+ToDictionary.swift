@@ -68,7 +68,7 @@ extension ErrorInfo {
 
 private import struct OrderedCollections.OrderedDictionary
 
-/// 
+///
 public struct OrderedEncodableDictionary: Encodable {
   private let wrapped: OrderedDictionary<String, AnyEncodableSingleValue>
   

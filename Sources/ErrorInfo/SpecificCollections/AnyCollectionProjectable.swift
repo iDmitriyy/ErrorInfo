@@ -24,15 +24,11 @@ internal struct AnyCollectionProjectable<Base: Collection, ElementProjection>: C
     
   @inline(__always)
   @inlinable
-  subscript(index: Base.Index) -> ElementProjection {
-    projection(base[index])
-  }
+  subscript(index: Base.Index) -> ElementProjection { projection(base[index]) }
     
   @inline(__always)
   @inlinable
-  func index(after i: Base.Index) -> Base.Index {
-    base.index(after: i)
-  }
+  func index(after i: Base.Index) -> Base.Index { base.index(after: i) }
 }
 
 internal struct AnySequenceProjectable<Base: Sequence, ElementProjection>: Sequence {
