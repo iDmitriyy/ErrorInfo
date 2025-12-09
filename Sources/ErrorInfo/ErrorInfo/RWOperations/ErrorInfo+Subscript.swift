@@ -50,7 +50,7 @@ extension ErrorInfo {
            value: newValue,
            preserveNilValues: true,
            duplicatePolicy: .defaultForAppending,
-           collisionSource: .onSubscript)
+           collisionSource: .onSubscript(origin: nil)) // providing origin for a single key-value is an overhead
     }
   }
   
@@ -67,7 +67,7 @@ extension ErrorInfo {
            value: newValue,
            preserveNilValues: true,
            duplicatePolicy: .defaultForAppending,
-           collisionSource: .onSubscript)
+           collisionSource: .onSubscript(origin: nil)) // providing origin for a single key-value is an overhead
     }
   }
 }

@@ -48,7 +48,7 @@ extension ErrorInfo {
          value: newValue,
          preserveNilValues: true, // has no effect in this func
          duplicatePolicy: .allowEqual, // has no effect in this func
-         collisionSource: .onAppend) // collisions must never happen using this func
+         collisionSource: .onAppend(origin: nil)) // collisions must never happen using this func
     return oldValues?._compactMap { $0.value.optional.optionalValue }
   }
   
@@ -60,7 +60,7 @@ extension ErrorInfo {
          value: newValue,
          preserveNilValues: true, // has no effect in this func
          duplicatePolicy: .allowEqual, // has no effect in this func
-         collisionSource: .onAppend) // collisions must never happen using this func
+         collisionSource: .onAppend(origin: nil)) // collisions must never happen using this func
     return oldValues?._compactMap { $0.value.optional.optionalValue }
   }
 }

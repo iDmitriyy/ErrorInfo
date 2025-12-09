@@ -17,31 +17,24 @@ extension ErrorInfo {
   // If there 2 equal values across several ErrorInfo & there is no collision of values inside errorinfo, then
   // the should caan be deduplicated by an option(func arg).
   
-  // TODO: minimize CoW
+  // Improvement: minimize CoW
   
   // MARK: Instance mutating methods
   
   public mutating func merge(with firstDonator: Self,
                              _ otherDonators: Self...,
-                             collisionSource mergeOrigin: CollisionSource.MergeOrigin = .fileLine()) {
+                             collisionSource mergeOrigin: CollisionSource.Origin = .fileLine()) {
     self = Self._merged(recipient: self,
                         donators: [firstDonator] + otherDonators,
                         collisionSource: mergeOrigin)
   }
-  
-//  public mutating func merge(with donators: [Self],
-//                             collisionSource mergeOrigin: CollisionSource.MergeOrigin = .fileLine()) {
-//    self = Self._merged(recipient: self,
-//                        donators: donators,
-//                        collisionSource: mergeOrigin)
-//  }
   
   // MARK: Static funcs
   
   public static func merged(_ recipient: Self,
                             _ firstDonator: Self,
                             _ otherDonators: [Self],
-                            collisionSource mergeOrigin: CollisionSource.MergeOrigin = .fileLine()) -> Self {
+                            collisionSource mergeOrigin: CollisionSource.Origin = .fileLine()) -> Self {
     _merged(recipient: recipient,
             donators: [firstDonator] + otherDonators,
             collisionSource: mergeOrigin)
@@ -51,7 +44,7 @@ extension ErrorInfo {
 extension ErrorInfo {
   internal static func _merged(recipient: consuming Self, // TODO: consuming?
                                donators: [Self],
-                               collisionSource mergeOrigin: CollisionSource.MergeOrigin) -> Self {
+                               collisionSource mergeOrigin: CollisionSource.Origin) -> Self {
     // TODO: reserve capacity
     for donator in donators {
       for (key, valueWrapper) in donator._storage {

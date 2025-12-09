@@ -6,7 +6,18 @@
 //
 
 /// https://forums.swift.org/t/runtime-casts-of-sendable-type-to-another-sendable-type-not-possible/82070/2
-internal func conditionalCast<T, U>(_ value: T, to _: U.Type) -> U? {
+///
+/// # WARNING
+/// The code below will return non nil value, and nonSendable is succesfuly casted.
+/// Use when value is known to be Sendable.
+/// ```
+/// let nonSendable = NonSendable()
+///
+/// if let nonSendable = conditionalCast(nonSendable, to: (any Sendable).self) {
+///    print(nonSendable) // ! succesfully casted even nonSendable as non Sendable
+/// }
+/// ```
+internal func __conditionalCast<T, U>(_ value: T, to _: U.Type) -> U? {
   value as? U
 }
 
@@ -31,7 +42,8 @@ internal struct DictionaryCodingKey: CodingKey {
   }
 }
 
-public struct AnySendableEncodable: Encodable & Sendable {
+/// For single primitive value.
+public struct AnyEncodableSingleValue: Encodable & Sendable {
   private let encodable: any Encodable & Sendable
 
   public init(_ encodable: any Encodable & Sendable) {

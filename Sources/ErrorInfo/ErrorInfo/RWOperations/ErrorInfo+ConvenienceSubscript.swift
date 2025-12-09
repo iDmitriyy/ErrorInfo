@@ -10,10 +10,12 @@
 extension ErrorInfo {
   public static func with(preserveNilValues: Bool = true,
                           duplicatePolicy: ValueDuplicatePolicy = .rejectEqual,
+                          collisionSource: CollisionSource.Origin = .fileLine(),
                           append: (consuming CustomOptionsView) -> Void) -> Self {
     var info = Self()
     info.appendWith(preserveNilValues: preserveNilValues,
                     duplicatePolicy: duplicatePolicy,
+                    collisionSource: collisionSource,
                     append: append)
     return info
   }
@@ -25,11 +27,13 @@ extension ErrorInfo {
   ///   - append:
   public mutating func appendWith(preserveNilValues: Bool = true,
                                   duplicatePolicy: ValueDuplicatePolicy = .rejectEqual,
+                                  collisionSource: CollisionSource.Origin = .fileLine(),
                                   append: (consuming CustomOptionsView) -> Void) {
     withUnsafeMutablePointer(to: &self) { pointer in
       let view = CustomOptionsView(pointer: pointer,
                                    duplicatePolicy: duplicatePolicy,
-                                   preserveNilValues: preserveNilValues)
+                                   preserveNilValues: preserveNilValues,
+                                   collisionOrigin: collisionSource)
       append(view)
     }
   }
@@ -40,13 +44,16 @@ extension ErrorInfo {
     private let pointer: UnsafeMutablePointer<ErrorInfo> // TODO: check CoW not triggered | inplace mutation
     private let duplicatePolicy: ValueDuplicatePolicy
     private let preserveNilValues: Bool
+    private let collisionOrigin: CollisionSource.Origin
     
     fileprivate init(pointer: UnsafeMutablePointer<ErrorInfo>,
                      duplicatePolicy: ValueDuplicatePolicy,
-                     preserveNilValues: Bool) {
+                     preserveNilValues: Bool,
+                     collisionOrigin: CollisionSource.Origin) {
       self.pointer = pointer
       self.duplicatePolicy = duplicatePolicy
       self.preserveNilValues = preserveNilValues
+      self.collisionOrigin = collisionOrigin
     }
     
     // MARK: - Subscript
@@ -66,7 +73,7 @@ extension ErrorInfo {
                              value: newValue,
                              preserveNilValues: preserveNilValues ?? self.preserveNilValues,
                              duplicatePolicy: duplicatePolicy ?? self.duplicatePolicy,
-                             collisionSource: .onSubscript)
+                             collisionSource: .onSubscript(origin: collisionOrigin))
       }
     }
     
@@ -86,7 +93,7 @@ extension ErrorInfo {
                              value: newValue,
                              preserveNilValues: preserveNilValues ?? self.preserveNilValues,
                              duplicatePolicy: duplicatePolicy ?? self.duplicatePolicy,
-                             collisionSource: .onSubscript)
+                             collisionSource: .onSubscript(origin: collisionOrigin))
       }
     }
     
@@ -104,7 +111,7 @@ extension ErrorInfo {
                            value: newValue,
                            preserveNilValues: preserveNilValues ?? self.preserveNilValues,
                            duplicatePolicy: duplicatePolicy ?? self.duplicatePolicy,
-                           collisionSource: .onAppend)
+                           collisionSource: .onAppend(origin: collisionOrigin))
       return oldValues?._compactMap { $0.value.optional.optionalValue }
     }
   }

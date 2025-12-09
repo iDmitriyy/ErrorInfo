@@ -24,6 +24,7 @@ extension ErrorInfo {
   public mutating func appendProperties<R, each V: ValueType>(
     of instance: R,
     keysPrefix: KeyPathPrefix? = .typeName,
+    collisionSource collisionOrigin: CollisionSource.Origin = .fileLine(),
     @ErrorInfoKeyPathsBuilder keys: () -> (repeat KeyPath<R, each V>),
   ) {
     let keyPaths = keys() // R.self
@@ -42,7 +43,7 @@ extension ErrorInfo {
            value: value,
            preserveNilValues: true,
            duplicatePolicy: .defaultForAppending,
-           collisionSource: .onAppend)
+           collisionSource: .onAppend(origin: collisionOrigin))
     }
   }
     

@@ -16,7 +16,8 @@ extension ErrorInfo {
          value: newValue,
          preserveNilValues: true,
          duplicatePolicy: .defaultForAppending,
-         collisionSource: .onSubscript) // FIXME: .onSubscript source in append method.
+         collisionSource: .onSubscript(origin: nil)) // providing origin for a single key-value is an overhead
+    // FIXME: .onSubscript source in append method.
     // How can we solve the propblem of namespace noise in subscript with dynamicKey?
     // May be it's ok to change collisionSource to .onAppend here
   }
@@ -30,7 +31,7 @@ extension ErrorInfo {
          value: newValue,
          preserveNilValues: true,
          duplicatePolicy: .defaultForAppending,
-         collisionSource: .onSubscript)
+         collisionSource: .onSubscript(origin: nil)) // providing origin for a single key-value is an overhead
   }
 }
 
@@ -45,7 +46,8 @@ extension ErrorInfo {
                                keyOrigin: literalKey.keyOrigin,
                                value: value,
                                preserveNilValues: true, // has no effect in this func
-                               duplicatePolicy: duplicatePolicy)
+                               duplicatePolicy: duplicatePolicy,
+                               collisionOrigin: nil) // providing origin for a single key-value is an overhead
   }
   
   @_disfavoredOverload
@@ -57,7 +59,8 @@ extension ErrorInfo {
                                keyOrigin: .dynamic,
                                value: value,
                                preserveNilValues: true, // has no effect in this func
-                               duplicatePolicy: duplicatePolicy)
+                               duplicatePolicy: duplicatePolicy,
+                               collisionOrigin: nil) // providing origin for a single key-value is an overhead
   }
 }
 
@@ -65,13 +68,15 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   public mutating func append(contentsOf sequence: some Sequence<(String, any ValueType)>,
-                              duplicatePolicy: ValueDuplicatePolicy) {
+                              duplicatePolicy: ValueDuplicatePolicy,
+                              collisionSource collisionOrigin: CollisionSource.Origin = .fileLine()) {
     for (dynamicKey, value) in sequence {
       _appendWithDefaultTypeInfo(key: dynamicKey,
                                  keyOrigin: .dynamic,
                                  value: value,
                                  preserveNilValues: true, // has no effect in this func
-                                 duplicatePolicy: duplicatePolicy)
+                                 duplicatePolicy: duplicatePolicy,
+                                 collisionOrigin: collisionOrigin)
     }
   }
 }
@@ -81,12 +86,13 @@ extension ErrorInfo {
                                                    keyOrigin: KeyOrigin,
                                                    value: any ValueType,
                                                    preserveNilValues: Bool, // always true at call sites, need if value become optional
-                                                   duplicatePolicy: ValueDuplicatePolicy) {
+                                                   duplicatePolicy: ValueDuplicatePolicy,
+                                                   collisionOrigin: CollisionSource.Origin?) {
     _add(key: key,
          keyOrigin: keyOrigin,
          value: value,
          preserveNilValues: preserveNilValues,
          duplicatePolicy: duplicatePolicy,
-         collisionSource: .onAppend)
+         collisionSource: .onAppend(origin: collisionOrigin))
   }
 }

@@ -8,16 +8,16 @@
 // TODO: make as struct with static functions
 
 public enum CollisionSource: Sendable {
-  case onSubscript
-  case onAppend
+  case onSubscript(origin: Origin?)
+  case onAppend(origin: Origin?)
   
-  case onMerge(origin: MergeOrigin)
+  case onMerge(origin: Origin)
   
   case onAddPrefix(prefix: String)
   case onAddSuffix(suffix: String)
   case onKeysMapping(original: String, mapped: String)
   
-  case onDictionaryConsumption(origin: MergeOrigin)
+  case onDictionaryConsumption(origin: Origin)
   case onCreateWithDictionaryLiteral // (firstKey: String)
   
   public func defaultStringInterpolation() -> String {
@@ -38,7 +38,7 @@ public enum CollisionSource: Sendable {
 }
 
 extension CollisionSource {
-  public enum MergeOrigin: Sendable, ExpressibleByStringLiteral {
+  public enum Origin: Sendable, ExpressibleByStringLiteral {
     case fileLine(file: StaticString = #fileID, line: UInt = #line)
     case function(function: String = #function)
     case custom(origin: String)
