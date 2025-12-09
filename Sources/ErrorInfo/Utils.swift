@@ -43,7 +43,7 @@ internal struct DictionaryCodingKey: CodingKey {
 }
 
 /// For single primitive value.
-public struct AnyEncodableSingleValue: Encodable & Sendable {
+public struct AnyEncodableSingleValue: Encodable, Sendable {
   private let encodable: any Encodable & Sendable
 
   public init(_ encodable: any Encodable & Sendable) {
@@ -57,3 +57,9 @@ public struct AnyEncodableSingleValue: Encodable & Sendable {
     try container.encode(encodable)
   }
 }
+
+// public struct AnyDecodableSingleValue: Encodable, Sendable {} // for tests only
+
+// public init(from decoder: any Decoder) throws {
+//   let container = try decoder.singleValueContainer()
+// }

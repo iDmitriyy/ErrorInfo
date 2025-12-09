@@ -13,7 +13,6 @@ extension ErrorInfo {
     case customName(_ name: String)
   }
   
-  // Improvement:
   // Improvement: stingify-like macro for extrating the string name of value passed to `instance` arg
   // case .valueName then be useful only in contexts with shortand args like $0.
   // But typically macro will be more convenient as there no need to duplacte binding name.

@@ -8,14 +8,12 @@
 // MARK: Prefix & Suffix
 
 extension ErrorInfo {
-  public mutating func addKeyPrefix(_ keyPrefix: String, transform: PrefixTransformFunc) {
-//    ErrorInfoDictFuncs.addKeyPrefix(keyPrefix,
-//                                    toKeysOf: &_storage,
-//                                    transform: transform)
-  }
-  
-  public consuming func addingKeyPrefix(_ keyPrefix: String, transform: PrefixTransformFunc) -> Self {
-    addKeyPrefix(keyPrefix, transform: transform)
-    return self
-  }
+  // TBD: next release
+  // public mutating func addKeyPrefix(_ keyPrefix: String, transform: PrefixTransformFunc) {
+  // }
+  //
+  // public consuming func addingKeyPrefix(_ keyPrefix: String, transform: PrefixTransformFunc) -> Self {
+  //   addKeyPrefix(keyPrefix, transform: transform)
+  //   return self
+  // }
 }
