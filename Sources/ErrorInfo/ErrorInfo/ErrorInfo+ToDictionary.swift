@@ -65,21 +65,6 @@ extension ErrorInfo {
   }
 }
 
-internal struct DictionaryCodingKey: CodingKey {
-  internal let stringValue: String
-  internal let intValue: Int?
-
-  internal init(stringValue: String) {
-    self.stringValue = stringValue
-    intValue = Int(stringValue)
-  }
-
-  internal init(intValue: Int) {
-    stringValue = "\(intValue)"
-    self.intValue = intValue
-  }
-}
-
 public import struct OrderedCollections.OrderedDictionary
 
 public struct OrderedEncodableDictionary: Encodable {
