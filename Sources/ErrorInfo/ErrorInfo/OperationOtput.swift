@@ -6,7 +6,7 @@
 //
 
 extension ErrorInfo {
-  // e.g. is there collision when merging or convertiong to dictionary. If yes, what are these collisions?
+  // e.g. is there collision when merging or converting to dictionary. If yes, what are these collisions?
   
   enum CollisionsResult {
     case noCollisions
