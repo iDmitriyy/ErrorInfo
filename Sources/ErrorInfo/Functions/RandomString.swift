@@ -31,6 +31,9 @@ private let allPrintableNoWhitespaceAsciiSet: Set<UInt8> = mutate(value: Set<UIn
   $0.remove(47) // /
   $0.remove(92) // \
   $0.remove(95) // _
+  $0.remove(22) // "
+  $0.remove(27) // '
+  $0.remove(60) // `
 }
 
 extension ErrorInfoFuncs {
