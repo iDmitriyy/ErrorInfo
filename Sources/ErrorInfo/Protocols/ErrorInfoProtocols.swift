@@ -107,11 +107,6 @@ func test(errorInfo: some ErrorInfoRequirement) {
   let infoWithLegacyData = type(of: errorInfo).init(legacyUserInfo: [:])
 }
 
-func test(errorInfo: ErrorInfoCollection) {
-  [3].isEmpty
-  errorInfo.isEmpty
-}
-
 /// Default functions implementations for ErrorInfo types
 //internal protocol ErrorInfoInternalDefaultFuncs {
 //  associatedtype Storage: DictionaryProtocol

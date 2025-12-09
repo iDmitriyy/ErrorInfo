@@ -6,7 +6,7 @@
 //
 
 public protocol InformativeError: Error {
-  associatedtype ErrorInfoType: ErrorInfoCollection
+  associatedtype ErrorInfoType
   
   var info: ErrorInfoType { get }
 }
