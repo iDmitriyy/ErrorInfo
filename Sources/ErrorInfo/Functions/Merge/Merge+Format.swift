@@ -121,14 +121,21 @@ extension Merge.Format {
 // MARK: - Delimiters
 
 extension Merge.Format {
-  /// Defines how the entire annotation block is visually attached..
-  /// Examples:
-  /// Spacer-only form:
-  /// key | origin, collision
-  /// key • origin, collision
-  /// Enclosure form:
-  /// key [origin, collision]
-  /// key (origin, collision)
+  /// Defines how the entire annotation block is visually attached.
+  ///
+  /// # Example:
+  ///
+  /// **Spacer-only form:**
+  ///
+  /// "key | origin, collision"
+  ///
+  /// "key • origin, collision"
+  ///
+  /// **Enclosure form:**
+  ///
+  /// "key (origin, collision)"
+  ///
+  /// "key [origin, collision]"
   public enum AnnotationsBoundaryDelimiter: Sendable {
     case onlySpacer(spacer: String)
     case enclosure(spacer: String, opening: Character, closing: Character)
@@ -139,12 +146,16 @@ extension Merge.Format {
   }
   
   public struct AnnotationsBlockDelimiters: Sendable {
-    /// How multiple annotation components are joined
-    /// Example: "origin, collision" or "origin | collision"
+    /// How multiple annotation components are joined.
+    ///
+    /// # Example:
+    /// "origin, collision" or "origin; collision"
     internal let componentsSeparator: String
     /// How the entire block of these components is visually attached to the key, either:
-    /// via simple spacing: "key | origin, collision"
-    /// or via enclosure: "key [origin, collision]"
+    ///
+    /// # Example:
+    /// - via simple spacing: "key | origin, collision"
+    /// - or via enclosure: "key (origin, collision)"
     internal let blockBoundary: AnnotationsBoundaryDelimiter
     
     public init(componentsSeparator: String, blockBoundary: AnnotationsBoundaryDelimiter) {

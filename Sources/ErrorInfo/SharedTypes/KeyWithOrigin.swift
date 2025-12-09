@@ -5,16 +5,18 @@
 //  Created by Dmitriy Ignatyev on 28/11/2025.
 //
 
-/// `kind` not participate in hashing / equality
-public struct KeyWithOrigin: Hashable, Sendable, CustomStringConvertible { // TODO: - hash & == tests
+
+public struct KeyWithOrigin: Sendable, CustomStringConvertible { // TODO: - hash & == tests
   @usableFromInline internal let string: String
   internal let origin: KeyOrigin
   
   public var description: String { string }
   
-  public func hash(into hasher: inout Hasher) { hasher.combine(string) }
+  // `kind` not participate in hashing / equality
   
-  public static func == (lhs: Self, rhs: Self) -> Bool { lhs.string == rhs.string }
+  // public func hash(into hasher: inout Hasher) { hasher.combine(string) }
+  
+  // public static func == (lhs: Self, rhs: Self) -> Bool { lhs.string == rhs.string }
 }
 
 public enum KeyOrigin: Sendable {

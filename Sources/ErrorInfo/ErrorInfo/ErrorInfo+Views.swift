@@ -7,6 +7,8 @@
 
 public import protocol InternalCollectionsUtilities._UniqueCollection
 
+// MARK: - Keys
+
 extension ErrorInfo {
   /// Returns a collection of unique keys from the ErrorInfo instance.
   ///
@@ -28,6 +30,8 @@ extension ErrorInfo {
   /// ```
   public var allKeys: some Collection<String> { _storage._storage.allKeys }
 }
+
+// MARK: - FullInfo View
 
 extension ErrorInfo {
   public typealias FullInfoElement = (key: KeyWithOrigin, value: CollisionTaggedValue<_Optional, CollisionSource>)

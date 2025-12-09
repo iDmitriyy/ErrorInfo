@@ -5,8 +5,6 @@
 //  Created by Dmitriy Ignatyev on 24/11/2025.
 //
 
-// MARK: - _ValueVariant
-
 extension ErrorInfo {
   @usableFromInline internal struct _Entry: Sendable, ApproximatelyEquatable { // typeprivate
     @usableFromInline internal let optional: _Optional

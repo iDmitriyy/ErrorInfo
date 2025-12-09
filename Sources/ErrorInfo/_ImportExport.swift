@@ -28,7 +28,6 @@ public import protocol InternalCollectionsUtilities._UniqueCollection
 
 extension AnyCollection: @retroactive _UniqueCollection {}
 
-
 internal import typealias NonEmpty.NonEmptyString
 
 extension NonEmptyString {
