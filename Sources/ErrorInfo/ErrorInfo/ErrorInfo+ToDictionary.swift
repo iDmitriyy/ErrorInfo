@@ -36,16 +36,17 @@ extension ErrorInfo {
     // nil options
     // keyOrigin, collision, prefix
     
-    let valueTransform: (CollisionTaggedValue<ErrorInfo._Entry, CollisionSource>) -> AnySendableEncodable = { taggedValue in
+    let valueTransform: (CollisionTaggedValue<ErrorInfo._Entry, CollisionSource>) -> AnyEncodableSingleValue = { taggedValue in
       switch taggedValue.value.optional.optionalValue {
-      case .some(let valueExistential):
-        if let anyEncodableSendable = conditionalCast(valueExistential, to: (any Encodable & Sendable).self) {
-          return AnySendableEncodable(anyEncodableSendable)
+      case .some(let sendableValueExistential):
+        if let anyEncodableSendable = __conditionalCast(sendableValueExistential, to: (any Encodable & Sendable).self) {
+          // TODO: - need to make proper AnyEncodable, not only for primitives.
+          return AnyEncodableSingleValue(anyEncodableSendable)
         } else {
-          return AnySendableEncodable(String(describing: valueExistential))
+          return AnyEncodableSingleValue(String(describing: sendableValueExistential))
         }
       case .none:
-        return AnySendableEncodable("nil") // TODO: - nil as object
+        return AnyEncodableSingleValue("nil") // TODO: - nil as object
       }
     }
     
@@ -65,12 +66,13 @@ extension ErrorInfo {
   }
 }
 
-public import struct OrderedCollections.OrderedDictionary
+private import struct OrderedCollections.OrderedDictionary
 
+/// 
 public struct OrderedEncodableDictionary: Encodable {
-  private let wrapped: OrderedDictionary<String, AnySendableEncodable>
+  private let wrapped: OrderedDictionary<String, AnyEncodableSingleValue>
   
-  internal init(wrapped: OrderedDictionary<String, AnySendableEncodable>) {
+  internal init(wrapped: OrderedDictionary<String, AnyEncodableSingleValue>) {
     self.wrapped = wrapped
   }
   
@@ -81,4 +83,14 @@ public struct OrderedEncodableDictionary: Encodable {
       try container.encode(value, forKey: codingKey)
     }
   }
+  
+  // public init(from decoder: Decoder) throws {
+  //   var dict = wrapped = OrderedDictionary<String, AnySendableEncodable>()
+  //
+  //   let container = try decoder.container(keyedBy: DictionaryCodingKey.self)
+  //   for key in container.allKeys {
+  //     let value = try container.decode(Value.self, forKey: key)
+  //     self[key.stringValue as! Key] = value
+  //   }
+  // }
 }
