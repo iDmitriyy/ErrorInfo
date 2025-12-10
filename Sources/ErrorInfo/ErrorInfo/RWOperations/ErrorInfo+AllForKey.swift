@@ -5,9 +5,7 @@
 //  Created by Dmitriy Ignatyev on 25/11/2025.
 //
 
-// MARK: - All For Key
-
-// MARK: AllValues ForKey
+// MARK: - AllValues ForKey
 
 extension ErrorInfo {
   // TODO: public func allValuesSlice(forKey key: Key) -> (some Sequence<Value>)? {}
@@ -54,11 +52,13 @@ extension ErrorInfo {
   /// ```
   @_disfavoredOverload
   public func allValues(forKey dynamicKey: String) -> ValuesForKey<any ValueType>? {
-    _storage.allValues(forKey: dynamicKey)?._compactMap { $0.value.optional.optionalValue }
+    _storage.allValues(forKey: dynamicKey)?._compactMap { $0.value._optional.optionalValue }
   }
 }
 
-// MARK: RemoveAllValues ForKey
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// MARK: - Remove All Records ForKey
 
 extension ErrorInfo {
   /// Removes all records associated with the specified key and returns the removed non-nil values
@@ -110,11 +110,13 @@ extension ErrorInfo {
   /// ```
   @_disfavoredOverload @discardableResult
   public mutating func removeAllRecords(forKey dynamicKey: String) -> ValuesForKey<any ValueType>? {
-    _storage.removeAllValues(forKey: dynamicKey)?._compactMap { $0.value.optional.optionalValue }
+    _storage.removeAllValues(forKey: dynamicKey)?._compactMap { $0.value._optional.optionalValue }
   }
 }
 
-// MARK: ReplaceAllValues ForKey
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// MARK: - Replace All Records ForKey
 
 extension ErrorInfo {
   /// Removes all existing records associated with the specified key and replaces them with
@@ -182,6 +184,6 @@ extension ErrorInfo {
          preserveNilValues: true, // has no effect in this func
          duplicatePolicy: .allowEqual, // has no effect in this func
          collisionSource: .onAppend(origin: nil)) // collisions must never happen using this func
-    return oldValues?._compactMap { $0.value.optional.optionalValue }
+    return oldValues?._compactMap { $0.value._optional.optionalValue }
   }
 }

@@ -112,7 +112,7 @@ extension ErrorInfo {
                            preserveNilValues: preserveNilValues ?? self.preserveNilValues,
                            duplicatePolicy: duplicatePolicy ?? self.duplicatePolicy,
                            collisionSource: .onAppend(origin: collisionOrigin))
-      return oldValues?._compactMap { $0.value.optional.optionalValue }
+      return oldValues?._compactMap { $0.value._optional.optionalValue }
     }
   }
 }

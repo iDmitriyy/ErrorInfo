@@ -6,12 +6,12 @@
 //
 
 extension ErrorInfo {
-  @usableFromInline internal struct _Entry: Sendable, ApproximatelyEquatable { // typeprivate
-    @usableFromInline internal let optional: _Optional
+  @usableFromInline internal struct _Record: Sendable, ApproximatelyEquatable { // typeprivate
+    @usableFromInline internal let _optional: _Optional
     internal let keyOrigin: KeyOrigin
     
     @usableFromInline internal static func isApproximatelyEqual(lhs: borrowing Self, rhs: borrowing Self) -> Bool {
-      switch (lhs.optional.wrapped, rhs.optional.wrapped) {
+      switch (lhs._optional.wrapped, rhs._optional.wrapped) {
       case (.value, .nilInstance),
            (.nilInstance, .value):
         false

@@ -25,8 +25,8 @@ extension ErrorInfo {
 }
 
 extension ErrorInfo {
-  private mutating func _mergeKeyValues(_literal elements: some Collection<(key: Key, value: Value)>,
-                                        collisionSource: @autoclosure () -> CollisionSource) {
+  internal mutating func _mergeKeyValues(_literal elements: some Collection<(key: Key, value: Value)>,
+                                         collisionSource: @autoclosure () -> CollisionSource) {
     // Improvement: try reserve capacity. perfomance tests
     for (literalKey, value) in elements {
       if let value {

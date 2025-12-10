@@ -39,9 +39,9 @@ extension ErrorInfo {
   /// Returns a sequence of tuples, where each element consists of a key with its origin and a collision-tagged value.
   /// This view provides an enriched sequence of key-value pairs with additional metadata, useful for deep inspection, logging or debugging.
   public var fullInfoView: some Sequence<FullInfoElement> {
-    AnySequenceProjectable(base: _storage, elementProjection: { key, entry in
-      let keyWithOrigin = KeyWithOrigin(string: key, origin: entry.value.keyOrigin)
-      let collisionTaggedValue = CollisionTaggedValue(value: entry.value.optional, collisionSource: entry.collisionSource)
+    AnySequenceProjectable(base: _storage, elementProjection: { key, taggedRecord in
+      let keyWithOrigin = KeyWithOrigin(string: key, origin: taggedRecord.value.keyOrigin)
+      let collisionTaggedValue = CollisionTaggedValue(value: taggedRecord.value._optional, collisionSource: taggedRecord.collisionSource)
       return (keyWithOrigin, collisionTaggedValue)
     })
   }

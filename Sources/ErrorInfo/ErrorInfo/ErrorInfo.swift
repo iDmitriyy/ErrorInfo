@@ -15,7 +15,7 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
   
   public typealias ValueType = ErrorInfoValueType
   
-  @usableFromInline internal typealias BackingStorage = OrderedMultiValueErrorInfoGeneric<String, _Entry>
+  @usableFromInline internal typealias BackingStorage = OrderedMultiValueErrorInfoGeneric<String, _Record>
   
   // TODO: private(set)
   @usableFromInline internal var _storage: BackingStorage
@@ -58,7 +58,7 @@ extension ErrorInfo {
     }
     
     _storage.appendResolvingCollisions(key: key,
-                                       value: _Entry(optional: optional, keyOrigin: keyOrigin),
+                                       value: _Record(_optional: optional, keyOrigin: keyOrigin),
                                        insertIfEqual: duplicatePolicy.insertIfEqual,
                                        collisionSource: collisionSource())
   }
@@ -81,7 +81,7 @@ extension ErrorInfo {
     }
     
     _storage.appendResolvingCollisions(key: key,
-                                       value: _Entry(optional: optional, keyOrigin: keyOrigin),
+                                       value: _Record(_optional: optional, keyOrigin: keyOrigin),
                                        insertIfEqual: duplicatePolicy.insertIfEqual,
                                        collisionSource: collisionSource())
   }

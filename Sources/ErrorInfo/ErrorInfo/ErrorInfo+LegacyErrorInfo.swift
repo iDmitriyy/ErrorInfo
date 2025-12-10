@@ -15,11 +15,11 @@ extension ErrorInfo {
     legacyUserInfo.forEach { key, value in
       let interpolatedValue = Self.castOrConvertToSendable(legacyInfoValue: value)
       _storage.appendResolvingCollisions(key: key,
-                                         value: _Entry(optional: .value(interpolatedValue), keyOrigin: .dynamic),
+                                         value: _Record(_optional: .value(interpolatedValue), keyOrigin: .dynamic),
                                          insertIfEqual: true, // Swift.Dictionary<String, Any> has unique keys
                                          collisionSource: .onDictionaryConsumption(origin: origin()))
       // May be it is good to split into two separated dictionaries. Static initializer will return something like tuple of
-      // (Self, nonSendableValues:)
+      // (Self, nonSendableValues: [(key:, value:)])
     }
   }
 }

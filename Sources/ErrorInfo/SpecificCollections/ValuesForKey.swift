@@ -15,8 +15,13 @@ public struct ValuesForKey<Value>: Sequence {
   
   internal init(element: Value) { _elements = .left(element) }
   
-  // FIXME: - NonEmptyArray here should contain at leas 2 elements
-  internal init(array: NonEmptyArray<Element>) { _elements = .right(array) }
+  internal init(array: NonEmptyArray<Element>) {
+    if array.count > 1 {
+      _elements = .right(array)
+    } else {
+      _elements = .left(array.first)
+    }
+  }
   
   public var first: Value {
     switch _elements {
@@ -32,8 +37,13 @@ public struct ValuesForKey<Value>: Sequence {
     }
   }
   
-  // TODO: - destrctured(first: Value, others: NonEmptyArray<Value>)
-  // _compactMap
+  // Improvement: should be NonEmptySlice<Array<Value>> instead of Slice<NonEmptyArray<Value>>
+  public var _destrctured: (first: Value, others: Slice<NonEmptyArray<Value>>?) {
+    switch _elements {
+    case .left(let element): (element, nil)
+    case .right(let elements): (elements.first, elements[1...])
+    }
+  }
   
   /// Return nonEmpty instance
   internal func _compactMap<U>(_ transform: (Value) -> U?) -> ValuesForKey<U>? {

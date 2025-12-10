@@ -17,9 +17,9 @@ extension ErrorInfo: Sequence {
     
     @inlinable
     public mutating func next() -> Element? {
-      while let (key, valueWrapper) = base.next() {
-        let maybeValue = valueWrapper.value
-        guard let value = maybeValue.optional.optionalValue else { continue }
+      while let (key, taggedRecord) = base.next() {
+        let record = taggedRecord.value
+        guard let value = record._optional.optionalValue else { continue }
         return (key, value)
       }
       return nil

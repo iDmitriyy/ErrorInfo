@@ -174,11 +174,11 @@ extension ErrorInfo {
   /// ```
   @_disfavoredOverload
   public func keyValueLookupResult(forKey key: String) -> KeyValueLookupResult {
-    if let taggedValues = _storage.allValues(forKey: key) {
+    if let taggedRecords = _storage.allValues(forKey: key) {
       var valuesCount: UInt16 = 0
       var nilInstancesCount: UInt16 = 0
-      for taggedValue in taggedValues {
-        if taggedValue.value.optional.isValue {
+      for taggedRecord in taggedRecords {
+        if taggedRecord.value._optional.isValue {
           valuesCount += 1
         } else {
           nilInstancesCount += 1
