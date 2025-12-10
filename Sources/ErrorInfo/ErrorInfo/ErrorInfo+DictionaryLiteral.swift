@@ -20,7 +20,7 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
 extension ErrorInfo {
   public mutating func mergeKeyValues(_ literal: KeyValuePairs<Key, Value>,
                                       collisionSource origin: @autoclosure () -> CollisionSource.Origin = .fileLine()) {
-    _mergeKeyValues(_literal: literal, collisionSource: .onMerge(origin: origin()))
+    _mergeKeyValues(_literal: literal, collisionSource: .onDictionaryConsumption(origin: origin()))
   }
 }
 
@@ -36,7 +36,7 @@ extension ErrorInfo {
              value: value,
              preserveNilValues: true,
              duplicatePolicy: .allowEqual,
-             collisionSource: .onCreateWithDictionaryLiteral)
+             collisionSource: collisionSource())
       } else {
         _addExistentialNil(key: literalKey.rawValue,
                            keyOrigin: literalKey.keyOrigin,
