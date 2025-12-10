@@ -17,8 +17,11 @@ public enum CollisionSource: Sendable {
   case onAddSuffix(suffix: String)
   case onKeysMapping(original: String, mapped: String)
   
-  case onDictionaryConsumption(origin: Origin)
   case onCreateWithDictionaryLiteral
+  case onDictionaryConsumption(origin: Origin)
+  
+  case onCreateWithSequence(origin: Origin)
+  case onSequenceConsumption(origin: Origin)
   
   // collision short indicator variants: `   @#@    >X<    !*!  >collision*   `
   

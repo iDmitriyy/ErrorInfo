@@ -20,6 +20,9 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
   // TODO: private(set)
   @usableFromInline internal var _storage: BackingStorage
   
+  // TODO: - BackingStorage
+  // @_specialize(where Self == ...)
+  
   private init(storage: BackingStorage) {
     _storage = storage
   }

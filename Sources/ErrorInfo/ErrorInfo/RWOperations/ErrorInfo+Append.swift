@@ -17,9 +17,6 @@ extension ErrorInfo {
          preserveNilValues: true,
          duplicatePolicy: .defaultForAppending,
          collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead
-    // FIXME: .onSubscript source in append method.
-    // How can we solve the propblem of namespace noise in subscript with dynamicKey?
-    // May be it's ok to change collisionSource to .onAppend here
   }
   
   @available(*, deprecated, message: "for literal keys use subscript instead, append() is intended for dynamic keys)")
@@ -41,12 +38,10 @@ extension ErrorInfo {
                                       forKey literalKey: StringLiteralKey,
                                       duplicatePolicy: ValueDuplicatePolicy = .rejectEqual) {
     guard let value else { return }
-    _appendKeyValuePair(key: literalKey.rawValue,
-                        keyOrigin: literalKey.keyOrigin,
-                        value: value,
-                        preserveNilValues: true, // has no effect in this func
-                        duplicatePolicy: duplicatePolicy,
-                        collisionOrigin: nil) // providing origin for a single key-value is an overhead
+    _singleKeyValuePairAppend(key: literalKey.rawValue,
+                              keyOrigin: literalKey.keyOrigin,
+                              value: value,
+                              duplicatePolicy: duplicatePolicy)
   }
   
   @_disfavoredOverload
@@ -54,12 +49,10 @@ extension ErrorInfo {
                                       forKey dynamicKey: String,
                                       duplicatePolicy: ValueDuplicatePolicy = .rejectEqual) {
     guard let value else { return }
-    _appendKeyValuePair(key: dynamicKey,
-                        keyOrigin: .dynamic,
-                        value: value,
-                        preserveNilValues: true, // has no effect in this func
-                        duplicatePolicy: duplicatePolicy,
-                        collisionOrigin: nil) // providing origin for a single key-value is an overhead
+    _singleKeyValuePairAppend(key: dynamicKey,
+                              keyOrigin: .dynamic,
+                              value: value,
+                              duplicatePolicy: duplicatePolicy)
   }
 }
 
@@ -70,28 +63,26 @@ extension ErrorInfo {
                               duplicatePolicy: ValueDuplicatePolicy,
                               collisionSource collisionOrigin: CollisionSource.Origin = .fileLine()) {
     for (dynamicKey, value) in sequence {
-      _appendKeyValuePair(key: dynamicKey,
-                          keyOrigin: .dynamic,
-                          value: value,
-                          preserveNilValues: true, // has no effect in this func
-                          duplicatePolicy: duplicatePolicy,
-                          collisionOrigin: collisionOrigin)
+      _add(key: dynamicKey,
+           keyOrigin: .dynamic,
+           value: value,
+           preserveNilValues: true, // has no effect here
+           duplicatePolicy: duplicatePolicy,
+           collisionSource: .onSequenceConsumption(origin: collisionOrigin))
     }
   }
 }
 
 extension ErrorInfo {
-  internal mutating func _appendKeyValuePair(key: String,
-                                             keyOrigin: KeyOrigin,
-                                             value: any ValueType,
-                                             preserveNilValues: Bool, // always true at call sites, need if value become optional
-                                             duplicatePolicy: ValueDuplicatePolicy,
-                                             collisionOrigin: CollisionSource.Origin?) {
+  internal mutating func _singleKeyValuePairAppend(key: String,
+                                                   keyOrigin: KeyOrigin,
+                                                   value: any ValueType,
+                                                   duplicatePolicy: ValueDuplicatePolicy) {
     _add(key: key,
          keyOrigin: keyOrigin,
          value: value,
-         preserveNilValues: preserveNilValues,
+         preserveNilValues: true, // has no effect in this func
          duplicatePolicy: duplicatePolicy,
-         collisionSource: .onAppend(origin: collisionOrigin))
+         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead
   }
 }

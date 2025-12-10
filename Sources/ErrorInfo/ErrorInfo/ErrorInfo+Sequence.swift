@@ -17,9 +17,9 @@ extension ErrorInfo: Sequence {
     
     @inlinable
     public mutating func next() -> Element? {
+      // It works like `.compacted()`, skipping all nil values
       while let (key, taggedRecord) = base.next() {
-        let record = taggedRecord.value
-        guard let value = record._optional.optionalValue else { continue }
+        guard let value = taggedRecord.value._optional.optionalValue else { continue }
         return (key, value)
       }
       return nil
