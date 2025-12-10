@@ -8,12 +8,31 @@
 import Foundation
 
 extension ErrorInfo {
+  /// Initializes an `ErrorInfo` instance using a legacy user info dictionary.
+  ///
+  /// This initializer takes a dictionary with legacy  `[String: Any]` dictionary,
+  /// processes each key-value pair, and converts the values to a compatible type.
+  ///
+  /// - Parameters:
+  ///   - legacyUserInfo: A dictionary containing legacy key-value pairs where the values are of type `Any`.
+  ///   - origin: collision source, defaults to `.fileLine()`.
+  ///
+  /// - Note:
+  ///   - Each value is casted or converted to a compatible `ErrorInfoValueType` using the `_castOrConvertToCompatible` method.
+  ///   - Collisions are resolved with the `.onDictionaryConsumption` source.
+  ///
+  /// Example:
+  /// ```swift
+  /// let legacyData: [String: Any] = ["errorCode": 404, "errorMessage": "Not Found"]
+  ///
+  /// let errorInfo = ErrorInfo(legacyUserInfo: legacyData)
+  /// ```
   public init(legacyUserInfo: [String: Any],
               collisionSource origin: @autoclosure () -> CollisionSource.Origin = .fileLine()) {
     self.init()
     
     legacyUserInfo.forEach { key, value in
-      let interpolatedValue = Self.castOrConvertToSendable(legacyInfoValue: value)
+      let interpolatedValue = Self._castOrConvertToCompatible(legacyInfoValue: value)
       _storage.appendResolvingCollisions(key: key,
                                          value: _Record(_optional: .value(interpolatedValue), keyOrigin: .dynamic),
                                          insertIfEqual: true, // Swift.Dictionary<String, Any> has unique keys
@@ -25,7 +44,7 @@ extension ErrorInfo {
 }
 
 extension ErrorInfo {
-  internal static func castOrConvertToSendable(legacyInfoValue value: Any) -> any ErrorInfoValueType {
+  internal static func _castOrConvertToCompatible(legacyInfoValue value: Any) -> any ErrorInfoValueType {
     // @inlining has no benefits for this func
     
     // For typical NSError, String value is most often used for a key, in general. Then NSNumber, URL, [String], [Any],
@@ -54,8 +73,8 @@ extension ErrorInfo {
       case let value as Date: value
     #endif
     case let value as [String]: value
-    //  case let value as [Any]: value.map(castOrConvertToSendable(legacyInfoValue:))
-    //  case let value as [String: Any]: value.mapValues(castOrConvertToSendable(legacyInfoValue:))
+    //  case let value as [Any]: value.map(_castOrConvertToCompatible(legacyInfoValue:))
+    //  case let value as [String: Any]: value.mapValues(_castOrConvertToCompatible(legacyInfoValue:))
     default: String(describing: value)
     }
   }
