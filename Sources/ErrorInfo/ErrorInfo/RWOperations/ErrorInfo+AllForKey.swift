@@ -191,7 +191,7 @@ extension ErrorInfo {
   ///
   /// let removed = errorInfo.replaceAllRecords(forKey: "id", by: 11)
   /// // removed == [5, 6]
-  /// // errorInfo now stores `11` for key `"id"`
+  /// // errorInfo now stores single record: `11` for key `"id"`
   /// ```
   @_disfavoredOverload @discardableResult
   public mutating func replaceAllRecords(forKey dynamicKey: String,

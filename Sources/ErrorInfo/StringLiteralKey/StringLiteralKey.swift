@@ -34,7 +34,8 @@
 ///
 /// # Example:
 /// ```swift
-/// var errorInfo = ErrorInfo()
+/// var info = ErrorInfo()
+///
 /// errorInfo[.httpStatusCode] = 404
 /// errorInfo[.response + .message] = "Page Not Found"
 /// ```

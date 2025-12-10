@@ -17,7 +17,7 @@
 // forced to be used.
 
 extension ErrorInfo {
-  /// Accesses the first value associated with the given literal key.
+  /// Returns the first value associated with the given literal key.
   ///
   /// - Returns: The first value associated with key, or `nil` if no value is found.
   ///
@@ -26,9 +26,9 @@ extension ErrorInfo {
   ///
   /// # Example:
   /// ```swift
-  /// var errorInfo = ErrorInfo()
-  /// errorInfo[.id] = 5
-  /// errorInfo[.id] = 6
+  /// var info = ErrorInfo()
+  /// info[.id] = 5
+  /// info[.id] = 6
   ///
   /// let id = errorInfo[.id] as? Int // returns 5
   /// ```
@@ -66,8 +66,9 @@ extension ErrorInfo {
   /// # Example:
   /// ```swift
   /// let price: Double? = nil
+  /// let message = "Failed to decode"
   ///
-  /// errorInfo[.message] = "Failed to decode"
+  /// errorInfo[.message] = message
   /// errorInfo["price"] = price // stores `nil` with Wrapped-type `Double`
   /// ```
   public subscript<V: ValueType>(_ literalKey: StringLiteralKey) -> V? {

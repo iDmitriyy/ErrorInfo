@@ -42,6 +42,7 @@ extension ErrorInfo {
   /// errorInfo.hasValue(forKey: "url") // returns false
   ///
   /// errorInfo["id"] = 5
+  ///
   /// errorInfo.hasValue(forKey: "id") // returns true
   /// ```
   @_disfavoredOverload
@@ -66,6 +67,7 @@ extension ErrorInfo {
   ///
   /// errorInfo[.id] = 5
   /// errorInfo[.id] = nil as Int?
+  ///
   /// errorInfo.hasMultipleRecords(forKey: .id) // true because there are multiple records
   /// ```
   public func hasMultipleRecords(forKey literalKey: StringLiteralKey) -> Bool {
@@ -84,6 +86,7 @@ extension ErrorInfo {
   ///
   /// errorInfo["id"] = 5
   /// errorInfo["id"] = nil as Int?
+  ///
   /// errorInfo.hasMultipleRecords(forKey: "id")  // true because there are multiple records
   /// ```
   @_disfavoredOverload
@@ -106,6 +109,7 @@ extension ErrorInfo {
   /// errorInfo["key1"] = "A"
   /// errorInfo["key1"] = "B"
   /// errorInfo["key2"] = Date()
+  ///
   /// errorInfo.hasMultipleRecordsForAtLeastOneKey() // true because "key1" has multiple records
   /// ```
   public func hasMultipleRecordsForAtLeastOneKey() -> Bool {
