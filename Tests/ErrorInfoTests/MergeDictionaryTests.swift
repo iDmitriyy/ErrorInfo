@@ -22,7 +22,7 @@ struct MergeDictionaryTests {
     let omitEqualValue = true
     var randomGenerator = SystemRandomNumberGenerator()
     
-    ErrorInfoDictFuncs.Merge
+    Merge.DictUtils
       .withKeyAugmentationAdd(keyValue: ("0", 0),
                               to: &dict,
                               donatorIndex: 0,
@@ -32,7 +32,7 @@ struct MergeDictionaryTests {
                               resolve: { input in
                                 .modifyDonatorKey(input.element.key)
                               })
-    ErrorInfoDictFuncs.Merge
+    Merge.DictUtils
       .withKeyAugmentationAdd(keyValue: ("0", 0),
                               to: &dict,
                               donatorIndex: 1,

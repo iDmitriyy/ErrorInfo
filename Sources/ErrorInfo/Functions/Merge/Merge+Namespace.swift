@@ -20,7 +20,7 @@ extension Merge {
 
 extension Merge {
   /// Namespacing
-  @usableFromInline internal enum Utils {}
+  public enum Utils {}
 }
 
 extension Merge {

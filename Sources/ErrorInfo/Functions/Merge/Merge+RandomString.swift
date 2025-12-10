@@ -22,20 +22,23 @@ extension Merge.Utils {
   /// let suffix = ErrorInfoFuncs.randomSuffix(generator: &generator)
   /// // suffix might be something like "a3@9"
   /// ```
-  @Sendable internal static func randomSuffix(generator: inout some RandomNumberGenerator) -> NonEmptyString {
+  @_spi(PerfomanceTesting)
+  @inlinable @inline(__always)
+  @Sendable public static func randomSuffix(generator: inout some RandomNumberGenerator) -> NonEmptyString {
     // ~11,4 million of combinations
     // duplicated string typically created after several thousands for count = 4
     // for count == 3 duplicate typically appears in range 200-1000
     _randomPrintableAsciiCharsString(count: 4, randomGenerator: &generator)
   }
-  
-  private static func _randomPrintableAsciiCharsString(count: UInt8,
-                                                       randomGenerator: inout some RandomNumberGenerator) -> NonEmptyString {
+    
+  @inlinable @inline(__always)
+  internal static func _randomPrintableAsciiCharsString(count: UInt8,
+                                                        randomGenerator: inout some RandomNumberGenerator) -> NonEmptyString {
     let count = Int(count == 0 ? 1 : count)
+        
+    var result = String(minimumCapacity: count)
+    result.unicodeScalars.append(UnicodeScalar(Merge.Constants.alphaNumericAsciiSet.randomElement()!))
     
-    let zeroIndexChar = Character(UnicodeScalar(Merge.Constants.alphaNumericAsciiSet.randomElement()!))
-    
-    var result: NonEmptyString = NonEmptyString(element: zeroIndexChar)
     for index in 1..<count {
       let randomAsciiNumber: UInt8 = if index == 0 || index == count - 1 {
         Merge.Constants.alphaNumericAsciiSet.randomElement(using: &randomGenerator)!
@@ -43,11 +46,10 @@ extension Merge.Utils {
         // in the middle of the string extended charset is used
         Merge.Constants.allPrintableExcludingReservedAsciiSet.randomElement(using: &randomGenerator)!
       }
-      
-      result.append(Character(UnicodeScalar(randomAsciiNumber)))
+      result.unicodeScalars.append(UnicodeScalar(randomAsciiNumber))
     }
     
-    return result
+    return NonEmptyString(rawValue: result)!
   }
 }
 

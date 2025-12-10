@@ -22,6 +22,7 @@ extension AnyCollection: @retroactive _UniqueCollection {}
 import typealias NonEmpty.NonEmptyString
 
 extension NonEmptyString {
+  @inlinable @inline(__always)
   internal init(element: Character) {
     self.init(element)
   }

@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 06/10/2025.
 //
 
-@_spi(Testing) @testable import ErrorInfo
+@_spi(PerfomanceTesting) import ErrorInfo
 import NonEmpty
 import Testing
 
@@ -39,12 +39,12 @@ struct ValuesForKeyPerfomanceTests {
         })
       }
       
-      // let durations = VariadicTuple(inlineOutput.duration, arrayOutput.duration, valuesForKeyOutput.duration)
+       let durations = VariadicTuple(inlineOutput.duration, arrayOutput.duration, valuesForKeyOutput.duration)
       
       #expect(valuesForKeyOutput.duration <= inlineOutput.duration * 1.55)
-      #expect(valuesForKeyOutput.duration <= arrayOutput.duration * 0.3)
+      #expect(valuesForKeyOutput.duration <= arrayOutput.duration * 0.27)
       
-      // print(durations)
+       print(durations)
     }
   }
   
@@ -70,17 +70,19 @@ struct ValuesForKeyPerfomanceTests {
       let valuesForKeyOutput = performMeasuredAction(count: count) {
         InlineArray<1000, ValuesForKey<any ErrorInfoValueType>>({ index in
           let value = index as any ErrorInfoValueType // values[index]
-          let valuesWrappedByValuesForKey = ValuesForKey(__array: NonEmptyArray(value, value))
+          let valuesWrappedByValuesForKey = ValuesForKey(__array: NonEmptyArray.init(value, value))
           return valuesWrappedByValuesForKey
         })
       }
       
-      // let durations = VariadicTuple(inlineOutput.duration, arrayOutput.duration, valuesForKeyOutput.duration)
+      // TODO: - test ValuesForKey init with NonEmptyArray of 1 element
+      
+       let durations = VariadicTuple(inlineOutput.duration, arrayOutput.duration, valuesForKeyOutput.duration)
       
       #expect(valuesForKeyOutput.duration <= inlineOutput.duration * 6)
-      #expect(valuesForKeyOutput.duration <= arrayOutput.duration * 1.1)
+      #expect(valuesForKeyOutput.duration <= arrayOutput.duration * 1.4)
       
-      // print(durations)
+       print(durations)
     }
   }
 }

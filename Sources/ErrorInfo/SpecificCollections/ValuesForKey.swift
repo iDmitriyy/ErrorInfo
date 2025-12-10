@@ -10,12 +10,14 @@ import NonEmpty
 /// NonEmpty collection.
 /// Stores 1 element inline or a heap allocated NonEmptyArray of elements.
 public struct ValuesForKey<Value>: Sequence {
-  private let _elements: Either<Value, NonEmptyArray<Value>>
+  @usableFromInline internal let _elements: Either<Value, NonEmptyArray<Value>>
   
+  @inlinable @inline(__always)
   internal init(element: Value) { _elements = .left(element) }
   
+  @inlinable @inline(__always)
   internal init(array: NonEmptyArray<Element>) {
-    if array.count > 1 {
+    if array.rawValue.count > 1 {
       _elements = .right(array)
     } else {
       _elements = .left(array.first)
@@ -72,11 +74,13 @@ public struct ValuesForKey<Value>: Sequence {
 
 // TODO: may consume slices. Need improvements or make it also slice
 extension ValuesForKey {
-  @_spi(Testing)
-  public init(__element: Value) { _elements = .left(__element) }
+  @_spi(PerfomanceTesting)
+  @inlinable @inline(__always)
+  public init(__element: Value) { self.init(element: __element) }
   
-  @_spi(Testing)
-  public init(__array: NonEmptyArray<Element>) { _elements = .right(__array) }
+  @_spi(PerfomanceTesting)
+  @inlinable @inline(__always)
+  public init(__array: NonEmptyArray<Element>) { self.init(array: __array) }
 }
 
 // public struct ValuesForKeySlice<Value>: Sequence { or OrderedMultipleValuesForKeyStorageSlice

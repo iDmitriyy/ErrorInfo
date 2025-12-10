@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 29/07/2025.
 //
 
-@testable import ErrorInfo
+@testable @_spi(Testing) import ErrorInfo
 import Foundation
 import NonEmpty
 import Testing
@@ -13,7 +13,7 @@ import Testing
 struct RandomSuffixTests {
   @Test func format() throws {
     var generator = SystemRandomNumberGenerator()
-    let randomSuffixes = (1...100).map { _ in ErrorInfoFuncs.randomSuffix(generator: &generator) }
+    let randomSuffixes = (1...100).map { _ in Merge.Utils.randomSuffix(generator: &generator) }
     
     for randomSuffix in randomSuffixes {
       let randomSuffix = randomSuffix.rawValue
@@ -27,10 +27,10 @@ struct RandomSuffixTests {
     
     var uniqieSuffixes: Set<String> = []
     var counter: Int = 0
-    var nexSuffix = ErrorInfoFuncs.randomSuffix(generator: &generator).rawValue
+    var nexSuffix = Merge.Utils.randomSuffix(generator: &generator).rawValue
     while !uniqieSuffixes.contains(nexSuffix) {
       uniqieSuffixes.insert(nexSuffix)
-      nexSuffix = ErrorInfoFuncs.randomSuffix(generator: &generator).rawValue
+      nexSuffix = Merge.Utils.randomSuffix(generator: &generator).rawValue
       counter += 1
     }
     print("_______ next siffux duplicated at \(counter)")
