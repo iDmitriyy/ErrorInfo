@@ -38,7 +38,7 @@ public protocol ErrorInfoRequirement {
   // MARK: Prefix & Suffix
   
   // FIXME: keyPrefix is String and incompatible with generic Key.
-  mutating func addKeyPrefix(_ keyPrefix: String, transform: PrefixTransformFunc)
+  // mutating func addKeyPrefix(_ keyPrefix: String, transform: PrefixTransformFunc)
 }
 
 extension ErrorInfoRequirement where ValueType == any Sendable {}
@@ -57,10 +57,10 @@ extension ErrorInfoRequirement { // MARK: Prefix & Suffix
 //  toKeysOf dict: inout Dict,
 //  transform: PrefixTransformFunc
   
-  public consuming func addingKeyPrefix(_ keyPrefix: String, transform: PrefixTransformFunc) -> Self {
-    addKeyPrefix(keyPrefix, transform: transform)
-    return self
-  }
+  // public consuming func addingKeyPrefix(_ keyPrefix: String, transform: PrefixTransformFunc) -> Self {
+  //   addKeyPrefix(keyPrefix, transform: transform)
+  //   return self
+  // }
 }
 
 extension ErrorInfoRequirement {
