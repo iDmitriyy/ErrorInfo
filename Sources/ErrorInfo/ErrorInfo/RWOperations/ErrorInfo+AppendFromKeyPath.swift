@@ -8,6 +8,11 @@
 // MARK: - Collect values from KeyPath
 
 extension ErrorInfo {
+  /// This enum allows you to specify how the key path string should be prefixed when it's converted
+  /// to a string representation. You can use either the type's name or a custom name.
+  ///
+  /// - `typeName`: Uses the type's name as a prefix.
+  /// - `customName`: Allows you to provide a custom prefix string, like name of an instance's property.
   public enum KeyPathPrefix {
     case typeName
     case customName(_ name: String)
@@ -20,6 +25,31 @@ extension ErrorInfo {
   // if `address` is renamed in sources, then "address" literal alsso needed to be cnhaged manualy, which is not what we want.
   // Macro also closses the hole that valueName can be en empty string: .valueName(""). binding can not be empty
   
+  /// Appends properties from an instance to the `ErrorInfo` storage with a customizable key path prefix.
+  ///
+  /// This method allows you to append properties of an instance to the `ErrorInfo` storage,
+  /// converting the specified key paths into strings.
+  /// You can choose to use either the type name or a custom prefix for the key paths.
+  ///
+  /// - Parameters:
+  ///   - instance: The object whose properties will be appended to `ErrorInfo`.
+  ///   - keysPrefix: An optional prefix for the key path string. Default is `.typeName`.
+  ///   - collisionSource: A source of potential collisions during the append operation. Default is `.fileLine()`.
+  ///   - keys: A closure that returns the key paths of the instance's properties to be appended.
+  ///
+  /// # Example:
+  /// ```swift
+  /// var errorInfo = ErrorInfo()
+  /// let person = Person(name: "John", age: 30)
+  ///
+  /// errorInfo.appendProperties(of: person) {
+  ///   \Person.name
+  ///   \Person.age
+  /// }
+  ///
+  /// // The resulting keys will be prefixed with "Person" in the error info:
+  /// // "Person.name" and "Person.age"
+  /// ```
   public mutating func appendProperties<R, each V: ValueType>(
     of instance: R,
     keysPrefix: KeyPathPrefix? = .typeName,

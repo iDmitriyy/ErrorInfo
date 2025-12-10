@@ -18,15 +18,22 @@ public struct ValuesForKey<Value>: Sequence {
   // FIXME: - NonEmptyArray here should contain at leas 2 elements
   internal init(array: NonEmptyArray<Element>) { _elements = .right(array) }
   
-  internal var first: Value {
+  public var first: Value {
     switch _elements {
-    case .left(let element): return element
-    case .right(let elements): return elements.first! // FIXME: forced unwrapping
+    case .left(let element): element
+    case .right(let elements): elements.first
     }
   }
   
-  // TODO:
-  // destrctured(first: Value, others: NonEmptyArray<Value>)
+  public var count: Int {
+    switch _elements {
+    case .left: 1
+    case .right(let elements): elements.count
+    }
+  }
+  
+  // TODO: - destrctured(first: Value, others: NonEmptyArray<Value>)
+  // _compactMap
   
   /// Return nonEmpty instance
   internal func _compactMap<U>(_ transform: (Value) -> U?) -> ValuesForKey<U>? {
@@ -63,6 +70,6 @@ extension ValuesForKey {
   public init(__array: NonEmptyArray<Element>) { _elements = .right(__array) }
 }
 
-//public struct ValuesForKeySlice<Value>: Sequence { or OrderedMultipleValuesForKeyStorageSlice
+// public struct ValuesForKeySlice<Value>: Sequence { or OrderedMultipleValuesForKeyStorageSlice
 //  private let _slice: Either<DiscontiguousSlice<A>, DiscontiguousSlice<B>>
-//}
+// }

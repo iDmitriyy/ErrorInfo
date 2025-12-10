@@ -140,7 +140,7 @@ extension ErrorInfo {
   ///
   /// - Returns: A `KeyValueLookupResult` indicating the result of the lookup.
   ///
-  /// - Example:
+  /// # Example:
   /// ```swift
   /// let errorInfo = ErrorInfo()
   ///
@@ -162,7 +162,7 @@ extension ErrorInfo {
   ///
   /// - Returns: A `KeyValueLookupResult` indicating the result of the lookup.
   ///
-  /// - Example:
+  /// # Example:
   /// ```swift
   /// let errorInfo = ErrorInfo()
   ///
