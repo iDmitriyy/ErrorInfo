@@ -7,9 +7,6 @@
 
 // MARK: - is Approximately Equal
 
-// TODO: isApproximatelyEqual is not a good name, is this term is used for comparing FloatingPoint.
-// isEqualByInterpolation can be also useful, but it has another meaning and porposes, e.g.
-
 extension ErrorInfoFuncs {
   /// Returns a Boolean value indicating whether two values are approximately equal.
   ///

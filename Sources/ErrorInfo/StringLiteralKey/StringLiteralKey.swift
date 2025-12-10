@@ -6,25 +6,25 @@
 //
 
 /// `StringLiteralKey` is designed to be used primarily for subscripting and appending values to `error-info` instances.
-/// It can be constructed from static keys known at compile-time.
+/// It can be constructed from static string literals known at compile-time.
 /// In context of using ErrorInfo, such design helps do differentiate between copile-time knowm literals and dynamically created String keys.
 ///
-/// Combining Keys:
+/// ## Combining Keys:
 /// StringLiteralKey supports the `+` operator to combine multiple keys, allowing creation of composite keys.
 /// ```swift
 /// errorInfo[.invalid + .index] = index
 /// ```
 ///
-/// Benefits & Goals:
-/// - Name safety: prevents typos and inconsistent key names
-/// - Autocomplete: easy to find using autocomplete with  no pollution of String namespace.
-/// - Predefined Keys:
+/// ## Benefits & Goals:
+/// - **Name safety:** prevents typos and inconsistent key names
+/// - **Autocomplete:** easy to find using autocomplete with  no pollution of String namespace.
+/// - **Predefined Keys:**
 ///   - common keys for typical error contexts, network, state information, and more.
 ///   - reduced hardcoding and string duplication.
-/// - Consistency: centralizes key definitions, ensuring the same key is used across different parts of the code.
-/// - Improved Refactoring: renaming user-defined keys is easy and automatically reflected throughout the codebase.
+/// - **Consistency:** centralizes key definitions, ensuring the same key is used across different parts of the code.
+/// - **Improved Refactoring:** renaming user-defined keys is easy and automatically reflected throughout the codebase.
 ///
-/// Predefined Keys:
+/// ## Predefined Keys:
 /// StringLiteralKey includes a number of predefined keys and prefixes that cover common use cases:
 /// - Commonly used prefixes (e.g. `.invalid`, `.unexpected`)
 /// - Error Contexts
