@@ -45,7 +45,7 @@ extension MultiValueErrorInfoGeneric {
 
 extension MultiValueErrorInfoGeneric where Dict.Key: RangeReplaceableCollection {
   public mutating func addKeyPrefix(_ keyPrefix: Dict.Key) {
-    storage = ErrorInfoDictFuncs.addKeyPrefix(keyPrefix, toKeysOf: storage)
+    storage = ErrorInfoFuncs.DictUtils.addKeyPrefix(keyPrefix, toKeysOf: storage)
   }
 }
 

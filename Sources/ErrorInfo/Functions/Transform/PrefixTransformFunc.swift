@@ -85,3 +85,37 @@ public struct PrefixCompositeTransformFunc: Sendable {
  
  // ?? how to convert different key styles?
  */
+
+extension Merge.DictUtils {
+  public static func addKeyPrefix<V, Dict>(
+    _ keyPrefix: String,
+    toKeysOf dict: inout Dict,
+    randomGenerator: consuming some RandomNumberGenerator & Sendable = SystemRandomNumberGenerator(),
+    transform: PrefixTransformFunc,
+  ) where Dict: DictionaryProtocol<String, V>, Dict: EmptyInitializableWithCapacityDictionary {
+    var prefixedKeysDict = Dict(minimumCapacity: dict.count)
+    
+    // Adding prefix is similar to merge operation, except that key collisions can happen between own keys after they are transformed.
+    // The are no donators, so use lower level soubroutine.
+    // Example:
+    // ["a": 1, "A": 2]
+    // - Add a prefix == "product", with uppercasingKeyFirstChar
+    // - key "a" will be uppercased which introduces a collision
+    // After colissions resolving:
+    // ["productA": 1, "productA#pL4A": 2]
+    
+    // While appearing of equal values making a merge is expected, such situation is not normal when adding a prefix
+    // to all keys.
+    // such self-collisions are something unexpected, so keep all values (shouldOmitEqualValue = false) in this case
+    for (key, value) in dict {
+      let prefixedKey = transform(key: key, prefix: keyPrefix)
+      Merge.DictUtils._putAugmentingWithRandomSuffix(value,
+                                                     assumeModifiedKey: prefixedKey,
+                                                     shouldOmitEqualValue: false,
+                                                     suffixFirstChar: Merge.Constants.randomSuffixBeginningForMergeScalar,
+                                                     randomGenerator: &randomGenerator,
+                                                     to: &prefixedKeysDict)
+    }
+    return dict = prefixedKeysDict
+  }
+}

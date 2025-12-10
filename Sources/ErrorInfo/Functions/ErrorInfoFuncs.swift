@@ -14,6 +14,10 @@
 public enum ErrorInfoFuncs {}
 
 extension ErrorInfoFuncs {
+  public enum DictUtils {}
+}
+
+extension ErrorInfoFuncs {
   /// Converts a KeyPath into a string representation.
   ///
   /// If `withTypePrefix` is `true`, the result includes type and property name (e.g. `"Foo.count"`).

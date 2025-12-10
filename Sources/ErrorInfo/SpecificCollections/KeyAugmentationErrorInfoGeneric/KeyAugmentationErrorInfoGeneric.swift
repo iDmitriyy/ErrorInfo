@@ -71,7 +71,7 @@ extension KeyAugmentationErrorInfoGeneric {
 
 extension KeyAugmentationErrorInfoGeneric {
   public mutating func addKeyPrefix(_ keyPrefix: D.Key) {
-    _storage = ErrorInfoDictFuncs.addKeyPrefix(keyPrefix, toKeysOf: _storage)
+    _storage = ErrorInfoFuncs.DictUtils.addKeyPrefix(keyPrefix, toKeysOf: _storage)
   }
 }
 
