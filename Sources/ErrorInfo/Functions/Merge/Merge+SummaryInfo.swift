@@ -78,7 +78,7 @@ extension Merge {
   /// It augments the keys to ensure uniqueness across sources and resolves conflicts by annotating them with metadata such as error source signatures
   /// and collision information.
   ///
-  /// # Key Features
+  /// ## Key Features
   /// - **Collision Handling Across Sources:** If the same key appears in multiple error info sources, the key is augmented with a source-specific
   ///   signature (e.g., error domain and code).
   ///   In case some of the sources have identical signatures (rare in practice), an index is appended to source signatures to distinguish them.
@@ -140,11 +140,11 @@ extension Merge {
     // any ErrorInfoValueType change to V (e.g. to be Optional<any ErrorInfoValueType> or String)
     var summaryInfo: OrderedDictionary<String, W> = [:]
     func putResolvingCollisions(key assumeModifiedKey: String, value processedValue: W) {
-      ErrorInfoDictFuncs.Merge._putAugmentingWithRandomSuffix(assumeModifiedKey: assumeModifiedKey,
-                                                              value: processedValue,
-                                                              suffixFirstChar: ErrorInfoMerge.suffixBeginningForMergeScalar,
-                                                              randomGenerator: &randomGenerator,
-                                                              to: &summaryInfo)
+      Merge.DictUtils._putAugmentingWithRandomSuffix(assumeModifiedKey: assumeModifiedKey,
+                                                     value: processedValue,
+                                                     suffixFirstChar: Merge.Constants.randomSuffixBeginningForMergeScalar,
+                                                     randomGenerator: &randomGenerator,
+                                                     to: &summaryInfo)
     }
     
     // context is a var only because of `mutating get` / lazy var
@@ -236,6 +236,7 @@ extension Merge._Summary {
     } else {
       resultKey = keyString
     }
+    // ! try to used Array<String>.joined(separator: String)
     _appendSuffixAnnotations(keyOrigin: keyOrigin,
                              collisionSource: collisionSource,
                              errorInfoSignature: errorInfoSignature,

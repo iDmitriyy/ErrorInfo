@@ -35,12 +35,12 @@ extension ErrorInfoDictFuncs {
     // such self-collisions are something unexpected, so keep all values (shouldOmitEqualValue = false) in this case
     for (key, value) in dict {
       let prefixedKey = transform(key: key, prefix: keyPrefix)
-      Merge._putAugmentingWithRandomSuffix(value,
-                                           assumeModifiedKey: prefixedKey,
-                                           shouldOmitEqualValue: false,
-                                           suffixFirstChar: ErrorInfoMerge.suffixBeginningForMergeScalar,
-                                           randomGenerator: &randomGenerator,
-                                           to: &prefixedKeysDict)
+      Merge.DictUtils._putAugmentingWithRandomSuffix(value,
+                                                     assumeModifiedKey: prefixedKey,
+                                                     shouldOmitEqualValue: false,
+                                                     suffixFirstChar: Merge.Constants.randomSuffixBeginningForMergeScalar,
+                                                     randomGenerator: &randomGenerator,
+                                                     to: &prefixedKeysDict)
     }
     return dict = prefixedKeysDict
   }

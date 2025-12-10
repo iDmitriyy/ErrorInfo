@@ -5,14 +5,9 @@
 //  Created by Dmitriy Ignatyev on 31/07/2025.
 //
 
-extension ErrorInfoDictFuncs {
-  /// Namespacing
-  public enum Merge {}
-}
-
 /// all merge functions have no default value for omitEqualValue arg.
 /// Extension can be be made on user side, providing overload with suitable default choice.
-extension ErrorInfoDictFuncs.Merge {
+extension Merge.DictUtils {
   // MARK: Merge
   
   /// The purpose of this function is to merge multiple dictionaries of error information into a single dictionary, handling any key collisions by appending a unique suffix to the key.
@@ -69,7 +64,7 @@ extension ErrorInfoDictFuncs.Merge {
 
 // MARK: - Low level root functions for a single value
 
-extension ErrorInfoDictFuncs.Merge {
+extension Merge.DictUtils {
   // short typealiased names for convenience:
   public typealias ResolvingInput<Key: Hashable, Value, C> = KeyCollisionResolvingInput<Key, Value, C>
   public typealias ResolvingResult<Key: Hashable> = KeyCollisionResolvingResult<Key>
@@ -78,7 +73,7 @@ extension ErrorInfoDictFuncs.Merge {
 
 // MARK: - Key Augmentation (String overload)
 
-extension ErrorInfoDictFuncs.Merge {
+extension Merge.DictUtils {
   /// Add value by key to recipient` dictionary`.
   /// For key-value pair, the function checks if the key already exists in the `recipient` dictionary.
   /// If the key does not already contained in the `recipient` dictionary, the function simply adds this key-value pair to the `recipient` dictionary.
@@ -104,7 +99,7 @@ extension ErrorInfoDictFuncs.Merge {
                                                      resolve: (ResolvingInput<Dict.Key, Dict.Value, C>) -> ResolvingResult<Dict.Key>)
     where Dict: DictionaryProtocol, Dict.Key == String {
     // TODO: update func documentation
-    let suffixFirstChar: UnicodeScalar = ErrorInfoMerge.suffixBeginningForMergeScalar
+    let suffixFirstChar: UnicodeScalar = Merge.Constants.randomSuffixBeginningForMergeScalar
     withKeyAugmentationAdd(keyValue: donatorKeyValue,
                            to: &recipient,
                            donatorIndex: donatorIndex,
@@ -112,7 +107,7 @@ extension ErrorInfoDictFuncs.Merge {
                            identity: identity,
                            suffixSeparator: String(suffixFirstChar),
                            randomGenerator: &randomGenerator,
-                           randomSuffix: ErrorInfoFuncs.randomSuffix,
+                           randomSuffix: Merge.Utils.randomSuffix,
                            resolve: resolve)
   }
   
@@ -129,7 +124,7 @@ extension ErrorInfoDictFuncs.Merge {
                                    shouldOmitEqualValue: shouldOmitEqualValue,
                                    suffixSeparator: String(suffixFirstChar),
                                    randomGenerator: &randomGenerator,
-                                   randomSuffix: ErrorInfoFuncs.randomSuffix,
+                                   randomSuffix: Merge.Utils.randomSuffix,
                                    to: &recipient)
   }
   
@@ -143,7 +138,7 @@ extension ErrorInfoDictFuncs.Merge {
                                    value: value,
                                    suffixSeparator: String(suffixFirstChar),
                                    randomGenerator: &randomGenerator,
-                                   randomSuffix: ErrorInfoFuncs.randomSuffix,
+                                   randomSuffix: Merge.Utils.randomSuffix,
                                    to: &recipient)
   }
 }
@@ -152,7 +147,7 @@ extension ErrorInfoDictFuncs.Merge {
 
 import NonEmpty
 
-extension ErrorInfoDictFuncs.Merge {
+extension Merge.DictUtils {
   // ResolvingResult should have one more case: .builtInAddSuffix, and Never type used to make it (un)available for different imps.
   // For Collection-Type keys it is possible to append random-suffix
   

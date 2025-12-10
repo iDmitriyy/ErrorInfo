@@ -5,19 +5,16 @@
 //  Created by Dmitriy Ignatyev on 26/07/2025.
 //
 
-/// Namespacing
-public enum ErrorInfoMerge {}
-
-extension ErrorInfoMerge {
+extension Merge.Constants {
   /// "$"
-  internal static let suffixBeginningForSubcriptAsciiCode: UInt8 = 36
+  internal static let randomSuffixBeginningForSubcriptAsciiCode: UInt8 = 36
   /// "$"
-  internal static let suffixBeginningForSubcriptScalar = UnicodeScalar(suffixBeginningForSubcriptAsciiCode)
+  internal static let randomSuffixBeginningForSubcriptScalar = UnicodeScalar(randomSuffixBeginningForSubcriptAsciiCode)
   
   /// "#"
-  internal static let suffixBeginningForMergeAsciiCode: UInt8 = 35
+  internal static let randomSuffixBeginningForMergeAsciiCode: UInt8 = 35
   /// "#"
-  internal static let suffixBeginningForMergeScalar = UnicodeScalar(suffixBeginningForMergeAsciiCode)
+  internal static let randomSuffixBeginningForMergeScalar = UnicodeScalar(randomSuffixBeginningForMergeAsciiCode)
 }
 
 public struct KeyCollisionResolvingInput<Key: Hashable, Value, CId> {

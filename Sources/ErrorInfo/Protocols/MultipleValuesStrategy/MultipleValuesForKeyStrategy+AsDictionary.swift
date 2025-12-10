@@ -31,13 +31,13 @@ extension ErrorInfoMultipleValuesForKeyStrategy where Self: ErrorInfoPartialColl
     var recipient = D(minimumCapacity: count)
     
     for keyValue in keyValuesView {
-      ErrorInfoDictFuncs.Merge.withKeyAugmentationAdd(keyValue: keyValue,
-                                                      to: &recipient,
-                                                      donatorIndex: 0,
-                                                      omitEqualValue: omitEqualValue,
-                                                      identity: collisionSource,
-                                                      randomGenerator: &randomGenerator,
-                                                      resolve: resolve)
+      Merge.DictUtils.withKeyAugmentationAdd(keyValue: keyValue,
+                                             to: &recipient,
+                                             donatorIndex: 0,
+                                             omitEqualValue: omitEqualValue,
+                                             identity: collisionSource,
+                                             randomGenerator: &randomGenerator,
+                                             resolve: resolve)
     }
     
     return recipient
