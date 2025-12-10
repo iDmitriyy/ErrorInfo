@@ -291,9 +291,4 @@ extension Merge.DictUtils {
     } // end while
     recipient[modifiedKey] = value
   }
-  
-  // TODO: add RandomNumberGenerator argument in _putAugmentingWithRandomSuffix randomSuffix closure
-  // withKeyAugmentationAdd() function get a RandomNumberGenerator instance from merge() func.
-  // This way RandomNumberGenerator for a merge() operation
-  // This can also help to write test for _putAugmentingWithRandomSuffix func
 }
