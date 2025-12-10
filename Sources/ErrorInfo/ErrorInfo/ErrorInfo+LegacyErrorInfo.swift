@@ -8,27 +8,15 @@
 import Foundation
 
 extension ErrorInfo {
-  //  public mutating func add(key: String, anyValue: Any, line: UInt = #line) {
-  //    // use cases:
-  //    // get value from [String: Any]. If it is Optional.nil, then type might be nknowm.
-  //    // If not nil, it may be useful id instance from ObjC
-  //    // >> need improvements as real Type can not always be known correctly.
-  //    // May be the same approach for Optional as in isApproximatelyEqual
-  //    var typeDescr: String { " (T.Type=" + "\(type(of: anyValue))" + ") " }
-  //    _addValue(typeDescr + prettyDescription(any: anyValue), forKey: key, line: line)
-  //  }
-  
   public init(legacyUserInfo: [String: Any],
               collisionSource origin: @autoclosure () -> CollisionSource.Origin = .fileLine()) {
     self.init()
     
     legacyUserInfo.forEach { key, value in
       let interpolatedValue = Self.castOrConvertToSendable(legacyInfoValue: value)
-      // Swift.Dictionary<String, Any> has unique keys with single value for key, so collision might never happen.
-      // hardcode collisionSource: .onMerge(origin: .fileLine())
       _storage.appendResolvingCollisions(key: key,
                                          value: _Entry(optional: .value(interpolatedValue), keyOrigin: .dynamic),
-                                         insertIfEqual: true,
+                                         insertIfEqual: true, // Swift.Dictionary<String, Any> has unique keys
                                          collisionSource: .onDictionaryConsumption(origin: origin()))
       // May be it is good to split into two separated dictionaries. Static initializer will return something like tuple of
       // (Self, nonSendableValues:)
