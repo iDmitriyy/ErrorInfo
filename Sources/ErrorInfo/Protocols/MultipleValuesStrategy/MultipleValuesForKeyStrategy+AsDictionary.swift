@@ -7,44 +7,7 @@
 
 // MARK: Default implementations
 
-// TODO: need to be generalized for Integer types >= UInt32
-
 // MARK: Conversion MultipleValues => Dictionary (Key Augmentation)
-
-extension ErrorInfoMultipleValuesForKeyStrategy where Self: ErrorInfoPartialCollection, Key == String {
-//  func asStringDict<I>(omitEqualValue: Bool,
-//                       identity: I,
-//                       resolve: (ResolvingInput<String, V, C>) -> ResolvingResult<String>) -> [String: String] {
-//  }
-  
-//  @specialized(where Dict == DictionaryUnifyingProtocol<String, any ErrorInfoValueType>)
-//  @specialized(where Key == String, Value == String, I == String)
-//  @_specialize(where I == String, D == Dictionary<String, String>)
-//  @_specialize(where Key == String, Value == String)
-  /// Key-augmentation merge strategy.
-  func asGenericDict<I, D>(
-    omitEqualValue: Bool,
-    collisionSource: I,
-    randomGenerator: consuming some RandomNumberGenerator & Sendable = SystemRandomNumberGenerator(),
-    resolve: (KeyCollisionResolvingInput<Key, Value, I>) -> KeyCollisionResolvingResult<Key>,
-  ) -> D where D: DictionaryProtocol<Key, Value>, D: EmptyInitializableWithCapacityDictionary {
-    var recipient = D(minimumCapacity: count)
-    
-    for keyValue in keyValuesView {
-      Merge.DictUtils.withKeyAugmentationAdd(keyValue: keyValue,
-                                             to: &recipient,
-                                             donatorIndex: 0,
-                                             omitEqualValue: omitEqualValue,
-                                             identity: collisionSource,
-                                             randomGenerator: &randomGenerator,
-                                             resolve: resolve)
-    }
-    
-    return recipient
-  }
-}
-
-// TODO: add generic imp when !(Key == String)
 
 // MARK: Conversion MultipleValues => Dictionary (Array of values)
 

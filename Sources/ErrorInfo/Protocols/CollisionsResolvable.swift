@@ -7,12 +7,6 @@
 
 // MARK: - Merge Operations
 
-// protocol ErrorInfoCollisionsResolvable<Key, Value>: IterableErrorInfo {
-//  init(_ keyValues: some Sequence<Element>)
-// }
-//
-// extension ErrorInfoMergeOp {}
-
 public protocol ErrorInfoCollisionsResolvable_<Key, Value>: ~Copyable where Key: Hashable { // : IterableErrorInfo
   associatedtype Key
   associatedtype Value

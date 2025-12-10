@@ -211,13 +211,15 @@ extension Merge.DictUtils {
   }
   
   /// Decomposition subroutine of `func withKeyAugmentationAdd(...)`
-  internal static func _putAugmentingWithRandomSuffix<Dict, RGen>(assumeModifiedKey: Dict.Key,
-                                                                  value: Dict.Value,
-                                                                  shouldOmitEqualValue omitIfEqual: Bool,
-                                                                  suffixSeparator: some Collection<Dict.Key.Element>,
-                                                                  randomGenerator: inout RGen,
-                                                                  randomSuffix: @Sendable (inout RGen) -> NonEmpty<Dict.Key>,
-                                                                  to recipient: inout Dict)
+  internal static func _putAugmentingWithRandomSuffix<Dict, RGen>(
+    assumeModifiedKey: Dict.Key,
+    value: Dict.Value,
+    shouldOmitEqualValue omitIfEqual: Bool,
+    suffixSeparator: some Collection<Dict.Key.Element>,
+    randomGenerator: inout RGen,
+    randomSuffix: @Sendable (inout RGen) -> NonEmpty<Dict.Key>,
+    to recipient: inout Dict,
+  )
     where Dict: DictionaryProtocol, Dict.Key: RangeReplaceableCollection, RGen: RandomNumberGenerator {
     // Here we can can only make an assumtption that donator key was modified on the client side.
     // While it should always happen, there is no guarantee.
@@ -253,13 +255,15 @@ extension Merge.DictUtils {
     recipient[modifiedKey] = value
   }
   
-  internal static func _putAugmentingWithRandomSuffix<Dict, RGen>(assumeModifiedKey: Dict.Key,
-                                                                  value: Dict.Value,
-                                                                  suffixSeparator: some Collection<Dict.Key.Element>,
-                                                                  randomGenerator: inout RGen,
-                                                                  randomSuffix: @Sendable (inout RGen) -> NonEmpty<Dict.Key>,
-                                                                  to recipient: inout Dict)
-    where Dict: DictionaryProtocol, Dict.Key: RangeReplaceableCollection, RGen: RandomNumberGenerator {
+  internal static func _putAugmentingWithRandomSuffix<Dict, NumGen>(
+    assumeModifiedKey: Dict.Key,
+    value: Dict.Value,
+    suffixSeparator: some Collection<Dict.Key.Element>,
+    randomGenerator: inout NumGen,
+    randomSuffix: @Sendable (inout NumGen) -> NonEmpty<Dict.Key>,
+    to recipient: inout Dict,
+  )
+    where Dict: DictionaryProtocol, Dict.Key: RangeReplaceableCollection, NumGen: RandomNumberGenerator {
     // Here we can can only make an assumtption that donator key was modified on the client side.
     // While it should always happen, there is no guarantee.
     

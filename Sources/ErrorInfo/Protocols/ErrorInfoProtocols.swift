@@ -5,8 +5,6 @@
 //  Created by Dmitriy Ignatyev on 28/07/2025.
 //
 
-// import IndependentDeclarations
-
 // MARK: - Error Info
 
 /// This approach addresses several important concerns:
@@ -15,70 +13,18 @@
 /// - Collision Resolution: The Equatable requirement allows to detect and potentially resolve collisions if different values are associated with the same key. This adds a layer of robustness.
 public typealias ErrorInfoValueType = CustomStringConvertible & Equatable & Sendable
 
-public protocol NonSendableErrorInfoProtocol<ValueType> {
-  associatedtype ValueType
+/// If a collision happens, then two symbols are used as a start of random key suffix:
+/// for subscript: `$` , e.g. "keyName$Ta5"
+/// for merge functions: `#` , e.g. "keyName_don0_file_line_FileName_81_#Wng"
+public protocol ErrorInfoType<Key, Value>: Sequence where Self.Element == (key: Key, value: Value) {
+  associatedtype Key: Hashable
+  associatedtype Value
+  
+  func sendableReprsentation() -> any Sequence<(key: String, value: any Sendable)>
 }
 
-public protocol ErrorInfoRequirement {
-  associatedtype Key
-  associatedtype ValueType
-
-  // MARK: Add value
+public protocol InformativeError: Error {
+  associatedtype ErrorInfoType
   
-  func _getUnderlyingValue(forKey key: Key) -> ValueType?
-  
-  mutating func _addResolvingCollisions(value: ValueType, forKey key: Key)
-  
-//  func getUnderlyingStorage() -> some DictionaryUnifyingProtocol<String, ValueType>
-  
-  // MARK: Merge
-  
-  mutating func merge<each D>(_ donators: repeat each D) where repeat each D: ErrorInfoRequirement
-  
-  // MARK: Prefix & Suffix
-  
-  // FIXME: keyPrefix is String and incompatible with generic Key.
-  // mutating func addKeyPrefix(_ keyPrefix: String, transform: PrefixTransformFunc)
+  var info: ErrorInfoType { get }
 }
-
-extension ErrorInfoRequirement where ValueType == any Sendable {}
-
-extension ErrorInfoRequirement { // MARK: Merge
-
-  public consuming func merging<each D>(_ donators: repeat each D) -> Self
-    where repeat each D: ErrorInfoRequirement {
-      merge(repeat each donators)
-      return self
-    }
-}
-
-extension ErrorInfoRequirement { // MARK: Prefix & Suffix
-
-//  toKeysOf dict: inout Dict,
-//  transform: PrefixTransformFunc
-  
-  // public consuming func addingKeyPrefix(_ keyPrefix: String, transform: PrefixTransformFunc) -> Self {
-  //   addKeyPrefix(keyPrefix, transform: transform)
-  //   return self
-  // }
-}
-
-extension ErrorInfoRequirement {
-  public init(legacyUserInfo _: [String: Any],
-              valueInterpolation _: @Sendable (Any) -> String = { prettyDescriptionOfOptional(any: $0) }) {
-//    self.init()
-//    legacyUserInfo.forEach { key, value in storage[key] = valueInterpolation(value) }
-    fatalError()
-  }
-  
-  public func asStringDict() -> [String: String] {
-    fatalError()
-  }
-}
-
-/// Default functions implementations for ErrorInfo types
-// internal protocol ErrorInfoInternalDefaultFuncs {
-//  associatedtype Storage: DictionaryProtocol
-//
-//  var storage: Storage { get }
-// }
