@@ -5,7 +5,8 @@
 //  Created by Dmitriy Ignatyev on 06/10/2025.
 //
 
-@_spi(Testing) import ErrorInfo
+@_spi(Testing) @testable import ErrorInfo
+import NonEmpty
 import Testing
 
 // !rewrite
@@ -69,7 +70,7 @@ struct ValuesForKeyPerfomanceTests {
       let valuesForKeyOutput = performMeasuredAction(count: count) {
         InlineArray<1000, ValuesForKey<any ErrorInfoValueType>>({ index in
           let value = index as any ErrorInfoValueType // values[index]
-          let valuesWrappedByValuesForKey = ValuesForKey(__array: [value, value])
+          let valuesWrappedByValuesForKey = ValuesForKey(__array: NonEmptyArray(value, value))
           return valuesWrappedByValuesForKey
         })
       }

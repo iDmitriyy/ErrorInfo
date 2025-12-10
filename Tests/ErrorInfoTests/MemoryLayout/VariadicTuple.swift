@@ -12,3 +12,10 @@ struct VariadicTuple<each T> {
     self.elements = (repeat each elements)
   }
 }
+
+extension Collection {
+  @inlinable @inline(__always)
+  internal func apply<T>(_ function: (Self) -> T) -> T {
+    function(self)
+  }
+}

@@ -17,7 +17,8 @@ struct MergeDictionaryTests {
   
   @Test func noKeyMidification() async throws {
     var dict: [String: Int] = ["0": 0]
-    let fileLine = StaticFileLine(fileID: "MergeDictionaryTests", line: 15)
+    let fileLine = ErrorInfoFuncs.fileLineString(file: #file, line: #line)
+    
     let omitEqualValue = true
     var randomGenerator = SystemRandomNumberGenerator()
     

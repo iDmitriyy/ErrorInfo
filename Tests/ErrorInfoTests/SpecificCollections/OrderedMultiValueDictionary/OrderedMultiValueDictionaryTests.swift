@@ -7,7 +7,6 @@
 
 @testable import ErrorInfo
 import Testing
-import StdLibExtensions
 import OrderedCollections
 
 struct OrderedMultiValueDictionaryTests {
