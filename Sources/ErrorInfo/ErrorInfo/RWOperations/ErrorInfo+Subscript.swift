@@ -44,7 +44,7 @@ extension ErrorInfo {
   /// - Deprecated: This subscript is deprecated and will show a warning if used. To remove values, use `removeValue(forKey:)`.
   /// - Unavailable: This subscript cannot be used for getting or setting values. Use `removeValue(forKey:)` to remove a value.
   @_disfavoredOverload
-  public subscript(_ dd: StringLiteralKey) -> InternalRestrictionToken? {
+  public subscript(_: StringLiteralKey) -> InternalRestrictionToken? {
     @available(*, deprecated,
                message: "To remove value use removeValue(forKey:) function")
     set {}

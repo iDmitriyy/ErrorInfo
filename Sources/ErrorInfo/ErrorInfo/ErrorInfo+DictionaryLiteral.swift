@@ -30,7 +30,7 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
   /// // contains key-value ("error_code": 404) twice
   /// ```
   public init(dictionaryLiteral elements: (Key, Value)...) {
-    self.init()
+    self.init(minimumCapacity: elements.count)
     _mergeKeyValues(_dictionaryLiteral: elements, collisionSource: .onCreateWithDictionaryLiteral)
   }
 }

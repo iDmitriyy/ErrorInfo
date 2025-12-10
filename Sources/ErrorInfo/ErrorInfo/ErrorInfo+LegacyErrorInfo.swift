@@ -29,13 +29,13 @@ extension ErrorInfo {
   /// ```
   public init(legacyUserInfo: [String: Any],
               collisionSource origin: @autoclosure () -> CollisionSource.Origin = .fileLine()) {
-    self.init()
+    self.init(minimumCapacity: legacyUserInfo.count)
     
     legacyUserInfo.forEach { key, value in
       let interpolatedValue = Self._castOrConvertToCompatible(legacyInfoValue: value)
       _storage.appendResolvingCollisions(key: key,
                                          value: _Record(_optional: .value(interpolatedValue), keyOrigin: .dynamic),
-                                         insertIfEqual: true, // Swift.Dictionary<String, Any> has unique keys
+                                         insertIfEqual: true, // no effect here, Swift.Dictionary has unique keys
                                          collisionSource: .onDictionaryConsumption(origin: origin()))
       // May be it is good to split into two separated dictionaries. Static initializer will return something like tuple of
       // (Self, nonSendableValues: [(key:, value:)])
