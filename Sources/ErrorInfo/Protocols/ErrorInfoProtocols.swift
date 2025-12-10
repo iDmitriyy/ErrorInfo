@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 28/07/2025.
 //
 
-//import IndependentDeclarations
+// import IndependentDeclarations
 
 // MARK: - Error Info
 
@@ -108,8 +108,8 @@ func test(errorInfo: some ErrorInfoRequirement) {
 }
 
 /// Default functions implementations for ErrorInfo types
-//internal protocol ErrorInfoInternalDefaultFuncs {
+// internal protocol ErrorInfoInternalDefaultFuncs {
 //  associatedtype Storage: DictionaryProtocol
-//  
+//
 //  var storage: Storage { get }
-//}
+// }

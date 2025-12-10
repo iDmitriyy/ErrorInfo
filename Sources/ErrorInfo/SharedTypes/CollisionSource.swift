@@ -18,22 +18,39 @@ public enum CollisionSource: Sendable {
   case onKeysMapping(original: String, mapped: String)
   
   case onDictionaryConsumption(origin: Origin)
-  case onCreateWithDictionaryLiteral // (firstKey: String)
+  case onCreateWithDictionaryLiteral
+  
+  // collision short indicator variants: `   @#@    >X<    !*!  >collision*   `
   
   public func defaultStringInterpolation() -> String {
-    let head = "!*!"
-    let tail: String
     switch self {
-    case .onSubscript: tail = "onSubscript"
-    case .onAppend: tail = "onAppend"
-    case let .onMerge(origin): return origin.defaultStringInterpolation(sourceString: "onMerge")
-    case let .onAddPrefix(prefix): tail = "onAddPrefix(\"\(prefix)\")"
-    case let .onAddSuffix(suffix): tail = "onAddSuffix(\"\(suffix)\")"
-    case let .onKeysMapping(original, mapped): tail = "onKeyMapping(original: \"\(original)\", mapped: \"\(mapped)\")"
-    case let .onDictionaryConsumption(origin): return origin.defaultStringInterpolation(sourceString: "onDictionaryConsumption")
-    case .onCreateWithDictionaryLiteral: tail = "onCreateWithDictionaryLiteral"
+    case .onSubscript(let origin):
+      let name = "onSubscript"
+      return origin.map { $0.defaultStringInterpolation(collisionName: name) } ?? name
+      
+    case .onAppend(let origin):
+      let name = "onAppend"
+      return origin.map { $0.defaultStringInterpolation(collisionName: name) } ?? name
+      
+    case let .onMerge(origin):
+      return origin.defaultStringInterpolation(collisionName: "onMerge")
+      
+    case let .onAddPrefix(prefix):
+      // Improvement: may be `String.concat(...)` is faster than interpolation
+      return "onAddPrefix(`\(prefix)`)"
+      
+    case let .onAddSuffix(suffix): 
+      return "onAddSuffix(`\(suffix)`)"
+      
+    case let .onKeysMapping(original, mapped):
+      return String.concat("onKeyMapping(original: `", original, "`, mapped: `", mapped, "`)")
+      
+    case let .onDictionaryConsumption(origin):
+      return origin.defaultStringInterpolation(collisionName: "onDictionaryConsumption")
+      
+    case .onCreateWithDictionaryLiteral: 
+      return "onCreateWithDictionaryLiteral"
     }
-    return head + tail
   }
 }
 
@@ -49,15 +66,20 @@ extension CollisionSource {
       self = .custom(origin: origin)
     }
     
-    /// `  @#@    >X<    !*!  >collision*`
-    fileprivate func defaultStringInterpolation(sourceString: String) -> String {
-      let head = "!*!" + sourceString
-      let tail: String = switch self {
-      case let .fileLine(file, line): "(" + "at: " + ErrorInfoFuncs.fileLineString(file: file, line: line) + ")"
-      case let .function(function): "(" + "inFunction: \(function)" + ")"
-      case let .custom(origin): "(" + "origin: \(origin)" + ")"
+    fileprivate func defaultStringInterpolation(collisionName: consuming String) -> String {
+      switch self {
+      case let .fileLine(file, line):
+        String.concat(collisionName,
+                      "(",
+                      StringLiteralKey.fileLine.rawValue,
+                      ": ",
+                      ErrorInfoFuncs.fileLineString(file: file, line: line),
+                      ")")
+      case let .function(function):
+        String.concat(collisionName, "(", StringLiteralKey.function.rawValue, ": ", function, ")")
+      case let .custom(origin):
+        String.concat(collisionName, "(origin: ", origin, ")")
       }
-      return head + tail
     }
   }
 }
