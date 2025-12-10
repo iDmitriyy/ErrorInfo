@@ -56,14 +56,14 @@ public enum CollisionSource: Sendable {
 
 extension CollisionSource {
   public enum Origin: Sendable, ExpressibleByStringLiteral {
+    public typealias StringLiteralType = StaticString
+    
     case fileLine(file: StaticString = #fileID, line: UInt = #line)
     case function(function: String = #function)
     case custom(origin: String)
     
-    public typealias StringLiteralType = String
-    
-    public init(stringLiteral origin: String) {
-      self = .custom(origin: origin)
+    public init(stringLiteral origin: StringLiteralType) {
+      self = .custom(origin: String(origin))
     }
     
     internal func _defaultStringInterpolation(collisionName: consuming String) -> String {
