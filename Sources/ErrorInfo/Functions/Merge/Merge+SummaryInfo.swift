@@ -129,7 +129,7 @@ extension Merge {
   ///        +--------------------------------------------+
   /// ```
   public static func summaryInfo<S, K, V, EInf, W>(
-    infoSources: [S],
+    infoProviders: [S],
     infoKeyPath: KeyPath<S, EInf>,
     elementKeyStringPath: KeyPath<K, String>,
     keyOriginAvailability: KeyOriginAvailability<EInf.Element>,
@@ -152,15 +152,15 @@ extension Merge {
     }
     
     // context is a var only because of `mutating get` / lazy var
-    var context = _Summary.prepareMergeContext(infoSources: infoSources,
+    var context = _Summary.prepareMergeContext(infoProviders: infoProviders,
                                                infoKeyPath: infoKeyPath,
                                                keyString: elementKeyStringPath,
                                                infoSourceSignatureBuilder: infoSourceSignatureBuilder)
     // Improvement: using of KeyPaths can be slow. Replacing them with closures may have perfpmance boost.
-    for infoSourceIndex in infoSources.indices {
+    for infoSourceIndex in infoProviders.indices {
       let errorInfo = context.errorInfos[infoSourceIndex]
       for (elementIndex, element) in errorInfo.enumerated() {
-        let augmentedKey = _Summary.augmentedIfNeededKey(infoSources: infoSources,
+        let augmentedKey = _Summary.augmentedIfNeededKey(infoSources: infoProviders,
                                                          infoSourceIndex: infoSourceIndex,
                                                          element: element,
                                                          elementIndex: elementIndex,
@@ -446,12 +446,12 @@ extension Merge._Summary {
   /// - the extracted errorInfos collections
   ///
   /// This context lets `_augmentedIfNeededKey` function quickly determine how to annotate keys.
-  fileprivate static func prepareMergeContext<S, K, V, ErrInfo>(infoSources: [S],
+  fileprivate static func prepareMergeContext<S, K, V, ErrInfo>(infoProviders: [S],
                                                                 infoKeyPath: KeyPath<S, ErrInfo>,
                                                                 keyString: KeyPath<K, String>,
                                                                 infoSourceSignatureBuilder: @escaping (S) -> String)
     -> SummaryPreparationContext<ErrInfo> where ErrInfo: Collection<(key: K, value: V)> {
-    let errorInfoElements = infoSources.map { $0[keyPath: infoKeyPath] }
+    let errorInfoElements = infoProviders.map { $0[keyPath: infoKeyPath] }
     
     // let duplicates = findDuplicateElements(in: errorInfos.map { $0.allKeys })
     let duplicates = findDuplicateElements(in: errorInfoElements.map { errorInfo in
@@ -459,7 +459,7 @@ extension Merge._Summary {
     })
         
     let generateUniqueSourceSignatures: () -> [String] = {
-      _generateUniqueSignatures(forSources: infoSources, buildSignatureForSource: infoSourceSignatureBuilder)
+      _generateUniqueSignatures(forInfoProviders: infoProviders, buildSignatureForSource: infoSourceSignatureBuilder)
     }
     
     return SummaryPreparationContext(keyDuplicatesAcrossSources: duplicates.duplicatesAcrossSources,
@@ -496,13 +496,13 @@ extension Merge._Summary {
   /// _generateUniqueSignatures(forSources: sources, buildSignatureForSource: buildRawSignature)
   /// // ["NSURL.6(0)", "NSCocoa.17", "NSURL.6(2)"]
   /// ```
-  private static func _generateUniqueSignatures<S>(forSources sources: [S],
+  private static func _generateUniqueSignatures<S>(forInfoProviders infoProviders: [S],
                                                    buildSignatureForSource: (S) -> String) -> [String] {
-    var signatureStatuses: [String: _SignatureStatus] = Dictionary(minimumCapacity: sources.count)
-    var uniqueSignatures: [String] = Array(minimumCapacity: sources.count)
+    var signatureStatuses: [String: _SignatureStatus] = Dictionary(minimumCapacity: infoProviders.count)
+    var uniqueSignatures: [String] = Array(minimumCapacity: infoProviders.count)
     
-    for sourceIndex in sources.indices {
-      let rawSignature = buildSignatureForSource(sources[sourceIndex])
+    for infoIndex in infoProviders.indices {
+      let rawSignature = buildSignatureForSource(infoProviders[infoIndex])
       
       let signatureToAppend: String
       // Check if the raw signature already exists in the signature status map
@@ -518,9 +518,9 @@ extension Merge._Summary {
         }
         
         // Add the new indexed signature for this occurrence of duplicated rawSignature
-        signatureToAppend = makeIndexedSignature(rawSignature: rawSignature, index: sourceIndex)
+        signatureToAppend = makeIndexedSignature(rawSignature: rawSignature, index: infoIndex)
       } else {
-        signatureStatuses[rawSignature] = .isFirstOccurrence(atIndex: sourceIndex)
+        signatureStatuses[rawSignature] = .isFirstOccurrence(atIndex: infoIndex)
         signatureToAppend = rawSignature
       }
       uniqueSignatures.append(signatureToAppend)

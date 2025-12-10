@@ -51,7 +51,7 @@ extension ErrorInfo {
     }
     
     let orderedDict = Merge
-      .summaryInfo(infoSources: [self],
+      .summaryInfo(infoProviders: [self],
                    infoKeyPath: \._storage,
                    elementKeyStringPath: \.self,
                    keyOriginAvailability: .notAvailable,

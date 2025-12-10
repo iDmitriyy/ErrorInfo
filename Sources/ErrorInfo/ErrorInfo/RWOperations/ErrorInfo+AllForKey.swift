@@ -128,7 +128,7 @@ extension ErrorInfo {
   ///
   /// - Returns: A non-empty sequence of the old values that were replaced, or `nil` if no value were associated with the key.
   ///
-  /// - Example:
+  /// # Example:
   /// ```swift
   /// var errorInfo = ErrorInfo()
   ///
@@ -155,7 +155,7 @@ extension ErrorInfo {
   ///
   /// - Returns: A non-empty sequence of the old values that were replaced, or `nil` if no value were associated with the key.
   ///
-  /// - Example:
+  /// # Example:
   /// ```swift
   /// var errorInfo = ErrorInfo()
   ///

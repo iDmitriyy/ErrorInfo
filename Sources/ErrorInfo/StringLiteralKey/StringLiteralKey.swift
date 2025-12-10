@@ -32,7 +32,7 @@
 /// - App State
 /// - Basic Information
 ///
-/// Example:
+/// # Example:
 /// ```swift
 /// var errorInfo = ErrorInfo()
 /// errorInfo[.httpStatusCode] = 404

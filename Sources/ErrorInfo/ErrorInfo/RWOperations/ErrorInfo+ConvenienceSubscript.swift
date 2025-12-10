@@ -56,6 +56,8 @@ extension ErrorInfo {
       self.collisionOrigin = collisionOrigin
     }
     
+    // ===-------------------------------------------------------------------------------------------------------------------=== //
+    
     // MARK: - Subscript
     
     /// `omitEqualValue`has higher priority than provided in `appendWith(typeInfoOptions:, omitEqualValue:, append:)` function.
@@ -96,6 +98,8 @@ extension ErrorInfo {
                              collisionSource: .onSubscript(origin: collisionOrigin))
       }
     }
+    
+    // ===-------------------------------------------------------------------------------------------------------------------=== //
     
     // MARK: - Replace AllValues ForKey
     

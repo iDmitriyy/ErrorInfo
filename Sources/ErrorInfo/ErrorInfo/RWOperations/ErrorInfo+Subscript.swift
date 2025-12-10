@@ -7,17 +7,16 @@
 
 // MARK: - Subscript
 
-// TODO: check if there runtime issues with unavailable setter. If yes then make deprecated
-// TODO: ? make subscript as a defualt imp in protocol, providing a way to override implementation at usage site
-// ErronInfoLiteralKey with @_disfavoredOverload String-base subscript allows to differemtiate betwee when it was a literal-key subscript
-// and when it was defenitely some string value passed dynamically / at runtime.
-// so this cleary separate the subscript access to 2 kinds:
-// 1. exact literal that can be found in source code or predefined key which also can be found i source
+// ErronInfoLiteralKey with @_disfavoredOverload String-base subscript allows to differemtiate between when it was a
+// literal-key subscript and when it was defenitely some string value passed dynamically / at runtime.
+// So this cleary separate the subscript access to 2 kinds:
+// 1. a literal that can be found in source code or a predefined key which can be also found in sources
 // 2. some string value created dynamically
 // The same trick with sub-separaation can be done for append() functions
-// Dictionary literal can then strictly be created with string literals, and when dynamic for strings another APIs are forced to be used.
+// Dictionary literal can then strictly be created with string literals, and when the key dynamic, another APIs are
+// forced to be used.
+
 extension ErrorInfo {
-  // TODO: is it good idea to return .first as a default? In most cases it is what expected, as normally there will 1 va;ue for key
   
   // First value for a given key.
   // public subscript(key: ErronInfoLiteralKey) -> (any ValueType)? {
@@ -72,3 +71,5 @@ extension ErrorInfo {
     }
   }
 }
+
+// TODO: check if there runtime issues with unavailable setter. If yes then make deprecated

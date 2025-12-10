@@ -98,10 +98,10 @@ extension ErrorInfo {
   ///
   /// - Returns: A new `ErrorInfo` instance containing the merged data.
   ///
-  /// - Example:
+  /// # Example:
   /// ```swift
-  /// let info1: ErrorInfo = ["errorCode": 404]
-  /// let info2: ErrorInfo = ["errorMessage": "Not Found"]
+  /// let info1: ErrorInfo = [.errorCode: 404]
+  /// let info2: ErrorInfo = [.errorMessage: "Not Found"]
   /// let mergedInfo = ErrorInfo.merged(errorInfosArray: [info1, info2])
   /// // mergedInfo contains both errorCode and errorMessage.
   /// ```

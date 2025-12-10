@@ -53,6 +53,12 @@ public enum CollisionSource: Sendable {
       
     case .onCreateWithDictionaryLiteral: 
       return "onCreateWithDictionaryLiteral"
+      
+    case let .onCreateWithSequence(origin):
+      return origin._defaultStringInterpolation(collisionName: "onCreateWithSequence")
+      
+    case let .onSequenceConsumption(origin):
+      return origin._defaultStringInterpolation(collisionName: "onSequenceConsumption")
     }
   }
 }

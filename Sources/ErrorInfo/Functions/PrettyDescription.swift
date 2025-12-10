@@ -13,7 +13,7 @@ private import Foundation
 
 /// Cleans up the string representation of any value (including deeply nested optionals) by removing redundant "Optional(...)" wrappers.
 ///
-/// Example:
+/// # Example:
 /// ```swift
 /// prettyDescriptionOfOptional(any: Optional(Optional(42)))        // "42"
 /// prettyDescriptionOfOptional(any: Optional<Optional<Int>>.none)  // "nil"
@@ -38,7 +38,7 @@ public func prettyDescriptionOfOptional(any: Any) -> String {
 
 /// Cleans up the string representation of any value (including deeply nested optionals) by removing redundant "Optional(...)" wrappers.
 ///
-/// Example:
+/// # Example:
 /// ```swift
 /// prettyDescriptionOfOptional(any: Optional(Optional(42)))        // "42"
 /// prettyDescriptionOfOptional(any: Optional<Optional<Int>>.none)  // "nil"

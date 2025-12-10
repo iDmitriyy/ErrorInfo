@@ -21,7 +21,7 @@ extension ErrorInfo {
   ///   - Each value is casted or converted to a compatible `ErrorInfoValueType` using the `_castOrConvertToCompatible` method.
   ///   - Collisions are resolved with the `.onDictionaryConsumption` source.
   ///
-  /// Example:
+  /// # Example:
   /// ```swift
   /// let legacyData: [String: Any] = ["errorCode": 404, "errorMessage": "Not Found"]
   ///
