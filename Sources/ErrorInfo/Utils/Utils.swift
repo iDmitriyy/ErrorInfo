@@ -19,6 +19,7 @@
 ///    print(nonSendable) // ! succesfully casted even nonSendable as non Sendable
 /// }
 /// ```
+@inlinable @inline(__always)
 internal func __conditionalCast<T, U>(_ value: T, to _: U.Type) -> U? {
   value as? U
 }
