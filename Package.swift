@@ -12,7 +12,6 @@ let package = Package(
   ],
   dependencies: [
     .package(url: "https://github.com/iDmitriyy/SwiftCollections-NonEmpty.git", branch: "RangeSet"),
-    .package(url: "https://github.com/iDmitriyy/SwiftyKit.git", branch: "main"),
   ],
   targets: [
     // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -20,9 +19,6 @@ let package = Package(
     .target(name: "ErrorInfo", dependencies: [
       .product(name: "SwiftCollectionsNonEmpty", package: "swiftCollections-nonEmpty"),
       .product(name: "GeneralizedCollections", package: "swiftCollections-nonEmpty"),
-//      .product(name: "FunctionalTypes", package: "SwiftyKit"),
-      .product(name: "StdLibExtensions", package: "SwiftyKit"),
-      .product(name: "SwiftyKit", package: "SwiftyKit"),
     ]),
     .testTarget(name: "ErrorInfoTests", dependencies: [.target(name: "ErrorInfo")]),
     .testTarget(name: "ErrorInfoPerfomanceTests", dependencies: [.target(name: "ErrorInfo")]),

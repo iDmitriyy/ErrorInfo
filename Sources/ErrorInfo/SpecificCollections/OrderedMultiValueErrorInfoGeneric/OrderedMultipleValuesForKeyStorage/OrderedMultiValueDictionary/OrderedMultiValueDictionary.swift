@@ -7,8 +7,6 @@
 
 import SwiftCollectionsNonEmpty
 import OrderedCollections
-private import StdLibExtensions
-private import Algorithms
 
 // MARK: - Ordered MultiValueDictionary
 
@@ -130,7 +128,8 @@ extension OrderedMultiValueDictionary {
   
   private mutating func _rebuildKeyToEntryIndices() {
     _keyToEntryIndices = [:]
-    for (index, entry) in _entries.indexed() {
+    for (index) in _entries.indices {
+      let entry = _entries[index]
       _insert(entryIndex: index, forKey: entry.key)
     }
   }
