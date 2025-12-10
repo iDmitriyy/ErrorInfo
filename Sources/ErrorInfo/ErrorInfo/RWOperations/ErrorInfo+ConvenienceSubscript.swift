@@ -116,10 +116,3 @@ extension ErrorInfo {
     }
   }
 }
-
-// CustomTypeInfoOptionsView initializble with DictionaryLiteral using params, e.g.:
-/*
- ErrorInfo.with(typeInfoOptions: ...) {
-   $0 = ["key": value]
- }
- */

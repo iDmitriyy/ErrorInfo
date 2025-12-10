@@ -8,74 +8,67 @@
 // MARK: HasValues ForKey
 
 extension ErrorInfo {
-  public struct KeyValueLookupResult: OptionSet, Sendable {
-    public var rawValue: UInt8
-    
-    public init(rawValue: UInt8) {
-      self.rawValue = rawValue
-    }
-    
-    static let nothing = Self([])
-    
-    static let value = Self(rawValue: 1 << 0)
-    
-//    static let multipleValues = Self(rawValue: 1 << 1)
-    
-    static let nilInstance = Self(rawValue: 1 << 2)
-    
-//    static let multipleNilInstances = Self(rawValue: 1 << 3)
-    
-    static let valueAndNil = Self(rawValue: 1 << 4)
-    
-    // case values(count:)
-    // case nilInstances(count:)
-    // case valueAndNil(valueCount: , nilInstancesCount:)
-  }
-  
-  // public func keyValueLookupResult() -> KeyValueLookupResult {}
-  
-  public func hasValues(forKey literalKey: StringLiteralKey) -> Bool {
+  public func hasValue(forKey literalKey: StringLiteralKey) -> Bool {
+    // FIXME: - incorrect semantics, it check for record / entry, not nonoptional value
+    // is `hasValue` needed for underlying storage types?
     _storage.hasValue(forKey: literalKey.rawValue)
   }
   
   @_disfavoredOverload
-  public func hasValues(forKey dynamicKey: String) -> Bool {
-    _storage.hasValue(forKey: dynamicKey)
+  public func hasValue(forKey key: String) -> Bool {
+    // FIXME: -
+    _storage.hasValue(forKey: key)
   }
   
-  // public func hasCollisions() -> Bool {
-  //   _storage.contains // not use Sequence.contains, check perfomace of `contains` in multivaluesdict type
-  // }
+  public func hasMultipleRecordsForAtLeastOneKey() -> Bool {
+    _storage._storage.hasMultipleValuesForAtLeastOneKey
+  }
   
-  // func hasCollisions(forKey key: ErronInfoLiteralKey) -> Bool {}
+  public func hasMultipleRecords(forKey literalKey: StringLiteralKey) -> Bool {
+    hasMultipleRecords(forKey: literalKey.rawValue)
+  }
   
-  // @_disfavoredOverload
-  // func hasCollisions(forKey key: Key) -> Bool {}
+  @_disfavoredOverload
+  public func hasMultipleRecords(forKey key: String) -> Bool {
+    switch keyValueLookupResult(forKey: key) {
+    case .nothing, .singleValue: false
+    case .multipleRecords: true
+    }
+  }
 }
 
-// MARK: HasNonNilValues ForKey
-
-// TODO: implement
-// extension ErrorInfo {
-//  public func hasNonNilValues(forKey key: ErronInfoLiteralKey) -> Bool {
-//    hasNonNilValues(forKey: key.rawValue)
-//  }
-//
-//  public func hasNonNilValues(forKey key: Key) -> Bool {
-//
-//  }
-// }
-
 extension ErrorInfo {
-  // public func countValues(forKey: String) -> Int {
-  //
-  // }
-  //
-  // public func countNilInstances(forKey: String) -> Int {
-  //
-  // }
-  //
-  // public func countAll(forKey: String) -> Int {
-  //
-  // }
+  public enum KeyValueLookupResult {
+    case nothing
+    case singleValue
+    case multipleRecords(valuesCount: UInt16, nilCount: UInt16)
+  }
+  
+  public func keyValueLookupResult(forKey literalKey: StringLiteralKey) -> KeyValueLookupResult {
+    keyValueLookupResult(forKey: literalKey.rawValue)
+  }
+  
+  @_disfavoredOverload
+  public func keyValueLookupResult(forKey key: String) -> KeyValueLookupResult {
+    if let taggedValues = _storage.allValues(forKey: key) {
+      var valuesCount: UInt16 = 0
+      var nilInstancesCount: UInt16 = 0
+      for taggedValue in taggedValues {
+        if taggedValue.value.optional.isValue {
+          valuesCount += 1
+        } else {
+          nilInstancesCount += 1
+        }
+      }
+      
+      // FIXME: - case singleNil
+      if valuesCount > 1 || nilInstancesCount > 1 || (valuesCount == 1 && nilInstancesCount == 1) {
+        return .multipleRecords(valuesCount: valuesCount, nilCount: nilInstancesCount)
+      } else {
+        return .singleValue
+      }
+    } else {
+      return .nothing
+    }
+  }
 }

@@ -43,6 +43,8 @@ extension OrderedMultiValueErrorInfoGeneric {
 extension OrderedMultiValueErrorInfoGeneric {
   // public func allValuesSlice(forKey key: Key) -> (some Sequence<Value>)? {}
   
+  // TODO: check all usages of `allValues(forKey:)`, replace by slice if needed
+  
   public func allValues(forKey key: Key) -> ValuesForKey<TaggedValue>? {
     _storage.allValues(forKey: key)
   }
