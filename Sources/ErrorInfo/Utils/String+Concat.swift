@@ -26,6 +26,7 @@ extension String {
   //   return result
   // }
   
+  @inlinable @inline(__always)
   internal static func concat(_ a: consuming String,
                               _ b: consuming String) -> Self {
     let capacity = a.utf8.count + b.utf8.count
@@ -38,6 +39,7 @@ extension String {
     return result
   }
   
+  @inlinable @inline(__always)
   internal static func concat(_ a: consuming String,
                               _ b: consuming String,
                               _ c: consuming String) -> Self {
@@ -52,6 +54,7 @@ extension String {
     return result
   }
   
+  @inlinable @inline(__always)
   internal static func concat(_ a: consuming String,
                               _ b: consuming String,
                               _ c: consuming String,
@@ -68,6 +71,7 @@ extension String {
     return result
   }
   
+  @inlinable @inline(__always)
   internal static func concat(_ a: consuming String,
                               _ b: consuming String,
                               _ c: consuming String,
@@ -86,6 +90,7 @@ extension String {
     return result
   }
   
+  @inlinable @inline(__always)
   internal static func concat(_ a: consuming String,
                               _ b: consuming String,
                               _ c: consuming String,

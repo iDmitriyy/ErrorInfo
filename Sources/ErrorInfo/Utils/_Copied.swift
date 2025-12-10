@@ -20,14 +20,14 @@ extension Either: Hashable where L: Hashable, R: Hashable {}
 
 extension Either: Sendable where L: Sendable, R: Sendable {}
 
-
-@inlinable
+@inlinable @inline(__always)
 public func mutate<T: ~Copyable, E>(value: consuming T, mutation: (inout T) throws(E) -> Void) throws(E) -> T {
   try mutation(&value)
   return value
 }
 
 @available(*, deprecated, message: "use configured(object:) for reference types instead")
+@inlinable @inline(__always)
 public func mutate<T: AnyObject, E>(value: consuming T, mutation: (inout T) throws(E) -> Void) throws(E) -> T {
   try mutation(&value)
   return value
@@ -49,7 +49,7 @@ extension Array {
 
 extension String {
   /// Perfomant way to convert StaticString to String
-  @inlinable
+  @inlinable @inline(__always)
   public init(_ staticString: StaticString) {
     self = String(describing: staticString)
     // under the hood of `description` property the following is used: `withUTF8Buffer { String._uncheckedFromUTF8($0) }`
