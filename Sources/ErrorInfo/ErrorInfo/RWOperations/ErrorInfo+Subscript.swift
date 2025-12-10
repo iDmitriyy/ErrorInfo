@@ -17,26 +17,40 @@
 // forced to be used.
 
 extension ErrorInfo {
-  
-  // First value for a given key.
-  // public subscript(key: ErronInfoLiteralKey) -> (any ValueType)? {
-  //   allValues(forKey: key)?.first
-  // }
-  //
-  // First value for a given key.
-  // @_disfavoredOverload
-  // public subscript(key: String) -> (any ValueType)? {
-  //   allValues(forKey: key)?.first
-  // }
-  
-  // set-only subscript will allow the following:
-  // info["key"] = someObject.property // ok
-  // info["key"] = nil // error: type can't be inferred | to remove value use removeValue(forKey:)
-  
-  // InternalRestrictionToken type is for making an overload that is useless except showing a warning "to remove value use removeValue(forKey:)"
-  // public subscript<V: ValueType>(key literalKey: StringLiteralKey) {
-  //   set(InternalRestrictionToken?) only {}
-  // }
+  /// Accesses the first value associated with the given literal key.
+  ///
+  /// - Returns: The first value associated with key, or `nil` if no value is found.
+  ///
+  /// - Note:
+  /// Use `allValues(forKey:)` if you need to access all values for a key.
+  ///
+  /// # Example:
+  /// ```swift
+  /// var errorInfo = ErrorInfo()
+  /// errorInfo[.id] = 5
+  /// errorInfo[.id] = 6
+  ///
+  /// let id = errorInfo[.id] as? Int // returns 5
+  /// ```
+  public subscript(_ literalKey: StringLiteralKey) -> (any ValueType)? {
+    firstValue(forKey: literalKey)
+  }
+    
+  /// A restricted subscript used to warn against removing values by mistake.
+  ///
+  /// - Note:
+  /// Needed to warn users when they try to pass a nil literal, like `info["key"] = nil`
+  ///
+  /// - Deprecated: This subscript is deprecated and will show a warning if used. To remove values, use `removeValue(forKey:)`.
+  /// - Unavailable: This subscript cannot be used for getting or setting values. Use `removeValue(forKey:)` to remove a value.
+  @_disfavoredOverload
+  public subscript(_ dd: StringLiteralKey) -> InternalRestrictionToken? {
+    @available(*, deprecated,
+               message: "To remove value use removeValue(forKey:) function")
+    set {}
+    @available(*, unavailable, message: "This is a stub subscript. To remove value use removeValue(forKey:) function")
+    get { nil }
+  }
   
   /// Sets the value associated with the given literal key.
   ///

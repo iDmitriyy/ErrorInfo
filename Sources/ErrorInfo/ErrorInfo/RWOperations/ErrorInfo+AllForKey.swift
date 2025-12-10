@@ -9,6 +9,7 @@
 
 extension ErrorInfo {
   // TODO: public func allValuesSlice(forKey key: Key) -> (some Sequence<Value>)? {}
+  // replace usage of allValues(forKey:) for better perfomance | reduce allocations
   
   /// Returns all non-nil values associated with a given key in the `ErrorInfo` storage.
   ///
@@ -20,7 +21,7 @@ extension ErrorInfo {
   ///
   /// # Example:
   /// ```swift
-  /// let errorInfo = ErrorInfo()
+  /// var errorInfo = ErrorInfo()
   ///
   /// errorInfo[.id] = 5
   /// errorInfo[.id] = 6
@@ -42,7 +43,7 @@ extension ErrorInfo {
   ///
   /// # Example:
   /// ```swift
-  /// let errorInfo = ErrorInfo()
+  /// var errorInfo = ErrorInfo()
   ///
   /// errorInfo["id"] = 5
   /// errorInfo["id"] = 6
@@ -53,6 +54,31 @@ extension ErrorInfo {
   @_disfavoredOverload
   public func allValues(forKey dynamicKey: String) -> ValuesForKey<any ValueType>? {
     _storage.allValues(forKey: dynamicKey)?._compactMap { $0.value._optional.optionalValue }
+  }
+  
+  /// Returns the first non-nil value associated with the given key.
+  ///
+  /// - Parameter literalKey: The key to look up in the `ErrorInfo` storage.
+  ///
+  /// - Returns: The first non-nil value associated with the key, or `nil` if no such value exists.
+  ///
+  /// # Example:
+  /// ```swift
+  /// var errorInfo = ErrorInfo()
+  /// errorInfo[.id] = 5
+  /// errorInfo[.id] = 6
+  ///
+  /// let id = errorInfo.firstValue(forKey: .id) // returns 5
+  /// ```
+  public func firstValue(forKey literalKey: StringLiteralKey) -> (any ValueType)? {
+    firstValue(forKey: literalKey.rawValue)
+  }
+  
+  // TODO: - remake examples for dynamic keys, as they are for literal api now
+  
+  @_disfavoredOverload
+  public func firstValue(forKey dynamicKey: String) -> (any ValueType)? {
+    allValues(forKey: dynamicKey)?.first
   }
 }
 
@@ -143,7 +169,7 @@ extension ErrorInfo {
   @discardableResult
   public mutating func replaceAllRecords(forKey literalKey: StringLiteralKey,
                                          by newValue: any ValueType) -> ValuesForKey<any ValueType>? {
-    _replaceAllRecords(forKey: literalKey.rawValue, by: newValue, keyOrigin: literalKey.keyOrigin)
+    _replaceAllRecordsImp(forKey: literalKey.rawValue, by: newValue, keyOrigin: literalKey.keyOrigin)
   }
   
   /// Removes all existing records associated with the specified key and replaces them with
@@ -170,13 +196,12 @@ extension ErrorInfo {
   @_disfavoredOverload @discardableResult
   public mutating func replaceAllRecords(forKey dynamicKey: String,
                                          by newValue: any ValueType) -> ValuesForKey<any ValueType>? {
-    _replaceAllRecords(forKey: dynamicKey, by: newValue, keyOrigin: .dynamic)
+    _replaceAllRecordsImp(forKey: dynamicKey, by: newValue, keyOrigin: .dynamic)
   }
   
-  @_disfavoredOverload @discardableResult
-  internal mutating func _replaceAllRecords(forKey key: String,
-                                            by newValue: any ValueType,
-                                            keyOrigin: KeyOrigin) -> ValuesForKey<any ValueType>? {
+  internal mutating func _replaceAllRecordsImp(forKey key: String,
+                                               by newValue: any ValueType,
+                                               keyOrigin: KeyOrigin) -> ValuesForKey<any ValueType>? {
     let oldValues = _storage.removeAllValues(forKey: key)
     _add(key: key,
          keyOrigin: keyOrigin,
