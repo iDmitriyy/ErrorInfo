@@ -115,17 +115,14 @@ extension ErrorInfoMergeable {
 //
 //  }
   
-  mutating func merge<D>(_: D,
-                         fileLine _: StaticFileLine) where D: IterableErrorInfo, D.Key == Self.Key {}
+  mutating func merge<D>(_: D) where D: IterableErrorInfo, D.Key == Self.Key {}
   
   mutating func merge<DValue, E>(_: some Sequence<(key: Key, value: DValue)>,
-                                 mapValue _: (DValue) throws(E) -> Value,
-                                 fileLine _: StaticFileLine) {}
+                                 mapValue _: (DValue) throws(E) -> Value) {}
 }
 
 extension ErrorInfoMergeable {
-  mutating func merge(_: some Sequence<(key: Key, value: Value)>,
-                      fileLine _: StaticFileLine) {}
+  mutating func merge(_: some Sequence<(key: Key, value: Value)>) {}
 }
 
 extension ErrorInfoMergeable where Key == String {}

@@ -5,9 +5,6 @@
 //  Created by Dmitriy Ignatyev on 16/09/2025.
 //
 
-import SwiftyKit
-//import StdLibExtensions
-
 // TODO: use something like `MutableMoveOnly` to mutate the same String buffer instead of multiple allocations when
 // transforms are combined
 
@@ -17,16 +14,16 @@ public struct PrefixTransformFunc: Sendable {
   private let body: TransformFunc
   
   /// identity for debug purposes, .left – name, .right - file & line
-  private let _identity: Either<String, StaticFileLine>
+  private let _identity: String
   
-  public init(body: @escaping TransformFunc, fileLine: StaticFileLine = .this()) {
+  public init(body: @escaping TransformFunc, file: String = #fileID) {
     self.body = body
-    _identity = .right(fileLine)
+    _identity = file
   }
   
   public init(body: @escaping TransformFunc, identifier: String) {
     self.body = body
-    _identity = .left(identifier)
+    _identity = identifier
   }
   
   internal func callAsFunction(key: String, prefix: String) -> String {
@@ -39,9 +36,9 @@ extension PrefixTransformFunc {
     PrefixTransformFunc(body: { key, prefix in prefix + key },
                         identifier: "concatenation prefix + key")
   
-  public static let concatenationUppercasingKeyFirstChar =
-    PrefixTransformFunc(body: { key, prefix in prefix + key.uppercasingFirstLetter() },
-                        identifier: "concatenation prefix + key.uppercasingFirstLetter()")
+//  public static let concatenationUppercasingKeyFirstChar =
+//    PrefixTransformFunc(body: { key, prefix in prefix + key.uppercasingFirstLetter() },
+//                        identifier: "concatenation prefix + key.uppercasingFirstLetter()")
 }
 
 // MARK: - Composite Transform
@@ -63,16 +60,16 @@ public struct PrefixCompositeTransformFunc: Sendable {
   
   private let funcs: [TransformFunc]
   
-  private let _identity: Either<String, StaticFileLine>
+  private let _identity: String
   
-  public init(funcs: [TransformFunc], fileLine: StaticFileLine = .this()) {
+  public init(funcs: [TransformFunc], file: String = #fileID) {
     self.funcs = funcs
-    _identity = .right(fileLine)
+    _identity = file
   }
   
   public init(funcs: [TransformFunc], identifier: String) {
     self.funcs = funcs
-    _identity = .left(identifier)
+    _identity = identifier
   }
 }
 

@@ -33,7 +33,7 @@ public protocol ErrorInfoRequirement {
   
   // MARK: Merge
   
-  mutating func merge<each D>(_ donators: repeat each D, fileLine: StaticFileLine) where repeat each D: ErrorInfoRequirement
+  mutating func merge<each D>(_ donators: repeat each D) where repeat each D: ErrorInfoRequirement
   
   // MARK: Prefix & Suffix
   
@@ -45,9 +45,9 @@ extension ErrorInfoRequirement where ValueType == any Sendable {}
 
 extension ErrorInfoRequirement { // MARK: Merge
 
-  public consuming func merging<each D>(_ donators: repeat each D, fileLine: StaticFileLine) -> Self
+  public consuming func merging<each D>(_ donators: repeat each D) -> Self
     where repeat each D: ErrorInfoRequirement {
-      merge(repeat each donators, fileLine: fileLine)
+      merge(repeat each donators)
       return self
     }
 }
@@ -74,37 +74,6 @@ extension ErrorInfoRequirement {
   public func asStringDict() -> [String: String] {
     fatalError()
   }
-  
-  public func asStringDict(options _: ErrorInfoStringDictOptions) -> [String: String] {
-    fatalError()
-  }
-}
-
-public struct ErrorInfoStringDictOptions: OptionSet, Sendable {
-  public var rawValue: UInt32
-  
-  public init(rawValue: UInt32) {
-    self.rawValue = rawValue
-  }
-  
-  /// "5.0 Double"
-  /// "2.7 Float16"
-  /// "3.14 Float32?"
-  /// "nil Decimal?"
-  static let typeForAllValues = Self(rawValue: 1 << 0)
-  /// "nil String?"
-  /// "nil UInt?"
-  /// "5"
-  static let typeForOptionalNilValues = Self(rawValue: 1 << 1)
-}
-
-func test(errorInfo: some ErrorInfoRequirement) {
-  var errorInfo2 = errorInfo
-  
-  errorInfo.merging(errorInfo2, fileLine: .this())
-  errorInfo.addingKeyPrefix("ME12", transform: .concatenation)
-  errorInfo2.asStringDict()
-  let infoWithLegacyData = type(of: errorInfo).init(legacyUserInfo: [:])
 }
 
 /// Default functions implementations for ErrorInfo types

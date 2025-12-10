@@ -5,11 +5,7 @@
 //  Created Dmitriy Ignatyev on 03/10/2025.
 //
 
-private import SwiftyKit
-private import Algorithms
-import protocol InternalCollectionsUtilities._UniqueCollection
-
-import Foundation
+private import struct OrderedCollections.OrderedSet
 
 // Should ErrorInfo be codable? does json allow the same key several times?
 // ? Decode merged OrderedDictionary as Swift.Dectionary but with key-value ordering

@@ -5,7 +5,6 @@
 //  Created by Dmitriy Ignatyev on 06/10/2025.
 //
 
-private import enum SwiftyKit.Either
 import NonEmpty
 
 /// NonEmpty collection.

@@ -69,7 +69,7 @@ extension StringLiteralKey: ExpressibleByStringLiteral { // Improvement: try to 
   // StaticString completely closes the hole when ErronInfoKey can be initialized with dynamically formed string or interpolation.
   // use @const instead of static let (check binary size(reduce swift_once) and perfomance on first access)
   public init(stringLiteral value: StaticString) {
-    rawValue = String(value)
+    rawValue = String.init(value)
     keyOrigin = .literalConstant
   }
 }

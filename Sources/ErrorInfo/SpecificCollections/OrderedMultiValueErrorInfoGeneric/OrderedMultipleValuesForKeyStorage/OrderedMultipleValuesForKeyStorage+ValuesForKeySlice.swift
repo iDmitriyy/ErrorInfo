@@ -5,9 +5,6 @@
 //  Created Dmitriy Ignatyev on 05/10/2025.
 //
 
-internal import enum SwiftyKit.Either
-@_spi(GeneralizedCollections) private import struct GeneralizedCollections.IterationDeferredMapSequence
-
 extension OrderedMultipleValuesForKeyStorage {
   // TODO: NonEmpty ValuesForKeySlice | NonEmpty sequence
   internal struct ValuesForKeySlice: Sequence { // TODO: ~Escapaable
@@ -21,7 +18,7 @@ extension OrderedMultipleValuesForKeyStorage {
       case .left(let singleValueForKeyDict):
         guard let value = singleValueForKeyDict[key] else { return nil }
         let collectionOfOne = CollectionOfOne(value)
-        let adapter = IterationDeferredMapSequence(sequence: collectionOfOne, transform: { TaggedValue.value($0) })
+        let adapter = collectionOfOne.lazy.map(TaggedValue.value)
         _source = .left(AnySequence(adapter))
       case .right(let multiValueForKeyDict):
         guard let allValuesForKey = multiValueForKeyDict.allValuesSlice(forKey: key) else { return nil }

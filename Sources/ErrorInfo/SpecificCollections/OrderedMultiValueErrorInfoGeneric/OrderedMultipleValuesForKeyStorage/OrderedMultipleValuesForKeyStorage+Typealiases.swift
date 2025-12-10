@@ -5,8 +5,7 @@
 //  Created Dmitriy Ignatyev on 06/10/2025.
 //
 
-internal import enum SwiftyKit.Either
-internal import struct OrderedCollections.OrderedDictionary
+public import struct OrderedCollections.OrderedDictionary
 
 extension OrderedMultipleValuesForKeyStorage {
   // public ACL is for inlining
