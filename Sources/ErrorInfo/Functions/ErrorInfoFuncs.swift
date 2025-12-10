@@ -14,9 +14,7 @@
 public enum ErrorInfoFuncs {}
 
 extension ErrorInfoFuncs {
-  /// Examples: "Foo.count", "count"
-  
-  /// Converts a KeyPath into a string representation for error reporting or debugging.
+  /// Converts a KeyPath into a string representation.
   ///
   /// If `withTypePrefix` is `true`, the result includes type and property name (e.g. `"Foo.count"`).
   ///
@@ -41,62 +39,5 @@ extension ErrorInfoFuncs {
   /// - Returns: Example: `"File.swift:42"`
   internal static func fileLineString(file: StaticString, line: UInt) -> String {
     String(file) + ":\(line)"
-  }
-}
-
-extension ErrorInfoFuncs {
-  @_disfavoredOverload
-  public static func _typeDesciption(for optional: (any ErrorInfoValueType)?) {
-    let typeOfWrapped = optional.typeOfWrapped()
-    
-    let typeOfWrappedStr = "\(typeOfWrapped)"
-    print("___typeDescr:", typeOfWrappedStr)
-    
-    let dynamicOptType = type(of: optional)
-    if let value = optional {
-      print("___typeDescrDynamicOpt:", "\(dynamicOptType)")
-      
-      print("___typeDescrDynamicOptTWrapped:", "\(type(of: typeOfWrapped))")
-      
-      unpackExistential(value) { type in
-        print("___typeDescrUnpacked:", "\(type)") // Int
-      }
-      
-      let dynamicType = type(of: value)
-      print("___typeDescrDynamic:", "\(dynamicType)") // Int
-      
-      _typeDesciptionG_Meta(for: typeOfWrapped)
-    }
-  }
-  
-  public static func _typeDesciption(for value: (some ErrorInfoValueType)?) {
-    let typeOfWrapped = value.typeOfWrapped()
-    
-    let typeOfWrappedStr = "\(typeOfWrapped)"
-    print("___typeDescrGeneric:", typeOfWrappedStr) // Int
-  }
-  
-  public static func _typeDesciptionG_Meta<T>(for _: T.Type) {
-    // print("___typeDescrGeneric_Meta:", "\(type)") // CustomStringConvertible & Equatable
-    // print("___typeDescrGeneric_Meta:", "\(typeT.self)") // CustomStringConvertible & Equatable
-    // print("___typeDescrGeneric_Meta:", "\(type(of: typeT))") // (CustomStringConvertible & Equatable).Protocol
-    // print("___typeDescrGeneric_Meta:", "\(type(of: typeT.self))") // (CustomStringConvertible & Equatable).Protocol
-    // print("___typeDescrGeneric_Meta:", "\(String(reflecting: typeT))") // Swift.CustomStringConvertible & Swift.Equatable
-  }
-  
-  static func testt(ffe: any BinaryInteger) {
-    testt(ffg: ffe)
-  }
-  
-  static func testt(ffg _: some BinaryInteger) {}
-  
-  private static func unpackOptionalExistential<T: Equatable & Sendable>(_: T?, _ body: (T.Type) -> Void) {
-    let typeOfWrapped = T.self
-    body(typeOfWrapped)
-  }
-  
-  private static func unpackExistential<T: ErrorInfoValueType>(_: T, _ body: (T.Type) -> Void) {
-    let typeOfWrapped = T.self
-    body(typeOfWrapped)
   }
 }

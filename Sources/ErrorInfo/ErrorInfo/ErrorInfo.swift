@@ -17,11 +17,9 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
   
   @usableFromInline internal typealias BackingStorage = OrderedMultiValueErrorInfoGeneric<String, _Record>
   
-  // TODO: private(set)
   @usableFromInline internal var _storage: BackingStorage
   
-  // TODO: - BackingStorage
-  // @_specialize(where Self == ...)
+  // Improvement: BackingStorage @_specialize(where Self == ...)
   
   private init(storage: BackingStorage) {
     _storage = storage
@@ -40,8 +38,6 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
   /// An empty instance of `ErrorInfo`.
   public static let empty: Self = Self()
 }
-
-
 
 // MARK: - Append KeyValue with all arguments passed explicitly
 
