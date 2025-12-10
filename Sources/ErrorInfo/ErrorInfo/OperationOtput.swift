@@ -13,7 +13,8 @@ extension ErrorInfo {
     case collisions([Info])
     
     struct Info {
-      let key: KeyWithOrigin
+      let key: String
+      // KeyOrigin , can be multiple
       let values: [CollisionTaggedValue<TypedNilOptional, CollisionSource>]
     }
   }

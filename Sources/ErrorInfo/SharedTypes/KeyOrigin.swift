@@ -1,23 +1,9 @@
 //
-//  KeyWithOrigin.swift
+//  KeyOrigin.swift
 //  ErrorInfo
 //
 //  Created by Dmitriy Ignatyev on 28/11/2025.
 //
-
-
-public struct KeyWithOrigin: Sendable, CustomStringConvertible { // TODO: - hash & == tests
-  @usableFromInline internal let string: String
-  internal let origin: KeyOrigin
-  
-  public var description: String { string }
-  
-  // `kind` not participate in hashing / equality
-  
-  // public func hash(into hasher: inout Hasher) { hasher.combine(string) }
-  
-  // public static func == (lhs: Self, rhs: Self) -> Bool { lhs.string == rhs.string }
-}
 
 public enum KeyOrigin: Sendable {
   // TODO: memory footprint : ?Int8 ?make as OptionSet
