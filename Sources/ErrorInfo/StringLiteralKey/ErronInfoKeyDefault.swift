@@ -22,10 +22,14 @@
 
 // By default names are given with snake_case, which can ba transformed to camelCase, kebab-case or PascalCase
 // formats when logging.
-// TODO: - inspect Swift codebases for styles
-// TODO: - use compile-time values instead of static.
+
+// Improvement: use compile-time values instead of static.
 // Currently all these strings consume ~168Kb of binary size. replacing static lets by compile-time values might
 // reduce memory consumption
+// Amount of memory needed can also be dependant on:
+// 1. store raw StaticString literals
+// 2. store `static let` or `const let`
+// This can increase the aamount of memory by a factor of 2. Need to be inspected.
 
 extension StringLiteralKey {
   // MARK: Common key prefixes

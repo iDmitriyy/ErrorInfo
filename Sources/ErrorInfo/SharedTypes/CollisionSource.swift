@@ -26,14 +26,14 @@ public enum CollisionSource: Sendable {
     switch self {
     case .onSubscript(let origin):
       let name = "onSubscript"
-      return origin.map { $0.defaultStringInterpolation(collisionName: name) } ?? name
+      return origin.map { $0._defaultStringInterpolation(collisionName: name) } ?? name
       
     case .onAppend(let origin):
       let name = "onAppend"
-      return origin.map { $0.defaultStringInterpolation(collisionName: name) } ?? name
+      return origin.map { $0._defaultStringInterpolation(collisionName: name) } ?? name
       
     case let .onMerge(origin):
-      return origin.defaultStringInterpolation(collisionName: "onMerge")
+      return origin._defaultStringInterpolation(collisionName: "onMerge")
       
     case let .onAddPrefix(prefix):
       // Improvement: may be `String.concat(...)` is faster than interpolation
@@ -46,7 +46,7 @@ public enum CollisionSource: Sendable {
       return String.concat("onKeyMapping(original: `", original, "`, mapped: `", mapped, "`)")
       
     case let .onDictionaryConsumption(origin):
-      return origin.defaultStringInterpolation(collisionName: "onDictionaryConsumption")
+      return origin._defaultStringInterpolation(collisionName: "onDictionaryConsumption")
       
     case .onCreateWithDictionaryLiteral: 
       return "onCreateWithDictionaryLiteral"
@@ -66,7 +66,7 @@ extension CollisionSource {
       self = .custom(origin: origin)
     }
     
-    fileprivate func defaultStringInterpolation(collisionName: consuming String) -> String {
+    internal func _defaultStringInterpolation(collisionName: consuming String) -> String {
       switch self {
       case let .fileLine(file, line):
         String.concat(collisionName,
