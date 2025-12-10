@@ -11,7 +11,7 @@
 ///
 /// Combining Keys:
 /// StringLiteralKey supports the `+` operator to combine multiple keys, allowing creation of composite keys.
-/// ```
+/// ```swift
 /// errorInfo[.invalid + .index] = index
 /// ```
 ///
@@ -33,7 +33,7 @@
 /// - Basic Information
 ///
 /// Example:
-/// ```
+/// ```swift
 /// var errorInfo = ErrorInfo()
 /// errorInfo[.httpStatusCode] = 404
 /// errorInfo[.response + .message] = "Page Not Found"

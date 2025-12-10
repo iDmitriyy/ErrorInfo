@@ -10,7 +10,7 @@
 /// # WARNING
 /// The code below will return non nil value, and nonSendable is succesfuly casted.
 /// Use when value is known to be Sendable.
-/// ```
+/// ```swift
 /// let nonSendable = NonSendable()
 ///
 /// if let nonSendable = conditionalCast(nonSendable, to: (any Sendable).self) {

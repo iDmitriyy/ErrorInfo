@@ -13,6 +13,6 @@ extension OrderedMultiValueDictionary {
   }
   
   internal var allKeys: some Collection<Key> {
-    AnyCollectionProjectable(base: _entries, elementProjection: { entry in entry.key })
+    _entries.lazy.map({ entry in entry.key })
   }
 }

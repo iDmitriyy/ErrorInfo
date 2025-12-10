@@ -2,7 +2,7 @@
 //  CastToSendableTests.swift
 //  ErrorInfo
 //
-//  Created by tmp on 10/12/2025.
+//  Created by Dmitriy Ignatyev on 10/12/2025.
 //
 
 import ErrorInfo

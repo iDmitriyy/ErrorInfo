@@ -109,7 +109,7 @@ extension Merge {
   /// - Returns:A merged dictionary with transformed values and unique keys, where collisions are resolved with appropriate key annotations.
   ///
   /// # Example
-  /// ```
+  /// ```swift
   ///     Info Source 0                           Info Source 1
   /// +--------------------+                 +--------------------+
   /// |NSCocoaError code 17|                 | NSURLError code 6  |
@@ -265,7 +265,7 @@ extension Merge._Summary {
   /// **[Decomposition of `augmentedIfNeededKey(...)`]** function.  Builds the prefix text for a key.
   ///
   /// # Example
-  /// ```
+  /// ```swift
   /// _makePrefixString(("err1",
   ///                   .enclosure(spacer: " ", opening: "[", closing: "]")))
   ///
@@ -334,7 +334,7 @@ extension Merge._Summary {
   /// Nothing is added if all components are nil.
   ///
   /// # Example
-  /// ```
+  /// ```swift
   /// var key = "id"
   /// _appendSuffixAnnotations(keyOrigin: "literal",
   ///                          collisionSource: "onSubscript",
@@ -451,11 +451,11 @@ extension Merge._Summary {
                                                                 keyString: KeyPath<K, String>,
                                                                 infoSourceSignatureBuilder: @escaping (S) -> String)
     -> SummaryPreparationContext<ErrInfo> where ErrInfo: Collection<(key: K, value: V)> {
-    let errorInfos = infoSources.map { $0[keyPath: infoKeyPath] }
+    let errorInfoElements = infoSources.map { $0[keyPath: infoKeyPath] }
     
     // let duplicates = findDuplicateElements(in: errorInfos.map { $0.allKeys })
-    let duplicates = findDuplicateElements(in: errorInfos.map { errorInfo in
-      AnyCollectionProjectable(base: errorInfo, elementProjection: { element in element.key[keyPath: keyString] })
+    let duplicates = findDuplicateElements(in: errorInfoElements.map { errorInfo in
+      errorInfo.lazy.map { element in element.key[keyPath: keyString] }
     })
         
     let generateUniqueSourceSignatures: () -> [String] = {
@@ -465,7 +465,7 @@ extension Merge._Summary {
     return SummaryPreparationContext(keyDuplicatesAcrossSources: duplicates.duplicatesAcrossSources,
                                      keyDuplicatesWithinSources: duplicates.duplicatesWithinSources,
                                      generateUniqueSourceSignatures: generateUniqueSourceSignatures,
-                                     errorInfos: errorInfos)
+                                     errorInfos: errorInfoElements)
   }
     
   /// **[Decomposition of `summaryInfo(...)`]** function. Generates a unique string signature for each source.
@@ -686,7 +686,7 @@ extension Merge._Summary {
 /*
  /// O(2n)
  ///
- /// ```
+ /// ```swift
  /// let set1: Set<Int> = [1, 2, 3, 4, 5]
  /// let set2: Set<Int> = [3, 4, 5, 6]
  /// let set3: Set<Int> = [4, 5, 7, 8]

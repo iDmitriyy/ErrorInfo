@@ -34,15 +34,15 @@ extension ErrorInfo {
 // MARK: - FullInfo View
 
 extension ErrorInfo {
-  public typealias FullInfoElement = (key: KeyWithOrigin, value: CollisionTaggedValue<TypedNilOptional, CollisionSource>)
+  public typealias FullInfoElement = (key: String,
+                                      record: (keyOrigin: KeyOrigin, value: TypedNilOptional, collisionSource: CollisionSource?))
   
   /// Returns a sequence of tuples, where each element consists of a key with its origin and a collision-tagged value.
   /// This view provides an enriched sequence of key-value pairs with additional metadata, useful for deep inspection, logging or debugging.
   public var fullInfoView: some Sequence<FullInfoElement> {
-    AnySequenceProjectable(base: _storage, elementProjection: { key, taggedRecord in
-      let keyWithOrigin = KeyWithOrigin(string: key, origin: taggedRecord.value.keyOrigin)
-      let collisionTaggedValue = CollisionTaggedValue(value: taggedRecord.value._optional, collisionSource: taggedRecord.collisionSource)
-      return (keyWithOrigin, collisionTaggedValue)
-    })
+    _storage.lazy.map { key, taggedRecord -> FullInfoElement in
+      let record = (taggedRecord.value.keyOrigin, taggedRecord.value._optional, taggedRecord.collisionSource)
+      return (key, record)
+    }
   }
 }
