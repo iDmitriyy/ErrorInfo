@@ -7,7 +7,7 @@
 
 extension ErrorInfo {
   @usableFromInline internal struct _Record: Sendable, ApproximatelyEquatable { // typeprivate
-    @usableFromInline internal let _optional: _Optional
+    @usableFromInline internal let _optional: TypedNilOptional
     internal let keyOrigin: KeyOrigin
     
     @usableFromInline internal static func isApproximatelyEqual(lhs: borrowing Self, rhs: borrowing Self) -> Bool {
@@ -25,7 +25,7 @@ extension ErrorInfo {
     }
   }
   
-  public struct _Optional: Sendable {
+  public struct TypedNilOptional: Sendable {
     fileprivate let wrapped: Variant
     
     @usableFromInline internal var optionalValue: (any ErrorInfoValueType)? {

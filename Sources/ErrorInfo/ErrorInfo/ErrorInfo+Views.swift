@@ -34,7 +34,7 @@ extension ErrorInfo {
 // MARK: - FullInfo View
 
 extension ErrorInfo {
-  public typealias FullInfoElement = (key: KeyWithOrigin, value: CollisionTaggedValue<_Optional, CollisionSource>)
+  public typealias FullInfoElement = (key: KeyWithOrigin, value: CollisionTaggedValue<TypedNilOptional, CollisionSource>)
   
   /// Returns a sequence of tuples, where each element consists of a key with its origin and a collision-tagged value.
   /// This view provides an enriched sequence of key-value pairs with additional metadata, useful for deep inspection, logging or debugging.
