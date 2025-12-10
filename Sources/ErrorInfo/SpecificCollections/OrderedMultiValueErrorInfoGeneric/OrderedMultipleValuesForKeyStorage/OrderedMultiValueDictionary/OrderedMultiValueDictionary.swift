@@ -5,8 +5,8 @@
 //  Created by Dmitriy Ignatyev on 20/09/2025.
 //
 
-import SwiftCollectionsNonEmpty
 import OrderedCollections
+import SwiftCollectionsNonEmpty
 
 // MARK: - Ordered MultiValueDictionary
 
@@ -63,7 +63,7 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
 
 extension OrderedMultiValueDictionary: Sendable where Key: Sendable, Value: Sendable {}
 
-extension OrderedMultiValueDictionary {  
+extension OrderedMultiValueDictionary {
   public func hasValue(forKey key: Key) -> Bool {
     _keyToEntryIndices.hasValue(forKey: key)
   }
@@ -128,14 +128,14 @@ extension OrderedMultiValueDictionary {
   
   private mutating func _rebuildKeyToEntryIndices() {
     _keyToEntryIndices = [:]
-    for (index) in _entries.indices {
+    for index in _entries.indices {
       let entry = _entries[index]
       _insert(entryIndex: index, forKey: entry.key)
     }
   }
   
   internal mutating func removeAll(where predicate: (_ key: Key, _ value: Value) -> Bool) {
-    self = self.filter { key, value in !predicate(key, value) }
+    self = filter { key, value in !predicate(key, value) }
   }
     
   internal func filter(_ isIncluded: (Element) -> Bool) -> Self {
@@ -178,14 +178,20 @@ extension OrderedMultiValueDictionary {
 
 extension OrderedMultiValueDictionary {
   internal func _checkInvariants() {
-    var entryIndicesCount: Int = 0
+    var computedEntriesCount: Int = 0
+    var seenIndices = Set<Int>()
+    
     for (key, entryIndices) in _keyToEntryIndices {
+      precondition(!entryIndices.isEmpty) // entryIndices must be NonEmpty
       for enryIndex in entryIndices {
+        precondition(seenIndices.insert(enryIndex).inserted)
+        
         let entry = _entries[enryIndex]
-        entry.key == key
-        entryIndicesCount += 1
+        precondition(entry.key == key)
+        computedEntriesCount += 1
       }
     }
-    _entries.count == entryIndicesCount
+    
+    precondition(_entries.count == computedEntriesCount)
   }
 }
