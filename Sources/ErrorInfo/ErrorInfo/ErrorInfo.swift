@@ -41,7 +41,7 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
   public static let empty: Self = Self()
 }
 
-// ===-------------------------------------------------------------------------------------------------------------------=== //
+
 
 // MARK: - Append KeyValue with all arguments passed explicitly
 
