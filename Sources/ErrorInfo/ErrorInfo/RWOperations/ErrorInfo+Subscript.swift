@@ -39,6 +39,24 @@ extension ErrorInfo {
   //   set(InternalRestrictionToken?) only {}
   // }
   
+  /// Sets the value associated with the given literal key.
+  ///
+  /// This is a **set-only** subscript. Attempting to read through this
+  /// subscript is unavailable. To retrieve stored values, use `allValues(forKey:)`.
+  ///
+  /// - If `newValue` is `nil`, the assignment records an explicitly-present
+  ///   `nil` value (preserving Wrapped-type information from original optional value).
+  /// - Duplicate values for the same key are handled according to
+  ///   `ValueDuplicatePolicy.defaultForAppending`.
+  /// - Collisions created during assignment are attributed to `CollisionSource.onSubscript`.
+  ///
+  /// # Example:
+  /// ```swift
+  /// let price: Double? = nil
+  ///
+  /// errorInfo[.message] = "Failed to decode"
+  /// errorInfo["price"] = price // stores `nil` with Wrapped-type `Double`
+  /// ```
   public subscript<V: ValueType>(_ literalKey: StringLiteralKey) -> V? {
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
     get {
@@ -47,23 +65,6 @@ extension ErrorInfo {
     set {
       _add(key: literalKey.rawValue,
            keyOrigin: literalKey.keyOrigin,
-           value: newValue,
-           preserveNilValues: true,
-           duplicatePolicy: .defaultForAppending,
-           collisionSource: .onSubscript(origin: nil)) // providing origin for a single key-value is an overhead
-    }
-  }
-  
-  @available(*, deprecated, message: "make autocomplete pollution")
-  @_disfavoredOverload
-  public subscript<V: ValueType>(dynamicKey dynKey: String) -> V? { // dynamicKey key:
-    @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
-    get {
-      allValues(forKey: dynKey)?.first as? V
-    }
-    set {
-      _add(key: dynKey,
-           keyOrigin: .dynamic,
            value: newValue,
            preserveNilValues: true,
            duplicatePolicy: .defaultForAppending,

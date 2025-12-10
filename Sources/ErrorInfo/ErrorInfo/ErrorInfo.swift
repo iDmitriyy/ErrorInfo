@@ -24,14 +24,17 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
     _storage = storage
   }
   
+  /// Creates an empty `ErrorInfo` instance.
   public init() {
     self.init(storage: BackingStorage())
   }
   
+  /// Creates an empty `ErrorInfo` instance with a specified minimum capacity.
   public init(minimumCapacity: Int) {
     self.init(storage: BackingStorage(minimumCapacity: minimumCapacity))
   }
   
+  /// An empty instance of `ErrorInfo`.
   public static let empty: Self = Self()
 }
 
