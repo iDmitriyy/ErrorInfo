@@ -14,7 +14,13 @@
 public enum ErrorInfoFuncs {}
 
 extension ErrorInfoFuncs {
+  /// Namespacing
   public enum DictUtils {}
+}
+
+extension ErrorInfoFuncs {
+  /// Namespacing for private imps that should be inlined
+  @usableFromInline internal enum __PrivateImps {}
 }
 
 extension ErrorInfoFuncs {

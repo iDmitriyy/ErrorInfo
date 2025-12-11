@@ -23,7 +23,7 @@ extension Merge.Utils {
   /// // suffix might be something like "a3@9"
   /// ```
   @_spi(PerfomanceTesting)
-  @inlinable @inline(__always)
+  @inlinable @inline(__always) // 1.7x speedup
   @Sendable public static func randomSuffix(generator: inout some RandomNumberGenerator) -> NonEmptyString {
     // ~11,4 million of combinations
     // duplicated string typically created after several thousands for count = 4
