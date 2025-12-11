@@ -9,8 +9,10 @@ import NonEmpty
 
 /// NonEmpty collection.
 /// Stores 1 element inline or a heap allocated NonEmptyArray of elements.
-public struct ValuesForKey<Value>: Sequence {
+public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
   @usableFromInline internal let _elements: Either<Value, NonEmptyArray<Value>>
+  
+  public typealias Index = Int
   
   @inlinable @inline(__always)
   internal init(element: Value) { _elements = .left(element) }
@@ -24,10 +26,38 @@ public struct ValuesForKey<Value>: Sequence {
     }
   }
   
+  public subscript(position: Int) -> Value {
+    switch _elements {
+    case .left(let element):
+      switch position {
+      case 0: return element
+      default: preconditionFailure("Index \(position) is out of bounds")
+      }
+    case .right(let elements):
+      return elements[position]
+    }
+  }
+  
+  public var startIndex: Int { 0 }
+  
+  public var endIndex: Int {
+    switch _elements {
+    case .left: 1
+    case .right(let elements): elements.endIndex
+    }
+  }
+    
   public var first: Value {
     switch _elements {
     case .left(let element): element
     case .right(let elements): elements.first
+    }
+  }
+  
+  public var last: Value {
+    switch _elements {
+    case .left(let element): element
+    case .right(let elements): elements.last
     }
   }
   
@@ -64,6 +94,7 @@ public struct ValuesForKey<Value>: Sequence {
     }
   }
   
+  // TODO: - is it needed now?
   public func makeIterator() -> some IteratorProtocol<Value> {
     switch _elements {
     case .left(let element): AnyIterator(CollectionOfOne(element).makeIterator())

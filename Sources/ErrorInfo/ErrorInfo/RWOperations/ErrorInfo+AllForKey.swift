@@ -55,31 +55,6 @@ extension ErrorInfo {
   public func allValues(forKey dynamicKey: String) -> ValuesForKey<any ValueType>? {
     _storage.allValues(forKey: dynamicKey)?._compactMap { $0.value._optional.optionalValue }
   }
-  
-  /// Returns the first non-nil value associated with the given key.
-  ///
-  /// - Parameter literalKey: The key to look up in the `ErrorInfo` storage.
-  ///
-  /// - Returns: The first non-nil value associated with the key, or `nil` if no such value exists.
-  ///
-  /// # Example:
-  /// ```swift
-  /// var errorInfo = ErrorInfo()
-  /// errorInfo[.id] = 5
-  /// errorInfo[.id] = 6
-  ///
-  /// let id = errorInfo.firstValue(forKey: .id) // returns 5
-  /// ```
-  public func firstValue(forKey literalKey: StringLiteralKey) -> (any ValueType)? {
-    firstValue(forKey: literalKey.rawValue)
-  }
-  
-  // TODO: - remake examples for dynamic keys, as they are for literal api now
-  
-  @_disfavoredOverload
-  public func firstValue(forKey dynamicKey: String) -> (any ValueType)? {
-    allValues(forKey: dynamicKey)?.first
-  }
 }
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
