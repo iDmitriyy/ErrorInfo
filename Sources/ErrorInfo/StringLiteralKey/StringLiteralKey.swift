@@ -68,16 +68,18 @@ extension StringLiteralKey: ExpressibleByStringLiteral { // Improvement: try to 
   // TODO: Check if there any costs for using StaticString instead of String as literal type.
   // StaticString completely closes the hole when ErronInfoKey can be initialized with dynamically formed string or interpolation.
   // use @const instead of static let (check binary size(reduce swift_once) and perfomance on first access)
-  public init(stringLiteral value: StaticString) {
+  public init(stringLiteral value: StaticString) { // inlining has no effect for perfomance
     rawValue = String.init(value)
     keyOrigin = .literalConstant
   }
 }
 
 extension StringLiteralKey {
-  // Improvement: perfomance: borrowing | consuming(copying), @const
+  // Improvement: ?perfomance: borrowing | consuming(copying), @const
   
-  public static func + (lhs: Self, rhs: Self) -> Self {
+  public static func + (lhs: Self, rhs: Self) -> Self { // inlining has no effect for perfomance
     Self(_combinedLiteralsString: lhs.rawValue + "_" + rhs.rawValue)
+    // + is faster that String.concat when combinig 2 literals – in practice, combining 2 lieras is the main case
+    // + is a little slower when combining 3 literals
   }
 }

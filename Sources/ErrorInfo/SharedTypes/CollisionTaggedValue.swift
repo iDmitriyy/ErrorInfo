@@ -17,13 +17,13 @@ public struct CollisionTaggedValue<Value, CollisionSource> {
   @usableFromInline internal let _collisionSource: HeapBox<CollisionSource>?
   
   @inlinable @inline(__always)
-  public init(value: Value, collisionSource: CollisionSource?) {
+  internal init(value: Value, collisionSource: CollisionSource?) {
     self.value = value
     self._collisionSource = collisionSource.map(HeapBox.init)
   }
   
   @inlinable @inline(__always) // 50x speedup
-  public static func value(_ value: Value) -> Self { Self(value: value, collisionSource: nil) }
+  internal static func value(_ value: Value) -> Self { Self(value: value, collisionSource: nil) }
   
   @inlinable @inline(__always) // 6x speedup
   internal static func collidedValue(_ value: Value, collisionSource: CollisionSource) -> Self {
@@ -33,11 +33,13 @@ public struct CollisionTaggedValue<Value, CollisionSource> {
 
 extension CollisionTaggedValue: Sendable where Value: Sendable, CollisionSource: Sendable {}
 
+// MARK: - HeapBox
 
 @usableFromInline internal final class HeapBox<T> {
   @usableFromInline internal let wrapped: T
   
-  @usableFromInline internal init(_ wrapped: T) { // inlining has no effect for perfomance
+  @usableFromInline
+  internal init(_ wrapped: T) { // inlining has no effect for perfomance
     self.wrapped = wrapped
   }
 }
