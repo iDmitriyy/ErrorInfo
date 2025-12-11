@@ -68,6 +68,13 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
     }
   }
   
+  @inlinable public func map<T, E>(_ transform: (Self.Element) throws(E) -> T) throws(E) -> ValuesForKey<T> {
+    switch _elements {
+    case .left(let element): ValuesForKey<T>(element: try transform(element))
+    case .right(let elements): ValuesForKey<T>(array: try elements.map(transform))
+    }
+  }
+  
   // Improvement: should be NonEmptySlice<Array<Value>> instead of Slice<NonEmptyArray<Value>>
   public var _destrctured: (first: Value, others: Slice<NonEmptyArray<Value>>?) {
     switch _elements {
@@ -95,6 +102,7 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
   }
   
   // TODO: - is it needed now?
+  // check iteration speed when having this Iteratpr and default IndexingIterator from RandomAccessCollection
   public func makeIterator() -> some IteratorProtocol<Value> {
     switch _elements {
     case .left(let element): AnyIterator(CollectionOfOne(element).makeIterator())

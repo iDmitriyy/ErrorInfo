@@ -127,7 +127,8 @@ extension ErrorInfo {
   ///   - literalKey: The key for which the records should be replaced.
   ///   - newValue: The new value to associate with the specified key.
   ///
-  /// - Returns: A non-empty sequence of the old values that were replaced, or `nil` if no value were associated with the key.
+  /// - Returns: A non-empty sequence of the old values that were replaced, or `nil`
+  /// if no value were associated with the key.
   ///
   /// # Example:
   /// ```swift
@@ -154,7 +155,8 @@ extension ErrorInfo {
   ///   - dynamicKey: The key for which the records should be replaced.
   ///   - newValue: The new value to associate with the specified key.
   ///
-  /// - Returns: A non-empty sequence of the old values that were replaced, or `nil` if no value were associated with the key.
+  /// - Returns: A non-empty sequence of the old values that were replaced, or `nil`
+  ///  if no value were associated with the key.
   ///
   /// # Example:
   /// ```swift

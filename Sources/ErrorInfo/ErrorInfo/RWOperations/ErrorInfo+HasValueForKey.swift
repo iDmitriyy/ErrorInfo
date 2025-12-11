@@ -8,7 +8,7 @@
 // MARK: HasValues ForKey
 
 extension ErrorInfo {
-  /// This method checks whether the key is associated with at least one non-nil value.
+  /// Checks whether the key is associated with at least one non-nil value.
   ///
   /// - Parameter literalKey: The key to search for in the `ErrorInfo` storage.
   ///
@@ -28,7 +28,7 @@ extension ErrorInfo {
     hasValue(forKey: literalKey.rawValue)
   }
   
-  /// This method checks whether the key is associated with at least one non-nil value.
+  /// Checks whether the key is associated with at least one non-nil value.
   ///
   /// - Parameter key: The key to search for in the `ErrorInfo` storage.
   ///
@@ -140,8 +140,6 @@ extension ErrorInfo {
   
   /// Returns the result of looking up a key in the storage, encapsulating the presence and state of values.
   ///
-  /// This method checks the key's associated values in the storage and returns an appropriate `KeyValueLookupResult`.
-  ///
   /// - Parameter literalKey: The key to look up in the `ErrorInfo` storage.
   ///
   /// - Returns: A `KeyValueLookupResult` indicating the result of the lookup.
@@ -154,7 +152,8 @@ extension ErrorInfo {
   /// errorInfo[.id] = nil as Int?
   ///
   /// let result = errorInfo.keyValueLookupResult(forKey: .id)
-  /// // Returns .multipleRecords(valuesCount: 1, nilCount: 1) because one value is non-nil and one is nil.
+  /// // Returns .multipleRecords(valuesCount: 1, nilCount: 1)
+  /// // because one value is non-nil and one is nil.
   /// ```
   public func keyValueLookupResult(forKey literalKey: StringLiteralKey) -> KeyValueLookupResult {
     keyValueLookupResult(forKey: literalKey.rawValue)
@@ -176,7 +175,8 @@ extension ErrorInfo {
   /// errorInfo["id"] = nil as Int?
   ///
   /// let result = errorInfo.keyValueLookupResult(forKey: "id")
-  /// // Returns .multipleRecords(valuesCount: 1, nilCount: 1) because one value is non-nil and one is nil.
+  /// // Returns .multipleRecords(valuesCount: 1, nilCount: 1)
+  /// // because one value is non-nil and one is nil.
   /// ```
   @_disfavoredOverload
   public func keyValueLookupResult(forKey key: String) -> KeyValueLookupResult {

@@ -8,11 +8,23 @@
 // MARK: - Last ForKey
 
 extension ErrorInfo {
+  /// Returns the last non-nil value associated with the given literal key.
+  ///
+  /// - Returns: The last value associated with key, or `nil` if no value is found.
+  ///
+  /// # Example:
+  /// ```swift
+  /// var info = ErrorInfo()
+  /// info[.id] = 5
+  /// info[.id] = 6
+  ///
+  /// errorInfo.lastValue[forKey: .id) // returns 6
+  /// ```
   public func lastValue(forKey literalKey: StringLiteralKey) -> (any ValueType)? {
     lastValue(forKey: literalKey.rawValue)
   }
   
-  // TODO: - remake examples for dynamic keys, as they are for literal api now
+  // TODO: - remake examples for dynamic keys (everywhere), as they are for literal api now
   
   @_disfavoredOverload
   public func lastValue(forKey dynamicKey: String) -> (any ValueType)? {
@@ -45,13 +57,11 @@ extension ErrorInfo {
   /// errorInfo[.id] = 5
   /// errorInfo[.id] = 6
   ///
-  /// let id = errorInfo.firstValue(forKey: .id) // returns 5
+  /// errorInfo.firstValue(forKey: .id) // returns 5
   /// ```
   public func firstValue(forKey literalKey: StringLiteralKey) -> (any ValueType)? {
     firstValue(forKey: literalKey.rawValue)
   }
-  
-  // TODO: - remake examples for dynamic keys, as they are for literal api now
   
   @_disfavoredOverload
   public func firstValue(forKey dynamicKey: String) -> (any ValueType)? {

@@ -8,7 +8,7 @@
 // MARK: - Value Duplicate Policy
 
 extension ErrorInfo {
-  /// This policy dictates how duplicate values are handled when inserting into an ErrorInfo collection.
+  /// This policy dictates how duplicate values are handled when inserting into an `ErrorInfo`.
   ///
   /// It is particularly useful when:
   /// - Equal values represent different events. e.g. when the fact of having 2 equal values by itself is a useful signal.

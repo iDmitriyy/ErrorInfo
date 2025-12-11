@@ -25,7 +25,7 @@ extension ErrorInfo {
   // if `address` is renamed in sources, then "address" literal alsso needed to be cnhaged manualy, which is not what we want.
   // Macro also closses the hole that valueName can be en empty string: .valueName(""). binding can not be empty
   
-  /// Appends properties from an instance to the `ErrorInfo` storage with a customizable key path prefix.
+  /// Appends properties from the given instance (struct, class...) to `ErrorInfo`, allowing you to specify key path prefix.
   ///
   /// This method allows you to append properties of an instance to the `ErrorInfo` storage,
   /// converting the specified key paths into strings.
@@ -48,7 +48,20 @@ extension ErrorInfo {
   /// }
   ///
   /// // The resulting keys will be prefixed with "Person" in the error info:
-  /// // "Person.name" and "Person.age"
+  /// errorInfo.keys // ["Person.name", "Person.age"]
+  /// ```
+  ///
+  /// # Example with `keysPrefix` set to `nil`:
+  /// ```swift
+  /// var errorInfo = ErrorInfo()
+  /// let car = Car(make: "Toyota", model: "Corolla", year: 2020)
+  ///
+  /// errorInfo.appendProperties(of: car, keysPrefix: nil) {
+  ///   \Car.make; \Car.model; \Car.year
+  /// }
+  ///
+  /// // The resulting keys will not be prefixed with "Car":
+  /// errorInfo.keys // ["make", "model", "year"]
   /// ```
   public mutating func appendProperties<R, each V: ValueType>(
     of instance: R,

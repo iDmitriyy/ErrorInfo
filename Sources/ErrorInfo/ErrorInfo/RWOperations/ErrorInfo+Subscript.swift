@@ -17,9 +17,9 @@
 // forced to be used.
 
 extension ErrorInfo {
-  /// Returns the first value associated with the given literal key.
+  /// Returns the last value associated with the given literal key.
   ///
-  /// - Returns: The first value associated with key, or `nil` if no value is found.
+  /// - Returns: The last value associated with key, or `nil` if no value is found.
   ///
   /// - Note:
   /// Use `allValues(forKey:)` if you need to access all values for a key.
@@ -30,10 +30,10 @@ extension ErrorInfo {
   /// info[.id] = 5
   /// info[.id] = 6
   ///
-  /// let id = errorInfo[.id] as? Int // returns 5
+  /// let id = errorInfo[.id] as? Int // returns 6
   /// ```
   public subscript(_ literalKey: StringLiteralKey) -> (any ValueType)? {
-    firstValue(forKey: literalKey)
+    lastValue(forKey: literalKey)
   }
     
   /// A restricted subscript used to warn against removing values by mistake.

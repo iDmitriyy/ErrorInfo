@@ -36,7 +36,7 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
 }
 
 extension ErrorInfo {
-  /// Allows merging key-value Dictionary literal into the existing `ErrorInfo` instance.
+  /// Allows to append key-value pairs from Dictionary literal into the existing `ErrorInfo` instance.
   /// Collisions during the merge are tracked with the `CollisionSource.onDictionaryConsumption` source.
   ///
   /// - Parameters:
@@ -52,6 +52,7 @@ extension ErrorInfo {
   /// errorInfo.appendKeyValues([
   ///   .id: 0,
   ///   .count: 2,
+  ///   .request + .id = 3
   /// ])
   /// ```
   public mutating func appendKeyValues(_ literal: KeyValuePairs<Key, Value>,

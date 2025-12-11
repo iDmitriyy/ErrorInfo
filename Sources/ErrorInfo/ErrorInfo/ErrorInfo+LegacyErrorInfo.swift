@@ -8,10 +8,10 @@
 import Foundation
 
 extension ErrorInfo {
-  /// Initializes an `ErrorInfo` instance using a legacy user info dictionary.
+  /// Initializes an `ErrorInfo` instance using a legacy `[String: Any]` user info dictionary.
   ///
-  /// This initializer takes a dictionary with legacy  `[String: Any]` dictionary,
-  /// processes each key-value pair, and converts the values to a compatible type.
+  /// This initializer takes a `[String: Any]` dictionary, processes each key-value pair,
+  /// and converts the values to a compatible type.
   ///
   /// - Parameters:
   ///   - legacyUserInfo: A dictionary containing legacy key-value pairs where the values are of type `Any`.
