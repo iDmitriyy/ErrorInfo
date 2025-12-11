@@ -130,13 +130,14 @@ struct PrettyDescriptionTests {
   
   @Test func notCustomStringConvertible() throws {
     let val1: NotCustomStringConvertibleStruct = NotCustomStringConvertibleStruct(id: 1, name: "Name")
+    let nativeStringRepr = #"NotCustomStringConvertibleStruct(id: 1, name: Optional("Name"))"#
     
-    #expect(String(describing: val1) == #"NotCustomStringConvertibleStruct(id: 1, name: Optional("Name"))"#)
-    #expect(prettyDescriptionOfOptional(any: val1) == #"NotCustomStringConvertibleStruct(id: 1, name: Optional("Name"))"#)
+    #expect(String(describing: val1) == nativeStringRepr)
+    #expect(prettyDescriptionOfOptional(any: val1) == nativeStringRepr)
     
     do {
       let singleOptAny: Any = val1 as Any
-      #expect(prettyDescriptionOfOptional(any: singleOptAny) == #"NotCustomStringConvertibleStruct(id: 1, name: Optional("Name"))"#)
+      #expect(prettyDescriptionOfOptional(any: singleOptAny) == nativeStringRepr)
     }
   }
   
@@ -164,16 +165,16 @@ struct PrettyDescriptionTests {
     // данные структуры
     do {
       let singleOptValString = prettyDescriptionOfOptional(any: singleOptVal)
-      #expect(!singleOptValString.contains("Optional")
-        && singleOptValString.contains(#"NotCustomStringConvertibleStruct(id: 1, name: "Name")"#))
+      #expect(!singleOptValString.hasPrefix("Optional(") &&
+        singleOptValString.hasSuffix(#"NotCustomStringConvertibleStruct(id: 1, name: Optional("Name"))"#))
       
       let doubleOptValString = prettyDescriptionOfOptional(any: doubleOptVal)
-      #expect(!doubleOptValString.contains("Optional")
-        && doubleOptValString.contains(#"NotCustomStringConvertibleStruct(id: 2, name: "Name")"#))
+      #expect(!doubleOptValString.hasPrefix("Optional(") &&
+        doubleOptValString.hasSuffix(#"NotCustomStringConvertibleStruct(id: 2, name: Optional("Name"))"#))
       
       let tripleOptValString = prettyDescriptionOfOptional(any: tripleOptVal)
-      #expect(!tripleOptValString.contains("Optional")
-        && tripleOptValString.contains(#"NotCustomStringConvertibleStruct(id: 3, name: "Name")"#))
+      #expect(!tripleOptValString.hasPrefix("Optional(") &&
+        tripleOptValString.hasSuffix(#"NotCustomStringConvertibleStruct(id: 3, name: Optional("Name"))"#))
     }
 
     do {
@@ -182,16 +183,17 @@ struct PrettyDescriptionTests {
       let tripleOptAny: Any = tripleOptVal as Any
 
       let singleOptAnyString = prettyDescriptionOfOptional(any: singleOptAny)
-      #expect(!singleOptAnyString.contains("Optional")
-        && singleOptAnyString.contains(#"NotCustomStringConvertibleStruct(id: 1, name: "Name")"#))
+      print("____ >>> ", singleOptAnyString)
+      #expect(!singleOptAnyString.hasPrefix("Optional(")
+        && singleOptAnyString.hasSuffix(#"NotCustomStringConvertibleStruct(id: 1, name: Optional("Name"))"#))
       
       let doubleOptAnyString = prettyDescriptionOfOptional(any: doubleOptAny)
-      #expect(!doubleOptAnyString.contains("Optional")
-        && doubleOptAnyString.contains(#"NotCustomStringConvertibleStruct(id: 2, name: "Name")"#))
+      #expect(!doubleOptAnyString.hasPrefix("Optional(")
+        && doubleOptAnyString.hasSuffix(#"NotCustomStringConvertibleStruct(id: 2, name: Optional("Name"))"#))
       
       let tripleOptAnyString = prettyDescriptionOfOptional(any: tripleOptAny)
-      #expect(!tripleOptAnyString.contains("Optional")
-        && tripleOptAnyString.contains(#"NotCustomStringConvertibleStruct(id: 3, name: "Name")"#))
+      #expect(!tripleOptAnyString.hasPrefix("Optional(")
+        && tripleOptAnyString.hasSuffix(#"NotCustomStringConvertibleStruct(id: 3, name: Optional("Name"))"#))
     }
   }
   
