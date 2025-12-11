@@ -90,7 +90,7 @@ extension CollisionSource {
       case let .function(function):
         String.concat(collisionName, "(", StringLiteralKey.function.rawValue, ": ", function, ")")
       case let .custom(origin):
-        String.concat(collisionName, "(origin: ", origin, ")")
+        collisionName + "(origin: " + origin + ")"
       }
     }
   }

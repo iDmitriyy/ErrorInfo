@@ -39,7 +39,7 @@ extension CollisionTaggedValue: Sendable where Value: Sendable, CollisionSource:
   @usableFromInline internal let wrapped: T
   
   @usableFromInline
-  internal init(_ wrapped: T) { // inlining has no effect for perfomance
+  internal init(_ wrapped: T) { // inlining has no effect on perfomance
     self.wrapped = wrapped
   }
 }

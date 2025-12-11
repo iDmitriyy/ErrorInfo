@@ -36,18 +36,15 @@ extension ErrorInfoFuncs {
     } else {
       guard let dotIndex = keyPathString.firstIndex(of: ".") else { return keyPathString }
       let nextAfterDotIndex = keyPathString.index(after: dotIndex)
-      
-      // TODO: test for "\Foo." "" "."
-      // guard nextAfterDotIndex < keyPathString.endIndex else { return keyPathString }
-      
+            
       return String(keyPathString[nextAfterDotIndex...])
     }
     /// https://github.com/apple/swift-evolution/blob/main/proposals/0369-add-customdebugdescription-conformance-to-anykeypath.md
-  }
+  } // inlining has no effect on perfomance
   
   /// Combines the file name and line number.
   /// - Returns: Example: `"File.swift:42"`
-  internal static func fileLineString(file: StaticString, line: UInt) -> String {
+  public static func fileLineString(file: StaticString, line: UInt) -> String { // inlining has no effect on perfomance
     String(file) + ":\(line)"
   }
 }
