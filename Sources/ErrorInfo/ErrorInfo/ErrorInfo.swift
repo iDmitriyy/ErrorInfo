@@ -5,11 +5,6 @@
 //  Created by Dmitriy Ignatyev on 14.12.2024.
 //
 
-import struct OrderedCollections.OrderedDictionary
-
-// TODO: - add tests for elements ordering stability
-// TODO: - add overloads for Sendable AnyObjects & actors
-
 public struct ErrorInfo: Sendable { // ErrorInfoCollection
   public typealias Element = (key: String, value: any ValueType)
   
@@ -88,3 +83,6 @@ extension ErrorInfo {
                                        collisionSource: collisionSource())
   }
 }
+
+// TODO: - add tests for elements ordering stability
+// TODO: - add overloads for Sendable AnyObjects & actors

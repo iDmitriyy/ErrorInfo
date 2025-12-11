@@ -180,6 +180,11 @@ extension ErrorInfo {
   /// ```
   @_disfavoredOverload
   public func keyValueLookupResult(forKey key: String) -> KeyValueLookupResult {
+    // FIXME: instead of _storage.allValues(forKey: key) smth like
+    // _storage.iterateWithResult(forKey: key), to eliminate allocations
+    // on the other side, allValues(forKey:) should be quite fast.
+    
+    
     if let taggedRecords = _storage.allValues(forKey: key) {
       var valuesCount: UInt16 = 0
       var nilInstancesCount: UInt16 = 0

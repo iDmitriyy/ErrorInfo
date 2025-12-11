@@ -39,9 +39,9 @@ extension CollisionTaggedValue: Sendable where Value: Sendable, CollisionSource:
   @usableFromInline internal let wrapped: T
   
   @usableFromInline
-  internal init(_ wrapped: T) { // inlining has no effect on perfomance
+  internal init(_ wrapped: T) {
     self.wrapped = wrapped
-  }
+  } // inlining has no effect on perfomance
 }
 
 extension HeapBox: Sendable where T: Sendable {}
