@@ -64,7 +64,6 @@ public enum CollisionSource: Sendable {
 }
 
 extension CollisionSource {
-  // ⚠️ @iDmitriyy
   // FIXME: - add to documentataion that Origin can be created as String literal
   
   public enum Origin: Sendable, ExpressibleByStringLiteral {

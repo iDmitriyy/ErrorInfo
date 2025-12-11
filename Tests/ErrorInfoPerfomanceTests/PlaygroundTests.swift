@@ -11,17 +11,16 @@ import Testing
 struct PlaygroundTests {
   @Test func playground() throws {
     let count = 10
-    let values = ValuesForKey<any ErrorInfoValueType>(__array: NonEmptyArray("head", "tail"))
+    let a = ErrorInfo.OptionalWithTypedNil.value(Int.random(in: 1...1000))
     let output = performMeasuredAction(count: count) {
-      for index in 1...1_000_00 {
-        for e in values {
-          blackHole(e)
-        }
+      //let b = ErrorInfo.OptionalWithTypedNil.value(Int.random(in: 1...1000))
+      for index in 1...1_000_000 {
+        blackHole(ErrorInfo._Record(_optional: .value(index), keyOrigin: .dynamic))
       }
     }
     
-    print("__playground: ", output.duration)
+    print("__playground: ", output.duration) // blackHole(()) ~22ms for 10 million calls of empty blackHole(())
     
-    //
+    // __playground:  65.55454200000001
   }
 }
