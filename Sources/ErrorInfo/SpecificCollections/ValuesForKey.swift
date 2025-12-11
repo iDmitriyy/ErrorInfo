@@ -26,6 +26,7 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
     }
   }
   
+  @inlinable @inline(__always) // 10.5x speedup
   public subscript(position: Int) -> Value {
     switch _elements {
     case .left(let element):
@@ -38,15 +39,18 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
     }
   }
   
+  @inlinable
   public var startIndex: Int { 0 }
   
+  @inlinable // no speedup for direct access, keep @inlinable to be transparent for compiler
   public var endIndex: Int {
     switch _elements {
     case .left: 1
     case .right(let elements): elements.endIndex
     }
   }
-    
+  
+  @inlinable @inline(__always) // 13.5x speedup
   public var first: Value {
     switch _elements {
     case .left(let element): element
@@ -54,6 +58,7 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
     }
   }
   
+  @inlinable @inline(__always) // 13.5x speedup
   public var last: Value {
     switch _elements {
     case .left(let element): element
@@ -61,6 +66,7 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
     }
   }
   
+  @inlinable // no speedup for direct access, keep @inlinable to be transparent for compiler
   public var count: Int {
     switch _elements {
     case .left: 1
@@ -68,7 +74,8 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
     }
   }
   
-  @inlinable public func map<T, E>(_ transform: (Self.Element) throws(E) -> T) throws(E) -> ValuesForKey<T> {
+  @inlinable
+  public func map<T, E>(_ transform: (Self.Element) throws(E) -> T) throws(E) -> ValuesForKey<T> {
     switch _elements {
     case .left(let element): ValuesForKey<T>(element: try transform(element))
     case .right(let elements): ValuesForKey<T>(array: try elements.map(transform))
@@ -83,7 +90,8 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
     }
   }
   
-  /// Return nonEmpty instance
+  /// Return nonEmpty instance or nil
+  @inlinable
   internal func _compactMap<U>(_ transform: (Value) -> U?) -> ValuesForKey<U>? {
     switch _elements {
     case .left(let element):
@@ -98,15 +106,6 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
       } else {
         nil
       }
-    }
-  }
-  
-  // TODO: - is it needed now?
-  // check iteration speed when having this Iteratpr and default IndexingIterator from RandomAccessCollection
-  public func makeIterator() -> some IteratorProtocol<Value> {
-    switch _elements {
-    case .left(let element): AnyIterator(CollectionOfOne(element).makeIterator())
-    case .right(let elements): AnyIterator(elements.makeIterator())
     }
   }
 }

@@ -11,16 +11,17 @@ import Testing
 struct PlaygroundTests {
   @Test func playground() throws {
     let count = 10
+    let values = ValuesForKey<any ErrorInfoValueType>(__array: NonEmptyArray("head", "tail"))
     let output = performMeasuredAction(count: count) {
       for index in 1...1_000_00 {
-        blackHole(ErrorInfoFuncs.DictUtils.addKeyPrefix("prefix",
-                                                        toKeysOf: ["a": 1, "b": 2, "c": 3, "d": 4, "eeeeeeeeeeeeeeeeee": 5]))
+        for e in values {
+          blackHole(e)
+        }
       }
     }
     
     print("__playground: ", output.duration)
     
-    // 1696.312458
-    // __playground:  698.1091240000001
+    //
   }
 }
