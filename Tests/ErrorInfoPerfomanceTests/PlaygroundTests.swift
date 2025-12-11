@@ -11,9 +11,10 @@ import Testing
 struct PlaygroundTests {
   @Test func playground() throws {
     let count = 10
+    let ff: Any = 4
     let output = performMeasuredAction(count: count) {
-      for index in 1...1_000_00 {
-        blackHole(prettyDescriptionOfOptional(any: index)) // Optional.some(index) as Any
+      for index in 1...1_000_000 {
+        blackHole(_specialize(ff, for: Int.self))
       }
     }
     

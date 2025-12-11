@@ -15,10 +15,10 @@
 ///
 /// # Example:
 /// ```swift
-/// prettyDescriptionOfOptional(any: Optional(Optional(42)))        // "42"
-/// prettyDescriptionOfOptional(any: Optional<Optional<Int>>.none)  // "nil"
-/// prettyDescriptionOfOptional(any: "Hello")                       // "Hello"
-/// prettyDescriptionOfOptional(any: Optional("World"))             // "World"
+/// prettyDescriptionOfOptional(any: Optional(Optional(42))) as Any        // "42"
+/// prettyDescriptionOfOptional(any: Optional<Optional<Int>>.none) as Any  // "nil"
+/// prettyDescriptionOfOptional(any: "Hello") as Any                       // "Hello"
+/// prettyDescriptionOfOptional(any: Optional("World")) as Any             // "World"
 /// ```
 ///
 /// - Parameter any: A value of any type, which may or may not be an optional.
@@ -26,7 +26,8 @@
 public func prettyDescriptionOfOptional(any: some Any) -> String {
   if let value = _specialize(any, for: String.self) { return value }
   if let value = _specialize(any, for: Int.self) { return String(value) }
-  if let value = _specialize(any, for: UInt.self) { return String(value) }
+  if let value = _specialize(any, for: Bool.self) { return String(value) }
+  if let value = _specialize(any, for: Double.self) { return String(value) }
   
   if let custStr = any as? any CustomStringConvertible {
     return custStr.description
@@ -62,11 +63,9 @@ public func prettyDescriptionOfOptional(any: some Any) -> String {
 public func prettyDescriptionOfOptional<T>(any: T?) -> String {
   switch any {
   case .some(let value):
-    /*
-     if let value = _specialize(any, for: String.self) { return value } – _specialize has no effect here.
-     However, there is significant perfomance gain when using _specialize
-     inside any T overload `prettyDescriptionOfOptional()`
-     */
+     // if let value = _specialize(any, for: String.self) { return value } – _specialize has no effect here.
+     // However, there is significant perfomance gain when adding _specialize
+     // inside (some Any) overload of `prettyDescriptionOfOptional()` above.
     return prettyDescriptionOfOptional(any: value)
     
   case .none:

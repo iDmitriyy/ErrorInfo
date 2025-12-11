@@ -7,25 +7,61 @@
 
 import NonEmpty
 
-/// NonEmpty collection.
-/// Stores 1 element inline or a heap allocated NonEmptyArray of elements.
+/// A NonEmpty collection that stores one or more values associated with a single key.
+///
+/// ## Type Parameters:
+/// - `Value`: The type of the value(s) associated with the key.
+///
+/// ## Performance:
+/// `ValuesForKey` is optimized for the case where only a single value is stored, providing fast access.
+/// The  case where multiple values are stored still offers efficient access.
+///
+/// # Example:
+/// ```swift
+///
+/// // A typical case where a single value is stored for the key "error_code".
+/// if let values = errorInfo.allValues(forKey: .errorCode) {
+///   values.first // "404"
+/// }
+///
+/// // Multiple values are stored for the key "id".
+/// if let values = errorInfo.allValues(forKey: .id) {
+///   values.first // 17
+///   values.last  // "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
+/// }
+/// ```
 public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
   @usableFromInline internal let _elements: Either<Value, NonEmptyArray<Value>>
   
   public typealias Index = Int
   
+  // MARK: - Initializers
+    
+  /// Creates a `ValuesForKey` instance with a single value.
+  ///
+  /// - Parameter element: The value to store.
   @inlinable @inline(__always)
   internal init(element: Value) { _elements = .left(element) }
   
+  /// Creates a `ValuesForKey` instance with multiple values.
+  ///
+  /// - Parameter array: A non-empty array of values to store.
   @inlinable @inline(__always)
   internal init(array: NonEmptyArray<Element>) {
-    if array.rawValue.count > 1 {
+    if array.base.count > 1 {
       _elements = .right(array)
     } else {
       _elements = .left(array.first)
     }
   }
   
+  // MARK: - Collection Access
+  
+  /// Accesses the element at the specified index.
+  ///
+  /// - Parameter position: The index of the element to access.
+  /// - Returns: The value at the specified position.
+  /// - Precondition: The index must be within bounds (0 for a single value).
   @inlinable @inline(__always) // 10.5x speedup
   public subscript(position: Int) -> Value {
     switch _elements {
@@ -39,9 +75,13 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
     }
   }
   
+  /// The starting index of the collection, always 0.
   @inlinable
   public var startIndex: Int { 0 }
   
+  /// The end index of the collection.
+  ///
+  /// - Returns: 1 for a single value, or the count of the non-empty array for multiple values.
   @inlinable
   public var endIndex: Int {
     switch _elements {
@@ -50,6 +90,10 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
     }
   } // no speedup for direct access, keep @inlinable to be transparent for compiler
   
+  /// The first element in the collection.
+  ///
+  /// - Returns: The first value stored, whether it's a single value or the first element
+  /// in the non-empty array.
   @inlinable @inline(__always) // 13.5x speedup
   public var first: Value {
     switch _elements {
@@ -58,6 +102,10 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
     }
   }
   
+  /// The last element in the collection.
+  ///
+  /// - Returns: The last value stored, whether it's a single value or the last element
+  /// in the non-empty array.
   @inlinable @inline(__always) // 13.5x speedup
   public var last: Value {
     switch _elements {
@@ -66,6 +114,9 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
     }
   }
   
+  /// The number of elements in the collection.
+  ///
+  /// - Returns: `1` for a single value or the count of the non-empty array for multiple values.
   @inlinable
   public var count: Int {
     switch _elements {
@@ -74,23 +125,27 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
     }
   } // no speedup for direct access, keep @inlinable to be transparent for compiler
   
+  // MARK: - Transformations
+  
+  /// Applies a transformation to each value in the collection and returns a new `ValuesForKey`
+  /// instance with the transformed values.
+  ///
+  /// - Parameter transform: A closure that transforms each element.
+  /// - Returns: A new `ValuesForKey` instance containing the transformed values.
+  /// - Throws: Any error that occurs during the transformation.
   @inlinable
   public func map<T, E>(_ transform: (Self.Element) throws(E) -> T) throws(E) -> ValuesForKey<T> {
     switch _elements {
-    case .left(let element): ValuesForKey<T>(element: try transform(element))
-    case .right(let elements): ValuesForKey<T>(array: try elements.map(transform))
+    case .left(let element): try ValuesForKey<T>(element: transform(element))
+    case .right(let elements): try ValuesForKey<T>(array: elements.map(transform))
     }
   }
-  
-  // Improvement: should be NonEmptySlice<Array<Value>> instead of Slice<NonEmptyArray<Value>>
-  public var _destrctured: (first: Value, others: Slice<NonEmptyArray<Value>>?) {
-    switch _elements {
-    case .left(let element): (element, nil)
-    case .right(let elements): (elements.first, elements[1...])
-    }
-  }
-  
-  /// Return nonEmpty instance or nil
+    
+  /// Returns a new `ValuesForKey` instance containing only the non-nil results of applying the transformation closure.
+  ///
+  /// - Parameter transform: A closure that transforms each element into an optional value.
+  /// - Returns: A new `ValuesForKey` instance containing only the non-nil transformed
+  /// elements, or `nil` if no valid elements are left.
   @inlinable
   internal func _compactMap<U>(_ transform: (Value) -> U?) -> ValuesForKey<U>? {
     switch _elements {
