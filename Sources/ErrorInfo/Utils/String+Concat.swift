@@ -8,7 +8,7 @@
 extension String {
   /*
    For 5, 6 and more elements String.concat is ~1.2x faster than Array<String>.joined() or + operator
-   For less elements + seems to be more perfomant.
+   For less elements + operator seems to be more perfomant.
    */
   
   @inlinable @inline(__always)

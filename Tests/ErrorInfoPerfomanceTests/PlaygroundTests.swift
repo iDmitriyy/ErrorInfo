@@ -12,21 +12,15 @@ struct PlaygroundTests {
   @Test func playground() throws {
     let count = 10
     let output = performMeasuredAction(count: count) {
-      for index in 1...1_000_000 {
-        let ind = "\(index)"
-        // String.concat()
-//        blackHole("pref" + "(" + ind + " :)" + ind + "suffix")
-//        blackHole(["pref", "(" , ind , " :)", "suffix"].joined())
+      for index in 1...1_000_00 {
+        blackHole(ErrorInfoFuncs.DictUtils.addKeyPrefix("prefix",
+                                                        toKeysOf: ["a": 1, "b": 2, "c": 3, "d": 4, "eeeeeeeeeeeeeeeeee": 5]))
       }
     }
     
     print("__playground: ", output.duration)
     
-    // __playground:  438.804459 vs concat_3 (456.75612400000006)
-    
-    // 1173.270501 concat_4  | 982 +
-    // 1419 | 1724.66329 +
-    // 1588 | 1823
-    // 1398 | 1665 join
+    // 1696.312458
+    // __playground:  698.1091240000001
   }
 }

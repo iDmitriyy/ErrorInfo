@@ -139,13 +139,6 @@ extension Merge {
     -> OrderedDictionary<String, W> where EInf: Collection<(key: K, value: V)> {
     // any ErrorInfoValueType change to V (e.g. to be Optional<any ErrorInfoValueType> or String)
     var summaryInfo: OrderedDictionary<String, W> = [:]
-    func putResolvingCollisions(key assumeModifiedKey: String, value processedValue: W) {
-      Merge.DictUtils._putAugmentingWithRandomSuffix(assumeModifiedKey: assumeModifiedKey,
-                                                     value: processedValue,
-                                                     suffixFirstChar: Merge.Constants.randomSuffixBeginningForMergeScalar,
-                                                     randomGenerator: &randomGenerator,
-                                                     to: &summaryInfo)
-    }
     
     // context is a var only because of `mutating get` / lazy var
     var context = _Summary.prepareMergeContext(infoProviders: infoProviders,
@@ -168,7 +161,12 @@ extension Merge {
                                                          collisionAvailability: collisionAvailability)
         
         let adaptedValue = valueTransform(element.value)
-        putResolvingCollisions(key: augmentedKey, value: adaptedValue)
+        
+        Merge.DictUtils._putAugmentingWithRandomSuffix(assumeModifiedKey: augmentedKey,
+                                                       value: adaptedValue,
+                                                       suffixFirstChar: Merge.Constants.randomSuffixBeginningForMergeScalar,
+                                                       randomGenerator: &randomGenerator,
+                                                       to: &summaryInfo)
       } // end `for (key, value)`
     } // end `for (errorIndex, error)`
     
