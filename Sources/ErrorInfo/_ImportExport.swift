@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 28/07/2025.
 //
 
-// import for all files:
+// imports for all files:
 
 @_exported public import struct OrderedCollections.OrderedDictionary
 @_exported public import typealias NonEmpty.NonEmptyArray

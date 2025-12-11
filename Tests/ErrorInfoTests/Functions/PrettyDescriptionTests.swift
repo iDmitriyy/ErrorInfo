@@ -12,6 +12,9 @@ struct PrettyDescriptionTests {
   private let assertMessage = "Invalid output"
   
   @Test func prettyDescriptionForString() {
+    let dd: Int? = nil
+    print("_____", String(describing: dd))
+    
     let input = "Hello World"
     #expect(prettyDescriptionOfOptional(any: input) == input)
   }

@@ -22,7 +22,7 @@ extension Merge.Utils {
   /// let suffix = ErrorInfoFuncs.randomSuffix(generator: &generator)
   /// // suffix might be something like "a3@9"
   /// ```
-  @_spi(PerfomanceTesting)
+  @_spi(PerfomanceTesting) @_spi(Testing)
   @inlinable @inline(__always) // 1.7x speedup
   @Sendable public static func randomSuffix(generator: inout some RandomNumberGenerator) -> NonEmptyString {
     // ~11,4 million of combinations
