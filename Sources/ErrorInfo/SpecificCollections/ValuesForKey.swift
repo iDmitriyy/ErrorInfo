@@ -42,13 +42,13 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
   @inlinable
   public var startIndex: Int { 0 }
   
-  @inlinable // no speedup for direct access, keep @inlinable to be transparent for compiler
+  @inlinable
   public var endIndex: Int {
     switch _elements {
     case .left: 1
     case .right(let elements): elements.endIndex
     }
-  }
+  } // no speedup for direct access, keep @inlinable to be transparent for compiler
   
   @inlinable @inline(__always) // 13.5x speedup
   public var first: Value {
@@ -66,13 +66,13 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
     }
   }
   
-  @inlinable // no speedup for direct access, keep @inlinable to be transparent for compiler
+  @inlinable
   public var count: Int {
     switch _elements {
     case .left: 1
     case .right(let elements): elements.count
     }
-  }
+  } // no speedup for direct access, keep @inlinable to be transparent for compiler
   
   @inlinable
   public func map<T, E>(_ transform: (Self.Element) throws(E) -> T) throws(E) -> ValuesForKey<T> {

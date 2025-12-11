@@ -133,6 +133,7 @@ extension Merge {
     keysPrefixOption: Format.KeysPrefixOption<S>,
     annotationsFormat: Format.KeyAnnotationsFormat,
     randomGenerator: consuming some RandomNumberGenerator & Sendable,
+    // collisionTracker: CollisionTracker<V>?,
     infoSourceSignatureBuilder: @escaping (S) -> String,
     valueTransform: (V) -> W,
   )
@@ -240,6 +241,12 @@ extension Merge._Summary {
                              errorInfoSignature: errorInfoSignature,
                              annotationsFormat: annotationsFormat,
                              to: &resultKey)
+    
+    //    collisionTracker?._addRecord(key: keyString,
+    //                                 value: element.value,
+    //                                 keyHasCollisionAcross: keyHasCollisionAcross,
+    //                                 keyHasCollisionWithin: keyHasCollisionWithin,
+    //                                 sourceSignature: errorInfoSignature)
     return resultKey
   }
   

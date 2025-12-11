@@ -12,7 +12,7 @@ public struct CollisionTaggedValue<Value, CollisionSource> {
   public var collisionSource: CollisionSource? { _collisionSource?.wrapped }
   
   /// CollisionSource memory footprint is quite large. memoryLayout size == 33, stride == 40 at the moment of writing.
-  /// Consuming 40bytes for each value where in fact collisionSource mostly often is nil is ineffective.
+  /// Consuming additional 40 bytes for each value, where in fact collisionSource mostly often is nil, is ineffective.
   /// Thats why store optional HeapBox, which takes only 8 bytes (64-bit pointer)
   @usableFromInline internal let _collisionSource: HeapBox<CollisionSource>?
   
