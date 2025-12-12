@@ -8,33 +8,81 @@
 // MARK: - With Custom TypeInfoOptions
 
 extension ErrorInfo {
-  public static func with(preserveNilValues: Bool = true,
-                          duplicatePolicy: ValueDuplicatePolicy = .rejectEqual,
-                          collisionSource: CollisionSource.Origin = .fileLine(),
-                          append: (consuming CustomOptionsView) -> Void) -> Self {
+  /// Creates a new `ErrorInfo` instance with custom options that apply to all mutable operations performed on it.
+  /// The provided options can be overridden at the individual operation level (e.g., using subscripts or functions)..
+  ///
+  /// - Parameters:
+  ///   - preserveNilValues: A Boolean value that determines whether nil values should be preserved. Default is true.
+  ///   - duplicatePolicy: Specifies the policy for handling duplicate values during modification. The default is .defaultForAppending.
+  ///   - collisionSource: Defines the origin of any collisions for debugging and tracking purposes. The default is `.fileLine()`.
+  ///   - modify: A closure that provides a `CustomOptionsView` to perform mutable operations on the `ErrorInfo` instance.
+  ///     The closure receives a mutable reference to the `CustomOptionsView`, which can then be used to perform operations
+  ///     like adding or modifying values.
+  ///
+  /// - Returns: A new ErrorInfo instance, modified according to the provided options.
+  ///
+  /// # Example:
+  /// ```swift
+  /// let info = ErrorInfo.withOptions(preserveNilValues: false) {
+  ///   // Global option preserveNilValues = false, nil values are ignored
+  ///   $0["age"] = 30 as Int?
+  ///   $0["username"] = nil as String?
+  ///
+  ///   // Override on a per-operation basis: preserve nil values
+  ///   0["email", preserveNilValues: true] = nil as String?
+  /// }
+  ///
+  /// // info now contains: ["age": 30, "email": nil]
+  /// ```
+  public static func withOptions(preserveNilValues: Bool = true,
+                                 duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending,
+                                 collisionSource: CollisionSource.Origin = .fileLine(),
+                                 modify: (consuming CustomOptionsView) -> Void) -> Self {
     var info = Self()
-    info.appendWith(preserveNilValues: preserveNilValues,
-                    duplicatePolicy: duplicatePolicy,
-                    collisionSource: collisionSource,
-                    append: append)
+    info.modifyWithOptions(preserveNilValues: preserveNilValues,
+                           duplicatePolicy: duplicatePolicy,
+                           collisionSource: collisionSource,
+                           modify: modify)
     return info
   }
   
+  /// Modifies the current `ErrorInfo` instance with custom options that apply to all mutable operations performed on it.
+  /// The provided options can be overridden at the individual operation level (e.g., using subscripts or functions)..
   ///
   /// - Parameters:
-  ///   - typeInfoOptions:
-  ///   - omitEqualValue: `omitEqualValue` in subscript has higher priority than this argument
-  ///   - append:
-  public mutating func appendWith(preserveNilValues: Bool = true,
-                                  duplicatePolicy: ValueDuplicatePolicy = .rejectEqual,
-                                  collisionSource: CollisionSource.Origin = .fileLine(),
-                                  append: (consuming CustomOptionsView) -> Void) {
+  ///   - preserveNilValues: A Boolean value that determines whether nil values should be preserved. Default is true.
+  ///   - duplicatePolicy: Specifies the policy for handling duplicate values during modification. The default is .defaultForAppending.
+  ///   - collisionSource: Defines the origin of any collisions for debugging and tracking purposes. The default is `.fileLine()`.
+  ///   - modify: A closure that provides a `CustomOptionsView` to perform mutable operations on the `ErrorInfo` instance.
+  ///     The closure receives a mutable reference to the `CustomOptionsView`, which can then be used to perform operations
+  ///     like adding or modifying values.
+  ///
+  /// - Returns: A new ErrorInfo instance, modified according to the provided options.
+  ///
+  /// # Example:
+  /// ```swift
+  /// var info = ErrorInfo()
+  /// info.modifyWithOptions(preserveNilValues: false) {
+  ///   // Global option preserveNilValues = false, nil values are ignored
+  ///   $0["age"] = 30 as Int?
+  ///   $0["username"] = nil as String?
+  ///
+  ///   // Override on a per-operation basis: preserve nil values
+  ///   0["email", preserveNilValues: true] = nil as String?
+  /// }
+  ///
+  /// // info now contains: ["age": 30, "email": nil]
+  /// ```
+  public mutating func modifyWithOptions(preserveNilValues: Bool = true,
+                                         duplicatePolicy: ValueDuplicatePolicy = .rejectEqual,
+                                         collisionSource: CollisionSource.Origin = .fileLine(),
+                                         modify: (consuming CustomOptionsView) -> Void) {
     withUnsafeMutablePointer(to: &self) { pointer in
       let view = CustomOptionsView(pointer: pointer,
                                    duplicatePolicy: duplicatePolicy,
                                    preserveNilValues: preserveNilValues,
                                    collisionOrigin: collisionSource)
-      append(view)
+      modify(view)
     }
   }
 }
