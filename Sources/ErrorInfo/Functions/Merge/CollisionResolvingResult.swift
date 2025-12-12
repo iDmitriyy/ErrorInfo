@@ -2,7 +2,7 @@
 //  CollisionResolvingResult.swift
 //  ErrorInfo
 //
-//  Created by tmp on 11/12/2025.
+//  Created by Dmitriy Ignatyev on 11/12/2025.
 //
 
 public struct KeyCollisionResolvingInput<Key: Hashable, Value, CId> {

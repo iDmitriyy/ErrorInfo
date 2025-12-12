@@ -2,7 +2,7 @@
 //  Error+Merge2.swift
 //  ErrorInfo
 //
-//  Created Dmitriy Ignatyev on 03/10/2025.
+//  Created by Dmitriy Ignatyev on 03/10/2025.
 //
 
 private import struct OrderedCollections.OrderedSet

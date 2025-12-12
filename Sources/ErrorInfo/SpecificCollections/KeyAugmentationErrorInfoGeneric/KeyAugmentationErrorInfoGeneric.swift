@@ -31,6 +31,10 @@ public struct KeyAugmentationErrorInfoGeneric<D> where D: DictionaryProtocol, D:
     _storage = dict
   }
   
+  public init(minimumCapacity: Int) {
+    _storage = D(minimumCapacity: minimumCapacity)
+  }
+  
   public func makeIterator() -> some IteratorProtocol<Element> {
     _storage.makeIterator()
   }

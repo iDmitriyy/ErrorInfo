@@ -2,7 +2,7 @@
 //  TypeInfoOptions.swift
 //  ErrorInfo
 //
-//  Created Dmitriy Ignatyev on 07/10/2025.
+//  Created by Dmitriy Ignatyev on 07/10/2025.
 //
 
 public struct TypeInfoOptions: OptionSet, Sendable { // add tests

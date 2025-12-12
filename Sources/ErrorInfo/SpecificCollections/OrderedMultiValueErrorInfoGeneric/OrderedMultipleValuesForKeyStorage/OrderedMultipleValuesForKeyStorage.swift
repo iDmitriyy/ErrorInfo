@@ -2,7 +2,7 @@
 //  OrderedMultipleValuesForKeyStorage.swift
 //  ErrorInfo
 //
-//  Created Dmitriy Ignatyev on 05/10/2025.
+//  Created by Dmitriy Ignatyev on 05/10/2025.
 //
 
 /// The main purpose of this type is reducing the overhead which `OrderedMultiValueDictionary` has.

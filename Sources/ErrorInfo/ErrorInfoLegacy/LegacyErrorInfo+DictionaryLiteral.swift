@@ -2,6 +2,7 @@
 //  LegacyErrorInfo+DictionaryLiteral.swift
 //  ErrorInfo
 //
-//  Created Dmitriy Ignatyev on 15/10/2025.
+//  Created by Dmitriy Ignatyev on 15/10/2025.
 //
 
+// extension LegacyErrorInfo: ExpressibleByDictionaryLiteral {}

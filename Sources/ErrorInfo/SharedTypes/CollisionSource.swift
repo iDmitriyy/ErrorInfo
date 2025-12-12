@@ -2,7 +2,7 @@
 //  CollisionSource.swift
 //  ErrorInfo
 //
-//  Created Dmitriy Ignatyev on 03/10/2025.
+//  Created by Dmitriy Ignatyev on 03/10/2025.
 //
 
 /// Represents different sources of key collisions in the context of error information.

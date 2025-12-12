@@ -2,7 +2,7 @@
 //  ErrorInfo+ToDictionary.swift
 //  ErrorInfo
 //
-//  Created Dmitriy Ignatyev on 10/10/2025.
+//  Created by Dmitriy Ignatyev on 10/10/2025.
 //
 
 extension ErrorInfo {
