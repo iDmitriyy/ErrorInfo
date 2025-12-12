@@ -107,31 +107,28 @@ extension ErrorInfoFuncs {
 
 extension ErrorInfoFuncs {
   private static func _toPascalOrCamelImp(string: String, firstCharTransform: (Character) -> String) -> String {
-    var result = ""
-    var normalCharsCount: UInt = 0 // non-separator characters count
+    var result = "" // result.reserveCapacity - has slightly negative impact on perfomance
+    
+    var hasSeenNormalChar = false
     var previousWasSeprator = false
     for character in string {
       if character == "_" || character == "-" {
         previousWasSeprator = true
       } else { // normal (non-separator) character:
-        // TODO: If no transform was made, then self can be returned without making a copy to result.
-        // save a flag to remeber if any transforms were made, save only current index and make actual transform
-        // and result allocation only when trasform really needed.
-        if normalCharsCount > 0 { // If after separator then uppercased
-          if previousWasSeprator {
+        if hasSeenNormalChar {
+          if previousWasSeprator { // If after separator then uppercased
             result.append(character.uppercased())
           } else {
             result.append(character)
           }
-        } else {
+        } else { // first normal char
           result.append(firstCharTransform(character))
+          hasSeenNormalChar = true
         }
-        
-        normalCharsCount += 1
         previousWasSeprator = false
       } // end if
     } // end for
-    return normalCharsCount > 0 ? result : string
+    return hasSeenNormalChar ? result : string
   }
   
   private static func _toSnakeOrKebabImp(string: String, separator: Character) -> String {
@@ -141,8 +138,8 @@ extension ErrorInfoFuncs {
       case separator
     }
     
-    var result = ""
-    var normalCharsCount: UInt = 0 // non-separator characters count
+    var result = "" // result.reserveCapacity - has slightly negative impact on perfomance
+    
     var previousKind: PreviousCharKind?
     for character in string {
       if character == "_" || character == "-" {
@@ -155,15 +152,14 @@ extension ErrorInfoFuncs {
             // was not a separator.
             result.append(separator)
           }
+          result.append(character.lowercased())
           previousKind = .uppercase
         } else {
+          result.append(character)
           previousKind = .lowercase
         }
-        result.append(character.lowercased())
-        normalCharsCount += 1
       } // end if
     } // end for
-    // TODO: is this conditions needed? isn't enough to return result?
-    return normalCharsCount > 0 ? result : String(repeating: separator, count: string.count)
+    return result
   }
 }

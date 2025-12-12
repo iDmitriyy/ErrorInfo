@@ -31,9 +31,9 @@
 // 2. store `static let` or `const let`
 // This can increase the aamount of memory by a factor of 2. Need to be inspected.
 
+// MARK: - Common key prefixes / suffixed
+
 extension StringLiteralKey {
-  // MARK: Common key prefixes
-  
   /// e.g.: .invalid + .value, .invalid + .index
   public static let invalid: StringLiteralKey = "invalid"
   /// e.g.: .unchecked + .value, .unchecked + .index
@@ -60,6 +60,15 @@ extension StringLiteralKey {
   public static let decoding: StringLiteralKey = "decoding"
   /// e.g.: .encoding + .duration
   public static let encoding: StringLiteralKey = "encoding"
+  
+  /// e.g.: .response + .payload
+  public static let payload: StringLiteralKey = "payload"
+  
+  /// e.g.: .debug + .info
+  public static let info: StringLiteralKey = "info"
+  
+  /// e.g.: .operation + .name
+  public static let operation: StringLiteralKey = "operation"
 }
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
@@ -129,6 +138,10 @@ extension StringLiteralKey {
   public static let uuid: StringLiteralKey = "uuid"
   public static let instanceID: StringLiteralKey = "instance_id"
   public static let objectID: StringLiteralKey = "object_id"
+  public static let operationID: StringLiteralKey = "operation_id"
+  public static let transactionID: StringLiteralKey = "transaction_id"
+  
+  public static let host: StringLiteralKey = "host"
 }
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
@@ -166,11 +179,18 @@ extension StringLiteralKey {
   
   public static let httpStatusCode: StringLiteralKey = "http_status_code"
   
+  
+  public static let httpMethod: StringLiteralKey = "http_method"
   public static let requestMethod: StringLiteralKey = "request_method"
   public static let requestURL: StringLiteralKey = "request_url"
   public static let requestBody: StringLiteralKey = "request_body"
   
   public static let responseBody: StringLiteralKey = "response_body"
+  
+  public static let apiEndpoint: StringLiteralKey = "api_endpoint"
+  
+  
+  
 }
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
