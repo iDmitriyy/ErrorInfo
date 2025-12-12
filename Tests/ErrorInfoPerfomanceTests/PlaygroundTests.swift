@@ -11,13 +11,12 @@ import Testing
 struct PlaygroundTests {
   @Test func playground() throws {
     let count = 10
-    let ff: Any = 4
     let output = performMeasuredAction(count: count) {
-      for index in 1...1_000_000 {
-        blackHole(_specialize(ff, for: Int.self))
+      for index in 1...1_000_00 {
+        blackHole("")
       }
     }
     
-    print("__playground: ", output.duration) // blackHole(()) ~22ms for 10 million calls of empty blackHole(())
+    print("__playground: ", output.duration) // it takes ~22ms for 10 million of calls of empty blackHole(())
   }
 }

@@ -7,6 +7,26 @@
 
 // MARK: - Value + Collision Wrapper
 
+/// A structure that stores a value alongside an optional collision source, used to track values
+/// that may have collided in a merging process.
+///
+/// ## Type Parameters:
+/// - `Value`: The type of the value being stored.
+/// - `CollisionSource`: The type of the source where the collision occurred, if any.
+///
+/// ## Memory Optimization:
+/// To minimize memory overhead, the `CollisionSource` is stored using a `HeapBox`, which ensures
+/// that the source is only allocated when needed. If the collision source is `nil`, the storage
+/// is more efficient (only 8 bytes for the `HeapBox` pointer).
+///
+/// ## Example:
+/// ```swift
+/// // Creating a value with no collision source
+/// let value = CollisionTaggedValue.value(42)
+///
+/// // Creating a value with a collision source
+/// let collidedValue = CollisionTaggedValue.collidedValue(42, collisionSource: .onCreateWithDictionaryLiteral)
+/// ```
 public struct CollisionTaggedValue<Value, CollisionSource> {
   public let value: Value
   public var collisionSource: CollisionSource? { _collisionSource?.wrapped }
@@ -35,6 +55,8 @@ extension CollisionTaggedValue: Sendable where Value: Sendable, CollisionSource:
 
 // MARK: - HeapBox
 
+/// A lightweight box that wraps a value on the heap. Used internally to store collision sources
+/// with minimal memory overhead, only allocating memory when necessary.
 @usableFromInline internal final class HeapBox<T> {
   @usableFromInline internal let wrapped: T
   
