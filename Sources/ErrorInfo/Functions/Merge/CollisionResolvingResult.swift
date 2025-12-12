@@ -60,7 +60,7 @@ public enum KeyCollisionResolvingResult<Key: Hashable> {
 //  res(donatorElement: ("", 5), recipientElement: ("", ""))
 // }
 
-extension ErrorInfoMultipleValuesForKeyStrategy where Self: ErrorInfoPartialCollection, Key == String {
+extension ErrorInfoMultipleValuesForKeyStrategy where Self: IterableErrorInfo, Key == String {
 //  func asStringDict<I>(omitEqualValue: Bool,
 //                       identity: I,
 //                       resolve: (ResolvingInput<String, V, C>) -> ResolvingResult<String>) -> [String: String] {

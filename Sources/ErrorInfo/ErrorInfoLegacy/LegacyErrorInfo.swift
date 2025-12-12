@@ -18,21 +18,25 @@ public struct LegacyErrorInfo: IterableErrorInfo {
   public typealias Value = Any
   public typealias Element = (key: String, value: Any)
   
-  private var storage: KeyAugmentationErrorInfoGeneric<Dictionary<String, Any>>
+  private var _storage: KeyAugmentationErrorInfoGeneric<Dictionary<String, Any>>
+  
+  public var isEmpty: Bool { _storage.isEmpty }
+  
+  public var count: Int { _storage.count }
   
   public func makeIterator() -> some IteratorProtocol<Element> {
-    storage.makeIterator()
+    _storage.makeIterator()
   }
   
   public init(_ info: [String: Any]) {
-    storage = KeyAugmentationErrorInfoGeneric(info)
+    _storage = KeyAugmentationErrorInfoGeneric(info)
   }
 }
 
 extension LegacyErrorInfo {
   // TODO: this method should be an overload for default implementation
   public func asDictionary() -> [String: Any] {
-    storage._storage
+    _storage._storage
   }
 }
 

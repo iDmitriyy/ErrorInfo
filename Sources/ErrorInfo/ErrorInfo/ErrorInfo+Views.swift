@@ -31,6 +31,8 @@ extension ErrorInfo {
   public var allKeys: some Collection<String> { _storage._storage.allKeys }
 }
 
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
 // MARK: - FullInfo View
 
 extension ErrorInfo {

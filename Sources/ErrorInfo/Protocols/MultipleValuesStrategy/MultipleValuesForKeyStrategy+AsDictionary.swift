@@ -14,7 +14,7 @@
 import OrderedCollections
 public import NonEmpty
 
-extension ErrorInfoMultipleValuesForKeyStrategy where Self: ErrorInfoPartialCollection {
+extension ErrorInfoMultipleValuesForKeyStrategy where Self: IterableErrorInfo {
   // ExpressibleByArrayLiteral – is only need for some kind of initialization. Somethong like `minimumCapacityInitializable`
   // can also be used.
   public func asMultipleValuesDictGeneric<D, VC>(omitEqualValue _: Bool) -> D

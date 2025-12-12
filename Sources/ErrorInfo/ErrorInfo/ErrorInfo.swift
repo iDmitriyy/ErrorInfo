@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 14.12.2024.
 //
 
-public struct ErrorInfo: Sendable { // ErrorInfoCollection
+public struct ErrorInfo: Sendable {
   public typealias Element = (key: String, value: any ValueType)
   
   public typealias ValueType = ErrorInfoValueType
@@ -33,6 +33,8 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
   /// An empty instance of `ErrorInfo`.
   public static let empty: Self = Self()
 }
+
+// ===-------------------------------------------------------------------------------------------------------------------=== //
 
 // MARK: - Append KeyValue with all arguments passed explicitly
 

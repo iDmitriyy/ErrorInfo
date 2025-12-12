@@ -8,8 +8,8 @@
 // MARK: Expressible By Dictionary Literal
 
 extension ErrorInfo: ExpressibleByDictionaryLiteral {
-  public typealias Value = (any ErrorInfoValueType)?
   public typealias Key = StringLiteralKey
+  public typealias Value = (any ErrorInfoValueType)?
     
   /// Allows initializing an `ErrorInfo` instance directly from a dictionary literal.
   /// Collisions during the merge are tracked with the `CollisionSource.onCreateWithDictionaryLiteral` source.
@@ -31,9 +31,13 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
   /// ```
   public init(dictionaryLiteral elements: (Key, Value)...) {
     self.init(minimumCapacity: elements.count)
-    _mergeKeyValues(_dictionaryLiteral: elements, collisionSource: .onCreateWithDictionaryLiteral)
+    _mergeKeyValuesImp(_dictionaryLiteral: elements, collisionSource: .onCreateWithDictionaryLiteral)
   }
 }
+
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// MARK: - Append KeyValues literal
 
 extension ErrorInfo {
   /// Allows to append key-value pairs from Dictionary literal into the existing `ErrorInfo` instance.
@@ -57,13 +61,17 @@ extension ErrorInfo {
   /// ```
   public mutating func appendKeyValues(_ literal: KeyValuePairs<Key, Value>,
                                        collisionSource origin: @autoclosure () -> CollisionSource.Origin = .fileLine()) {
-    _mergeKeyValues(_dictionaryLiteral: literal, collisionSource: .onDictionaryConsumption(origin: origin()))
+    _mergeKeyValuesImp(_dictionaryLiteral: literal, collisionSource: .onDictionaryConsumption(origin: origin()))
   }
 }
 
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// MARK: - Imp
+
 extension ErrorInfo {
-  internal mutating func _mergeKeyValues(_dictionaryLiteral elements: some Collection<(key: Key, value: Value)>,
-                                         collisionSource: @autoclosure () -> CollisionSource) {
+  internal mutating func _mergeKeyValuesImp(_dictionaryLiteral elements: some Collection<(key: Key, value: Value)>,
+                                            collisionSource: @autoclosure () -> CollisionSource) {
     // Improvement: try reserve capacity. perfomance tests
     for (literalKey, value) in elements {
       if let value {

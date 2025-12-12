@@ -28,3 +28,12 @@ public protocol InformativeError: Error {
   
   var info: ErrorInfoType { get }
 }
+
+public protocol IterableErrorInfo<Key, Value>: Sequence where Key: Hashable, Self.Iterator.Element == (key: Key, value: Value) {
+  associatedtype Key
+  associatedtype Value
+  
+  var isEmpty: Bool { get }
+  
+  var count: Int { get }
+}

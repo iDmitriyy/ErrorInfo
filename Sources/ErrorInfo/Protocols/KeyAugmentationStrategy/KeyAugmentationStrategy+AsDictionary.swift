@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 17/09/2025.
 //
 
-extension ErrorInfoUniqueKeysAugmentationStrategy where Self: ErrorInfoPartialCollection {
+extension ErrorInfoUniqueKeysAugmentationStrategy where Self: IterableErrorInfo {
   public func asDictGeneric<D>() -> D where D: DictionaryProtocol<Key, Value>, D: EmptyInitializableWithCapacityDictionary {
     var recipient = D(minimumCapacity: count)
     
