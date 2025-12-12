@@ -8,7 +8,7 @@
 // MARK: - AllValues ForKey
 
 extension ErrorInfo {
-  // TODO: public func allValuesSlice(forKey key: Key) -> (some Sequence<Value>)? {}
+  // TBD: public func allValuesSlice(forKey key: Key) -> (some Sequence<Value>)? {}
   // replace usage of allValues(forKey:) for better perfomance | reduce allocations
   
   /// Returns all non-nil values associated with a given key in the `ErrorInfo` storage.

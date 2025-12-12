@@ -45,7 +45,7 @@ public struct StringLiteralKey: Hashable, Sendable, CustomStringConvertible, Cus
   
   public var description: String { rawValue }
   
-  public var debugDescription: String { rawValue } // TODO: ? rawValue.debugDescription
+  public var debugDescription: String { rawValue }
   
   internal let keyOrigin: KeyOrigin
   
@@ -71,9 +71,9 @@ extension StringLiteralKey: ExpressibleByStringLiteral { // Improvement: try to 
     keyOrigin = .literalConstant
   } // inlining has no effect on perfomance
   
-  // TODO: Check if there any costs for using StaticString instead of String as literal type.
+  
   // StaticString completely closes the hole when ErronInfoKey can be initialized with dynamically formed string or interpolation.
-  // use @const instead of static let (check binary size(reduce swift_once) and perfomance on first access)
+  // // Improvement: use @const instead of static let (check binary size(reduce swift_once) and perfomance on first access)
 }
 
 extension StringLiteralKey {

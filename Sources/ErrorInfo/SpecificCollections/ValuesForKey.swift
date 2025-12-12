@@ -165,7 +165,6 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
   }
 }
 
-// TODO: may consume slices. Need improvements or make it also slice
 extension ValuesForKey {
   @_spi(PerfomanceTesting)
   @inlinable @inline(__always)
@@ -175,7 +174,3 @@ extension ValuesForKey {
   @inlinable @inline(__always)
   public init(__array: NonEmptyArray<Element>) { self.init(array: __array) }
 }
-
-// public struct ValuesForKeySlice<Value>: Sequence { or OrderedMultipleValuesForKeyStorageSlice
-//  private let _slice: Either<DiscontiguousSlice<A>, DiscontiguousSlice<B>>
-// }

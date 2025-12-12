@@ -9,7 +9,7 @@ private import struct OrderedCollections.OrderedSet
 
 // Should ErrorInfo be codable? does json allow the same key several times?
 // ? Decode merged OrderedDictionary as Swift.Dectionary but with key-value ordering
-
+// TODO: - ___
 // line: UInt = #line -> UInt16 (65k lines per file seems enough for average usage) | test file size in script
 
 // !! there should be an ability te remove duplicated values for the same key inside / across errorInfoSources, but the
@@ -598,8 +598,7 @@ extension Merge._Summary {
     /// Tracks how many distinct collections contain each element
     var globalOccurrenceCount: [C.Element: Int] // | CountedMultiSet
     do {
-      // TODO: - not Unique now, fix comments
-      // Unique collection types has .count O(1):
+      // Collection types typically has .count O(1):
       let totalApproxCount = collections.reduce(into: 0) { count, set in count += set.count }
       globalOccurrenceCount = Dictionary(minimumCapacity: totalApproxCount)
       // in most cases, keys across errorInfo instances are unique, thats why capacity for totalCount can be allocated.
@@ -635,123 +634,3 @@ extension Merge._Summary {
     return (duplicatesAcrossSources, duplicatesWithinSources)
   }
 }
-
-// ===-------------------------------------------------------------------------------------------------------------------=== //
-
-// JM4 ["decodingDate": date0, // collide with ME14
-//      "T.Type": type0, // collide with NE2
-//      "id": 0, // collide with ME14 & NE2
-//      "uid" 9, // collide with ME14 & NE2, but value is equal with ME14
-//      "jm":  "jm"]
-// ME14 ["decodingDate": date1,
-//       "timeStamp": time0, // collide with NE2
-//       "id": 1,
-//       "uid" 9,
-//       "me": "me"]
-// NE2 ["T.Type": type1,
-//      "timeStamp": time1,
-//      "id": 2,
-//      "uid" 0,
-//      "ne": "ne"]
-// =>
-// [
-//   "decodingDate_JM4": date0
-//   "T.Type_JM4": type0
-//   "id_JM4": 0
-//   "jm": "jm"
-//   "decodingDate_ME14": date1
-//   "timeStamp_ME14": time0
-//   "id_ME14": 1
-//   "me": "me"
-//   "T.Type_NE2": type1
-//   "timeStamp_NE2": time1
-//   "id_NE2": 2
-//   "ne": "ne"
-// ]
-
-/*
- NSCocoaErrorDomain
- NSURLErrorDomain
- kCFErrorDomainPOSIX
- kCFErrorDomainOSStatus
- kCFErrorDomainMach
- SKErrorDomain
- 
- NSCocoaErrorDomain
- NSPOSIXErrorDomain
- NSOSStatusErrorDomain
- NSMachErrorDomain
- NSStreamSOCKSErrorDomain
- NSStreamSocketSSLErrorDomain
- */
-
-/*
- /// O(2n)
- ///
- /// ```swift
- /// let set1: Set<Int> = [1, 2, 3, 4, 5]
- /// let set2: Set<Int> = [3, 4, 5, 6]
- /// let set3: Set<Int> = [4, 5, 7, 8]
- ///
- /// findCommonElements(inAnyOf: [set1, set2, set3])
- /// // Output: [3, 4, 5]
- /// // because 3 appears in 2 sets, 4 and 5 appear in all 3
- /// ```
- private static func findCommonElements<Unique>(across collections: [Unique]) -> Set<Unique.Element>
-   where Unique: Collection & _UniqueCollection, Unique.Element: Hashable {
-   guard collections.count > 1 else { return [] }
-     
-   var countedElements: [Unique.Element: Int] = [:]
-   do {
-     // Unique collection types has .count O(1):
-     let capacity = collections.reduce(into: 0) { count, set in count += set.count }
-     countedElements.reserveCapacity(capacity)
-     // in most cases, keys across errorInfo instances are unique, thats why capacity for totalCount can be allocated.
-     // If there are duplicated elements across collections, memory overhead will be minimal in real scenarios.
-   }
-   
-   for collectionOfUniqueElements in collections {
-     for element in collectionOfUniqueElements {
-       countedElements[element, default: 0] += 1
-     }
-   }
-   
-   var commonElements: Set<Unique.Element> = []
-   for (element, count) in countedElements where count > 1 {
-     commonElements.insert(element)
-   }
-   return commonElements
- }
- 
- /// worst case: O(n^2/2)
- /// best case: O(n-1)
- ///
- /// Example with processing steps:
- /// 01112323214
- /// 01    23232  4
- /// 01    233      4
- /// 01234             – output
- func extractUniqueElements<T>(from values: NonEmptyArray<T>, equalFuncImp: (T, T) -> Bool) -> NonEmptyArray<T> {
-   // TODO: return NonEmptyArray<DiscontiguousSlice<[T]>> to prevemt heap allocation, slice: ~Escaping with `values` lifetime
-   var processed: NonEmptyArray<T> = NonEmptyArray<T>(values.first)
-   // Improvement: wrap NonEquatable elements to Any[EqualityKind], and use Set, instead of elementwise comparison.
-   // TODO: try to use use Algorithms.UniquedSequence.init(base:, projections:)
-   // perfomance (may be best olgorithm will be different for different elements count)
-   var currentElement = values.first
-   var nextElementsSlice = values.base.dropFirst()
-   var uniqueElementsSlice = nextElementsSlice
-   while !nextElementsSlice.isEmpty {
-     let duplicatedElementsIndices = nextElementsSlice.indices(where: { nextElement in
-       equalFuncImp(currentElement, nextElement)
-     })
-     nextElementsSlice.removeSubranges(duplicatedElementsIndices) // ?? use DiscontiguousSlice<[T]>
-     uniqueElementsSlice.removeSubranges(duplicatedElementsIndices)
-     if let nextElement = nextElementsSlice.first {
-       currentElement = nextElement
-       nextElementsSlice = nextElementsSlice.dropFirst()
-     }
-   }
-   processed.append(contentsOf: uniqueElementsSlice)
-   return processed
- }
- */

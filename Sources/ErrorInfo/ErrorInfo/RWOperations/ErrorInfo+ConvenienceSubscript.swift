@@ -99,7 +99,6 @@ extension ErrorInfo.CustomOptionsView {
     preserveNilValues: Bool? = nil,
     duplicatePolicy: ErrorInfo.ValueDuplicatePolicy? = nil,
   ) -> V? {
-    // TODO: ? borrowing get set
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
     get {
       pointer.pointee.allValues(forKey: literalKey)?.first as? V
@@ -121,7 +120,6 @@ extension ErrorInfo.CustomOptionsView {
     preserveNilValues: Bool? = nil,
     duplicatePolicy: ErrorInfo.ValueDuplicatePolicy? = nil,
   ) -> V? {
-    // TODO: ? borrowing get set
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
     get {
       pointer.pointee.allValues(forKey: dynamicKey)?.first as? V

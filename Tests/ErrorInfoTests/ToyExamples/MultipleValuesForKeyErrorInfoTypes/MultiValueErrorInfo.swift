@@ -32,7 +32,7 @@ import OrderedCollections
 //  
 //  mutating func addResolvingCollisions(key: Key, value: Value, insertIfEqual: Bool) {
 //    _storage.appendResolvingCollisions(key: key, value: value, insertIfEqual: insertIfEqual,
-//                                       collisionSource: .onSubscript(keyKind: .dynamic)) // TODO: collisionSource
+//                                       collisionSource: .onSubscript(keyKind: .dynamic))
 //  }
 //}
 

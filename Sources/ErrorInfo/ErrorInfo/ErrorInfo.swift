@@ -46,7 +46,6 @@ extension ErrorInfo {
                                             preserveNilValues: Bool,
                                             duplicatePolicy: ValueDuplicatePolicy,
                                             collisionSource: @autoclosure () -> CollisionSource) {
-    // TODO: put type TypeInfo
     let optional: OptionalWithTypedNil
     if let newValue {
       optional = .value(newValue)

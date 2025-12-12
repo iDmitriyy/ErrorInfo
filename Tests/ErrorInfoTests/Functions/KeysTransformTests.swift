@@ -37,7 +37,6 @@ struct KeysTransformTests {
     "string.WiTh.dOtS2",
     "string&WIth*|",
   ] + expectedAlwaysStayUnmodified
-  // TODO: Add not only english capitalized
   
   // MARK: - Tests
   

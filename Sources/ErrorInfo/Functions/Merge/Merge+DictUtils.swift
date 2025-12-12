@@ -73,7 +73,6 @@ extension Merge.DictUtils {
   public typealias ResolvingInput<Key: Hashable, Value, C> = KeyCollisionResolvingInput<Key, Value, C>
   
   public typealias ResolvingResult<Key: Hashable> = KeyCollisionResolvingResult<Key>
-  // TODO: ?? rename to Input / ResolvingResult as there are no other inputs in Merge namespace
 }
 
 extension Merge.DictUtils {

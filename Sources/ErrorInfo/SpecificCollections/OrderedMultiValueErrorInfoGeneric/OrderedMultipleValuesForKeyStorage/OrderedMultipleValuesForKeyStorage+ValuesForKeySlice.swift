@@ -6,8 +6,7 @@
 //
 
 extension OrderedMultipleValuesForKeyStorage {
-  // TODO: NonEmpty ValuesForKeySlice | NonEmpty sequence
-  internal struct ValuesForKeySlice: Sequence { // TODO: ~Escapaable
+  internal struct ValuesForKeySlice: Sequence {
     internal typealias Element = TaggedValue
     
     // TODO: AnySequence<Value> used becuase multiValueForKeyDict return opaque type for `allValues(forKey:)`
