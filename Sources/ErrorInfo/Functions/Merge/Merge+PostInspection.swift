@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 26/11/2025.
 //
 
-extension Merge { // uncomment of someone need
+extension Merge { // uncomment if someone need
   /// Tracks and manages collisions during a merge operation, recording the affected keys and their associated values.
   ///
   /// The `CollisionTracker` handles collisions that occur when merging data from multiple sources.
