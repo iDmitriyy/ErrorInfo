@@ -7,6 +7,8 @@
 
 public import struct OrderedCollections.OrderedSet
 
+// MARK: - KeyAnnotations Format
+
 extension Merge.Format {
   public struct KeyAnnotationsFormat: Sendable {
     internal let annotationsOrder: OrderedSet<AnnotationComponentKind>
@@ -32,6 +34,8 @@ extension Merge.Format {
                                                        annotationNameOption: .default)
   }
   
+  // MARK: Annotation Component
+  
   /// In which order annotations will be added
   public enum AnnotationComponentKind: Sendable, Hashable, CaseIterable {
     case keyOrigin
@@ -50,6 +54,8 @@ extension Merge.Format {
     public static let defaultOrdering: OrderedSet<Self> = [.keyOrigin, .collisionSource, .errorInfoSignature]
   }
   
+  // MARK: AnnotationName Option
+  
   /// `"userd_id (keyOrigin: .literal, collision: onMerge(fileLine: MainScreen.Swift:31), sourceSignature: NSCocoa.17)"`
   public enum AnnotationNameOption: Sendable {
     case noNames
@@ -58,6 +64,8 @@ extension Merge.Format {
     public static let `default`: AnnotationNameOption = .withNames(separator: ": ",
                                                                    nameForComponent: { $0.defaultName })
   }
+  
+  // MARK: KeysPrefix Option
   
   public enum KeysPrefixOption<InfoSource>: Sendable {
     case noPrefix
@@ -71,6 +79,8 @@ extension Merge.Format {
 // MARK: - Key Origin
 
 extension Merge.Format {
+  // MARK: KeyOrigin Annotation Policy
+  
   public struct KeyOriginAnnotationPolicy: Sendable {
     public var whenUnique: KeyOriginOptions
     public var whenCollision: KeyOriginOptions
@@ -85,6 +95,8 @@ extension Merge.Format {
     
     public static let neverAdd = KeyOriginAnnotationPolicy(whenUnique: [], whenCollision: [])
   }
+  
+  // MARK: KeyOrigin Options
   
   public struct KeyOriginOptions: OptionSet, Sendable {
     public let rawValue: UInt8
@@ -121,6 +133,31 @@ extension Merge.Format {
 // MARK: - Delimiters
 
 extension Merge.Format {
+  // MARK: Block Delimiter
+  
+  public struct AnnotationsBlockDelimiters: Sendable {
+    /// How multiple annotation components are joined.
+    ///
+    /// # Example:
+    /// "origin, collision" or "origin; collision"
+    internal let componentsSeparator: String
+    /// How the entire block of these components is visually attached to the key, either:
+    ///
+    /// # Example:
+    /// - via simple spacing: "key | origin, collision"
+    /// - or via enclosure: "key (origin, collision)"
+    internal let blockBoundary: AnnotationsBoundaryDelimiter
+    
+    public init(componentsSeparator: String, blockBoundary: AnnotationsBoundaryDelimiter) {
+      self.componentsSeparator = componentsSeparator
+      self.blockBoundary = blockBoundary
+    }
+    
+    public static let `default` = Self(componentsSeparator: ", ", blockBoundary: .parentheses)
+  }
+  
+  // MARK: Boundary Delimiter
+  
   /// Defines how the entire annotation block is visually attached.
   ///
   /// # Example:
@@ -143,27 +180,6 @@ extension Merge.Format {
     static let verticalBar: Self = .onlySpacer(spacer: " | ")
     
     static let parentheses: Self = .enclosure(spacer: " ", opening: "(", closing: ")")
-  }
-  
-  public struct AnnotationsBlockDelimiters: Sendable {
-    /// How multiple annotation components are joined.
-    ///
-    /// # Example:
-    /// "origin, collision" or "origin; collision"
-    internal let componentsSeparator: String
-    /// How the entire block of these components is visually attached to the key, either:
-    ///
-    /// # Example:
-    /// - via simple spacing: "key | origin, collision"
-    /// - or via enclosure: "key (origin, collision)"
-    internal let blockBoundary: AnnotationsBoundaryDelimiter
-    
-    public init(componentsSeparator: String, blockBoundary: AnnotationsBoundaryDelimiter) {
-      self.componentsSeparator = componentsSeparator
-      self.blockBoundary = blockBoundary
-    }
-    
-    public static let `default` = Self(componentsSeparator: ", ", blockBoundary: .parentheses)
   }
 }
 

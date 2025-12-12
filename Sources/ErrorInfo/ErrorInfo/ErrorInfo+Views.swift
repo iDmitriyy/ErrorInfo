@@ -33,7 +33,7 @@ extension ErrorInfo {
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
-// MARK: - FullInfo View
+// MARK: - Full Info View
 
 extension ErrorInfo {
   public typealias FullInfoRecord = (keyOrigin: KeyOrigin, value: OptionalWithTypedNil, collisionSource: CollisionSource?)

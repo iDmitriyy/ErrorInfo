@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 07/10/2025.
 //
 
-// MARK: - With Custom TypeInfoOptions
+// MARK: - Modify With Custom Options
 
 extension ErrorInfo {
   /// Creates a new `ErrorInfo` instance with custom options that apply to all mutable operations performed on it.
@@ -87,6 +87,84 @@ extension ErrorInfo {
   }
 }
 
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// MARK: - Subscript
+
+extension ErrorInfo.CustomOptionsView {
+  
+  /// `omitEqualValue`has higher priority than provided in `appendWith(typeInfoOptions:, omitEqualValue:, append:)` function.
+  public subscript<V: ErrorInfoValueType>(
+    key literalKey: StringLiteralKey,
+    preserveNilValues: Bool? = nil,
+    duplicatePolicy: ErrorInfo.ValueDuplicatePolicy? = nil,
+  ) -> V? {
+    // TODO: ? borrowing get set
+    @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
+    get {
+      pointer.pointee.allValues(forKey: literalKey)?.first as? V
+    }
+    set {
+      pointer.pointee._add(key: literalKey.rawValue,
+                           keyOrigin: literalKey.keyOrigin,
+                           value: newValue,
+                           preserveNilValues: preserveNilValues ?? self.preserveNilValues,
+                           duplicatePolicy: duplicatePolicy ?? self.duplicatePolicy,
+                           collisionSource: .onSubscript(origin: collisionOrigin))
+    }
+  }
+  
+  /// `omitEqualValue`has higher priority than provided in `appendWith(typeInfoOptions:, omitEqualValue:, append:)` function.
+  @_disfavoredOverload
+  public subscript<V: ErrorInfoValueType>(
+    key dynamicKey: String,
+    preserveNilValues: Bool? = nil,
+    duplicatePolicy: ErrorInfo.ValueDuplicatePolicy? = nil,
+  ) -> V? {
+    // TODO: ? borrowing get set
+    @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
+    get {
+      pointer.pointee.allValues(forKey: dynamicKey)?.first as? V
+    }
+    set {
+      pointer.pointee._add(key: dynamicKey,
+                           keyOrigin: .dynamic,
+                           value: newValue,
+                           preserveNilValues: preserveNilValues ?? self.preserveNilValues,
+                           duplicatePolicy: duplicatePolicy ?? self.duplicatePolicy,
+                           collisionSource: .onSubscript(origin: collisionOrigin))
+    }
+  }
+}
+
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// MARK: - Replace All Records For Key
+
+extension ErrorInfo.CustomOptionsView {
+  @_disfavoredOverload @discardableResult
+  public func replaceAllRecords(
+    forKey dynamicKey: String,
+    by newValue: any ErrorInfoValueType,
+    preserveNilValues: Bool? = nil,
+    duplicatePolicy: ErrorInfo.ValueDuplicatePolicy? = nil,
+  ) -> ValuesForKey<any ErrorInfoValueType>? {
+    let oldValues = pointer.pointee._storage.removeAllValues(forKey: dynamicKey)
+    // collisions never happens when replacing
+    pointer.pointee._add(key: dynamicKey,
+                         keyOrigin: .dynamic,
+                         value: newValue,
+                         preserveNilValues: preserveNilValues ?? self.preserveNilValues,
+                         duplicatePolicy: duplicatePolicy ?? self.duplicatePolicy,
+                         collisionSource: .onAppend(origin: collisionOrigin))
+    return oldValues?._compactMap { $0.value._optional.optionalValue }
+  }
+}
+
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// MARK: - CustomOptions View
+
 extension ErrorInfo {
   public struct CustomOptionsView: ~Copyable { // TODO: ~Escapable
     private let pointer: UnsafeMutablePointer<ErrorInfo> // TODO: check CoW not triggered | inplace mutation
@@ -102,69 +180,6 @@ extension ErrorInfo {
       self.duplicatePolicy = duplicatePolicy
       self.preserveNilValues = preserveNilValues
       self.collisionOrigin = collisionOrigin
-    }
-    
-    // ===-------------------------------------------------------------------------------------------------------------------=== //
-    
-    // MARK: - Subscript
-    
-    /// `omitEqualValue`has higher priority than provided in `appendWith(typeInfoOptions:, omitEqualValue:, append:)` function.
-    public subscript<V: ValueType>(key literalKey: StringLiteralKey,
-                                   preserveNilValues: Bool? = nil,
-                                   duplicatePolicy: ValueDuplicatePolicy? = nil) -> V? {
-      // TODO: ? borrowing get set
-      @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
-      get {
-        pointer.pointee.allValues(forKey: literalKey)?.first as? V
-      }
-      set {
-        pointer.pointee._add(key: literalKey.rawValue,
-                             keyOrigin: literalKey.keyOrigin,
-                             value: newValue,
-                             preserveNilValues: preserveNilValues ?? self.preserveNilValues,
-                             duplicatePolicy: duplicatePolicy ?? self.duplicatePolicy,
-                             collisionSource: .onSubscript(origin: collisionOrigin))
-      }
-    }
-    
-    /// `omitEqualValue`has higher priority than provided in `appendWith(typeInfoOptions:, omitEqualValue:, append:)` function.
-    @_disfavoredOverload
-    public subscript<V: ValueType>(key dynamicKey: String,
-                                   preserveNilValues: Bool? = nil,
-                                   duplicatePolicy: ValueDuplicatePolicy? = nil) -> V? {
-      // TODO: ? borrowing get set
-      @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
-      get {
-        pointer.pointee.allValues(forKey: dynamicKey)?.first as? V
-      }
-      set {
-        pointer.pointee._add(key: dynamicKey,
-                             keyOrigin: .dynamic,
-                             value: newValue,
-                             preserveNilValues: preserveNilValues ?? self.preserveNilValues,
-                             duplicatePolicy: duplicatePolicy ?? self.duplicatePolicy,
-                             collisionSource: .onSubscript(origin: collisionOrigin))
-      }
-    }
-    
-    // ===-------------------------------------------------------------------------------------------------------------------=== //
-    
-    // MARK: - Replace AllValues ForKey
-    
-    @discardableResult
-    public mutating func replaceAllValues(forKey dynamicKey: String,
-                                          by newValue: any ValueType,
-                                          preserveNilValues: Bool? = nil,
-                                          duplicatePolicy: ValueDuplicatePolicy? = nil) -> ValuesForKey<any ValueType>? {
-      let oldValues = pointer.pointee._storage.removeAllValues(forKey: dynamicKey)
-      // collisions never happens when replacing
-      pointer.pointee._add(key: dynamicKey,
-                           keyOrigin: .dynamic,
-                           value: newValue,
-                           preserveNilValues: preserveNilValues ?? self.preserveNilValues,
-                           duplicatePolicy: duplicatePolicy ?? self.duplicatePolicy,
-                           collisionSource: .onAppend(origin: collisionOrigin))
-      return oldValues?._compactMap { $0.value._optional.optionalValue }
     }
   }
 }

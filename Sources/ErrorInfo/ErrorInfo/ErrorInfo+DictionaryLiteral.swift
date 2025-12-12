@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 26/07/2025.
 //
 
-// MARK: Expressible By Dictionary Literal
+// MARK: - Expressible By Dictionary Literal
 
 extension ErrorInfo: ExpressibleByDictionaryLiteral {
   public typealias Key = StringLiteralKey

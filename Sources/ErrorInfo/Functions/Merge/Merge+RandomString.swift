@@ -7,7 +7,7 @@
 
 import NonEmpty
 
-// MARK: Random Suffix
+// MARK: - Random Suffix
 
 extension Merge.Utils {
   /// Generates a random suffix string consisting of 4 printable ASCII characters (letters or digits).

@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 11/12/2025.
 //
 
-// MARK: - Last ForKey
+// MARK: - Last For Key
 
 extension ErrorInfo {
   /// Returns the last non-nil value associated with the given literal key.
@@ -42,7 +42,7 @@ extension ErrorInfo {
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
-// MARK: - First ForKey
+// MARK: - First For Key
 
 extension ErrorInfo {
   /// Returns the first non-nil value associated with the given key.

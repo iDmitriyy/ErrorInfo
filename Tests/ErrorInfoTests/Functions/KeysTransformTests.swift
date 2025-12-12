@@ -123,26 +123,26 @@ struct KeysTransformTests {
   }
   
   @Test func fromAnyStyleToKebabCased() throws {
-    let snakeCased = keys.map(ErrorInfoFuncs.fromAnyStyleToSnakeCased(string:))
+    let snakeCased = keys.map(ErrorInfoFuncs.fromAnyStyleToKebabCased(string:))
     
     let expected = [
-      "snake_case_key",
-      "camel_case_key",
-      "kebab_case_key",
-      "pascal_case_key",
-      "this_is_a_test_key",
-      "this_is_mixed_case",
-      "underscore_and_hyphen",
-      "testäöüß_äöü",
+      "snake-case-key",
+      "camel-case-key",
+      "kebab-case-key",
+      "pascal-case-key",
+      "this-is-a-test-key",
+      "this-is-mixed-case",
+      "underscore-and-hyphen",
+      "testäöüß-äöü",
       "ßteßt",
-      "____many___underscores__",
-      "____many___hyphens__",
-      "_________", // only underscores
-      "_________", // only hyphens
-      "repeated_uppercase",
+      "----many---underscores--",
+      "----many---hyphens--",
+      "---------", // only underscores
+      "---------", // only hyphens
+      "repeated-uppercase",
       "string.with.dots",
-      "string._wi_th.d_ot_s2",
-      "string&_with*|",
+      "string.-wi-th.d-ot-s2",
+      "string&-with*|",
     ] + KeysTransformTests.expectedAlwaysStayUnmodified
     
     let diff = Set(snakeCased).subtracting(expected)

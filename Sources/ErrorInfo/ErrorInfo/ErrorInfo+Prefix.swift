@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 06/10/2025.
 //
 
-// MARK: Prefix & Suffix
+// MARK: - Prefix & Suffix
 
 extension ErrorInfo {
   // TBD: next release

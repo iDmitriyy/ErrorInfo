@@ -29,9 +29,9 @@ extension ErrorInfo {
   public mutating func merge(with firstDonator: Self,
                              _ otherDonators: Self...,
                              collisionSource mergeOrigin: CollisionSource.Origin = .fileLine()) {
-    self = Self._merged(recipient: self,
-                        donators: [firstDonator] + otherDonators,
-                        collisionSource: mergeOrigin)
+    self = Self._mergedImp(recipient: self,
+                           donators: [firstDonator] + otherDonators,
+                           collisionSource: mergeOrigin)
   }
   
   /// Returns a new `ErrorInfo` instance by merging the current instance with one or more others.
@@ -53,9 +53,9 @@ extension ErrorInfo {
   public consuming func merged(with firstDonator: Self,
                                _ otherDonators: Self...,
                                collisionSource mergeOrigin: CollisionSource.Origin = .fileLine()) -> Self {
-    Self._merged(recipient: self,
-                 donators: [firstDonator] + otherDonators,
-                 collisionSource: mergeOrigin)
+    Self._mergedImp(recipient: self,
+                    donators: [firstDonator] + otherDonators,
+                    collisionSource: mergeOrigin)
   }
 }
 
@@ -87,9 +87,9 @@ extension ErrorInfo {
                             _ firstDonator: Self,
                             _ otherDonators: Self...,
                             collisionSource mergeOrigin: CollisionSource.Origin = .fileLine()) -> Self {
-    _merged(recipient: recipient,
-            donators: [firstDonator] + otherDonators,
-            collisionSource: mergeOrigin)
+    _mergedImp(recipient: recipient,
+               donators: [firstDonator] + otherDonators,
+               collisionSource: mergeOrigin)
   }
   
   /// Merges multiple `ErrorInfo` instances from an array and returns the resulting merged instance.
@@ -112,7 +112,7 @@ extension ErrorInfo {
     switch errorInfosArray.count {
     case 0: return .empty
     case 1: return errorInfosArray[0]
-    default: return _merged(recipient: errorInfosArray[0], donators: errorInfosArray[1...], collisionSource: mergeOrigin)
+    default: return _mergedImp(recipient: errorInfosArray[0], donators: errorInfosArray[1...], collisionSource: mergeOrigin)
     }
   }
   
@@ -134,9 +134,9 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   /// This internal generic method performs the merging operation by iterating over the donators.
-  internal static func _merged(recipient: consuming Self,
-                               donators: some RandomAccessCollection<Self>,
-                               collisionSource mergeOrigin: CollisionSource.Origin) -> Self {
+  internal static func _mergedImp(recipient: consuming Self,
+                                  donators: some RandomAccessCollection<Self>,
+                                  collisionSource mergeOrigin: CollisionSource.Origin) -> Self {
     // Improvement: reserve capacity
     for donator in donators {
       for (key, valueWrapper) in donator._storage {

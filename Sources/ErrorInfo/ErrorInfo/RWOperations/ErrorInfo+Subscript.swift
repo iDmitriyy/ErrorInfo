@@ -5,18 +5,27 @@
 //  Created by Dmitriy Ignatyev on 24/11/2025.
 //
 
-// MARK: - Subscript
-
-// ErronInfoLiteralKey with @_disfavoredOverload String-base subscript allows to differemtiate between when it was a
-// literal-key subscript and when it was defenitely some string value passed dynamically / at runtime.
-// So this cleary separate the subscript access to 2 kinds:
-// 1. a literal that can be found in source code or a predefined key which can be also found in sources
-// 2. some string value created dynamically
-// The same trick with sub-separaation can be done for append() functions
-// Dictionary literal can then strictly be created with string literals, and when the key dynamic, another APIs are
-// forced to be used.
-
 extension ErrorInfo {
+  // MARK: - User Guidance Subscript
+  
+  /// A restricted subscript used to warn against removing values by mistake.
+  ///
+  /// - Note:
+  /// It is needed to warn users when they try to pass a nil literal, like `info["key"] = nil`
+  ///
+  /// - Deprecated: This subscript is deprecated and will show a warning if used. To remove values, use `removeValue(forKey:)`.
+  /// - Unavailable: This subscript cannot be used for getting or setting values. Use `removeValue(forKey:)` to remove a value.
+  @_disfavoredOverload
+  public subscript(_: StringLiteralKey) -> InternalRestrictionToken? {
+    @available(*, deprecated, message: "To remove value use removeValue(forKey:) function")
+    set {}
+    
+    @available(*, unavailable, message: "This is a stub subscript. To remove value use removeValue(forKey:) function")
+    get { nil }
+  }
+  
+  // MARK: - Read access Subscript
+  
   /// Returns the last value associated with the given literal key.
   ///
   /// - Returns: The last value associated with key, or `nil` if no value is found.
@@ -35,22 +44,8 @@ extension ErrorInfo {
   public subscript(_ literalKey: StringLiteralKey) -> (any ValueType)? {
     lastValue(forKey: literalKey)
   }
-    
-  /// A restricted subscript used to warn against removing values by mistake.
-  ///
-  /// - Note:
-  /// Needed to warn users when they try to pass a nil literal, like `info["key"] = nil`
-  ///
-  /// - Deprecated: This subscript is deprecated and will show a warning if used. To remove values, use `removeValue(forKey:)`.
-  /// - Unavailable: This subscript cannot be used for getting or setting values. Use `removeValue(forKey:)` to remove a value.
-  @_disfavoredOverload
-  public subscript(_: StringLiteralKey) -> InternalRestrictionToken? {
-    @available(*, deprecated,
-               message: "To remove value use removeValue(forKey:) function")
-    set {}
-    @available(*, unavailable, message: "This is a stub subscript. To remove value use removeValue(forKey:) function")
-    get { nil }
-  }
+  
+  // MARK: - Mutating subscript
   
   /// Sets the value associated with the given literal key.
   ///
@@ -86,5 +81,14 @@ extension ErrorInfo {
     }
   }
 }
+
+// ErronInfoLiteralKey with @_disfavoredOverload String-base subscript allows to differemtiate between when it was a
+// literal-key subscript and when it was defenitely some string value passed dynamically / at runtime.
+// So this cleary separate the subscript access to 2 kinds:
+// 1. a literal that can be found in source code or a predefined key which can be also found in sources
+// 2. some string value created dynamically
+// The same trick with sub-separaation can be done for append() functions
+// Dictionary literal can then strictly be created with string literals, and when the key dynamic, another APIs are
+// forced to be used.
 
 // TODO: check if there runtime issues with unavailable setter. If yes then make deprecated

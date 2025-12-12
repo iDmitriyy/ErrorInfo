@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 06/10/2025.
 //
 
-// MARK: - Collect values from KeyPath
+// MARK: - Append from Instance's Properies
 
 extension ErrorInfo {
   /// This enum allows you to specify how the key path string should be prefixed when it's converted

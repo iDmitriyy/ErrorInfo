@@ -5,6 +5,8 @@
 //  Created by Dmitriy Ignatyev on 31/07/2025.
 //
 
+import NonEmpty
+
 /// all merge functions have no default value for omitEqualValue arg.
 /// Extension can be be made on user side, providing overload with suitable default choice.
 extension Merge.DictUtils {
@@ -62,18 +64,21 @@ extension Merge.DictUtils {
 //  }
 }
 
-// MARK: - Low level root functions for a single value
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// MARK: - With Key Augmentation Add (Low level root functions for a single value)
 
 extension Merge.DictUtils {
   // short typealiased names for convenience:
   public typealias ResolvingInput<Key: Hashable, Value, C> = KeyCollisionResolvingInput<Key, Value, C>
+  
   public typealias ResolvingResult<Key: Hashable> = KeyCollisionResolvingResult<Key>
   // TODO: ?? rename to Input / ResolvingResult as there are no other inputs in Merge namespace
 }
 
-// MARK: - Key Augmentation (String overload)
-
 extension Merge.DictUtils {
+  // MARK: - (String overload)
+  
   /// Add value by key to recipient` dictionary`.
   /// For key-value pair, the function checks if the key already exists in the `recipient` dictionary.
   /// If the key does not already contained in the `recipient` dictionary, the function simply adds this key-value pair to the `recipient` dictionary.
@@ -111,43 +116,8 @@ extension Merge.DictUtils {
                            resolve: resolve)
   }
   
-  /// decomposition subroutine of func withResolvingCollisionsAdd()
-  internal static func _putAugmentingWithRandomSuffix<Dict>(_ value: Dict.Value,
-                                                            assumeModifiedKey: Dict.Key,
-                                                            shouldOmitEqualValue: Bool,
-                                                            suffixFirstChar: UnicodeScalar,
-                                                            randomGenerator: inout some RandomNumberGenerator & Sendable,
-                                                            to recipient: inout Dict)
-    where Dict: DictionaryProtocol, Dict.Key == String {
-    _putAugmentingWithRandomSuffix(assumeModifiedKey: assumeModifiedKey,
-                                   value: value,
-                                   shouldOmitEqualValue: shouldOmitEqualValue,
-                                   suffixSeparator: String(suffixFirstChar),
-                                   randomGenerator: &randomGenerator,
-                                   randomSuffix: Merge.Utils.randomSuffix,
-                                   to: &recipient)
-  }
+  // MARK: - (Generic Imp)
   
-  internal static func _putAugmentingWithRandomSuffix<Dict>(assumeModifiedKey: Dict.Key,
-                                                            value: Dict.Value,
-                                                            suffixFirstChar: UnicodeScalar,
-                                                            randomGenerator: inout some RandomNumberGenerator & Sendable,
-                                                            to recipient: inout Dict)
-    where Dict: DictionaryProtocol, Dict.Key == String {
-    _putAugmentingWithRandomSuffix(assumeModifiedKey: assumeModifiedKey,
-                                   value: value,
-                                   suffixSeparator: String(suffixFirstChar),
-                                   randomGenerator: &randomGenerator,
-                                   randomSuffix: Merge.Utils.randomSuffix,
-                                   to: &recipient)
-  }
-}
-
-// MARK: - Key Augmentation (generic)
-
-import NonEmpty
-
-extension Merge.DictUtils {
   // ResolvingResult should have one more case: .builtInAddSuffix, and Never type used to make it (un)available for different imps.
   // For Collection-Type keys it is possible to append random-suffix
   
@@ -209,6 +179,47 @@ extension Merge.DictUtils {
       recipient[donatorKey] = donatorValue
     }
   }
+}
+
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// MARK: - Put Augmenting With Random Suffix
+
+extension Merge.DictUtils {
+  // MARK: - String Imps
+  
+  /// decomposition subroutine of func withResolvingCollisionsAdd()
+  internal static func _putAugmentingWithRandomSuffix<Dict>(_ value: Dict.Value,
+                                                            assumeModifiedKey: Dict.Key,
+                                                            shouldOmitEqualValue: Bool,
+                                                            suffixFirstChar: UnicodeScalar,
+                                                            randomGenerator: inout some RandomNumberGenerator & Sendable,
+                                                            to recipient: inout Dict)
+    where Dict: DictionaryProtocol, Dict.Key == String {
+    _putAugmentingWithRandomSuffix(assumeModifiedKey: assumeModifiedKey,
+                                   value: value,
+                                   shouldOmitEqualValue: shouldOmitEqualValue,
+                                   suffixSeparator: String(suffixFirstChar),
+                                   randomGenerator: &randomGenerator,
+                                   randomSuffix: Merge.Utils.randomSuffix,
+                                   to: &recipient)
+  }
+  
+  internal static func _putAugmentingWithRandomSuffix<Dict>(assumeModifiedKey: Dict.Key,
+                                                            value: Dict.Value,
+                                                            suffixFirstChar: UnicodeScalar,
+                                                            randomGenerator: inout some RandomNumberGenerator & Sendable,
+                                                            to recipient: inout Dict)
+    where Dict: DictionaryProtocol, Dict.Key == String {
+    _putAugmentingWithRandomSuffix(assumeModifiedKey: assumeModifiedKey,
+                                   value: value,
+                                   suffixSeparator: String(suffixFirstChar),
+                                   randomGenerator: &randomGenerator,
+                                   randomSuffix: Merge.Utils.randomSuffix,
+                                   to: &recipient)
+  }
+  
+  // MARK: - Generic Imps
   
   /// Decomposition subroutine of `func withKeyAugmentationAdd(...)`
   internal static func _putAugmentingWithRandomSuffix<Dict, RGen>(

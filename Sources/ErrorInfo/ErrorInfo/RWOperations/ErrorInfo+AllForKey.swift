@@ -59,7 +59,7 @@ extension ErrorInfo {
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
-// MARK: - Remove All Records ForKey
+// MARK: - Remove All Records For Key
 
 extension ErrorInfo {
   /// Removes all records associated with the specified key and returns the removed non-nil values
@@ -117,7 +117,7 @@ extension ErrorInfo {
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
-// MARK: - Replace All Records ForKey
+// MARK: - Replace All Records For Key
 
 extension ErrorInfo {
   /// Removes all existing records associated with the specified key and replaces them with

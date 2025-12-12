@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 25/11/2025.
 //
 
-// MARK: HasValues ForKey
+// MARK: - HasValue For Key
 
 extension ErrorInfo {
   /// Checks whether the key is associated with at least one non-nil value.
@@ -55,6 +55,14 @@ extension ErrorInfo {
     }
   }
   
+  
+}
+
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// MARK: - Has Multiple Records For Key
+
+extension ErrorInfo {
   /// Checks if the key is associated with multiple values (both non-nil and nil) in the `ErrorInfo` storage.
   ///
   /// - Parameter literalKey: The key to search for in the `ErrorInfo` storage.

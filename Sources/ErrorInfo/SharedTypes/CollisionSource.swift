@@ -42,7 +42,7 @@ public struct CollisionSource: Sendable {
   // Stored backing enum
   private let backing: CollisionSourceBacking
   
-  private enum CollisionSourceBacking: Sendable {
+  private enum CollisionSourceBacking: Sendable { // CollisionSource
     case onSubscript(origin: Origin?)
     case onAppend(origin: Origin?)
     
@@ -62,53 +62,53 @@ public struct CollisionSource: Sendable {
   // MARK: - Public Static Initializers
 
   /// Creates a `CollisionSource` for a key collision triggered by subscript access.
-  public static func onSubscript(origin: Origin?) -> CollisionSource {
-    CollisionSource(backing: .onSubscript(origin: origin))
+  public static func onSubscript(origin: Origin?) -> Self {
+    Self(backing: .onSubscript(origin: origin))
   }
       
   /// Creates a `CollisionSource` for a key collision triggered by appending.
-  public static func onAppend(origin: Origin?) -> CollisionSource {
-    CollisionSource(backing: .onAppend(origin: origin))
+  public static func onAppend(origin: Origin?) -> Self {
+    Self(backing: .onAppend(origin: origin))
   }
 
   /// Creates a `CollisionSource` for a key collision triggered by merging.
-  public static func onMerge(origin: Origin) -> CollisionSource {
-    CollisionSource(backing: .onMerge(origin: origin))
+  public static func onMerge(origin: Origin) -> Self {
+    Self(backing: .onMerge(origin: origin))
   }
 
   /// Creates a `CollisionSource` for a key collision triggered by adding a prefix.
-  public static func onAddPrefix(prefix: String) -> CollisionSource {
-    CollisionSource(backing: .onAddPrefix(prefix: prefix))
+  public static func onAddPrefix(prefix: String) -> Self {
+    Self(backing: .onAddPrefix(prefix: prefix))
   }
 
   /// Creates a `CollisionSource` for a key collision triggered by adding a suffix.
-  public static func onAddSuffix(suffix: String) -> CollisionSource {
-    CollisionSource(backing: .onAddSuffix(suffix: suffix))
+  public static func onAddSuffix(suffix: String) -> Self {
+    Self(backing: .onAddSuffix(suffix: suffix))
   }
 
   /// Creates a `CollisionSource` for a key collision triggered by a keys mapping operation.
-  public static func onKeysMapping(original: String, mapped: String) -> CollisionSource {
-    CollisionSource(backing: .onKeysMapping(original: original, mapped: mapped))
+  public static func onKeysMapping(original: String, mapped: String) -> Self {
+    Self(backing: .onKeysMapping(original: original, mapped: mapped))
   }
 
   /// Creates a `CollisionSource` for a key collision triggered by a dictionary literal creation.
-  public static var onCreateWithDictionaryLiteral: CollisionSource {
-    CollisionSource(backing: .onCreateWithDictionaryLiteral)
+  public static var onCreateWithDictionaryLiteral: Self {
+    Self(backing: .onCreateWithDictionaryLiteral)
   }
 
   /// Creates a `CollisionSource` for a key collision triggered by dictionary consumption.
-  public static func onDictionaryConsumption(origin: Origin) -> CollisionSource {
-    CollisionSource(backing: .onDictionaryConsumption(origin: origin))
+  public static func onDictionaryConsumption(origin: Origin) -> Self {
+    Self(backing: .onDictionaryConsumption(origin: origin))
   }
 
   /// Creates a `CollisionSource` for a key collision triggered by a sequence creation.
-  public static func onCreateWithSequence(origin: Origin) -> CollisionSource {
-    CollisionSource(backing: .onCreateWithSequence(origin: origin))
+  public static func onCreateWithSequence(origin: Origin) -> Self {
+    Self(backing: .onCreateWithSequence(origin: origin))
   }
 
   /// Creates a `CollisionSource` for a key collision triggered by sequence consumption.
-  public static func onSequenceConsumption(origin: Origin) -> CollisionSource {
-    CollisionSource(backing: .onSequenceConsumption(origin: origin))
+  public static func onSequenceConsumption(origin: Origin) -> Self {
+    Self(backing: .onSequenceConsumption(origin: origin))
   }
   
   // MARK: - Public Methods
