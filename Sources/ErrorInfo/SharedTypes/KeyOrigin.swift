@@ -15,7 +15,7 @@
 /// - `dynamic`: A key generated at runtime, often through string interpolation or dynamic constructs.
 /// - `keyPath`: A key representing a path to a specific property or value.
 /// - `modified`: A key that has been modified from its original form by a predefined transformation provided by the library.
-/// - `unverifiedMapped`: A key that has been modified from its original form by a custom transformation provided by library user.
+/// - `unverifiedMapped`: A key that has been modified from its original form by a custom transformation provided by user.
 ///
 /// ## Methods:
 /// - `defaultInterpolation()`: Returns a default string representation for the `KeyOrigin` case.

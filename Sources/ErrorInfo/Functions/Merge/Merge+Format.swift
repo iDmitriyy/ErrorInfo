@@ -56,11 +56,14 @@ extension Merge.Format {
   
   // MARK: AnnotationName Option
   
-  /// `"userd_id (keyOrigin: .literal, collision: onMerge(fileLine: MainScreen.Swift:31), sourceSignature: NSCocoa.17)"`
   public enum AnnotationNameOption: Sendable {
     case noNames
     case withNames(separator: String, nameForComponent: @Sendable (AnnotationComponentKind) -> String)
     
+    /// ___
+    ///
+    /// # Example:
+    /// `"userd_id (keyOrigin: .literal, collision: onMerge(fileLine: MainScreen.swift:31), sourceSignature: NSCocoa.17)"`
     public static let `default`: AnnotationNameOption = .withNames(separator: ": ",
                                                                    nameForComponent: { $0.defaultName })
   }

@@ -17,8 +17,8 @@
 /// ```swift
 /// prettyDescriptionOfOptional(any: Optional(Optional(42))) as Any        // "42"
 /// prettyDescriptionOfOptional(any: Optional<Optional<Int>>.none) as Any  // "nil"
-/// prettyDescriptionOfOptional(any: "Hello") as Any                       // "Hello"
-/// prettyDescriptionOfOptional(any: Optional("World")) as Any             // "World"
+/// prettyDescriptionOfOptional(any: "Hello" as Any)                       // "Hello"
+/// prettyDescriptionOfOptional(any: Optional("World") as Any)             // "World"
 /// ```
 ///
 /// - Parameter any: A value of any type, which may or may not be an optional.

@@ -12,7 +12,7 @@
 /// ## Combining Keys:
 /// StringLiteralKey supports the `+` operator to combine multiple keys, allowing creation of composite keys.
 /// ```swift
-/// errorInfo[.invalid + .index] = index
+/// errorInfo[.invalid + .index] = elementIndex
 /// ```
 ///
 /// ## Benefits & Goals:

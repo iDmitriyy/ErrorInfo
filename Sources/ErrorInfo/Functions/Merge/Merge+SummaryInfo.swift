@@ -60,7 +60,7 @@ extension Merge {
     case notAvailable
   }
   
-  public struct Interpolation<T> {
+  public struct Interpolation<T> { // TODO: tbd
     let interpolation: (KeyOrigin) -> String
     
     // extension Interpolation where T == KeyOrigin {
