@@ -32,7 +32,7 @@ extension ErrorInfo {
     
     let reversedRecords: ReversedCollection<_> = allRecordsForKey.reversed()
     for record in reversedRecords {
-      if let value = record.value._optional.optionalValue {
+      if let value = record.value._optional.maybeValue.asOptional {
         return value
       }
     }
@@ -68,7 +68,7 @@ extension ErrorInfo {
     guard let allRecordsForKey = _storage.allValues(forKey: dynamicKey) else { return nil }
     
     for record in allRecordsForKey {
-      if let value = record.value._optional.optionalValue {
+      if let value = record.value._optional.maybeValue.asOptional {
         return value
       }
     }

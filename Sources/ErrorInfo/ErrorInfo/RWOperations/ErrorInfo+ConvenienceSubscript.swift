@@ -155,7 +155,7 @@ extension ErrorInfo.CustomOptionsView {
                          preserveNilValues: preserveNilValues ?? self.preserveNilValues,
                          duplicatePolicy: duplicatePolicy ?? self.duplicatePolicy,
                          collisionSource: .onAppend(origin: collisionOrigin))
-    return oldValues?._compactMap { $0.value._optional.optionalValue }
+    return oldValues?._compactMap { $0.value._optional.maybeValue.asOptional }
   }
 }
 

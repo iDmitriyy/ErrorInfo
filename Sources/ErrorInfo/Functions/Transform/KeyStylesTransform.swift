@@ -15,16 +15,16 @@ extension ErrorInfoFuncs {
   ///
   /// # Examples:
   /// ```swift
-  /// ErrorInfoFuncs.fromAnyStyleToCamelCased(string: "camelCaseExample")
+  /// fromAnyStyleToCamelCased(string: "camelCaseExample")
   /// // "camelCaseExample"
   ///
-  /// ErrorInfoFuncs.fromAnyStyleToCamelCased(string: "snake_case_example")
+  /// fromAnyStyleToCamelCased(string: "snake_case_example")
   /// // "snakeCaseExample"
   ///
-  /// ErrorInfoFuncs.fromAnyStyleToCamelCased(string: "kebab-case-example")
+  /// fromAnyStyleToCamelCased(string: "kebab-case-example")
   /// // "kebabCaseExample"
   ///
-  /// ErrorInfoFuncs.fromAnyStyleToCamelCased(string: "____many___underscores__")
+  /// fromAnyStyleToCamelCased(string: "____many___underscores__")
   /// // "manyUnderscores"
   /// ```
   public static func fromAnyStyleToCamelCased(string: String) -> String {
@@ -38,16 +38,16 @@ extension ErrorInfoFuncs {
   ///
   /// # Examples:
   /// ```swift
-  /// ErrorInfoFuncs.fromAnyStyleToPascalCased(string: "camelCaseExample")
+  /// fromAnyStyleToPascalCased(string: "camelCaseExample")
   /// // "CamelCaseExample"
   ///
-  /// ErrorInfoFuncs.fromAnyStyleToPascalCased(string: "snake_case_example")
+  /// fromAnyStyleToPascalCased(string: "snake_case_example")
   /// // "SnakeCaseExample"
   ///
-  /// ErrorInfoFuncs.fromAnyStyleToPascalCased(string: "kebab-case-example")
+  /// fromAnyStyleToPascalCased(string: "kebab-case-example")
   /// // "KebabCaseExample"
   ///
-  /// ErrorInfoFuncs.fromAnyStyleToPascalCased(string: "____many___underscores__")
+  /// fromAnyStyleToPascalCased(string: "____many___underscores__")
   /// // "ManyUnderscores"
   /// ```
   public static func fromAnyStyleToPascalCased(string: String) -> String {
@@ -61,16 +61,16 @@ extension ErrorInfoFuncs {
   ///
   /// # Examples:
   /// ```swift
-  /// ErrorInfoFuncs.fromAnyStyleToSnakeCased(string: "camelCaseExample")
+  /// fromAnyStyleToSnakeCased(string: "camelCaseExample")
   /// // "camel_case_example"
   ///
-  /// ErrorInfoFuncs.fromAnyStyleToSnakeCased(string: "snake_case_example")
+  /// fromAnyStyleToSnakeCased(string: "snake_case_example")
   /// // "snake_case_example"
   ///
-  /// ErrorInfoFuncs.fromAnyStyleToSnakeCased(string: "kebab-case-example")
+  /// fromAnyStyleToSnakeCased(string: "kebab-case-example")
   /// // "kebab_case_example"
   ///
-  /// ErrorInfoFuncs.fromAnyStyleToSnakeCased(string: "----many---hyphens--")
+  /// fromAnyStyleToSnakeCased(string: "----many---hyphens--")
   /// // "____many___hyphens__"
   /// ```
   public static func fromAnyStyleToSnakeCased(string: String) -> String {
@@ -84,16 +84,16 @@ extension ErrorInfoFuncs {
   ///
   /// # Examples:
   /// ```swift
-  /// ErrorInfoFuncs.fromAnyStyleToKebabCased(string: "CamelCaseExample")
+  /// fromAnyStyleToKebabCased(string: "CamelCaseExample")
   /// // "camel-case-example"
   ///
-  /// ErrorInfoFuncs.fromAnyStyleToKebabCased(string: "snake_case_example")
+  /// fromAnyStyleToKebabCased(string: "snake_case_example")
   /// // "snake-case-example"
   ///
-  /// ErrorInfoFuncs.fromAnyStyleToKebabCased(string: "kebab-case-example")
+  /// fromAnyStyleToKebabCased(string: "kebab-case-example")
   /// // "kebab-case-example"
   ///
-  /// ErrorInfoFuncs.fromAnyStyleToKebabCased(string: "____many___underscores__")
+  /// fromAnyStyleToKebabCased(string: "____many___underscores__")
   /// // "----many---underscores--"
   /// ```
   public static func fromAnyStyleToKebabCased(string: String) -> String {
@@ -109,13 +109,13 @@ extension ErrorInfoFuncs {
   private static func _toPascalOrCamelImp(string: String, firstCharTransform: (Character) -> String) -> String {
     var result = "" // result.reserveCapacity - has slightly negative impact on perfomance
     
-    var hasSeenNormalChar = false
+    var hasSeenNormalCharEarlier = false
     var previousWasSeprator = false
     for character in string {
       if character == "_" || character == "-" {
         previousWasSeprator = true
       } else { // normal (non-separator) character:
-        if hasSeenNormalChar {
+        if hasSeenNormalCharEarlier {
           if previousWasSeprator { // If after separator then uppercased
             result.append(character.uppercased())
           } else {
@@ -123,12 +123,12 @@ extension ErrorInfoFuncs {
           }
         } else { // first normal char
           result.append(firstCharTransform(character))
-          hasSeenNormalChar = true
+          hasSeenNormalCharEarlier = true
         }
         previousWasSeprator = false
       } // end if
     } // end for
-    return hasSeenNormalChar ? result : string
+    return hasSeenNormalCharEarlier ? result : string
   }
   
   private static func _toSnakeOrKebabImp(string: String, separator: Character) -> String {

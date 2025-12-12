@@ -46,7 +46,7 @@ extension ErrorInfo {
                                             preserveNilValues: Bool,
                                             duplicatePolicy: ValueDuplicatePolicy,
                                             collisionSource: @autoclosure () -> CollisionSource) {
-    let optional: OptionalWithTypedNil
+    let optional: _Optional
     if let newValue {
       optional = .value(newValue)
     } else if preserveNilValues {
@@ -71,7 +71,7 @@ extension ErrorInfo {
                                             preserveNilValues: Bool,
                                             duplicatePolicy: ValueDuplicatePolicy,
                                             collisionSource: @autoclosure () -> CollisionSource) {
-    let optional: OptionalWithTypedNil
+    let optional: _Optional
     if preserveNilValues {
       optional = .nilInstance(typeOfWrapped: (any ErrorInfoValueType).self)
     } else {

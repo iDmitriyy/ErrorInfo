@@ -9,7 +9,7 @@
 import Testing
 
 struct ErrorInfoValueVariantTests {
-  private typealias _Optional = ErrorInfo.OptionalWithTypedNil
+  private typealias _Optional = ErrorInfo._Optional
   
   @Test func equality() async throws {
     let equalityFunc: (_Optional, _Optional) -> Bool = { $0 == $1 }

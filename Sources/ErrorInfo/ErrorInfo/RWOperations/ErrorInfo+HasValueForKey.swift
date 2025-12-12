@@ -197,7 +197,7 @@ extension ErrorInfo {
       var valuesCount: UInt16 = 0
       var nilInstancesCount: UInt16 = 0
       for taggedRecord in taggedRecords {
-        if taggedRecord.value._optional.isValue {
+        if taggedRecord.value._optional.maybeValue.isValue {
           valuesCount += 1
         } else {
           nilInstancesCount += 1
