@@ -79,5 +79,4 @@ extension ErrorInfo {
   }
 }
 
-// FIXME: - add CustomStringConvertible
-// public variant
+// TBD: - add Custom(Debug)StringConvertible

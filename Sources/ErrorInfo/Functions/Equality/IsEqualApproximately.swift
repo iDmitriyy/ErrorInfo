@@ -116,6 +116,13 @@ extension ErrorInfoFuncs {
 // 2. https://stackoverflow.com/questions/75179804/how-can-i-tell-if-a-variable-is-optionalnil-in-swift-without-converting-it-to/75183596#75183596
 
 
+extension Optional {
+  internal static func typeOfWrapped() -> Wrapped.Type { Wrapped.self }
+
+  internal func typeOfWrapped() -> Wrapped.Type { Wrapped.self }
+}
+
+
 internal protocol AnyOptionalProtocol {
   associatedtype Wrapped
   

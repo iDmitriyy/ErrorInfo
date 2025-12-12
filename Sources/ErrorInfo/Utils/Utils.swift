@@ -23,9 +23,3 @@
 internal func __conditionalCast<T, U>(_ value: T, to _: U.Type) -> U? {
   value as? U
 }
-
-extension Optional {
-  internal static func typeOfWrapped() -> Wrapped.Type { Wrapped.self }
-
-  internal func typeOfWrapped() -> Wrapped.Type { Wrapped.self }
-}

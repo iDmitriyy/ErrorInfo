@@ -145,7 +145,7 @@ extension ErrorInfo {
                                      value: valueWrapper.value,
                                      insertIfEqual: true,
                                      collisionSource: valueWrapper.collisionSource ?? .onMerge(origin: mergeOrigin))
-        // TODO: should collizion source be composite / indirect?
+        // TBD: should collizion source be composite / indirect?
         // Keep the most simple variant for now
         // ["a": 1] merge with ["a": 1, a: "1"(collision#1)]
         // result: ["a": 1, a: "1"(collision#2), a: "1"(collision#1)]

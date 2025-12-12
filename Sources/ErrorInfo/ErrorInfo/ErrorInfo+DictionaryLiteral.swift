@@ -75,7 +75,7 @@ extension ErrorInfo {
     // Improvement: try reserve capacity. perfomance tests
     for (literalKey, value) in elements {
       if let value {
-        // TODO: _add() with optional value is used
+        // TBD: _add() with optional value is used
         _add(key: literalKey.rawValue,
              keyOrigin: literalKey.keyOrigin,
              value: value,
