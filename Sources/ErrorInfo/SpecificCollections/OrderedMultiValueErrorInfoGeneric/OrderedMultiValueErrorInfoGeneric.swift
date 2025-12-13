@@ -6,7 +6,6 @@
 //
 
 /*
- TODO:
  Save relative order of apending values. Example:
  info = init(sequence: [(key1, A), (key2, B), (key1, C), (key2, D)]). No matter for which key each value was added, the order
  of values is: A, B, C, D. This order should be during iteration.
