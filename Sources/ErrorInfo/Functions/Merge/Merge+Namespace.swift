@@ -25,5 +25,6 @@ extension Merge {
 
 extension Merge {
   /// Namespacing
-  @usableFromInline internal enum Constants {}
+  public enum Constants {}
+  // @usableFromInline internal
 }

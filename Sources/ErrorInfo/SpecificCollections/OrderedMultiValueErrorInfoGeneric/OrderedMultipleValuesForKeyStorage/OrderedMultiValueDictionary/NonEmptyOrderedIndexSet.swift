@@ -85,6 +85,8 @@ extension NonEmptyOrderedSet<Int> {
 extension NonEmptyOrderedIndexSet {
   internal enum _Variant {
     case single(index: Int)
-    case multiple(indices: NonEmptyOrderedSet<Int>)
+    case multiple(indices: NonEmptyOrderedSet<Int>) // Improvement: may use ContiguousArray / NonEmptyArray instead of Set
   }
 }
+
+// TODO: - perfomance checks
