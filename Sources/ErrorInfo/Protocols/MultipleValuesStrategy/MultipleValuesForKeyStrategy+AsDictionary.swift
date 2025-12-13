@@ -12,7 +12,7 @@
 // MARK: Conversion MultipleValues => Dictionary (Array of values)
 
 import OrderedCollections
-public import NonEmpty
+import NonEmpty
 
 extension ErrorInfoMultipleValuesForKeyStrategy where Self: IterableErrorInfo {
   // ExpressibleByArrayLiteral – is only need for some kind of initialization. Somethong like `minimumCapacityInitializable`

@@ -9,7 +9,7 @@
 ///
 /// Almost all time Error info instances has 1 value for each key. Until first collision happens, `OrderedDictionary` is used.
 /// When first collision happens, `OrderedDictionary` is replaced by `OrderedMultiValueDictionary`.
-public struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value, CollisionSource> {
+internal struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value, CollisionSource> {
   @inlinable internal var _variant: Variant { _muatbleVariant._variant }
   
   // FIXME: private set

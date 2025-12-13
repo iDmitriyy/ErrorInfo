@@ -9,22 +9,18 @@
 import Testing
 
 struct PrettyDescriptionTests {
-  private let assertMessage = "Invalid output"
-  
-  @Test func prettyDescriptionForString() {    
+  @Test func prettyDescriptionForString() {
     let input = "Hello World"
     #expect(prettyDescriptionOfOptional(any: input) == input)
   }
   
   @Test func prettyDescriptionForOptionalString() {
     let input: String? = "Hello World"
-    let expectedOutput = "Hello World"
-    #expect(prettyDescriptionOfOptional(any: input) == expectedOutput)
+    #expect(prettyDescriptionOfOptional(any: input) == "Hello World")
   }
   
   @Test func prettyDescriptionForNonOptionalLiteral() {
-    let expectedOutput = "10"
-    #expect(prettyDescriptionOfOptional(any: 10) == expectedOutput)
+    #expect(prettyDescriptionOfOptional(any: 10) == "10")
   }
   
   @Test func customStringConvertible() throws {
@@ -33,10 +29,8 @@ struct PrettyDescriptionTests {
     
     #expect(prettyDescriptionOfOptional(any: val1) == expectedOutput)
     
-    do {
-      let val1Any: Any = val1 as Any
-      #expect(prettyDescriptionOfOptional(any: val1Any) == expectedOutput)
-    }
+    let val1Any: Any = val1 as Any
+    #expect(prettyDescriptionOfOptional(any: val1Any) == expectedOutput)
   }
   
   @Test func customStringConvertibleOptionalWithNil() throws {
@@ -46,85 +40,69 @@ struct PrettyDescriptionTests {
     
     let expectedOutput = "nil"
     
-    #expect(String(describing: singleOptVal) == expectedOutput)
-    #expect(String(describing: doubleOptVal) == expectedOutput)
-    #expect(String(describing: tripleOptVal) == expectedOutput)
-    
-    #expect(prettyDescriptionOfOptional(any: singleOptVal) == expectedOutput)
-    #expect(prettyDescriptionOfOptional(any: doubleOptVal) == expectedOutput)
-    #expect(prettyDescriptionOfOptional(any: tripleOptVal) == expectedOutput)
-    
-    do {
-      let singleOptAny: Any = singleOptVal as Any
-      let doubleOptAny: Any = doubleOptVal as Any
-      let tripleOptAny: Any = tripleOptVal as Any
-      
-      #expect(prettyDescriptionOfOptional(any: singleOptAny) == expectedOutput)
-      #expect(prettyDescriptionOfOptional(any: doubleOptAny) == expectedOutput)
-      #expect(prettyDescriptionOfOptional(any: tripleOptAny) == expectedOutput)
-      
-      let singleOptAnyAny: Any = (Optional.some(singleOptAny) as Any)
-      let doubleOptAnyAny: Any = (Optional.some(doubleOptAny) as Any)
-      let tripleOptAnyAny: Any = (Optional.some(tripleOptAny) as Any)
-      
-      #expect(prettyDescriptionOfOptional(any: singleOptAnyAny) == expectedOutput)
-      #expect(prettyDescriptionOfOptional(any: doubleOptAnyAny) == expectedOutput)
-      #expect(prettyDescriptionOfOptional(any: tripleOptAnyAny) == expectedOutput)
-      
-      let singleOptOptAnyAny: Any? = (Optional.some(singleOptAny) as Any)
-      let doubleOptOptAnyAny: Any? = (Optional.some(doubleOptAny) as Any)
-      let tripleOptOptAnyAny: Any? = (Optional.some(tripleOptAny) as Any)
-      
-      #expect(prettyDescriptionOfOptional(any: singleOptOptAnyAny) == expectedOutput)
-      #expect(prettyDescriptionOfOptional(any: doubleOptOptAnyAny) == expectedOutput)
-      #expect(prettyDescriptionOfOptional(any: tripleOptOptAnyAny) == expectedOutput)
-    }
+    imp_customStringConvertibleOptional(singleOptVal: singleOptVal,
+                                        singleOptValExpectation: expectedOutput,
+                                        doubleOptVal: doubleOptVal,
+                                        doubleOptValExpectation: expectedOutput,
+                                        tripleOptVal: tripleOptVal,
+                                        tripleOptValExpectation: expectedOutput)
   }
-  
-  // ⚠️ @iDmitriyy
-  // FIXME: - testCustomStringConvertibleOptionalWithNil | testCustomStringConvertibleOptionalWithWrappedInt
-  // code duplicated, can be rewritten as generic. The on;y differemce in them is expectedOutput – nil or 1,2,3
   
   @Test func customStringConvertibleOptionalWithWrappedInt() throws {
     let singleOptVal: Int? = 1
     let doubleOptVal: Int?? = 2
     let tripleOptVal: Int??? = 3
     
+    // Check if at some time Swift builtin Optional description will change (if ever)
     #expect(String(describing: singleOptVal) == "Optional(1)")
     #expect(String(describing: doubleOptVal) == "Optional(Optional(2))")
     #expect(String(describing: tripleOptVal) == "Optional(Optional(Optional(3)))")
     
-    #expect(prettyDescriptionOfOptional(any: singleOptVal) == "1")
-    #expect(prettyDescriptionOfOptional(any: doubleOptVal) == "2")
-    #expect(prettyDescriptionOfOptional(any: tripleOptVal) == "3")
+    imp_customStringConvertibleOptional(singleOptVal: singleOptVal,
+                                        singleOptValExpectation: "1",
+                                        doubleOptVal: doubleOptVal,
+                                        doubleOptValExpectation: "2",
+                                        tripleOptVal: tripleOptVal,
+                                        tripleOptValExpectation: "3")
+  }
+  
+  private func imp_customStringConvertibleOptional(singleOptVal: Int?,
+                                                   singleOptValExpectation: String,
+                                                   doubleOptVal: Int??,
+                                                   doubleOptValExpectation: String,
+                                                   tripleOptVal: Int???,
+                                                   tripleOptValExpectation: String) {
+    #expect(prettyDescriptionOfOptional(any: singleOptVal) == singleOptValExpectation)
+    #expect(prettyDescriptionOfOptional(any: doubleOptVal) == doubleOptValExpectation)
+    #expect(prettyDescriptionOfOptional(any: tripleOptVal) == tripleOptValExpectation)
     
     do {
       let singleOptAny: Any = singleOptVal as Any
       let doubleOptAny: Any = doubleOptVal as Any
       let tripleOptAny: Any = tripleOptVal as Any
       
-      #expect(prettyDescriptionOfOptional(any: singleOptAny) == "1")
-      #expect(prettyDescriptionOfOptional(any: doubleOptAny) == "2")
-      #expect(prettyDescriptionOfOptional(any: tripleOptAny) == "3")
+      #expect(prettyDescriptionOfOptional(any: singleOptAny) == singleOptValExpectation)
+      #expect(prettyDescriptionOfOptional(any: doubleOptAny) == doubleOptValExpectation)
+      #expect(prettyDescriptionOfOptional(any: tripleOptAny) == tripleOptValExpectation)
       
       let singleOptAnyAny: Any = (Optional.some(singleOptAny) as Any)
       let doubleOptAnyAny: Any = (Optional.some(doubleOptAny) as Any)
       let tripleOptAnyAny: Any = (Optional.some(tripleOptAny) as Any)
       
-      #expect(prettyDescriptionOfOptional(any: singleOptAnyAny) == "1")
-      #expect(prettyDescriptionOfOptional(any: doubleOptAnyAny) == "2")
-      #expect(prettyDescriptionOfOptional(any: tripleOptAnyAny) == "3")
+      #expect(prettyDescriptionOfOptional(any: singleOptAnyAny) == singleOptValExpectation)
+      #expect(prettyDescriptionOfOptional(any: doubleOptAnyAny) == doubleOptValExpectation)
+      #expect(prettyDescriptionOfOptional(any: tripleOptAnyAny) == tripleOptValExpectation)
       
       let singleOptOptAnyAny: Any? = (Optional.some(singleOptAny) as Any)
       let doubleOptOptAnyAny: Any? = (Optional.some(doubleOptAny) as Any)
       let tripleOptOptAnyAny: Any? = (Optional.some(tripleOptAny) as Any)
       
-      #expect(prettyDescriptionOfOptional(any: singleOptOptAnyAny) == "1")
-      #expect(prettyDescriptionOfOptional(any: doubleOptOptAnyAny) == "2")
-      #expect(prettyDescriptionOfOptional(any: tripleOptOptAnyAny) == "3")
+      #expect(prettyDescriptionOfOptional(any: singleOptOptAnyAny) == singleOptValExpectation)
+      #expect(prettyDescriptionOfOptional(any: doubleOptOptAnyAny) == doubleOptValExpectation)
+      #expect(prettyDescriptionOfOptional(any: tripleOptOptAnyAny) == tripleOptValExpectation)
     }
   }
-  
+    
   @Test func notCustomStringConvertible() throws {
     let val1: NotCustomStringConvertibleStruct = NotCustomStringConvertibleStruct(id: 1, name: "Name")
     let nativeStringRepr = #"NotCustomStringConvertibleStruct(id: 1, name: Optional("Name"))"#
@@ -143,23 +121,14 @@ struct PrettyDescriptionTests {
     let doubleOptVal: NotCustomStringConvertibleStruct?? = NotCustomStringConvertibleStruct(id: 2, name: "Name")
     let tripleOptVal: NotCustomStringConvertibleStruct??? = NotCustomStringConvertibleStruct(id: 3, name: "Name")
     
-    // У Типа, обёрнутого в Optional, и при этом не конформящего CustomStringConvertible, при преобразовании в строку получаем
-    // "Optional(StdToolsTests.PrettyDescriptionTests.(unknown context at $11144b83c).SomeStruct(id: 1, name: "Name"))"
-    // вместо "Optional(SomeStruct(id: 1, name: "Name"))"
+    // For a type wrapped in Optional and not conforming to CustomStringConvertible, when converting to a string
+    // we get smth like:
+    // "Optional(LibraryNameTests.PrettyDescriptionTests.(unknown context at $11144b83c).SomeStruct(id: 1, name: "Name"))"
+    // instead of "Optional(SomeStruct(id: 1, name: "Name"))"
     // https://bugs.swift.org/browse/SR-6787?page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel&showAll=true
-    
-//    XCTAssertEqual(String(describing: singleOptVal),
-//                   #"NotCustomStringConvertibleStruct(SomeStruct(id: 1, name: "Name"))"#,
-//                   assertMessage)
-//    XCTAssertEqual(String(describing: doubleOptVal),
-//                   #"NotCustomStringConvertibleStruct(SomeStruct(id: 2, name: "Name"))"#,
-//                   assertMessage)
-//    XCTAssertEqual(String(describing: tripleOptVal),
-//                   #"NotCustomStringConvertibleStruct(SomeStruct(id: 3, name: "Name"))"#,
-//                   assertMessage)
-    
-    // Поэтому проверяем чуть иначе: вместо XCTAssertEqual проверяем что строка не содержит Optional и содержит
-    // данные структуры
+            
+    // Therefore, we check a bit differently: instead of using XCTAssertEqual, we check that the string does not contain "Optional"
+    // and does contain the structure's data
     do {
       let singleOptValString = prettyDescriptionOfOptional(any: singleOptVal)
       #expect(!singleOptValString.hasPrefix("Optional(") &&
@@ -180,7 +149,6 @@ struct PrettyDescriptionTests {
       let tripleOptAny: Any = tripleOptVal as Any
 
       let singleOptAnyString = prettyDescriptionOfOptional(any: singleOptAny)
-      print("____ >>> ", singleOptAnyString)
       #expect(!singleOptAnyString.hasPrefix("Optional(")
         && singleOptAnyString.hasSuffix(#"NotCustomStringConvertibleStruct(id: 1, name: Optional("Name"))"#))
       
@@ -248,8 +216,10 @@ struct PrettyDescriptionTests {
   }
 }
 
-/// Структура, которая не конформит CustomStringConvertible
-private struct NotCustomStringConvertibleStruct {
-  let id: UInt64
-  let name: String?
+extension PrettyDescriptionTests {
+  /// A structure that does not conform to CustomStringConvertible
+  private struct NotCustomStringConvertibleStruct {
+    let id: UInt64
+    let name: String?
+  }
 }

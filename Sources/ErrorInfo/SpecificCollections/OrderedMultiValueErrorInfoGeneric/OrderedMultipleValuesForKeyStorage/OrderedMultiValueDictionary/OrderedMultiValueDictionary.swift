@@ -10,7 +10,8 @@ import SwiftCollectionsNonEmpty
 
 // MARK: - Ordered MultiValueDictionary
 
-public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
+@usableFromInline
+internal struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   public typealias Element = (key: Key, value: Value)
   
   internal private(set) var _entries: [Element]

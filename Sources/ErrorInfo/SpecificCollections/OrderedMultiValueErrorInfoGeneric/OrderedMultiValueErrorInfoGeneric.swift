@@ -15,7 +15,8 @@
  which differs from the order values were appended
  */
 
-public struct OrderedMultiValueErrorInfoGeneric<Key: Hashable, Value: ApproximatelyEquatable>: Sequence {
+@usableFromInline
+internal struct OrderedMultiValueErrorInfoGeneric<Key: Hashable, Value: ApproximatelyEquatable>: Sequence {
   public typealias Element = (key: Key, value: TaggedValue)
   public typealias TaggedValue = CollisionTaggedValue<Value, CollisionSource>
   

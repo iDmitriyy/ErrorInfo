@@ -21,7 +21,7 @@ public struct KeyAugmentationErrorInfoGeneric<D> where D: DictionaryProtocol, D:
   public typealias Value = D.Value
   public typealias Element = (key: Key, value: Value)
   
-  internal private(set) var _storage: D
+  internal var _storage: D
   
   public init() {
     _storage = D()
@@ -29,14 +29,6 @@ public struct KeyAugmentationErrorInfoGeneric<D> where D: DictionaryProtocol, D:
   
   public init(_ dict: D) {
     _storage = dict
-  }
-  
-  public init(minimumCapacity: Int) {
-    _storage = D(minimumCapacity: minimumCapacity)
-  }
-  
-  public func makeIterator() -> some IteratorProtocol<Element> {
-    _storage.makeIterator()
   }
 }
 
