@@ -1,5 +1,5 @@
 //
-//  ErrorInfo+ValueDuplicatePolicy.swift
+//  ValueDuplicatePolicy.swift
 //  ErrorInfo
 //
 //  Created by Dmitriy Ignatyev on 09/12/2025.

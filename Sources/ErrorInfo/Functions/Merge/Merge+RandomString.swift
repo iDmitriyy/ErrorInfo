@@ -20,7 +20,7 @@ extension Merge.Utils {
   /// ```swift
   /// var generator = SystemRandomNumberGenerator()
   /// let suffix = ErrorInfoFuncs.randomSuffix(generator: &generator)
-  /// // suffix might be something like "a3@9"
+  /// // suffix might be something like "a3L9"
   /// ```
   @_spi(PerfomanceTesting) @_spi(Testing)
   @inlinable @inline(__always) // 1.7x speedup
