@@ -38,8 +38,6 @@ internal func performMeasuredAction<T>(count: Int, _ actions: () -> T) -> (resul
   
   let ms = totalDuration.inMilliseconds
   
-  print("minimumResolution:" , clock.minimumResolution.inMilliseconds.asString(fractionDigits: 5))
-  
   return (results, ms)
 }
 

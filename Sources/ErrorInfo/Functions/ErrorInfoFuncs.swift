@@ -26,7 +26,7 @@ extension ErrorInfoFuncs {
   /// If `withTypePrefix` is `true`, the result includes type and property name (e.g. `"Foo.count"`).
   ///
   /// If `false`, it returns just the property name, excluding the type (e.g. `"count"`).
-  internal static func asErrorInfoKeyString<R, V>(keyPath: KeyPath<R, V>, withTypePrefix: Bool) -> String {
+  @usableFromInline internal static func asErrorInfoKeyString<R, V>(keyPath: KeyPath<R, V>, withTypePrefix: Bool) -> String {
     let keyPathString = String(reflecting: keyPath) // e.g. "\Foo.count"
     if withTypePrefix {
       return String(keyPathString.dropFirst())
