@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 13/12/2025.
 //
 
-enum ErrorInfoOptionalAny: ErrorInfoOptionalProtocol {
+public enum ErrorInfoOptionalAny: ErrorInfoOptionalRepresentable {
   case value(Any)
   case nilInstance(typeOfWrapped: any Any.Type)
   

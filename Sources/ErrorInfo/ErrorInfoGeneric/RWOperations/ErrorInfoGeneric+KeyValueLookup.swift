@@ -13,7 +13,7 @@ extension ErrorInfoGeneric {
   }
 }
 
-extension ErrorInfoGeneric where GValue: ErrorInfoOptionalProtocol {
+extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
   func hasNonNilValue(forKey key: Key) -> Bool {
     switch keyValueLookupResult_Optional(forKey: key) {
     case .nothing: false
@@ -72,7 +72,7 @@ extension ErrorInfoGeneric {
   }
 }
 
-extension ErrorInfoGeneric where GValue: ErrorInfoOptionalProtocol {
+extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
   func keyValueLookupResult_Optional(forKey key: Key) -> KeyValueLookupResult {
     // FIXME: instead of _storage.allValues(forKey: key) smth like
     // _storage.iterateWithResult(forKey: key), to eliminate allocations

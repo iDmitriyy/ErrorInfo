@@ -15,19 +15,3 @@ extension ErrorInfoFuncs {
     return a == b
   }
 }
-
-// public func prettyDescriptionOfOptional(any: Any) -> String {
-//   // Check if `any` is an Optional type
-//   if let optional = any as? Optional<Any> {
-//     // Recursively unwrap the Optional
-//     switch optional {
-//     case .some(let value):
-//       return prettyDescriptionOfOptional(any: value) // Continue unwrapping
-//     case .none:
-//       return "nil" // Return "nil" if the optional is nil
-//     }
-//   }
-//
-//   // Return the string representation of the value (not optional)
-//   return String(describing: any)
-// }

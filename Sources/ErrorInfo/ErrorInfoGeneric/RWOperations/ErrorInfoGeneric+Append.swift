@@ -20,7 +20,7 @@ extension ErrorInfoGeneric {
   }
 }
 
-extension ErrorInfoGeneric where GValue: ErrorInfoOptionalProtocol {
+extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
   mutating func append(key: Key,
                        keyOrigin: KeyOrigin,
                        optionalValue: GValue.Wrapped?,
@@ -55,7 +55,7 @@ extension ErrorInfoGeneric {
   }
 }
 
-extension ErrorInfoGeneric where GValue: ErrorInfoOptionalProtocol {
+extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
   mutating func appendIfNotNil(optionalValue: GValue.Wrapped?,
                                typeOfWrapped: GValue.TypeOfWrapped,
                                forKey key: Key,
@@ -92,7 +92,7 @@ extension ErrorInfoGeneric {
   }
 }
 
-extension ErrorInfoGeneric where GValue: ErrorInfoOptionalProtocol {
+extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
   mutating func append(contentsOf sequence: some Sequence<(Key, GValue.Wrapped)>,
                        typeOfWrapped: GValue.TypeOfWrapped,
                        duplicatePolicy: ValueDuplicatePolicy,

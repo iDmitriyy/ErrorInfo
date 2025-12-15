@@ -42,7 +42,7 @@ extension ErrorInfoGeneric {
 
 // MARK: - Append KeyValue with all arguments passed explicitly
 
-extension ErrorInfoGeneric where GValue: ErrorInfoOptionalProtocol {
+extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
   /// The root appending function for public API imps. The term "_add" is chosen to visually / syntatically differentiate from family of public `append()`functions.
   internal mutating func _add(key: Key,
                               keyOrigin: KeyOrigin,

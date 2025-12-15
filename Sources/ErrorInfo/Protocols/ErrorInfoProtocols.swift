@@ -38,7 +38,7 @@ public protocol IterableErrorInfo<Key, Value>: Sequence where Key: Hashable, Sel
   var count: Int { get }
 }
 
-protocol ErrorInfoOptionalProtocol {
+protocol ErrorInfoOptionalRepresentable {
   associatedtype Wrapped
   associatedtype TypeOfWrapped
   
@@ -50,6 +50,6 @@ protocol ErrorInfoOptionalProtocol {
   var isValue: Bool { get } // TODO: - check perfomance with inlining
 }
 
-extension ErrorInfoOptionalProtocol {
+extension ErrorInfoOptionalRepresentable {
   @inlinable @inline(__always) var isNil: Bool { !isValue }
 }

@@ -34,7 +34,7 @@ public struct ErrorInfo: Sendable {
   public static let empty: Self = Self()
 }
 
-enum ErrorInfoOptional: Sendable, ErrorInfoOptionalProtocol {
+enum ErrorInfoOptional: Sendable, ErrorInfoOptionalRepresentable {
   case value(any ErrorInfoValueType)
   case nilInstance(typeOfWrapped: any Sendable.Type)
   

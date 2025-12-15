@@ -46,7 +46,8 @@ extension Merge.Utils {
 
 extension Merge.Constants {
   /// Includes ASCII values: `97 to 122 (a-z)`, `65 to 90 (A-Z)`, and `48 to 57 (0-9)`.
-  @usableFromInline internal static let alphaNumericAsciiCodes: ContiguousArray<UInt8> = mutate(value: ContiguousArray<UInt8>()) {
+  @usableFromInline
+  internal static let alphaNumericAsciiCodes: ContiguousArray<UInt8> = mutate(value: ContiguousArray<UInt8>()) {
     $0.reserveCapacity(62)
     $0.append(contentsOf: 97...122) // lowerCaseAsciiRange
     $0.append(contentsOf: 65...90) // upperCaseAsciiRange

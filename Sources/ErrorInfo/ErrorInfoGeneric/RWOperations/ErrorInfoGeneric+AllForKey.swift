@@ -13,7 +13,7 @@ extension ErrorInfoGeneric {
   }
 }
 
-extension ErrorInfoGeneric where GValue: ErrorInfoOptionalProtocol {
+extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
   func allNonNilValues(forKey key: Key) -> ValuesForKey<GValue.Wrapped>? {
     _storage.allValues(forKey: key)?._compactMap { $0.record.someValue.getWrapped }
   }
@@ -33,7 +33,7 @@ extension ErrorInfoGeneric {
   }
 }
 
-extension ErrorInfoGeneric where GValue: ErrorInfoOptionalProtocol {
+extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
   @discardableResult
   mutating func removeAllRecords_ReturningNonNilValues(forKey key: Key) -> ValuesForKey<GValue.Wrapped>? {
     _storage.removeAllValues(forKey: key)?._compactMap { $0.record.someValue.getWrapped }
@@ -58,7 +58,7 @@ extension ErrorInfoGeneric {
   }
 }
 
-extension ErrorInfoGeneric where GValue: ErrorInfoOptionalProtocol {
+extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
   internal mutating func _replaceAllRecords(forKey key: Key,
                                             keyOrigin: KeyOrigin,
                                             byNonNilValue newValue: GValue.Wrapped,

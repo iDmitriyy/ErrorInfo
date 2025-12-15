@@ -14,7 +14,7 @@ extension ErrorInfoGeneric {
   }
 }
 
-extension ErrorInfoGeneric where GValue: ErrorInfoOptionalProtocol {
+extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
   func lastNonNilValue(forKey key: Key) -> GValue.Wrapped? {
     guard let allRecordsForKey = _storage.allValues(forKey: key) else { return nil }
     
@@ -39,7 +39,7 @@ extension ErrorInfoGeneric {
   }
 }
 
-extension ErrorInfoGeneric where GValue: ErrorInfoOptionalProtocol {
+extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
   func firstNonNilValue(forKey key: Key) -> GValue.Wrapped? {
     guard let allRecordsForKey = _storage.allValues(forKey: key) else { return nil }
 
