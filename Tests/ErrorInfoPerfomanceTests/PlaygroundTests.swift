@@ -19,32 +19,6 @@ struct PlaygroundTests {
       }
     }
     
-//    let value = Optional(Optional(0)) as Any
-    let value = 4 // Optional<Optional<Optional<Int>>>.some(.some(.some(5)))
-//    let value = Optional<Optional<Int>>.some(.none) as Any
-    
-//    print("___ type: ", typeOfWrapped(any: 5))
-//
-//    print("___ type: ", typeOfWrapped(any: Optional<Optional<Optional<Int>>>.some(.some(.some(5)))))
-//    print("___ type: ", typeOfWrapped(any: Optional<Optional<Optional<Int>>>.some(.some(.none))))
-//    print("___ type: ", typeOfWrapped(any: Optional<Optional<Optional<Int>>>.some(.none)))
-//    print("___ type: ", typeOfWrapped(any: Optional<Optional<Optional<Int>>>.none))
-    
-    do {
-      let typeErasedString: Any = ""
-      let typeErasedOptional: Any? = typeErasedString
-      let any = typeErasedOptional as Any
-      
-//      print("___ type: ", typeOfWrapped(any: typeErasedString))
-//      print("___ type: ", typeOfWrapped(any: typeErasedOptional))
-//      print("___ type: ", typeOfWrapped(any: any))
-      
-//      print("___ type: ", typeOfWrapped(any: Optional<Any>.some("")))
-      
-//      print("___ type: ", typeOfWrapped(any: Optional<Any>.some("")))
-//      print("___ type: ", typeOfWrapped(any: Optional<Optional<Optional<Any>>>.some(.some(.some("" as Any)))))
-    }
-    
 //    print(AnyHashable(0) == AnyHashable(0))
 //    print(AnyHashable(Optional(Optional(0))) == AnyHashable(0))
 //    print(AnyHashable(Optional<Optional<Int>>.some(.none)) == AnyHashable(Optional<Int>.none))

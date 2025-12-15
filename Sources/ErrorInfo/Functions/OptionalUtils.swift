@@ -18,7 +18,7 @@ extension ErrorInfoFuncs {
   /// - Returns: An `ErrorInfoOptionalAny` enum representing the flattened value:
   ///   - `.value`: If the value is non-optional or the final unwrapped value is found.
   ///   - `.nilInstance`: If the value is `nil` or the final unwrapped value is `nil`.
-  public func flattenOptional<T>(any: T) -> ErrorInfoOptionalAny {
+  public static func flattenOptional<T>(any: T) -> ErrorInfoOptionalAny {
     if let optionalExistential = any as? any ErrorInfoFuncs.__PrivateImps.FlattenableOptionalPrivateProtocol {
       switch optionalExistential.getSelf() {
       case .some(let wrapped):
@@ -38,7 +38,7 @@ extension ErrorInfoFuncs {
 // MARK: - Type Of Wrapped
 
 extension ErrorInfoFuncs {
-  /// Returns the type of value contained in `Any` instance, or the `Wrapped` type of an optional value.
+  /// Returns the type of value wrapped to `Any` existential, or the `Wrapped` type of an optional inside `Any` existential.
   ///
   /// If the passed argument is an optional type, it recursively extracts the `Wrapped` type.
   /// For non-optional values, it returns the type of the value itself.
@@ -51,7 +51,7 @@ extension ErrorInfoFuncs {
   /// let value = Optional<Optional<Optional<Any>>>.some(.some(.some("" as Any))))
   /// typeOfWrapped(any: value) // Returns `String`
   /// ```
-  public func typeOfWrapped<T>(any: T) -> any Any.Type {
+  public static func typeOfWrapped<T>(any: T) -> any Any.Type {
     if let optionalExistential = any as? any ErrorInfoFuncs.__PrivateImps.FlattenableOptionalPrivateProtocol {
       switch optionalExistential.getSelf() {
       case .some(let wrapped):
