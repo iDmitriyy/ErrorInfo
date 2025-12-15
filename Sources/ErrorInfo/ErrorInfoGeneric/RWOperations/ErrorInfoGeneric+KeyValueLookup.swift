@@ -8,7 +8,7 @@
 // MARK: - HasValue For Key
 
 extension ErrorInfoGeneric {
-  func hasRecord(forKey key: Key) -> Bool {
+  func hasSomeValue(forKey key: Key) -> Bool {
     _storage.hasValue(forKey: key)
   }
 }
@@ -38,20 +38,10 @@ extension ErrorInfoGeneric where GValue: ErrorInfoOptionalProtocol {
 // MARK: - Has Multiple Records For Key
 
 extension ErrorInfoGeneric {
-  func hasMultipleRecords_NonOptional(forKey key: Key) -> Bool {
-    switch keyValueLookupResult_NonOptional(forKey: key) {
-    case .nothing, .singleValue: false
-    case .multipleRecords: true
-    }
-  }
-}
-
-extension ErrorInfoGeneric where GValue: ErrorInfoOptionalProtocol {
-  func hasMultipleRecords_Optional(forKey key: Key) -> Bool {
-    switch keyValueLookupResult_Optional(forKey: key) {
-    case .nothing, .singleValue, .singleNil: false
-    case .multipleRecords: true
-    }
+  func hasMultipleRecords(forKey key: Key) -> Bool {
+    guard let recordsForKey = _storage.allValues(forKey: key) else { return false }
+    return recordsForKey.count > 1 // TODO: - optimize
+    // recordsCount(forKey:) | valuesCount(forKey:)
   }
 }
 
@@ -105,7 +95,7 @@ extension ErrorInfoGeneric where GValue: ErrorInfoOptionalProtocol {
       var valuesCount: UInt16 = 0
       var nilInstancesCount: UInt16 = 0
       for taggedRecord in taggedRecords {
-        if taggedRecord.record.maybeValue.isValue {
+        if taggedRecord.record.someValue.isValue {
           valuesCount += 1
         } else {
           nilInstancesCount += 1

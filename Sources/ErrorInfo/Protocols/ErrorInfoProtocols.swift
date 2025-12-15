@@ -39,15 +39,15 @@ public protocol IterableErrorInfo<Key, Value>: Sequence where Key: Hashable, Sel
 }
 
 protocol ErrorInfoOptionalProtocol {
-  associatedtype Value
+  associatedtype Wrapped
   associatedtype TypeOfWrapped
   
-  static func value(_: Value) -> Self
+  static func value(_: Wrapped) -> Self
   static func nilInstance(typeOfWrapped: TypeOfWrapped) -> Self
   
-  var getValue: Value? { get }
+  var getWrapped: Wrapped? { get }
   
-  var isValue: Bool { get }
+  var isValue: Bool { get } // TODO: - check perfomance with inlining
 }
 
 extension ErrorInfoOptionalProtocol {

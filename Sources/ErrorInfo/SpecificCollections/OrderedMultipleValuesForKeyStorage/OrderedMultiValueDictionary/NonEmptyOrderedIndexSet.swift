@@ -55,7 +55,7 @@ internal struct NonEmptyOrderedIndexSet: RandomAccessCollection {
     case .single(let currentIndex):
       _variant = .multiple(indices: NonEmptyOrderedSet<Int>(elements: currentIndex, newIndex))
     case .multiple(var elements):
-      elements.append(newIndex) // TODO: remove cow of elements
+      elements.append(newIndex) // FIXME: remove cow of elements
       _variant = .multiple(indices: elements)
     }
   }
@@ -70,7 +70,7 @@ internal struct NonEmptyOrderedIndexSet: RandomAccessCollection {
   
   internal func asRangeSet<C>(for collection: C) -> RangeSet<Int> where C: Collection, C.Index == Int {
     switch _variant {
-    case let .single(index): RangeSet(CollectionOfOne(index), within: collection)
+    case let .single(index): RangeSet(CollectionOfOne(index), within: collection) // TODO: check for CollectionOfOne
     case let .multiple(indices): RangeSet(indices, within: collection)
     }
   }
@@ -85,7 +85,7 @@ extension NonEmptyOrderedSet<Int> {
 extension NonEmptyOrderedIndexSet {
   internal enum _Variant {
     case single(index: Int)
-    case multiple(indices: NonEmptyOrderedSet<Int>) // Improvement: may use ContiguousArray / NonEmptyArray instead of Set
+    case multiple(indices: NonEmptyOrderedSet<Int>) // TODO: may use ContiguousArray / NonEmptyArray / Set / instead of Set
   }
 }
 

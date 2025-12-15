@@ -140,7 +140,7 @@ extension OrderedMultiValueDictionary {
   }
   
   private mutating func _rebuildKeyToEntryIndices() {
-    _keyToEntryIndices = [:]
+    _keyToEntryIndices = [:] // Improvement: Dictionary(minimumCapacity: _keyToEntryIndices.count - 1) | removeAll(keepingCapacity: true)
     for index in _entries.indices {
       let entry = _entries[index]
       _insert(entryIndex: index, forKey: entry.key)

@@ -34,6 +34,25 @@ public struct ErrorInfo: Sendable {
   public static let empty: Self = Self()
 }
 
+enum ErrorInfoOptional: Sendable, ErrorInfoOptionalProtocol {
+  case value(any ErrorInfoValueType)
+  case nilInstance(typeOfWrapped: any Sendable.Type)
+  
+  var isValue: Bool {
+    switch self {
+    case .value: true
+    case .nilInstance: false
+    }
+  }
+  
+  var getWrapped: (any ErrorInfoValueType)? {
+    switch self {
+    case .value(let value): value
+    case .nilInstance: nil
+    }
+  }
+}
+
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
 // MARK: - Append KeyValue with all arguments passed explicitly

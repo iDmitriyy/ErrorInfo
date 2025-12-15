@@ -5,20 +5,22 @@
 //  Created by Dmitriy Ignatyev on 13/12/2025.
 //
 
+// MARK: - Last For Key
+
 extension ErrorInfoGeneric {
-  func lastInstance(forKey key: Key) -> GValue? {
+  func lastSomeValue(forKey key: Key) -> GValue? {
     guard let allRecordsForKey = _storage.allValues(forKey: key) else { return nil }
-    return allRecordsForKey.last.record.maybeValue
+    return allRecordsForKey.last.record.someValue
   }
 }
 
 extension ErrorInfoGeneric where GValue: ErrorInfoOptionalProtocol {
-  func lastNonNilValue(forKey key: Key) -> GValue.Value? {
+  func lastNonNilValue(forKey key: Key) -> GValue.Wrapped? {
     guard let allRecordsForKey = _storage.allValues(forKey: key) else { return nil }
     
     let reversedRecords: ReversedCollection<_> = allRecordsForKey.reversed()
-    for record in reversedRecords {
-      if let value = record.record.maybeValue.getValue {
+    for annotatedRecord in reversedRecords {
+      if let value = annotatedRecord.record.someValue.getWrapped {
         return value
       }
     }
@@ -26,20 +28,26 @@ extension ErrorInfoGeneric where GValue: ErrorInfoOptionalProtocol {
   }
 }
 
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// MARK: - First For Key
+
 extension ErrorInfoGeneric {
-//  public func firstValue(forKey literalKey: StringLiteralKey) -> (any ValueType)? {
-//    firstValue(forKey: literalKey.rawValue)
-//  }
-//
-//  @_disfavoredOverload
-//  public func firstValue(forKey dynamicKey: String) -> (any ValueType)? {
-//    guard let allRecordsForKey = _storage.allValues(forKey: dynamicKey) else { return nil }
-//
-//    for record in allRecordsForKey {
-//      if let value = record.value._optional.maybeValue.asOptional {
-//        return value
-//      }
-//    }
-//    return nil
-//  }
+  func firstSomeValue(forKey key: Key) -> GValue? {
+    guard let allRecordsForKey = _storage.allValues(forKey: key) else { return nil }
+    return allRecordsForKey.first.record.someValue
+  }
+}
+
+extension ErrorInfoGeneric where GValue: ErrorInfoOptionalProtocol {
+  func firstNonNilValue(forKey key: Key) -> GValue.Wrapped? {
+    guard let allRecordsForKey = _storage.allValues(forKey: key) else { return nil }
+
+    for annotatedRecord in allRecordsForKey {
+      if let value = annotatedRecord.record.someValue.getWrapped {
+        return value
+      }
+    }
+    return nil
+  }
 }

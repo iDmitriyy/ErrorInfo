@@ -205,3 +205,6 @@ extension StringLiteralKey {
   public static let authenticationStatus: StringLiteralKey = "authentication_status"
   public static let authorizationStatus: StringLiteralKey = "authorization_status"
 }
+
+// TBD: https://forums.swift.org/t/static-let-vs-computed-properties-and-binary-size/83706/6
+// `static let` vs computed properties, and binary size

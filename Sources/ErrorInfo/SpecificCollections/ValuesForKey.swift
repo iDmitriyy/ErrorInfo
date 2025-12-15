@@ -48,11 +48,7 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
   /// - Parameter array: A non-empty array of values to store.
   @inlinable @inline(__always)
   internal init(array: NonEmptyArray<Element>) {
-    if array.base.count > 1 {
-      _elements = .right(array)
-    } else {
-      _elements = .left(array.first)
-    }
+    _elements = .right(array)
   }
   
   // MARK: - Collection Access
