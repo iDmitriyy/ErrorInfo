@@ -208,6 +208,13 @@ enum ErrorInfoOptionalAny: ErrorInfoOptionalProtocol {
     case .nilInstance: false
     }
   }
+  
+  var getValue: Any? {
+    switch self {
+    case .value(let value): value
+    case .nilInstance: nil
+    }
+  }
 }
 
 enum ErrorInfoOptional: Sendable, ErrorInfoOptionalProtocol {
@@ -218,6 +225,13 @@ enum ErrorInfoOptional: Sendable, ErrorInfoOptionalProtocol {
     switch self {
     case .value: true
     case .nilInstance: false
+    }
+  }
+  
+  var getValue: (any ErrorInfoValueType)? {
+    switch self {
+    case .value(let value): value
+    case .nilInstance: nil
     }
   }
 }

@@ -45,6 +45,8 @@ protocol ErrorInfoOptionalProtocol {
   static func value(_: Value) -> Self
   static func nilInstance(typeOfWrapped: TypeOfWrapped) -> Self
   
+  var getValue: Value? { get }
+  
   var isValue: Bool { get }
 }
 
