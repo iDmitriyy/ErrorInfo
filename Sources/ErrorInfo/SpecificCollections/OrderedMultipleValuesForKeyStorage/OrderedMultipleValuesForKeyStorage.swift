@@ -9,7 +9,9 @@
 ///
 /// Almost all time Error info instances has 1 value for each key. Until first collision happens, `OrderedDictionary` is used.
 /// When first collision happens, `OrderedDictionary` is replaced by `OrderedMultiValueDictionary`.
-internal struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value, CollisionSource> {
+/// Also, while all key-values are unique (and stored in OrderedDictionary), there is no need to allocate space for
+/// `CollisionTaggedValue` – values can be atores as is.
+@usableFromInline internal struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value, CollisionSource> {
   @inlinable internal var _variant: Variant { _muatbleVariant._variant }
   
   // FIXME: private set
@@ -30,35 +32,23 @@ internal struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value, Collisi
 
 extension OrderedMultipleValuesForKeyStorage: Sendable where Key: Sendable, Value: Sendable, CollisionSource: Sendable {}
 
-extension OrderedMultipleValuesForKeyStorage {
-  internal func hasValue(forKey key: Key) -> Bool {
-    switch _variant {
-    case .left(let singleValueForKeyDict): singleValueForKeyDict.hasValue(forKey: key)
-    case .right(let multiValueForKeyDict): multiValueForKeyDict.hasValue(forKey: key)
-    }
-  }
-  
-  internal var hasMultipleValuesForAtLeastOneKey: Bool {
-    switch _variant {
-    case .left: false
-    case .right(let multiValueForKeyDict): multiValueForKeyDict.hasMultipleValuesForAtLeastOneKey
-    }
-  }
-  
-  internal func hasMultipleValues(forKey key: Key) -> Bool {
-    switch _variant {
-    case .left: false
-    case .right(let multiValueForKeyDict): multiValueForKeyDict.hasMultipleValues(forKey: key)
-    }
-  }
-}
-
 // MARK: All Values For Key
 
 extension OrderedMultipleValuesForKeyStorage {
   // TODO: perfomance test allValues vs allValuesSlice
   internal func allValuesSlice(forKey key: Key) -> (some Sequence<TaggedValue>)? { // & ~Escapable
     ValuesForKeySlice(_variant: _variant, key: key)
+  }
+  
+  internal func iterateAllValues(forKey key: Key, _ iteration: (TaggedValue) -> Void) {
+    switch _variant {
+    case .left(let singleValueForKeyDict):
+      if let valueForKey = singleValueForKeyDict[key] {
+        iteration(TaggedValue.value(valueForKey))
+      }
+    case .right(let multiValueForKeyDict):
+      multiValueForKeyDict.iterateAllValues(forKey: key, iteration)
+    }
   }
   
   internal func allValues(forKey key: Key) -> ValuesForKey<TaggedValue>? {
@@ -104,7 +94,6 @@ extension OrderedMultipleValuesForKeyStorage {
     case .right(let multiValueForKeyDict):
       let filtered: MultiValueForKeyDict = multiValueForKeyDict.filter(isIncluded)
       return Self(_variant: _Variant(.right(filtered)))
-      //
     }
   }
 }

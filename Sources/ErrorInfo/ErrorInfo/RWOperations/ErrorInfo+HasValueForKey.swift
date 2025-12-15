@@ -130,22 +130,6 @@ extension ErrorInfo {
 // MARK: - KeyValue Lookup Result
 
 extension ErrorInfo {
-  /// Represents the result of a key-value lookup in `ErrorInfo` storage.
-  public enum KeyValueLookupResult {
-    /// Indicates that no value, either non-nil or nil, is associated with the key.
-    case nothing
-    
-    /// Indicates that exactly one non-nil value is associated with the key.
-    case singleValue
-    
-    /// Indicates that exactly one `nil` value is associated with the key.
-    case singleNil
-    
-    /// Indicates that multiple values (both non-nil and nil) are associated with the key.
-    /// Contains the count of non-nil and nil values.
-    case multipleRecords(valuesCount: UInt16, nilCount: UInt16)
-  }
-  
   /// Returns the result of looking up a key in the storage, encapsulating the presence and state of values.
   ///
   /// - Parameter literalKey: The key to look up in the `ErrorInfo` storage.

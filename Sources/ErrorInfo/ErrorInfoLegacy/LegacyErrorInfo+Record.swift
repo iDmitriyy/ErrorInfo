@@ -2,7 +2,7 @@
 //  LegacyErrorInfo+Record.swift
 //  ErrorInfo
 //
-//  Created by tmp on 12/12/2025.
+//  Created by Dmitriy Ignatyev on 12/12/2025.
 //
 
 extension LegacyErrorInfo {

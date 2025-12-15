@@ -69,16 +69,16 @@ extension OrderedMultiValueDictionary {
     _keyToEntryIndices.hasValue(forKey: key)
   }
   
+  internal func hasMultipleValues(forKey key: Key) -> Bool {
+    guard let entriesForKeyIndices = _keyToEntryIndices[key] else { return false }
+    return entriesForKeyIndices.count > 1
+  }
+  
   internal var hasMultipleValuesForAtLeastOneKey: Bool {
     for entriesForKeyIndices in _keyToEntryIndices.values where entriesForKeyIndices.count > 1 {
       return true
     }
     return false
-  }
-  
-  internal func hasMultipleValues(forKey key: Key) -> Bool {
-    guard let entriesForKeyIndices = _keyToEntryIndices[key] else { return false }
-    return entriesForKeyIndices.count > 1
   }
 }
 
@@ -90,6 +90,18 @@ extension OrderedMultiValueDictionary {
       ValuesForKeySlice(entries: _entries, valueIndices: allValuesForKeyIndices)
     } else {
       nil as Optional<ValuesForKeySlice>
+    }
+  }
+  
+  internal func iterateAllValues(forKey key: Key, _ iteration: (Value) -> Void) {
+    guard let indexSet = _keyToEntryIndices[key] else { return }
+    
+    switch indexSet._variant {
+    case .single(let index): // Typically there is only one value for key
+      iteration(_entries[index].value)
+       
+    case .multiple(let indices):
+      for index in indices { iteration(_entries[index].value) }
     }
   }
   

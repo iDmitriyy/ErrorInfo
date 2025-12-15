@@ -58,7 +58,6 @@ extension OrderedMultiValueErrorInfoGeneric {
 // MARK: Append KeyValue
 
 extension OrderedMultiValueErrorInfoGeneric {
-  // FIXME: remove @autoclosure
   public mutating func appendResolvingCollisions(key: Key,
                                                  value newValue: Value,
                                                  insertIfEqual: Bool,

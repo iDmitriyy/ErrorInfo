@@ -97,7 +97,7 @@ extension ErrorInfo.CustomOptionsView {
   public subscript<V: ErrorInfoValueType>(
     key literalKey: StringLiteralKey,
     preserveNilValues: Bool? = nil,
-    duplicatePolicy: ErrorInfo.ValueDuplicatePolicy? = nil,
+    duplicatePolicy: ValueDuplicatePolicy? = nil,
   ) -> V? {
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
     get {
@@ -118,7 +118,7 @@ extension ErrorInfo.CustomOptionsView {
   public subscript<V: ErrorInfoValueType>(
     key dynamicKey: String,
     preserveNilValues: Bool? = nil,
-    duplicatePolicy: ErrorInfo.ValueDuplicatePolicy? = nil,
+    duplicatePolicy: ValueDuplicatePolicy? = nil,
   ) -> V? {
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
     get {
@@ -145,7 +145,7 @@ extension ErrorInfo.CustomOptionsView {
     forKey dynamicKey: String,
     by newValue: any ErrorInfoValueType,
     preserveNilValues: Bool? = nil,
-    duplicatePolicy: ErrorInfo.ValueDuplicatePolicy? = nil,
+    duplicatePolicy: ValueDuplicatePolicy? = nil,
   ) -> ValuesForKey<any ErrorInfoValueType>? {
     let oldValues = pointer.pointee._storage.removeAllValues(forKey: dynamicKey)
     // collisions never happens when replacing

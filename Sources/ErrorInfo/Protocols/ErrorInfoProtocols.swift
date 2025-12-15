@@ -37,3 +37,17 @@ public protocol IterableErrorInfo<Key, Value>: Sequence where Key: Hashable, Sel
   
   var count: Int { get }
 }
+
+protocol ErrorInfoOptionalProtocol {
+  associatedtype Value
+  associatedtype TypeOfWrapped
+  
+  static func value(_: Value) -> Self
+  static func nilInstance(typeOfWrapped: TypeOfWrapped) -> Self
+  
+  var isValue: Bool { get }
+}
+
+extension ErrorInfoOptionalProtocol {
+  @inlinable @inline(__always) var isNil: Bool { !isValue }
+}

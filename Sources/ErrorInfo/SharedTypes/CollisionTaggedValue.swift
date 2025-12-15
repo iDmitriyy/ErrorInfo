@@ -27,19 +27,22 @@
 /// // Creating a value with a collision source
 /// let collidedValue = CollisionTaggedValue.collidedValue(42, collisionSource: .onCreateWithDictionaryLiteral)
 /// ```
-public struct CollisionTaggedValue<Value, CollisionSource> {
-  public let value: Value
-  public var collisionSource: CollisionSource? { _collisionSource?.wrapped }
+public struct CollisionTaggedValue<Value, CollisionSource> { // FIXME: => CollisionAnnotatedRecord
+  public let value: Value // FIXME: currentTaggedRecord.value -> raname .value to .record
+  @usableFromInline internal let _collisionSource: HeapBox<CollisionSource>?
+  
+  @inlinable @inline(__always) public var collisionSource: CollisionSource? { _collisionSource?.wrapped }
+  
+  @inlinable @inline(__always) public var record: Value { value }
   
   /// CollisionSource memory footprint is quite large. memoryLayout size == 33, stride == 40 at the moment of writing.
   /// Consuming additional 40 bytes for each value, where in fact collisionSource mostly often is nil, is ineffective.
   /// Thats why store optional HeapBox, which takes only 8 bytes (64-bit pointer)
-  @usableFromInline internal let _collisionSource: HeapBox<CollisionSource>?
   
   @inlinable @inline(__always)
   internal init(value: Value, collisionSource: CollisionSource?) {
     self.value = value
-    self._collisionSource = collisionSource.map(HeapBox.init)
+    self._collisionSource = collisionSource.map(HeapBox.init) // TODO: check prefomnace when using if-let
   }
   
   @inlinable @inline(__always) // 50x speedup

@@ -62,7 +62,6 @@ extension ErrorInfo {
 // MARK: - MaybeValue
 
 extension ErrorInfo {
-  @frozen
   public enum MaybeValue: Sendable {
     case value(any ErrorInfoValueType)
     case nilInstance(typeOfWrapped: any Sendable.Type)

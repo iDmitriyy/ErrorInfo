@@ -5,15 +5,29 @@
 //  Created by Dmitriy Ignatyev on 06/10/2025.
 //
 
+public import Foundation
+
 @inlinable
 @inline(__always)
 @discardableResult
 internal func performMeasuredAction<T>(count: Int, _ actions: () -> T) -> (results: [T], duration: Double) {
   let clock = ContinuousClock()
-  
+    
   var results: [T] = []
+  
+//  var totalDuration = UInt64(0) // Duration.zero
+//  for _ in 1...count{
+//    let initialTime = DispatchTime.now().uptimeNanoseconds // clock.now
+//    let result = actions()
+//    let endTime = DispatchTime.now().uptimeNanoseconds // clock.now
+//    let difference = endTime - initialTime
+//    totalDuration += difference
+//    results.append(result)
+//  }
+//  let ms = Double(totalDuration) / 1_000_000 // totalDuration.inMilliseconds
+  
   var totalDuration = Duration.zero
-  for _ in 1...count{
+  for _ in 1...count {
     let initialTime = clock.now
     let result = actions()
     let endTime = clock.now
@@ -22,7 +36,11 @@ internal func performMeasuredAction<T>(count: Int, _ actions: () -> T) -> (resul
     results.append(result)
   }
   
-  return (results, totalDuration.inMilliseconds)
+  let ms = totalDuration.inMilliseconds
+  
+  print("minimumResolution:" , clock.minimumResolution.inMilliseconds.asString(fractionDigits: 5))
+  
+  return (results, ms)
 }
 
 @inlinable
