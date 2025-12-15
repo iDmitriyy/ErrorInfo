@@ -8,16 +8,6 @@
 // MARK: - Append from Instance's Properies
 
 extension ErrorInfo {
-  /// This enum allows you to specify how the key path string should be prefixed when it's converted
-  /// to a string representation. You can use either the type's name or a custom name.
-  ///
-  /// - `typeName`: Uses the type's name as a prefix.
-  /// - `customName`: Allows you to provide a custom prefix string, like name of an instance's property.
-  public enum KeyPathPrefix {
-    case typeName
-    case customName(_ name: String)
-  }
-  
   // Improvement: stingify-like macro for extrating the string name of value passed to `instance` arg
   // case .valueName then be useful only in contexts with shortand args like $0.
   // But typically macro will be more convenient as there no need to duplacte binding name.
@@ -65,7 +55,7 @@ extension ErrorInfo {
   /// ```
   public mutating func appendProperties<R, each V: ValueType>(
     of instance: R,
-    keysPrefix: KeyPathPrefix? = .typeName,
+    keysPrefix: KeyPathPrefixOption? = .typeName,
     collisionSource collisionOrigin: CollisionSource.Origin = .fileLine(),
     @ErrorInfoKeyPathsBuilder keys: () -> (repeat KeyPath<R, each V>),
   ) {
