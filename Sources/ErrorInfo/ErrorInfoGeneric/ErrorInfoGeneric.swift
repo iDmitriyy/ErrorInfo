@@ -148,3 +148,21 @@ extension ErrorInfoGeneric {
  hasNonNilEntry(forKey:)
  hasNilEntry(forKey:)
  */
+
+//@frozen
+//public struct OpaqueGenericErrorInfo<Key: Hashable, GValue: Equatable> {
+//  @usableFromInline
+//  internal var _base: ErrorInfoGeneric<Key, GValue>
+//
+//  @inlinable @inline(__always)
+//  internal init(_base: ErrorInfoGeneric<Key, GValue>) {
+//    self._base = _base
+//  }
+//}
+//
+//public protocol ErrorInfoOptionalValueOperations {
+//  associatedtype OpaqueSrorageKey: Hashable
+//  associatedtype OpaqueStorageValue: Equatable, ErrorInfoOptionalRepresentable
+//  
+//  var _opaqueStorage: OpaqueGenericErrorInfo<OpaqueSrorageKey, Value> { get }
+//}
