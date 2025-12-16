@@ -5,13 +5,15 @@
 //  Created by Dmitriy Ignatyev on 13/12/2025.
 //
 
-public struct ErrorInfoAny {
+public struct ErrorInfoAny: ErrorInfoOperationsProtocol {
   public typealias KeyType = String
   public typealias ValueType = any Any
   
-  internal typealias BackingStorage = ErrorInfoGeneric<String, EquatableAny>
+  internal typealias BackingStorage = ErrorInfoGeneric<String, EquatableOptionalAny>
   
-  @usableFromInline internal var _storage: ErrorInfoGeneric<String, EquatableAny>
+  @usableFromInline internal var _storage: ErrorInfoGeneric<String, EquatableOptionalAny>
+  
+  // MARK: - Initializers
   
   private init(storage: BackingStorage) {
     _storage = storage
@@ -28,10 +30,41 @@ public struct ErrorInfoAny {
   public static var empty: Self { Self() }
 }
 
+extension ErrorInfoAny {
+  @usableFromInline
+  internal mutating func _add<V>(key: String,
+                                 keyOrigin: KeyOrigin,
+                                 value newValue: V?,
+                                 preserveNilValues: Bool,
+                                 duplicatePolicy: ValueDuplicatePolicy,
+                                 collisionSource: @autoclosure () -> CollisionSource) {
+    _storage._add(key: key,
+                  keyOrigin: keyOrigin,
+                  optionalValue: newValue,
+                  typeOfWrapped: V.self,
+                  preserveNilValues: preserveNilValues,
+                  duplicatePolicy: duplicatePolicy,
+                  collisionSource: collisionSource())
+//    let optional: _Optional
+//    if let newValue {
+//      optional = .value(newValue)
+//    } else if preserveNilValues {
+//      optional = .nilInstance(typeOfWrapped: V.self)
+//    } else {
+//      return
+//    }
+//    
+//    _storage.appendResolvingCollisions(key: key,
+//                                       value: _Record(_optional: optional, keyOrigin: keyOrigin),
+//                                       insertIfEqual: duplicatePolicy.insertIfEqual,
+//                                       collisionSource: collisionSource())
+  }
+}
 
 extension ErrorInfoAny {
   @usableFromInline
-  internal struct EquatableAny: Equatable, ErrorInfoOptionalRepresentable {
+  internal struct EquatableOptionalAny: Equatable, ErrorInfoOptionalRepresentable {
+    public typealias Wrapped = Any
     public typealias TypeOfWrapped = any Any.Type
     
     let maybeValue: ErrorInfoOptionalAny
@@ -49,11 +82,12 @@ extension ErrorInfoAny {
     }
     
     static func nilInstance(typeOfWrapped: any Any.Type) -> Self {
+      // FIXME: - type can be incorrect, extract root type
       Self(_unverifiedMaybeValue: .nilInstance(typeOfWrapped: typeOfWrapped))
     }
     
     var isValue: Bool { maybeValue.isValue }
-//    
+    
     var getWrapped: Any? { maybeValue.getWrapped }
     
     @usableFromInline

@@ -59,7 +59,8 @@ enum ErrorInfoOptional: Sendable, ErrorInfoOptionalRepresentable {
 
 extension ErrorInfo {
   /// The root appending function for public API imps. The term "_add" is chosen to visually / syntatically differentiate from family of public `append()`functions.
-  @usableFromInline internal mutating func _add<V: ValueType>(key: String,
+  @usableFromInline
+  internal mutating func _add<V: ValueType>(key: String,
                                             keyOrigin: KeyOrigin,
                                             value newValue: V?,
                                             preserveNilValues: Bool,

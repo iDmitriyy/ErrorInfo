@@ -96,7 +96,7 @@ extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
   mutating func append(contentsOf sequence: some Sequence<(Key, GValue.Wrapped)>,
                        typeOfWrapped: GValue.TypeOfWrapped,
                        duplicatePolicy: ValueDuplicatePolicy,
-                       collisionSource collisionOrigin: CollisionSource.Origin = .fileLine()) {
+                       collisionSource collisionOrigin: CollisionSource.Origin) {
     
     for (key, nonNilValue) in sequence {
       _add(key: key,

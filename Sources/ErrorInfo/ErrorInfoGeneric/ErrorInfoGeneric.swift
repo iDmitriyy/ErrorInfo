@@ -60,10 +60,10 @@ extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
       return
     }
 
-    __addImp(key: key,
-             record: Record(keyOrigin: keyOrigin, someValue: optional),
-             insertIfEqual: duplicatePolicy.insertIfEqual,
-             collisionSource: collisionSource())
+    __withCollisionresolvingAdd(key: key,
+                                record: Record(keyOrigin: keyOrigin, someValue: optional),
+                                insertIfEqual: duplicatePolicy.insertIfEqual,
+                                collisionSource: collisionSource())
   }
 }
 
@@ -73,18 +73,18 @@ extension ErrorInfoGeneric {
                               someValue: GValue,
                               duplicatePolicy: ValueDuplicatePolicy,
                               collisionSource: @autoclosure () -> CollisionSource) {
-    __addImp(key: key,
-             record: Record(keyOrigin: keyOrigin, someValue: someValue),
-             insertIfEqual: duplicatePolicy.insertIfEqual,
-             collisionSource: collisionSource())
+    __withCollisionresolvingAdd(key: key,
+                                record: Record(keyOrigin: keyOrigin, someValue: someValue),
+                                insertIfEqual: duplicatePolicy.insertIfEqual,
+                                collisionSource: collisionSource())
   }
 }
 
 extension ErrorInfoGeneric {
-  internal mutating func __addImp(key: Key,
-                                  record newRecord: Record,
-                                  insertIfEqual: Bool,
-                                  collisionSource: @autoclosure () -> CollisionSource) {
+  internal mutating func __withCollisionresolvingAdd(key: Key,
+                                                     record newRecord: Record,
+                                                     insertIfEqual: Bool,
+                                                     collisionSource: @autoclosure () -> CollisionSource) {
     if insertIfEqual {
       _storage.append(key: key, value: newRecord, collisionSource: collisionSource())
     } else {
@@ -149,8 +149,8 @@ extension ErrorInfoGeneric {
  hasNilEntry(forKey:)
  */
 
-//@frozen
-//public struct OpaqueGenericErrorInfo<Key: Hashable, GValue: Equatable> {
+// @frozen
+// public struct OpaqueGenericErrorInfo<Key: Hashable, GValue: Equatable> {
 //  @usableFromInline
 //  internal var _base: ErrorInfoGeneric<Key, GValue>
 //
@@ -158,11 +158,11 @@ extension ErrorInfoGeneric {
 //  internal init(_base: ErrorInfoGeneric<Key, GValue>) {
 //    self._base = _base
 //  }
-//}
+// }
 //
-//public protocol ErrorInfoOptionalValueOperations {
+// public protocol ErrorInfoOptionalValueOperations {
 //  associatedtype OpaqueSrorageKey: Hashable
 //  associatedtype OpaqueStorageValue: Equatable, ErrorInfoOptionalRepresentable
-//  
+//
 //  var _opaqueStorage: OpaqueGenericErrorInfo<OpaqueSrorageKey, Value> { get }
-//}
+// }
