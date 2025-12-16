@@ -112,6 +112,138 @@ public protocol ErrorInfoOperationsProtocol {
   
   // MARK: - KeyValue Lookup
   
+  /// Checks whether the key is associated with at least one non-nil value.
+  ///
+  /// - Parameter literalKey: The key to search for in the `ErrorInfo` storage.
+  ///
+  /// - Returns: `true` if there is at least one non-nil value for the given key; otherwise, `false`.
+  ///
+  /// # Example:
+  /// ```swift
+  /// let errorInfo = ErrorInfo()
+  ///
+  /// errorInfo[.url] = nil as URL?
+  /// errorInfo.hasValue(forKey: .url) // returns false
+  ///
+  /// errorInfo[.id] = 5
+  /// errorInfo.hasValue(forKey: .id) // returns true
+  /// ```
+  func hasValue(forKey literalKey: StringLiteralKey) -> Bool
+  
+  /// Checks whether the key is associated with at least one non-nil value.
+  ///
+  /// - Parameter key: The key to search for in the `ErrorInfo` storage.
+  ///
+  /// - Returns: `true` if there is at least one non-nil value for the given key; otherwise, `false`.
+  ///
+  /// # Example:
+  /// ```swift
+  /// let errorInfo = ErrorInfo()
+  ///
+  /// errorInfo["url"] = nil as URL?
+  /// errorInfo.hasValue(forKey: "url") // returns false
+  ///
+  /// errorInfo["id"] = 5
+  /// errorInfo.hasValue(forKey: "id") // returns true
+  /// ```
+  @_disfavoredOverload func hasValue(forKey key: String) -> Bool
+  
+  // MARK: Has Multiple Records For Key
+  
+  /// Checks if the key is associated with multiple values (both non-nil and nil) in the `ErrorInfo` storage.
+  ///
+  /// - Parameter literalKey: The key to search for in the `ErrorInfo` storage.
+  ///
+  /// - Returns: `true` if the key is associated with multiple values; otherwise `false`.
+  ///
+  /// # Example:
+  /// ```swift
+  /// let errorInfo = ErrorInfo()
+  ///
+  /// errorInfo[.id] = 5
+  /// errorInfo[.id] = nil as Int?
+  ///
+  /// errorInfo.hasMultipleRecords(forKey: .id) // true because there are multiple records
+  /// ```
+  func hasMultipleRecords(forKey literalKey: StringLiteralKey) -> Bool
+  
+  /// Checks if the key is associated with multiple values (both non-nil and nil) in the `ErrorInfo` storage.
+  ///
+  /// - Parameter key: The key to search for in the `ErrorInfo` storage.
+  ///
+  /// - Returns: `true` if the key is associated with multiple values; otherwise `false`.
+  ///
+  /// # Example:
+  /// ```swift
+  /// let errorInfo = ErrorInfo()
+  ///
+  /// errorInfo["id"] = 5
+  /// errorInfo["id"] = nil as Int?
+  ///
+  /// errorInfo.hasMultipleRecords(forKey: "id")  // true because there are multiple records
+  /// ```
+  @_disfavoredOverload func hasMultipleRecords(forKey key: String) -> Bool
+  
+  /// Checks if there is any key in the `ErrorInfo` storage that is associated with more than one record.
+  ///
+  /// - Returns: `true` if any key is associated with multiple records; otherwise `false`.
+  ///
+  /// # Example:
+  ///
+  /// ```swift
+  /// let errorInfo = ErrorInfo()
+  ///
+  /// errorInfo["key1"] = "A"
+  /// errorInfo["key1"] = "B"
+  /// errorInfo["key2"] = Date()
+  ///
+  /// errorInfo.hasMultipleRecordsForAtLeastOneKey() // true because "key1" has multiple records
+  /// ```
+  func hasMultipleRecordsForAtLeastOneKey() -> Bool
+  
+  // MARK: KeyValue Lookup Result
+  
+  /// Returns the result of looking up a key in the storage, encapsulating the presence and state of values.
+  ///
+  /// - Parameter literalKey: The key to look up in the `ErrorInfo` storage.
+  ///
+  /// - Returns: A `KeyValueLookupResult` indicating the result of the lookup.
+  ///
+  /// # Example:
+  /// ```swift
+  /// let errorInfo = ErrorInfo()
+  ///
+  /// errorInfo[.id] = 5
+  /// errorInfo[.id] = nil as Int?
+  ///
+  /// let result = errorInfo.keyValueLookupResult(forKey: .id)
+  /// // Returns .multipleRecords(valuesCount: 1, nilCount: 1)
+  /// // because one value is non-nil and one is nil.
+  /// ```
+  func keyValueLookupResult(forKey literalKey: StringLiteralKey) -> KeyValueLookupResult
+  
+  /// Returns the result of looking up a key in the storage, encapsulating the presence and state of values.
+  ///
+  /// This method checks the key's associated values in the storage and returns an appropriate `KeyValueLookupResult`.
+  ///
+  /// - Parameter key: The key to look up in the `ErrorInfo` storage.
+  ///
+  /// - Returns: A `KeyValueLookupResult` indicating the result of the lookup.
+  ///
+  /// # Example:
+  /// ```swift
+  /// let errorInfo = ErrorInfo()
+  ///
+  /// errorInfo["id"] = 5
+  /// errorInfo["id"] = nil as Int?
+  ///
+  /// let result = errorInfo.keyValueLookupResult(forKey: "id")
+  /// // Returns .multipleRecords(valuesCount: 1, nilCount: 1)
+  /// // because one value is non-nil and one is nil.
+  /// ```
+  ///
+  @_disfavoredOverload func keyValueLookupResult(forKey key: String) -> KeyValueLookupResult
+  
   // ===-------------------------------------------------------------------------------------------------------------------=== //
   
   // MARK: - RemoveAll
