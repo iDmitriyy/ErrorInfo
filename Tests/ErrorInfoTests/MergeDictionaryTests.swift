@@ -9,13 +9,13 @@
 import Testing
 
 struct MergeDictionaryTests {
-  @Test func unsafeCast() async throws {
+  @Test func unsafeCast() throws {
     let dd = asString(any: "ABCD")
     let ff = asString(any: [])
     _ = 0
   }
   
-  @Test func noKeyMidification() async throws {
+  @Test func noKeyMidification() throws {
     var dict: [String: Int] = ["0": 0]
     let fileLine = ErrorInfoFuncs.fileLineString(file: #file, line: #line)
     
@@ -44,14 +44,14 @@ struct MergeDictionaryTests {
                               })
   }
   
-  @Test func omitEqualValuesFalse() async throws {
+  @Test func omitEqualValuesFalse() throws {
     // var info1: [String: Int] = [:]
     // var info2: [String: Int] = [:]
   }
   
-  @Test func donatorIndexNotChanging() async throws {}
+  @Test func donatorIndexNotChanging() throws {}
   
-  @Test func modifiedKeyHasCollision() async throws {}
+  @Test func modifiedKeyHasCollision() throws {}
 }
 
 func asString<T>(any: T) -> String {

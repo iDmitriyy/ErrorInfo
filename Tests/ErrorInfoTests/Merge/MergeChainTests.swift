@@ -31,21 +31,21 @@ struct MergeChainTests {
     
     let errorsChain = [error4, error3, error2, error1, error0]
     
-    let expected: Dict = [
+    let expected: Dict = [ // OrderedDictionary can contain duplicated keys, use KeyValuePairs
       "id": "4",
-      "status": 4,
-      
-      "id": 3,
-      "count": 3,
-      "url": "https://192.168.0.3",
-      
-      "id": 2,
-      
-      "count": 1,
-      "url": "https://192.168.0.1",
-      
-      "value": 0,
-      "count": 0,
+//      "status": 4,
+//      
+//      "id": 3,
+//      "count": 3,
+//      "url": "https://192.168.0.3",
+//      
+//      "id": 2,
+//      
+//      "count": 1,
+//      "url": "https://192.168.0.1",
+//      
+//      "value": 0,
+//      "count": 0,
     ]
   }
 }

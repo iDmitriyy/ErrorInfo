@@ -1,0 +1,40 @@
+{
+  "configurations" : [
+    {
+      "id" : "C416F1D1-BAED-46A6-927E-D32731F76009",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:",
+          "identifier" : "ErrorInfo",
+          "name" : "ErrorInfo"
+        }
+      ]
+    },
+    "performanceAntipatternCheckerEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "ErrorInfoTests",
+        "name" : "ErrorInfoTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "ErrorInfoPerfomanceTests",
+        "name" : "ErrorInfoPerfomanceTests"
+      }
+    }
+  ],
+  "version" : 1
+}

@@ -10,7 +10,7 @@ import NonEmpty
 import Testing
 
 struct ExtractUniqueElementsTests {
-  @Test func basic() async throws {
+  @Test func basic() throws {
     let input = NonEmptyArray(0, 1, 1, 1, 1, 2, 3, 2, 3, 2, 1, 4)
     let expected = NonEmptyArray(0, 1, 2, 3, 4)
     

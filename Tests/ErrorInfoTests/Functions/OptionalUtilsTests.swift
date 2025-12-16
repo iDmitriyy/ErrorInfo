@@ -9,6 +9,11 @@
 import Testing
 
 struct OptionalUtilsTests {
+  // `expectedTypeAny` is passed when exact type can not be determined.
+  // `(nil as Int?) as Any?` is equivalent to (`nil as Any?`), specific type can't be extracted from it because nil
+  // represents the absence of a value
+  private let expectedTypeAny = Any.self
+  
   @Test func basic() throws {
     checkIsValue(wrappedValue: 5, expectedUnwrappedValue: 5)
     checkIsValue(wrappedValue: 5 as Any, expectedUnwrappedValue: 5)
@@ -23,11 +28,11 @@ struct OptionalUtilsTests {
     checkIsNil(wrappedValue: (nil as Int?) as Any, expectedType: Int.self)
     
     checkIsValue(wrappedValue: (5 as Int?) as Any?, expectedUnwrappedValue: 5)
-    checkIsNil(wrappedValue: (nil as Int?) as Any?, expectedType: Int.self)
+    checkIsNil(wrappedValue: (nil as Int?) as Any?, expectedType: expectedTypeAny)
     
     checkIsValue(wrappedValue: ((5 as Int?) as Any?) as Any, expectedUnwrappedValue: 5)
-    checkIsNil(wrappedValue: ((nil as Int?) as Any?) as Any, expectedType: Int.self)
-    
+    checkIsNil(wrappedValue: ((nil as Int?) as Any?) as Any, expectedType: expectedTypeAny)
+        
     // 2.
     checkIsValue(wrappedValue: Int??.some(.some(5)), expectedUnwrappedValue: 5)
     checkIsNil(wrappedValue: Int??.some(.none), expectedType: Int.self)
@@ -39,11 +44,11 @@ struct OptionalUtilsTests {
     
     checkIsValue(wrappedValue: Int??.some(.some(5)) as Any?, expectedUnwrappedValue: 5)
     checkIsNil(wrappedValue: Int??.some(.none) as Any?, expectedType: Int.self)
-    checkIsNil(wrappedValue: Int??.none as Any?, expectedType: Int.self)
+    checkIsNil(wrappedValue: Int??.none as Any?, expectedType: expectedTypeAny)
     
     checkIsValue(wrappedValue: (Int??.some(.some(5)) as Any?) as Any, expectedUnwrappedValue: 5)
     checkIsNil(wrappedValue: (Int??.some(.none) as Any?) as Any, expectedType: Int.self)
-    checkIsNil(wrappedValue: (Int??.none as Any?) as Any, expectedType: Int.self)
+    checkIsNil(wrappedValue: (Int??.none as Any?) as Any, expectedType: expectedTypeAny)
     
     // 3.
     checkIsValue(wrappedValue: Any???.some(.some(.some(5 as Any))), expectedUnwrappedValue: 5)
@@ -62,13 +67,13 @@ struct OptionalUtilsTests {
     checkIsValue(wrappedValue: Int???.some(.some(.some(5))) as Any?, expectedUnwrappedValue: 5)
     checkIsNil(wrappedValue: Int???.some(.some(.none)) as Any?, expectedType: Int.self)
     checkIsNil(wrappedValue: Int???.some(.none) as Any?, expectedType: Int.self)
-    checkIsNil(wrappedValue: Int???.none as Any?, expectedType: Int.self)
+    checkIsNil(wrappedValue: Int???.none as Any?, expectedType: expectedTypeAny)
     
     checkIsValue(wrappedValue: (Any???.some(.some(.some(5 as Any))) as Any?) as Any, expectedUnwrappedValue: 5)
     checkIsValue(wrappedValue: (Int???.some(.some(.some(5))) as Any?) as Any, expectedUnwrappedValue: 5)
     checkIsNil(wrappedValue: (Int???.some(.some(.none)) as Any?) as Any, expectedType: Int.self)
     checkIsNil(wrappedValue: (Int???.some(.none) as Any?) as Any, expectedType: Int.self)
-    checkIsNil(wrappedValue: (Int???.none as Any?) as Any, expectedType: Int.self)
+    checkIsNil(wrappedValue: (Int???.none as Any?) as Any, expectedType: expectedTypeAny)
   }
   
   // MARK: - Reusable funcs
