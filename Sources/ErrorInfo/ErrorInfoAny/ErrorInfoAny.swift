@@ -23,3 +23,5 @@ public enum ErrorInfoOptionalAny: ErrorInfoOptionalRepresentable {
     }
   }
 }
+
+// TypeEnhancedOptional

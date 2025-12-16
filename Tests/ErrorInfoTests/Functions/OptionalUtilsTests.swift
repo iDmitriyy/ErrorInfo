@@ -10,46 +10,114 @@ import Testing
 
 struct OptionalUtilsTests {
   @Test func basic() throws {
-    do {
-      let integer: Int = 5
+    checkIsValue(wrappedValue: 5, expectedUnwrappedValue: 5)
+    checkIsValue(wrappedValue: 5 as Any, expectedUnwrappedValue: 5)
+    checkIsValue(wrappedValue: 5 as Any?, expectedUnwrappedValue: 5)
+    checkIsValue(wrappedValue: (5 as Any?) as Any, expectedUnwrappedValue: 5)
+    
+    // 1.
+    checkIsValue(wrappedValue: 5 as Int?, expectedUnwrappedValue: 5)
+    checkIsNil(wrappedValue: nil as Int?, expectedType: Int.self)
+    
+    checkIsValue(wrappedValue: (5 as Int?) as Any, expectedUnwrappedValue: 5)
+    checkIsNil(wrappedValue: (nil as Int?) as Any, expectedType: Int.self)
+    
+    checkIsValue(wrappedValue: (5 as Int?) as Any?, expectedUnwrappedValue: 5)
+    checkIsNil(wrappedValue: (nil as Int?) as Any?, expectedType: Int.self)
+    
+    checkIsValue(wrappedValue: ((5 as Int?) as Any?) as Any, expectedUnwrappedValue: 5)
+    checkIsNil(wrappedValue: ((nil as Int?) as Any?) as Any, expectedType: Int.self)
+    
+    // 2.
+    checkIsValue(wrappedValue: Int??.some(.some(5)), expectedUnwrappedValue: 5)
+    checkIsNil(wrappedValue: Int??.some(.none), expectedType: Int.self)
+    checkIsNil(wrappedValue: Int??.none, expectedType: Int.self)
+    
+    checkIsValue(wrappedValue: Int??.some(.some(5)) as Any, expectedUnwrappedValue: 5)
+    checkIsNil(wrappedValue: Int??.some(.none) as Any, expectedType: Int.self)
+    checkIsNil(wrappedValue: Int??.none as Any, expectedType: Int.self)
+    
+    checkIsValue(wrappedValue: Int??.some(.some(5)) as Any?, expectedUnwrappedValue: 5)
+    checkIsNil(wrappedValue: Int??.some(.none) as Any?, expectedType: Int.self)
+    checkIsNil(wrappedValue: Int??.none as Any?, expectedType: Int.self)
+    
+    checkIsValue(wrappedValue: (Int??.some(.some(5)) as Any?) as Any, expectedUnwrappedValue: 5)
+    checkIsNil(wrappedValue: (Int??.some(.none) as Any?) as Any, expectedType: Int.self)
+    checkIsNil(wrappedValue: (Int??.none as Any?) as Any, expectedType: Int.self)
+    
+    // 3.
+    checkIsValue(wrappedValue: Any???.some(.some(.some(5 as Any))), expectedUnwrappedValue: 5)
+    checkIsValue(wrappedValue: Int???.some(.some(.some(5))), expectedUnwrappedValue: 5)
+    checkIsNil(wrappedValue: Int???.some(.some(.none)), expectedType: Int.self)
+    checkIsNil(wrappedValue: Int???.some(.none), expectedType: Int.self)
+    checkIsNil(wrappedValue: Int???.none, expectedType: Int.self)
+    
+    checkIsValue(wrappedValue: Any???.some(.some(.some(5 as Any))) as Any, expectedUnwrappedValue: 5)
+    checkIsValue(wrappedValue: Int???.some(.some(.some(5))) as Any, expectedUnwrappedValue: 5)
+    checkIsNil(wrappedValue: Int???.some(.some(.none)) as Any, expectedType: Int.self)
+    checkIsNil(wrappedValue: Int???.some(.none) as Any, expectedType: Int.self)
+    checkIsNil(wrappedValue: Int???.none as Any, expectedType: Int.self)
+    
+    checkIsValue(wrappedValue: Any???.some(.some(.some(5 as Any))) as Any?, expectedUnwrappedValue: 5)
+    checkIsValue(wrappedValue: Int???.some(.some(.some(5))) as Any?, expectedUnwrappedValue: 5)
+    checkIsNil(wrappedValue: Int???.some(.some(.none)) as Any?, expectedType: Int.self)
+    checkIsNil(wrappedValue: Int???.some(.none) as Any?, expectedType: Int.self)
+    checkIsNil(wrappedValue: Int???.none as Any?, expectedType: Int.self)
+    
+    checkIsValue(wrappedValue: (Any???.some(.some(.some(5 as Any))) as Any?) as Any, expectedUnwrappedValue: 5)
+    checkIsValue(wrappedValue: (Int???.some(.some(.some(5))) as Any?) as Any, expectedUnwrappedValue: 5)
+    checkIsNil(wrappedValue: (Int???.some(.some(.none)) as Any?) as Any, expectedType: Int.self)
+    checkIsNil(wrappedValue: (Int???.some(.none) as Any?) as Any, expectedType: Int.self)
+    checkIsNil(wrappedValue: (Int???.none as Any?) as Any, expectedType: Int.self)
+  }
+  
+  // MARK: - Reusable funcs
+  
+  private func checkIsValue<Value, RawValue>(wrappedValue: Value,
+                                             expectedUnwrappedValue: RawValue,
+                                             line: Int = #line,
+                                             column: Int = #column) {
+    let location = SourceLocation(fileID: #fileID, filePath: #filePath, line: line, column: column)
+    let expectedType = RawValue.self
+    
+    checkTypeOfWrapped(wrappedValue: wrappedValue, expectedType: expectedType, location: location)
+    
+    let flattenedOptional = ErrorInfoFuncs.flattenOptional(any: wrappedValue)
+    switch flattenedOptional {
+    case .value(let any):
+      #expect(type(of: any) == expectedType.self, sourceLocation: location)
+      #expect("\(any)" == "\(expectedUnwrappedValue)", sourceLocation: location)
       
-      let typeOfWrapped = ErrorInfoFuncs.typeOfWrapped(any: integer)
-      let flattenedOptional = ErrorInfoFuncs.flattenOptional(any: integer)
-      
-      let isExpectedTypeOfWrapped = typeOfWrapped == Int.self
-      #expect(isExpectedTypeOfWrapped)
-      #expect("\(typeOfWrapped)" == "Int")
-      
-      switch flattenedOptional {
-      case .value(let any):
-        #expect(type(of: any) == Int.self)
-        #expect("\(any)" == "\(integer)")
-      case .nilInstance:
-        Issue.record("Unexpected nil value")
-      }
+    case .nilInstance:
+      Issue.record("Unexpected nil value", sourceLocation: location)
     }
+  }
+  
+  private func checkIsNil<Value, T>(wrappedValue: Value,
+                                    expectedType: T.Type,
+                                    line: Int = #line,
+                                    column: Int = #column) {
+    let location = SourceLocation(fileID: #fileID, filePath: #filePath, line: line, column: column)
     
-    //    print("___ type: ", typeOfWrapped(any: Optional<Optional<Optional<Int>>>.some(.some(.some(5)))))
-    //    print("___ type: ", typeOfWrapped(any: Optional<Optional<Optional<Int>>>.some(.some(.none))))
-    //    print("___ type: ", typeOfWrapped(any: Optional<Optional<Optional<Int>>>.some(.none)))
-    //    print("___ type: ", typeOfWrapped(any: Optional<Optional<Optional<Int>>>.none))
+    checkTypeOfWrapped(wrappedValue: wrappedValue, expectedType: expectedType, location: location)
     
-    //    let value = Optional(Optional(0)) as Any
-        let value = 4 // Optional<Optional<Optional<Int>>>.some(.some(.some(5)))
+    let flattenedOptional = ErrorInfoFuncs.flattenOptional(any: wrappedValue)
+    switch flattenedOptional {
+    case .value(let any):
+      Issue.record("Unexpected value \(any), nil is expected", sourceLocation: location)
+      
+    case .nilInstance(let wrappedType):
+      let isExpectedWrappedType = wrappedType == expectedType
+      #expect(isExpectedWrappedType, "type associated with nil not equal to expected", sourceLocation: location)
+    }
+  }
+  
+  private func checkTypeOfWrapped<Value, T>(wrappedValue: Value, expectedType: T.Type, location: SourceLocation) {
+    let typeOfWrapped = ErrorInfoFuncs.typeOfWrapped(any: wrappedValue)
     
-        do {
-          let typeErasedString: Any = ""
-          let typeErasedOptional: Any? = typeErasedString
-          let any = typeErasedOptional as Any
-          
-    //      print("___ type: ", typeOfWrapped(any: typeErasedString))
-    //      print("___ type: ", typeOfWrapped(any: typeErasedOptional))
-    //      print("___ type: ", typeOfWrapped(any: any))
-          
-    //      print("___ type: ", typeOfWrapped(any: Optional<Any>.some("")))
-          
-    //      print("___ type: ", typeOfWrapped(any: Optional<Any>.some("")))
-    //      print("___ type: ", typeOfWrapped(any: Optional<Optional<Optional<Any>>>.some(.some(.some("" as Any)))))
-        }
+    let isExpectedTypeOfWrapped = typeOfWrapped == expectedType
+    #expect(isExpectedTypeOfWrapped, "type not equal to expected", sourceLocation: location)
+    
+    #expect("\(typeOfWrapped)" == "\(expectedType)", "string interpolation not equal", sourceLocation: location)
   }
 }

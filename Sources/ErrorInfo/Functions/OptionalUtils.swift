@@ -28,7 +28,7 @@ extension ErrorInfoFuncs {
         return .nilInstance(typeOfWrapped: rootWrappedType)
       }
     } else {
-      return .value(any) // FIXME: check _dynamicType
+      return .value(any)
     }
   }
 }
