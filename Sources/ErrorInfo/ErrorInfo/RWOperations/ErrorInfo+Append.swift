@@ -10,7 +10,7 @@
 extension ErrorInfo {
   /// Instead of subscript overload with `String` key to prevent pollution of autocomplete for `ErronInfoLiteralKey` by tons of String methods.
   @_disfavoredOverload
-  public mutating func append(key dynamicKey: String, value newValue: (some ValueType)?) {
+  public mutating func append(key dynamicKey: String, value newValue: (some ValueProtocol)?) {
     _add(key: dynamicKey,
          keyOrigin: .dynamic,
          value: newValue,
@@ -20,7 +20,7 @@ extension ErrorInfo {
   }
   
   @available(*, deprecated, message: "for literal keys use subscript instead, append() is intended for dynamic keys)")
-  public mutating func append(key literalKey: StringLiteralKey, value newValue: (some ValueType)?) {
+  public mutating func append(key literalKey: StringLiteralKey, value newValue: (some ValueProtocol)?) {
     // deprecattion is used to guide users
     _add(key: literalKey.rawValue,
          keyOrigin: literalKey.keyOrigin,
@@ -36,7 +36,7 @@ extension ErrorInfo {
 // MARK: Append IfNotNil
 
 extension ErrorInfo {
-  public mutating func appendIfNotNil(_ value: (any ValueType)?,
+  public mutating func appendIfNotNil(_ value: (some ValueProtocol)?,
                                       forKey literalKey: StringLiteralKey,
                                       duplicatePolicy: ValueDuplicatePolicy = .rejectEqual) {
     guard let value else { return }
@@ -47,7 +47,7 @@ extension ErrorInfo {
   }
   
   @_disfavoredOverload
-  public mutating func appendIfNotNil(_ value: (any ValueType)?,
+  public mutating func appendIfNotNil(_ value: (some ValueProtocol)?,
                                       forKey dynamicKey: String,
                                       duplicatePolicy: ValueDuplicatePolicy = .rejectEqual) {
     guard let value else { return }
@@ -60,27 +60,10 @@ extension ErrorInfo {
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
-// MARK: Append ContentsOf
-
-extension ErrorInfo {
-  public mutating func append(contentsOf sequence: some Sequence<(String, any ValueType)>,
-                              duplicatePolicy: ValueDuplicatePolicy,
-                              collisionSource collisionOrigin: CollisionSource.Origin = .fileLine()) {
-    for (dynamicKey, value) in sequence {
-      _add(key: dynamicKey,
-           keyOrigin: .dynamic,
-           value: value,
-           preserveNilValues: true, // has no effect here
-           duplicatePolicy: duplicatePolicy,
-           collisionSource: .onSequenceConsumption(origin: collisionOrigin))
-    }
-  }
-}
-
 extension ErrorInfo {
   internal mutating func _singleKeyValuePairAppend(key: String,
                                                    keyOrigin: KeyOrigin,
-                                                   value: any ValueType,
+                                                   value: some ValueProtocol,
                                                    duplicatePolicy: ValueDuplicatePolicy) {
     _add(key: key,
          keyOrigin: keyOrigin,

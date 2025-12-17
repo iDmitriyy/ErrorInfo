@@ -6,13 +6,13 @@
 //
 
 public struct ErrorInfoGeneric<Key: Hashable, GValue: Equatable>: Sequence {
-  public typealias Element = (key: Key, value: TaggedValue)
-  public typealias TaggedValue = CollisionTaggedValue<Record, CollisionSource>
+  public typealias Element = (key: Key, value: AnnotatedRecord)
+  public typealias AnnotatedRecord = CollisionTaggedValue<Record, CollisionSource>
   
   @usableFromInline internal typealias BackingStorage = OrderedMultipleValuesForKeyStorage<Key, Record, CollisionSource>
   
   @usableFromInline internal var _storage: BackingStorage
-  
+    
   private init(storage: BackingStorage) {
     _storage = storage
   }
@@ -33,10 +33,14 @@ public struct ErrorInfoGeneric<Key: Hashable, GValue: Equatable>: Sequence {
 
 extension ErrorInfoGeneric {
   public struct Record {
-    let keyOrigin: KeyOrigin
-    let someValue: GValue
+    public let keyOrigin: KeyOrigin
+    public let someValue: GValue
   }
 }
+
+extension ErrorInfoGeneric: Sendable where Key: Sendable, GValue: Sendable {}
+
+extension ErrorInfoGeneric.Record: Sendable where GValue: Sendable {}
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 

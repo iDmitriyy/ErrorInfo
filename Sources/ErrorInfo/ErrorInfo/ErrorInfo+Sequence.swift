@@ -19,7 +19,7 @@ extension ErrorInfo: Sequence {
     public mutating func next() -> Element? {
       // It works like `.compacted()`, skipping all nil values
       while let (key, taggedRecord) = base.next() {
-        guard let value = taggedRecord.value._optional.maybeValue.asOptional else { continue }
+        guard let value = taggedRecord.record.someValue.getWrapped else { continue }
         return (key, value)
       }
       return nil

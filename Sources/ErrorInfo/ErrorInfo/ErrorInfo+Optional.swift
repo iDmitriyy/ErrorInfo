@@ -5,35 +5,11 @@
 //  Created by Dmitriy Ignatyev on 24/11/2025.
 //
 
-// MARK: - Entry Record
-
-extension ErrorInfo {
-  @usableFromInline internal struct _Record: Sendable, ApproximatelyEquatable { // typeprivate
-    @usableFromInline internal let _optional: _Optional
-    @usableFromInline internal let keyOrigin: KeyOrigin
-    
-    @usableFromInline
-    static func isApproximatelyEqual(lhs: borrowing Self, rhs: borrowing Self) -> Bool {
-      switch (lhs._optional.maybeValue, rhs._optional.maybeValue) {
-      case (.value, .nilInstance),
-           (.nilInstance, .value):
-        false
-        
-      case let (.value(lhsInstance), .value(rhsInstance)):
-        ErrorInfoFuncs.isEqualAny(lhsInstance, rhsInstance)
-        
-      case let (.nilInstance(lhsType), .nilInstance(rhsType)):
-        lhsType == rhsType
-      }
-    }
-  }
-}
-
 // MARK: - Optional
 
 extension ErrorInfo {
-  @usableFromInline internal struct _Optional: Sendable, Equatable {
-    @usableFromInline internal let maybeValue: MaybeValue
+  @usableFromInline internal struct EquatableOptionalAnyValue: Sendable, Equatable, ErrorInfoOptionalRepresentable {
+    @usableFromInline internal let maybeValue: OptionalAnyValue
     
     internal static func value(_ value: any ErrorInfoValueType) -> Self {
       Self(maybeValue: .value(value))
@@ -42,6 +18,10 @@ extension ErrorInfo {
     internal static func nilInstance(typeOfWrapped: any Sendable.Type) -> Self {
       Self(maybeValue: .nilInstance(typeOfWrapped: typeOfWrapped))
     }
+    
+    @usableFromInline var getWrapped: (ValueType)? { maybeValue.getWrapped }
+    
+    var isValue: Bool { maybeValue.isValue }
     
     public static func == (lhs: Self, rhs: Self) -> Bool {
       switch (lhs.maybeValue, rhs.maybeValue) {
@@ -62,11 +42,11 @@ extension ErrorInfo {
 // MARK: - MaybeValue
 
 extension ErrorInfo {
-  public enum MaybeValue: Sendable {
+  public enum OptionalAnyValue: Sendable {
     case value(any ErrorInfoValueType)
     case nilInstance(typeOfWrapped: any Sendable.Type)
     
-    public var asOptional: (any ErrorInfoValueType)? {
+    public var getWrapped: ValueType? {
       switch self {
       case .value(let value): value
       case .nilInstance: nil

@@ -140,11 +140,15 @@ extension ErrorInfo {
     // Improvement: reserve capacity
     for donator in donators {
       for (key, valueWrapper) in donator._storage {
-        recipient._storage
-          .appendResolvingCollisions(key: key,
-                                     value: valueWrapper.value,
-                                     insertIfEqual: true,
-                                     collisionSource: valueWrapper.collisionSource ?? .onMerge(origin: mergeOrigin))
+//        recipient._storage.__withCollisionresolvingAdd(key: key,
+//                                                       record: ,
+//                                                       insertIfEqual: ,
+//                                                       collisionSource: )
+//          .appendResolvingCollisions(key: key,
+//                                     value: valueWrapper.value,
+//                                     insertIfEqual: true,
+//                                     collisionSource: valueWrapper.collisionSource ?? .onMerge(origin: mergeOrigin))
+        
         // TBD: should collizion source be composite / indirect?
         // Keep the most simple variant for now
         // ["a": 1] merge with ["a": 1, a: "1"(collision#1)]

@@ -1,5 +1,5 @@
 //
-//  ErrorInfoAny+AppendContentsOf.swift
+//  ErrorInfo+AppendContentsOf.swift
 //  ErrorInfo
 //
 //  Created by Dmitriy Ignatyev on 17/12/2025.
@@ -7,7 +7,7 @@
 
 // MARK: - Append ContentsOf
 
-extension ErrorInfoAny {
+extension ErrorInfo {
   public mutating func append(contentsOf sequence: some Sequence<(String, ValueType)>,
                               duplicatePolicy: ValueDuplicatePolicy,
                               collisionSource collisionOrigin: CollisionSource.Origin = .fileLine()) {

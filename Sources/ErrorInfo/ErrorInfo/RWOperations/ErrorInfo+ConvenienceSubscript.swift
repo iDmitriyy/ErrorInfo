@@ -146,8 +146,8 @@ extension ErrorInfo.CustomOptionsView {
     by newValue: any ErrorInfoValueType,
     preserveNilValues: Bool? = nil,
     duplicatePolicy: ValueDuplicatePolicy? = nil,
-  ) -> ValuesForKey<any ErrorInfoValueType>? {
-    let oldValues = pointer.pointee._storage.removeAllValues(forKey: dynamicKey)
+  ) -> ValuesForKey<ErrorInfo.ValueType>? {
+    let oldValues = pointer.pointee._storage.removeAllRecords_ReturningNonNilValues(forKey: dynamicKey)
     // collisions never happens when replacing
     pointer.pointee._add(key: dynamicKey,
                          keyOrigin: .dynamic,
@@ -155,7 +155,7 @@ extension ErrorInfo.CustomOptionsView {
                          preserveNilValues: preserveNilValues ?? self.preserveNilValues,
                          duplicatePolicy: duplicatePolicy ?? self.duplicatePolicy,
                          collisionSource: .onAppend(origin: collisionOrigin))
-    return oldValues?._compactMap { $0.value._optional.maybeValue.asOptional }
+    return oldValues
   }
 }
 

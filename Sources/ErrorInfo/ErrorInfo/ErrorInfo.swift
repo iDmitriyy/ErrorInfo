@@ -6,13 +6,15 @@
 //
 
 public struct ErrorInfo: Sendable {
-  public typealias Element = (key: String, value: any ValueType)
+  public typealias Element = (key: String, value: ValueType)
   
-  public typealias ValueType = ErrorInfoValueType
+  public typealias KeyType = String
+  public typealias ValueType = any ValueProtocol
+  public typealias ValueProtocol = Sendable & Equatable & CustomStringConvertible
   
-  @usableFromInline internal typealias BackingStorage = OrderedMultiValueErrorInfoGeneric<String, _Record>
+  @usableFromInline internal typealias BackingStorage = ErrorInfoGeneric<KeyType, EquatableOptionalAnyValue>
   
-  @usableFromInline internal var _storage: BackingStorage
+  @usableFromInline internal var _storage: ErrorInfoGeneric<KeyType, EquatableOptionalAnyValue>
   
   // Improvement: BackingStorage @_specialize(where Self == ...)
   
@@ -31,7 +33,7 @@ public struct ErrorInfo: Sendable {
   }
   
   /// An empty instance of `ErrorInfo`.
-  public static let empty: Self = Self()
+  public static var empty: Self { Self() }
 }
 
 enum ErrorInfoOptional: Sendable, ErrorInfoOptionalRepresentable {
@@ -60,13 +62,13 @@ enum ErrorInfoOptional: Sendable, ErrorInfoOptionalRepresentable {
 extension ErrorInfo {
   /// The root appending function for public API imps. The term "_add" is chosen to visually / syntatically differentiate from family of public `append()`functions.
   @usableFromInline
-  internal mutating func _add<V: ValueType>(key: String,
-                                            keyOrigin: KeyOrigin,
-                                            value newValue: V?,
-                                            preserveNilValues: Bool,
-                                            duplicatePolicy: ValueDuplicatePolicy,
-                                            collisionSource: @autoclosure () -> CollisionSource) {
-    let optional: _Optional
+  internal mutating func _add<V: ValueProtocol>(key: String,
+                                                keyOrigin: KeyOrigin,
+                                                value newValue: V?,
+                                                preserveNilValues: Bool,
+                                                duplicatePolicy: ValueDuplicatePolicy,
+                                                collisionSource: @autoclosure () -> CollisionSource) {
+    let optional: EquatableOptionalAnyValue
     if let newValue {
       optional = .value(newValue)
     } else if preserveNilValues {
@@ -75,10 +77,10 @@ extension ErrorInfo {
       return
     }
     
-    _storage.appendResolvingCollisions(key: key,
-                                       value: _Record(_optional: optional, keyOrigin: keyOrigin),
-                                       insertIfEqual: duplicatePolicy.insertIfEqual,
-                                       collisionSource: collisionSource())
+    _storage.__withCollisionresolvingAdd(key: key,
+                                         record: BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
+                                         insertIfEqual: duplicatePolicy.insertIfEqual,
+                                         collisionSource: collisionSource())
   }
   
   // SE-0352 Implicitly Opened Existentials
@@ -91,17 +93,17 @@ extension ErrorInfo {
                                             preserveNilValues: Bool,
                                             duplicatePolicy: ValueDuplicatePolicy,
                                             collisionSource: @autoclosure () -> CollisionSource) {
-    let optional: _Optional
+    let optional: EquatableOptionalAnyValue
     if preserveNilValues {
-      optional = .nilInstance(typeOfWrapped: (any ErrorInfoValueType).self)
+      optional = .nilInstance(typeOfWrapped: ValueType.self)
     } else {
       return
     }
     
-    _storage.appendResolvingCollisions(key: key,
-                                       value: _Record(_optional: optional, keyOrigin: keyOrigin),
-                                       insertIfEqual: duplicatePolicy.insertIfEqual,
-                                       collisionSource: collisionSource())
+    _storage.__withCollisionresolvingAdd(key: key,
+                                         record: BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
+                                         insertIfEqual: duplicatePolicy.insertIfEqual,
+                                         collisionSource: collisionSource())
   }
 }
 

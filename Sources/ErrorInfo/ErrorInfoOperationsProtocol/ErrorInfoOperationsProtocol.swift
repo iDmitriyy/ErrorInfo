@@ -5,11 +5,16 @@
 //  Created by Dmitriy Ignatyev on 16/12/2025.
 //
 
+public import protocol InternalCollectionsUtilities._UniqueCollection
+
 /// Protocol defines all methods for
 /// Keeps documentation for common methods.
 public protocol ErrorInfoOperationsProtocol {
+  associatedtype KeyType: Hashable
   associatedtype ValueType
-  associatedtype KeyType
+  
+  associatedtype Keys: Collection<KeyType> & _UniqueCollection
+  associatedtype AllKeys: Collection<KeyType>
   
   /// Creates an empty `ErrorInfo` instance.
   init()
@@ -19,6 +24,31 @@ public protocol ErrorInfoOperationsProtocol {
   
   /// Returns empty instance of `ErrorInfo`.
   static var empty: Self { get }
+  
+  // ===-------------------------------------------------------------------------------------------------------------------=== //
+    
+  // MARK: - Keys
+  
+  /// Returns a collection of **unique** keys from the `ErrorInfo` instance.
+  ///
+  /// # Example:
+  /// ```swift
+  /// let errorInfo: ErrorInfo = ["a": 0, "b": 1, "c": 3, "b": 2]
+  ///
+  /// let keys = errorInfo.keys // ["a", "b", "c"]
+  /// ```
+  var keys: Keys { get }
+  
+  /// Returns a collection of all (possibly **non unique**) keys in the `ErrorInfo` instance. Unlike `keys`, this does not enforce uniqueness, so it may contain duplicate entries, if there
+  /// are multiple values for some keys.
+  ///
+  /// # Example:
+  /// ```swift
+  /// let errorInfo: ErrorInfo = ["a": 0, "b": 1, "c": 3, "b": 2]
+  ///
+  /// let allKeys = errorInfo.allKeys // ["a", "b", "c", "b"]
+  /// ```
+  var allKeys: AllKeys { get }
   
   // ===-------------------------------------------------------------------------------------------------------------------=== //
     
@@ -247,6 +277,12 @@ public protocol ErrorInfoOperationsProtocol {
   
   // MARK: - RemoveAll
   
+  /// Removes all key-value pairs from the storage, optionally keeping its capacity.
+  ///
+  /// - Parameter keepCapacity: Pass `true` to keep the existing capacity of
+  ///   the errorInfo after removing its records. The default value is `false`.
+  ///
+  /// - Complexity: O(*n*), where *n* is the count of all records.
   mutating func removeAll(keepingCapacity keepCapacity: Bool)
   
   // ===-------------------------------------------------------------------------------------------------------------------=== //

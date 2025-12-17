@@ -11,6 +11,10 @@ extension ErrorInfoGeneric {
   func allSomeValues(forKey key: Key) -> ValuesForKey<GValue>? {
     _storage.allValues(forKey: key)?._compactMap { $0.record.someValue }
   }
+  
+  func allAnnotatedRecords(forKey key: Key) -> ValuesForKey<AnnotatedRecord>? {
+    _storage.allValues(forKey: key)
+  }
 }
 
 extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {

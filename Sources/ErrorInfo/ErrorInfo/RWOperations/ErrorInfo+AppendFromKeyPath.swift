@@ -53,7 +53,7 @@ extension ErrorInfo {
   /// // The resulting keys will not be prefixed with "Car":
   /// errorInfo.keys // ["make", "model", "year"]
   /// ```
-  public mutating func appendProperties<R, each V: ValueType>(
+  public mutating func appendProperties<R, each V: ValueProtocol>(
     of instance: R,
     keysPrefix: KeyPathPrefixOption? = .typeName,
     collisionSource collisionOrigin: CollisionSource.Origin = .fileLine(),

@@ -41,7 +41,7 @@ extension ErrorInfo {
   ///
   /// let id = errorInfo[.id] as? Int // returns 6
   /// ```
-  public subscript(_ literalKey: StringLiteralKey) -> (any ValueType)? {
+  public subscript(_ literalKey: StringLiteralKey) -> (ValueType)? {
     lastValue(forKey: literalKey)
   }
   
@@ -66,7 +66,7 @@ extension ErrorInfo {
   /// errorInfo[.message] = message
   /// errorInfo["price"] = price // stores `nil` with Wrapped-type `Double`
   /// ```
-  public subscript<V: ValueType>(_ literalKey: StringLiteralKey) -> V? {
+  public subscript<V: ValueProtocol>(_ literalKey: StringLiteralKey) -> V? {
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
     get {
       allValues(forKey: literalKey.rawValue)?.first as? V

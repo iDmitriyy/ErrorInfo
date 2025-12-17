@@ -29,41 +29,41 @@ extension ErrorInfo {
   
   // TODO: ordered json  of asEncodableDictionary
   
-  public func asEncodableDictionary() -> OrderedEncodableDictionary {
-    // proof of concept for now
-    
-    // TODO: - proper implementation
-    // nil options
-    // keyOrigin, collision, prefix
-    
-    let valueTransform: (CollisionTaggedValue<ErrorInfo._Record, CollisionSource>) -> AnyEncodableSingleValue = { taggedRecord in
-      switch taggedRecord.value._optional.maybeValue {
-      case .value(let sendableValueExistential):
-        if let anyEncodableSendable = __conditionalCast(sendableValueExistential, to: (any Encodable & Sendable).self) {
-          // TODO: - need to make proper AnyEncodable, not only for primitives.
-          return AnyEncodableSingleValue(anyEncodableSendable)
-        } else {
-          return AnyEncodableSingleValue(String(describing: sendableValueExistential))
-        }
-      case .nilInstance:
-        return AnyEncodableSingleValue("nil") // TODO: - nil as object
-      }
-    }
-    
-    let orderedDict = Merge
-      .summaryInfo(infoProviders: [self],
-                   infoKeyPath: \._storage,
-                   elementKeyStringPath: \.self,
-                   keyOriginAvailability: .notAvailable,
-                   collisionAvailability: .notAvailable,
-                   keysPrefixOption: .noPrefix,
-                   annotationsFormat: .default,
-                   randomGenerator: SystemRandomNumberGenerator(),
-                   infoSourceSignatureBuilder: { _ in "" },
-                   valueTransform: valueTransform)
-        
-    return OrderedEncodableDictionary(wrapped: orderedDict)
-  }
+//  public func asEncodableDictionary() -> OrderedEncodableDictionary {
+//    // proof of concept for now
+//    
+//    // TODO: - proper implementation
+//    // nil options
+//    // keyOrigin, collision, prefix
+//    
+//    let valueTransform: (CollisionTaggedValue<ErrorInfo.OptionalAnyValue, CollisionSource>) -> AnyEncodableSingleValue = { optionalValue in
+//      switch optionalValue {
+//      case .value(let sendableValueExistential):
+//        if let anyEncodableSendable = __conditionalCast(sendableValueExistential, to: (any Encodable & Sendable).self) {
+//          // TODO: - need to make proper AnyEncodable, not only for primitives.
+//          return AnyEncodableSingleValue(anyEncodableSendable)
+//        } else {
+//          return AnyEncodableSingleValue(String(describing: sendableValueExistential))
+//        }
+//      case .nilInstance:
+//        return AnyEncodableSingleValue("nil") // TODO: - nil as object
+//      }
+//    }
+//    
+//    let orderedDict = Merge
+//      .summaryInfo(infoProviders: [self],
+//                   infoKeyPath: \._storage,
+//                   elementKeyStringPath: \.self,
+//                   keyOriginAvailability: .notAvailable,
+//                   collisionAvailability: .notAvailable,
+//                   keysPrefixOption: .noPrefix,
+//                   annotationsFormat: .default,
+//                   randomGenerator: SystemRandomNumberGenerator(),
+//                   infoSourceSignatureBuilder: { _ in "" },
+//                   valueTransform: valueTransform)
+//        
+//    return OrderedEncodableDictionary(wrapped: orderedDict)
+//  }
 }
 
 private import struct OrderedCollections.OrderedDictionary
