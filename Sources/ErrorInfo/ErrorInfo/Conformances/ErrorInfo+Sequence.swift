@@ -18,8 +18,10 @@ extension ErrorInfo: Sequence {
     @inlinable
     public mutating func next() -> Element? {
       // It works like `.compacted()`, skipping all nil values
-      while let (key, taggedRecord) = base.next() {
-        guard let value = taggedRecord.record.someValue.getWrapped else { continue }
+      while let (key, annotatedRecord) = base.next() {
+        guard let value = annotatedRecord.record.someValue.getWrapped else {
+          continue
+        }
         return (key, value)
       }
       return nil

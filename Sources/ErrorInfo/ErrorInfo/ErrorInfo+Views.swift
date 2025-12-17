@@ -20,14 +20,14 @@ extension ErrorInfo {
 // MARK: - Full Info View
 
 extension ErrorInfo {
-  public typealias FullInfoRecord = (keyOrigin: KeyOrigin, value: OptionalAnyValue, collisionSource: CollisionSource?)
+  public typealias FullInfoRecord = (value: OptionalAnyValue, keyOrigin: KeyOrigin, collisionSource: CollisionSource?)
   public typealias FullInfoElement = (key: String, record: FullInfoRecord)
   
   /// Returns a sequence of tuples, where each element consists of a key with its origin and a collision-tagged value.
   /// This view provides an enriched sequence of key-value pairs with additional metadata, useful for deep inspection, logging or debugging.
   public var fullInfoView: some Sequence<FullInfoElement> {
     _storage.lazy.map { key, taggedRecord -> FullInfoElement in
-      let record = (taggedRecord.record.keyOrigin, taggedRecord.record.someValue.maybeValue, taggedRecord.collisionSource)
+      let record = (taggedRecord.record.someValue.maybeValue, taggedRecord.record.keyOrigin, taggedRecord.collisionSource)
       return (key, record)
     }
   }
@@ -41,7 +41,7 @@ extension ErrorInfo {
     guard let annotatedRecords = _storage.allAnnotatedRecords(forKey: dynamicKey) else { return nil }
 
     return annotatedRecords.map { annotatedRecord -> FullInfoRecord in
-      (annotatedRecord.record.keyOrigin, annotatedRecord.record.someValue.maybeValue, annotatedRecord.collisionSource)
+      (annotatedRecord.record.someValue.maybeValue, annotatedRecord.record.keyOrigin, annotatedRecord.collisionSource)
     }
   }
 }

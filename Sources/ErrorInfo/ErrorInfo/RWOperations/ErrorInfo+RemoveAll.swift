@@ -8,7 +8,7 @@
 // MARK: - Remove All
 
 extension ErrorInfo {
-  internal mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
+  public mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
     _storage.removeAll(keepingCapacity: keepCapacity)
   }
 }

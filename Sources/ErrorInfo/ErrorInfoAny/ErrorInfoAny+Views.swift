@@ -2,7 +2,7 @@
 //  ErrorInfoAny+Views.swift
 //  ErrorInfo
 //
-//  Created by tmp on 17/12/2025.
+//  Created by Dmitriy Ignatyev on 17/12/2025.
 //
 
 public import protocol InternalCollectionsUtilities._UniqueCollection

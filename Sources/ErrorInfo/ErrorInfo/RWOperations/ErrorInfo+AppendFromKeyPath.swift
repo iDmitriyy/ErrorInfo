@@ -78,7 +78,7 @@ extension ErrorInfo {
            collisionSource: .onAppend(origin: collisionOrigin))
     }
   }
-  // TBD: - slow on release builds. 5 properties takes ~ 0.0004 s.
+  // TBD: - slow on release builds. 5 properties takes ~0.0004s.
   @resultBuilder
   public struct ErrorInfoKeyPathsBuilder {
     public static func buildBlock<R, each V: ValueProtocol>(_ values: repeat KeyPath<R, each V>) -> (repeat KeyPath<R, each V>) {

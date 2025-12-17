@@ -5,6 +5,8 @@
 //  Created by Dmitriy Ignatyev on 07/10/2025.
 //
 
+// Improvement: add keyPrefix arg to withOptions func
+
 // MARK: - Modify With Custom Options
 
 extension ErrorInfo {

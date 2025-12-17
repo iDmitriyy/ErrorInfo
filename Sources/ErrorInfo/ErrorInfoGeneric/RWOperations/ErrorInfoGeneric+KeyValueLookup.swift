@@ -78,16 +78,12 @@ extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
     // _storage.iterateWithResult(forKey: key), to eliminate allocations
     // on the other side, allValues(forKey:) should be quite fast.
     
-    
 //    _storage.iterateAllValues(forKey: key) { annotatedRecord in
-//
 //    }
     
 //    if let allRecords = _storage.allValues(forKey: key) {
 //      if allRecords.count == 1 {
-//
 //      } else {
-//
 //      }
 //    }
     

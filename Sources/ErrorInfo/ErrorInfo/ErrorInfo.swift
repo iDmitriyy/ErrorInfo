@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 14.12.2024.
 //
 
-public struct ErrorInfo: Sendable {
+public struct ErrorInfo: Sendable, ErrorInfoOperationsProtocol {  
   public typealias Element = (key: String, value: ValueType)
   
   public typealias KeyType = String
@@ -20,8 +20,6 @@ public struct ErrorInfo: Sendable {
   @usableFromInline internal typealias BackingStorage = ErrorInfoGeneric<KeyType, EquatableOptionalAnyValue>
   
   @usableFromInline internal var _storage: ErrorInfoGeneric<KeyType, EquatableOptionalAnyValue>
-  
-  // Improvement: BackingStorage @_specialize(where Self == ...)
   
   private init(storage: BackingStorage) {
     _storage = storage
@@ -41,6 +39,9 @@ public struct ErrorInfo: Sendable {
   public static var empty: Self { Self() }
 }
 
+extension ErrorInfo {
+  
+}
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
 // MARK: - Append KeyValue with all arguments passed explicitly

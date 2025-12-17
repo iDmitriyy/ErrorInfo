@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 13/12/2025.
 //
 
-public struct ErrorInfoAny: ErrorInfoOperationsProtocol {  
+public struct ErrorInfoAny: ErrorInfoOperationsProtocol {
   public typealias Element = (key: String, value: Any)
   
   public typealias KeyType = String

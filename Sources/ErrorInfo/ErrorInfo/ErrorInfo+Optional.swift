@@ -23,7 +23,7 @@ extension ErrorInfo {
     
     var isValue: Bool { maybeValue.isValue }
     
-    public static func == (lhs: Self, rhs: Self) -> Bool {
+    @usableFromInline static func == (lhs: Self, rhs: Self) -> Bool {
       switch (lhs.maybeValue, rhs.maybeValue) {
       case (.value, .nilInstance),
            (.nilInstance, .value):

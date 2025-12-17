@@ -5,6 +5,15 @@
 //  Created by Dmitriy Ignatyev on 13/12/2025.
 //
 
+/// ### Configurable
+/// - Value Type: any ErrorInfo | Any | ...
+/// - Optionality: yes custom | yes regular | non-optional
+/// - Key Type (typically String) | may be ASCIIString, StaticString
+///
+/// ### Builtin / non configurable:
+/// - collisionSource
+/// - keyOrigin
+/// - StringLiteralKey
 public struct ErrorInfoGeneric<Key: Hashable, GValue: Equatable>: Sequence {
   public typealias Element = (key: Key, value: AnnotatedRecord)
   public typealias AnnotatedRecord = CollisionTaggedValue<Record, CollisionSource>
@@ -110,63 +119,4 @@ extension ErrorInfoGeneric {
   }
 }
 
-/*
- Configurable
- - Value Type: any ErrorInfo | Any | ...
- - Optionality: yes custom | yes regular | non-optional
- - Key Type (typically String) | may be ASCIIString, StaticString
- 
- Builtin / non configurable:
- - collisionSource
- - keyOrigin
- - StringLiteralKey
- 
- subscript(_:)
- 
- hasValue(forKey:)                        <> hasNonNilValue(forKey:)
- hasMultipleRecords(forKey:)
- keyValueLookupResult(forKey:)            <> keyOptionalValueLookupResult(forKey:) | keyNonOptionalValueLookupResult(forKey:)
- hasMultipleRecordsForAtLeastOneKey()
- 
- firstValue(forKey:)                      <> firstNonNilValue(forKey:)
- 
- allValues(forKey:)                       <> allNonNilValues(forKey:)
- removeAllRecords(forKey:)
- replaceAllRecords(forKey:, by:)          <> replaceAllRecords(forKey:, byNonNilValue:)
- 
- append(key:, value:)                     <> append(key:, nonNilValue:) append(key:, optionalValue:)
- append(key:, value:)                     <> append(key:, nonNilValue:) append(key:, optionalValue:)
- 
- init(dictionaryLiteral:)
- appendKeyValues(_ literal:)
- 
- merge(with: ...)   appendResolvingCollisions(key:, value: valueWrapper.record)
- 
- Element(key: Key, record: )
- 
- // Non-optional storage
- hasEntry(forKey:)
-
- // Optional storage
- hasSomeEntry(forKey:)
- hasNonNilEntry(forKey:)
- hasNilEntry(forKey:)
- */
-
-// @frozen
-// public struct OpaqueGenericErrorInfo<Key: Hashable, GValue: Equatable> {
-//  @usableFromInline
-//  internal var _base: ErrorInfoGeneric<Key, GValue>
-//
-//  @inlinable @inline(__always)
-//  internal init(_base: ErrorInfoGeneric<Key, GValue>) {
-//    self._base = _base
-//  }
-// }
-//
-// public protocol ErrorInfoOptionalValueOperations {
-//  associatedtype OpaqueSrorageKey: Hashable
-//  associatedtype OpaqueStorageValue: Equatable, ErrorInfoOptionalRepresentable
-//
-//  var _opaqueStorage: OpaqueGenericErrorInfo<OpaqueSrorageKey, Value> { get }
-// }
+// Improvement: ErrorInfoGeneric @_specialize(where Self == ...)
