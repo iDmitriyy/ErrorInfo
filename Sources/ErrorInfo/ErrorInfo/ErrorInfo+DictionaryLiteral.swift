@@ -9,7 +9,7 @@
 
 extension ErrorInfo: ExpressibleByDictionaryLiteral {
   public typealias Key = StringLiteralKey
-  public typealias Value = (any ErrorInfoValueType)?
+  public typealias Value = ValueType? // allows to initialize by dictionary literal with optional values
     
   /// Allows initializing an `ErrorInfo` instance directly from a dictionary literal.
   /// Collisions during the merge are tracked with the `CollisionSource.onCreateWithDictionaryLiteral` source.
@@ -31,7 +31,7 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
   /// ```
   public init(dictionaryLiteral elements: (Key, Value)...) {
     self.init(minimumCapacity: elements.count)
-    _mergeKeyValuesImp(_dictionaryLiteral: elements, collisionSource: .onCreateWithDictionaryLiteral)
+    _appendKeyValuesImp(_dictionaryLiteral: elements, collisionSource: .onCreateWithDictionaryLiteral)
   }
 }
 
@@ -61,7 +61,7 @@ extension ErrorInfo {
   /// ```
   public mutating func appendKeyValues(_ literal: KeyValuePairs<Key, Value>,
                                        collisionSource origin: @autoclosure () -> CollisionSource.Origin = .fileLine()) {
-    _mergeKeyValuesImp(_dictionaryLiteral: literal, collisionSource: .onDictionaryConsumption(origin: origin()))
+    _appendKeyValuesImp(_dictionaryLiteral: literal, collisionSource: .onDictionaryConsumption(origin: origin()))
   }
 }
 
@@ -70,7 +70,7 @@ extension ErrorInfo {
 // MARK: - Imp
 
 extension ErrorInfo {
-  internal mutating func _mergeKeyValuesImp(_dictionaryLiteral elements: some Collection<(key: Key, value: Value)>,
+  internal mutating func _appendKeyValuesImp(_dictionaryLiteral elements: some Collection<(key: Key, value: Value)>,
                                             collisionSource: @autoclosure () -> CollisionSource) {
     // Improvement: try reserve capacity. perfomance tests
     for (literalKey, value) in elements {

@@ -11,7 +11,7 @@ extension ErrorInfo {
   @usableFromInline internal struct EquatableOptionalAnyValue: Sendable, Equatable, ErrorInfoOptionalRepresentable {
     @usableFromInline internal let maybeValue: OptionalAnyValue
     
-    internal static func value(_ value: any ErrorInfoValueType) -> Self {
+    internal static func value(_ value: ValueType) -> Self {
       Self(maybeValue: .value(value))
     }
     
@@ -43,10 +43,10 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   public enum OptionalAnyValue: Sendable {
-    case value(any ErrorInfoValueType)
+    case value(any ValueProtocol)
     case nilInstance(typeOfWrapped: any Sendable.Type)
     
-    public var getWrapped: ValueType? {
+    public var getWrapped: (any ValueProtocol)? {
       switch self {
       case .value(let value): value
       case .nilInstance: nil

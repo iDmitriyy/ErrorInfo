@@ -92,9 +92,8 @@ extension ErrorInfo {
 // MARK: - Subscript
 
 extension ErrorInfo.CustomOptionsView {
-  
-  /// `omitEqualValue`has higher priority than provided in `appendWith(typeInfoOptions:, omitEqualValue:, append:)` function.
-  public subscript<V: ErrorInfoValueType>(
+  /// `duplicatePolicy`has higher priority than provided in `appendWith(typeInfoOptions:, omitEqualValue:, append:)` function.
+  public subscript<V: ErrorInfo.ValueProtocol>(
     key literalKey: StringLiteralKey,
     preserveNilValues: Bool? = nil,
     duplicatePolicy: ValueDuplicatePolicy? = nil,
@@ -115,7 +114,7 @@ extension ErrorInfo.CustomOptionsView {
   
   /// `omitEqualValue`has higher priority than provided in `appendWith(typeInfoOptions:, omitEqualValue:, append:)` function.
   @_disfavoredOverload
-  public subscript<V: ErrorInfoValueType>(
+  public subscript<V: ErrorInfo.ValueProtocol>(
     key dynamicKey: String,
     preserveNilValues: Bool? = nil,
     duplicatePolicy: ValueDuplicatePolicy? = nil,
@@ -143,7 +142,7 @@ extension ErrorInfo.CustomOptionsView {
   @_disfavoredOverload @discardableResult
   public func replaceAllRecords(
     forKey dynamicKey: String,
-    by newValue: any ErrorInfoValueType,
+    by newValue: some ErrorInfo.ValueProtocol,
     preserveNilValues: Bool? = nil,
     duplicatePolicy: ValueDuplicatePolicy? = nil,
   ) -> ValuesForKey<ErrorInfo.ValueType>? {

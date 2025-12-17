@@ -10,6 +10,11 @@ public struct ErrorInfo: Sendable {
   
   public typealias KeyType = String
   public typealias ValueType = any ValueProtocol
+  
+  /// This approach addresses several important concerns:
+  /// - Thread Safety: The Sendable requirement is essential to prevent data races and ensure safe concurrent access.
+  /// - String Representation: Requiring CustomStringConvertible forces developers to provide meaningful string representations for stored values, which is invaluable for debugging and logging. It also prevents unexpected results when converting values to strings.
+  /// - Collision Resolution: The Equatable requirement allows to detect and potentially resolve collisions if different values are associated with the same key. This adds a layer of robustness.
   public typealias ValueProtocol = Sendable & Equatable & CustomStringConvertible
   
   @usableFromInline internal typealias BackingStorage = ErrorInfoGeneric<KeyType, EquatableOptionalAnyValue>
@@ -34,25 +39,6 @@ public struct ErrorInfo: Sendable {
   
   /// An empty instance of `ErrorInfo`.
   public static var empty: Self { Self() }
-}
-
-enum ErrorInfoOptional: Sendable, ErrorInfoOptionalRepresentable {
-  case value(any ErrorInfoValueType)
-  case nilInstance(typeOfWrapped: any Sendable.Type)
-  
-  var isValue: Bool {
-    switch self {
-    case .value: true
-    case .nilInstance: false
-    }
-  }
-  
-  var getWrapped: (any ErrorInfoValueType)? {
-    switch self {
-    case .value(let value): value
-    case .nilInstance: nil
-    }
-  }
 }
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //

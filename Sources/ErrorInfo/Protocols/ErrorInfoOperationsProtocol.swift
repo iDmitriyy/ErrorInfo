@@ -7,7 +7,7 @@
 
 public import protocol InternalCollectionsUtilities._UniqueCollection
 
-/// Protocol defines all methods for
+/// Protocol defines all methods for `ErrorInfo` types.
 /// Keeps documentation for common methods.
 public protocol ErrorInfoOperationsProtocol {
   associatedtype KeyType: Hashable
