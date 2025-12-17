@@ -38,6 +38,8 @@ extension ErrorInfoAny {
                                  preserveNilValues: Bool,
                                  duplicatePolicy: ValueDuplicatePolicy,
                                  collisionSource: @autoclosure () -> CollisionSource) {
+    // FIXME: - unwrap / remove nesting of value / type
+    // e.g. append(contentsOf sequence:)
     _storage._add(key: key,
                   keyOrigin: keyOrigin,
                   optionalValue: newValue,
@@ -45,27 +47,14 @@ extension ErrorInfoAny {
                   preserveNilValues: preserveNilValues,
                   duplicatePolicy: duplicatePolicy,
                   collisionSource: collisionSource())
-//    let optional: _Optional
-//    if let newValue {
-//      optional = .value(newValue)
-//    } else if preserveNilValues {
-//      optional = .nilInstance(typeOfWrapped: V.self)
-//    } else {
-//      return
-//    }
-//    
-//    _storage.appendResolvingCollisions(key: key,
-//                                       value: _Record(_optional: optional, keyOrigin: keyOrigin),
-//                                       insertIfEqual: duplicatePolicy.insertIfEqual,
-//                                       collisionSource: collisionSource())
   }
 }
 
 extension ErrorInfoAny {
   @usableFromInline
   internal struct EquatableOptionalAny: Equatable, ErrorInfoOptionalRepresentable {
-    public typealias Wrapped = Any
-    public typealias TypeOfWrapped = any Any.Type
+    typealias Wrapped = Any
+    typealias TypeOfWrapped = any Any.Type
     
     let maybeValue: ErrorInfoOptionalAny
     
@@ -74,7 +63,7 @@ extension ErrorInfoAny {
     }
     
     init(anyValue: any Any) {
-      self.maybeValue = ErrorInfoFuncs.flattenOptional(any: anyValue)
+      maybeValue = ErrorInfoFuncs.flattenOptional(any: anyValue)
     }
     
     static func value(_ anyValue: Any) -> Self {

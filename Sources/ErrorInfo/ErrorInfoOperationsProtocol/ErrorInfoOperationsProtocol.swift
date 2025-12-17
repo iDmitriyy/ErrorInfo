@@ -17,7 +17,7 @@ public protocol ErrorInfoOperationsProtocol {
   /// Creates an empty `ErrorInfo` instance with a specified minimum capacity.
   init(minimumCapacity: Int)
   
-  /// An empty instance of `ErrorInfo`.
+  /// Returns empty instance of `ErrorInfo`.
   static var empty: Self { get }
   
   // ===-------------------------------------------------------------------------------------------------------------------=== //
@@ -44,7 +44,6 @@ public protocol ErrorInfoOperationsProtocol {
   /// ```
   func allValues(forKey literalKey: StringLiteralKey) -> ValuesForKey<ValueType>?
   
-  
   /// Returns all non-nil values associated with a given key in the `ErrorInfo` storage.
   ///
   /// This method retrieves all values associated with the specified key, returning them as a sequence.
@@ -64,7 +63,6 @@ public protocol ErrorInfoOperationsProtocol {
   /// // errorInfo.allValues(forKey: "id") // returns [5, 6]
   /// ```
   @_disfavoredOverload func allValues(forKey dynamicKey: String) -> ValuesForKey<ValueType>?
-  
   
   // ===-------------------------------------------------------------------------------------------------------------------=== //
   
@@ -197,7 +195,8 @@ public protocol ErrorInfoOperationsProtocol {
   /// errorInfo["key1"] = "B"
   /// errorInfo["key2"] = Date()
   ///
-  /// errorInfo.hasMultipleRecordsForAtLeastOneKey() // true because "key1" has multiple records
+  /// errorInfo.hasMultipleRecordsForAtLeastOneKey()
+  /// // true because "key1" has multiple records
   /// ```
   func hasMultipleRecordsForAtLeastOneKey() -> Bool
   
@@ -248,11 +247,113 @@ public protocol ErrorInfoOperationsProtocol {
   
   // MARK: - RemoveAll
   
+  mutating func removeAll(keepingCapacity keepCapacity: Bool)
+  
   // ===-------------------------------------------------------------------------------------------------------------------=== //
   
   // MARK: - RemoveAll ForKey
   
+  /// Removes all records associated with the specified key and returns the removed non-nil values
+  /// as a sequence.
+  ///
+  /// - Parameter literalKey: The key for which the records should be removed.
+  ///
+  /// - Returns: A non-empty sequence of removed values, or `nil` if no values were associated with the key.
+  ///
+  /// # Example:
+  /// ```swift
+  /// var errorInfo = ErrorInfo()
+  ///
+  /// errorInfo[.id] = 5
+  /// errorInfo[.id] = 6
+  /// errorInfo[.id] = nil as Optional<String>
+  ///
+  /// let removedIDs = errorInfo.removeAllRecords(forKey: .id)
+  /// // returns [5, 6]
+  ///
+  /// let removedURL = errorInfo.removeAllRecords(forKey: .url)
+  /// // returns nil
+  /// ```
+  @discardableResult
+  mutating func removeAllRecords(forKey literalKey: StringLiteralKey) -> ValuesForKey<ValueType>?
+  
+  /// Removes all records associated with the specified key and returns the removed non-nil values
+  /// as a sequence.
+  ///
+  /// - Parameter dynamicKey: The key for which the records should be removed.
+  ///
+  /// - Returns: A non-empty sequence of removed values, or `nil` if no values were associated with the key.
+  ///
+  /// # Example:
+  /// ```swift
+  /// var errorInfo = ErrorInfo()
+  ///
+  /// errorInfo["id"] = 5
+  /// errorInfo["id"] = 6
+  /// errorInfo["id"] = nil as Optional<String>
+  ///
+  /// let removed = errorInfo.removeAllRecords(forKey: "id")
+  /// // returns [5, 6]
+  ///
+  /// let removedURL = errorInfo.removeAllRecords(forKey: "url")
+  /// // returns nil
+  /// ```
+  @_disfavoredOverload @discardableResult
+  mutating func removeAllRecords(forKey dynamicKey: String) -> ValuesForKey<ValueType>?
+  
   // ===-------------------------------------------------------------------------------------------------------------------=== //
   
   // MARK: - ReplaceAll ForKey
+  
+  /// Removes all existing records associated with the specified key and replaces them with
+  /// a new value, returning the removed non-nil values as a sequence.
+  ///
+  /// - Parameters:
+  ///   - literalKey: The key for which the records should be replaced.
+  ///   - newValue: The new value to associate with the specified key.
+  ///
+  /// - Returns: A non-empty sequence of the old values that were replaced, or `nil`
+  /// if no value were associated with the key.
+  ///
+  /// # Example:
+  /// ```swift
+  /// var errorInfo = ErrorInfo()
+  ///
+  /// errorInfo[.id] = 5
+  /// errorInfo[.id] = 6
+  /// errorInfo[.id] = nil as Optional<String>
+  ///
+  /// let removed = errorInfo.replaceAllRecords(forKey: .id, by: 11)
+  /// // removed == [5, 6]
+  /// // errorInfo now stores `11` for key `"id"`
+  /// ```
+  @discardableResult
+  mutating func replaceAllRecords(forKey literalKey: StringLiteralKey,
+                                  by newValue: ValueType) -> ValuesForKey<ValueType>?
+  
+  /// Removes all existing records associated with the specified key and replaces them with
+  /// a new value, returning the removed non-nil values as a sequence.
+  ///
+  /// - Parameters:
+  ///   - dynamicKey: The key for which the records should be replaced.
+  ///   - newValue: The new value to associate with the specified key.
+  ///
+  /// - Returns: A non-empty sequence of the old values that were replaced, or `nil`
+  ///  if no value were associated with the key.
+  ///
+  /// # Example:
+  /// ```swift
+  /// var errorInfo = ErrorInfo()
+  ///
+  /// errorInfo["id"] = 5
+  /// errorInfo["id"] = 6
+  /// errorInfo["id"] = nil as Optional<String>
+  ///
+  /// let removed = errorInfo.replaceAllRecords(forKey: "id", by: 11)
+  /// // removed == [5, 6]
+  /// // errorInfo now stores single record: `11` for key `"id"`
+  /// ```
+  @_disfavoredOverload @discardableResult
+  mutating func replaceAllRecords(forKey dynamicKey: String,
+                                  by newValue: ValueType) -> ValuesForKey<ValueType>?
 }

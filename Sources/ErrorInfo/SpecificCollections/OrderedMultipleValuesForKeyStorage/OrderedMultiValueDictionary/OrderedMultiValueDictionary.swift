@@ -183,7 +183,7 @@ extension OrderedMultiValueDictionary {
 }
 
 extension OrderedMultiValueDictionary {
-  internal mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
+  internal mutating func removeAll(keepingCapacity keepCapacity: Bool) {
     _entries.removeAll(keepingCapacity: keepCapacity)
     _keyToEntryIndices.removeAll(keepingCapacity: keepCapacity)
   }

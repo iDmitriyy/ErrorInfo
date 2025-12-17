@@ -6,5 +6,7 @@
 //
 
 extension ErrorInfoAny {
-  
+  public mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
+    _storage.removeAll(keepingCapacity: keepCapacity)
+  }
 }

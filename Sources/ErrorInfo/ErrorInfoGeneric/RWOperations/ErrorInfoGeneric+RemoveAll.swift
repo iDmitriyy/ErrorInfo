@@ -6,7 +6,7 @@
 //
 
 extension ErrorInfoGeneric {
-  internal mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
+  internal mutating func removeAll(keepingCapacity keepCapacity: Bool) {
     _storage.removeAll(keepingCapacity: keepCapacity)
   }
 }

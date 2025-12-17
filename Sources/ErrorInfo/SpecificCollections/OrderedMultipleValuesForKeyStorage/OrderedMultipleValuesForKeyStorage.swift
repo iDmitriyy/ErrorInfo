@@ -113,7 +113,7 @@ extension OrderedMultipleValuesForKeyStorage {
 }
 
 extension OrderedMultipleValuesForKeyStorage {
-  internal mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
+  internal mutating func removeAll(keepingCapacity keepCapacity: Bool) {
     _muatbleVariant.mutateUnderlying(singleValueForKey: { singleValueForKeyDict in
       singleValueForKeyDict.removeAll(keepingCapacity: keepCapacity)
     }, multiValueForKey: { multiValueForKeyDict in
