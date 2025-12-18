@@ -52,11 +52,6 @@ extension OrderedMultiValueDictionary {
     
     public func makeIterator() -> some IteratorProtocol<Value> {
       var iterator = entriesSlice.makeIterator()
-      if #available(macOS 26.0, *) {
-        let span = [4].span
-      } else {
-        // Fallback on earlier versions
-      }
       return AnyIterator<Value> { iterator.next()?.value }
     }
   }
