@@ -1,5 +1,5 @@
 //
-//  ErrorInfoKeysTransform.swift
+//  KeyStylesTransform.swift
 //  swifty-kit
 //
 //  Created by Dmitriy Ignatyev on 16.04.2025.
