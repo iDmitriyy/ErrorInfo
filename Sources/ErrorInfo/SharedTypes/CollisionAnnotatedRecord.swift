@@ -1,5 +1,5 @@
 //
-//  CollisionTaggedValue.swift
+//  CollisionAnnotatedRecord.swift
 //  ErrorInfo
 //
 //  Created by Dmitriy Ignatyev on 28/11/2025.
@@ -22,39 +22,42 @@
 /// ## Example:
 /// ```swift
 /// // Creating a value with no collision source
-/// let value = CollisionTaggedValue.value(42)
+/// let value = CollisionAnnotatedRecord.value(42)
 ///
 /// // Creating a value with a collision source
-/// let collidedValue = CollisionTaggedValue.collidedValue(42, collisionSource: .onCreateWithDictionaryLiteral)
+/// let collidedValue = CollisionAnnotatedRecord.collidedValue(42, collisionSource: .onCreateWithDictionaryLiteral)
 /// ```
-public struct CollisionTaggedValue<Value, CollisionSource> { // FIXME: => CollisionAnnotatedRecord
-  public let value: Value // FIXME: currentTaggedRecord.value -> raname .value to .record
+public struct CollisionAnnotatedRecord<Value> {
+  public let record: Value
   @usableFromInline internal let _collisionSource: HeapBox<CollisionSource>?
   
-  @inlinable @inline(__always) public var collisionSource: CollisionSource? { _collisionSource?.wrapped }
-  
-  @inlinable @inline(__always) public var record: Value { value }
+  @inlinable
+  @inline(__always)
+  public var collisionSource: CollisionSource? { _collisionSource?.wrapped }
   
   /// CollisionSource memory footprint is quite large. memoryLayout size == 33, stride == 40 at the moment of writing.
   /// Consuming additional 40 bytes for each value, where in fact collisionSource mostly often is nil, is ineffective.
   /// Thats why store optional HeapBox, which takes only 8 bytes (64-bit pointer)
   
-  @inlinable @inline(__always)
+  @inlinable
+  @inline(__always)
   internal init(value: Value, collisionSource: CollisionSource?) {
-    self.value = value
+    self.record = value
     self._collisionSource = collisionSource.map(HeapBox.init) // TODO: check prefomnace when using if-let
   }
   
-  @inlinable @inline(__always) // 50x speedup
+  @inlinable
+  @inline(__always) // 50x speedup
   internal static func value(_ value: Value) -> Self { Self(value: value, collisionSource: nil) }
   
-  @inlinable @inline(__always) // 6x speedup
+  @inlinable
+  @inline(__always) // 6x speedup
   internal static func collidedValue(_ value: Value, collisionSource: CollisionSource) -> Self {
     Self(value: value, collisionSource: collisionSource)
   }
 }
 
-extension CollisionTaggedValue: Sendable where Value: Sendable, CollisionSource: Sendable {}
+extension CollisionAnnotatedRecord: Sendable where Value: Sendable, CollisionSource: Sendable {}
 
 // MARK: - HeapBox
 

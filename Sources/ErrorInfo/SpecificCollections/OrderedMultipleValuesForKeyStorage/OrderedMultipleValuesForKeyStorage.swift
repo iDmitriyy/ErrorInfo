@@ -11,7 +11,7 @@
 /// When first collision happens, `OrderedDictionary` is replaced by `OrderedMultiValueDictionary`.
 /// Also, while all key-values are unique (and stored in OrderedDictionary), there is no need to allocate space for
 /// `CollisionTaggedValue` – values can be atores as is.
-@usableFromInline internal struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value, CollisionSource> {
+@usableFromInline internal struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value> {
   @inlinable internal var _variant: Variant { _muatbleVariant._variant }
   
   // FIXME: private set

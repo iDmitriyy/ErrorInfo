@@ -16,9 +16,9 @@
 /// - StringLiteralKey
 public struct ErrorInfoGeneric<Key: Hashable, GValue: Equatable>: Sequence {
   public typealias Element = (key: Key, value: AnnotatedRecord)
-  public typealias AnnotatedRecord = CollisionTaggedValue<Record, CollisionSource>
+  public typealias AnnotatedRecord = CollisionAnnotatedRecord<Record>
   
-  @usableFromInline internal typealias BackingStorage = OrderedMultipleValuesForKeyStorage<Key, Record, CollisionSource>
+  @usableFromInline internal typealias BackingStorage = OrderedMultipleValuesForKeyStorage<Key, Record>
   
   @usableFromInline internal var _storage: BackingStorage
     
@@ -104,7 +104,7 @@ extension ErrorInfoGeneric {
       if let currentValues = _storage.allValuesSlice(forKey: key) {
         // TODO: perfomace Test: _storage.containsValues(forKey:, where:) might be faster than allValuesSlice(forKey:).contains
         let isEqualToOneOfCurrent = currentValues.contains(where: { currentTaggedRecord in
-          newRecord.someValue == currentTaggedRecord.value.someValue
+          newRecord.someValue == currentTaggedRecord.record.someValue
         })
         
         if isEqualToOneOfCurrent {

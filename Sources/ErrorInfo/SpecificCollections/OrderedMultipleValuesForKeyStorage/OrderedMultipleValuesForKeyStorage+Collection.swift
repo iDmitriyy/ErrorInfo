@@ -58,7 +58,7 @@ extension OrderedMultipleValuesForKeyStorage {
       
     case .right(let multiValueForKeyDict):
       return try multiValueForKeyDict.containsValues(forKey: key, where: { warppedValue in
-        try predicate(warppedValue.value)
+        try predicate(warppedValue.record)
       })
     }
   }
