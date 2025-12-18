@@ -10,7 +10,7 @@
 extension ErrorInfo {
   /// Instead of subscript overload with `String` key to prevent pollution of autocomplete for `ErronInfoLiteralKey` by tons of String methods.
   @_disfavoredOverload
-  public mutating func append(key dynamicKey: String, value newValue: (some ValueProtocol)?) {
+  public mutating func appendValue(_ newValue: (some ValueProtocol)?, forKey dynamicKey: String) {
     _add(key: dynamicKey,
          keyOrigin: .dynamic,
          value: newValue,
@@ -20,7 +20,7 @@ extension ErrorInfo {
   }
   
   @available(*, deprecated, message: "for literal keys use subscript instead, append() is intended for dynamic keys)")
-  public mutating func append(key literalKey: StringLiteralKey, value newValue: (some ValueProtocol)?) {
+  public mutating func appendValue(_ newValue: (some ValueProtocol)?, forKey literalKey: StringLiteralKey) {
     // deprecattion is used to guide users
     _add(key: literalKey.rawValue,
          keyOrigin: literalKey.keyOrigin,

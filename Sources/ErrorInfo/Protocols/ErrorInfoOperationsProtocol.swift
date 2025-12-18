@@ -107,7 +107,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   ///
   /// errorInfo[.id] = 5
   /// errorInfo[.id] = 6
-  /// errorInfo[.id] = nil as Optional<String>
+  /// errorInfo[.id] = nil as String?
   ///
   /// // errorInfo.allValues(forKey: .id) // returns [5, 6]
   /// ```
@@ -127,7 +127,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   ///
   /// errorInfo["id"] = 5
   /// errorInfo["id"] = 6
-  /// errorInfo["id"] = nil as Optional<String>
+  /// errorInfo["id"] = nil as String?
   ///
   /// // errorInfo.allValues(forKey: "id") // returns [5, 6]
   /// ```
@@ -149,8 +149,9 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   /// var info = ErrorInfo()
   /// info[.id] = 5
   /// info[.id] = 6
+  /// info[.id] = nil as Int?
   ///
-  /// errorInfo.lastValue[forKey: .id) // returns 6
+  /// info.lastValue[forKey: .id) // returns 6
   /// ```
   func lastValue(forKey literalKey: StringLiteralKey) -> (ValueExistential)?
   
@@ -167,11 +168,12 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   ///
   /// # Example:
   /// ```swift
-  /// var errorInfo = ErrorInfo()
-  /// errorInfo[.id] = 5
-  /// errorInfo[.id] = 6
+  /// var info = ErrorInfo()
+  /// info[.id] = 5
+  /// info[.id] = 6
+  /// info[.id] = nil as Int?
   ///
-  /// errorInfo.firstValue(forKey: .id) // returns 5
+  /// info.firstValue(forKey: .id) // returns 5
   /// ```
   func firstValue(forKey literalKey: StringLiteralKey) -> (ValueExistential)?
   
