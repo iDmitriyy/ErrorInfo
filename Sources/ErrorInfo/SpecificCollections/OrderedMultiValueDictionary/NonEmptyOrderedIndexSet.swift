@@ -9,21 +9,36 @@ internal import typealias SwiftCollectionsNonEmpty.NonEmptyOrderedSet
 
 // MARK: - NonEmpty Ordered IndexSet
 
-/// Introduced for implementing OrderedMultiValueDictionary. In most cases, Error-info types contain 1 value for a given key.
-/// When there are multiple values for key, multiple indices are also stored.
-/// This `NonEmpty Ordered IndexSet` stores single index inlined as a value type.
-/// Heap allocated OrderedSet is only created when there are 2 or more indices.
+/// A compact, non-empty set of ordered indices.
+///
+/// In most cases, Error-info types contain 1 value for a given key. T
+/// This index set is optimized for the common case of a single index: stores one index inline and switches to a
+/// heap-backed `NonEmptyOrderedSet` only when a second index is inserted.
+/// Used by `OrderedMultiValueDictionary` to track positions of multiple values per key
+/// without paying heap costs for the single-value case.
+///
+/// Example
+/// ```swift
+/// var indices = NonEmptyOrderedIndexSet.single(index: 2)
+/// indices.first        // 2
+/// Array(indices)       // [2]
+/// indices.insert(5)
+/// Array(indices)       // [2, 5]
+/// ```
 @usableFromInline internal struct NonEmptyOrderedIndexSet: Sendable, RandomAccessCollection {
   @usableFromInline typealias Element = Int
   
   internal private(set) var _variant: _Variant
   
+  /// Creates a non-empty set containing a single index stored inline.
   internal static func single(index: Int) -> Self {
     Self(_variant: .single(index: index))
   }
   
+  /// Always zero.
   @usableFromInline internal var startIndex: Int { 0 }
   
+  /// 1 when a single index is stored; otherwise the count of the heap-backed orderedS set.
   @usableFromInline internal var endIndex: Int {
     switch _variant {
     case .single: 1
@@ -31,13 +46,16 @@ internal import typealias SwiftCollectionsNonEmpty.NonEmptyOrderedSet
     }
   }
   
-  var first: Element {
-    switch _variant {
-    case .single(let index): index
-    case .multiple(let indices): indices.first
-    }
-  }
+  /// The first stored index.
+  // var first: Element {
+  //   switch _variant {
+  //   case .single(let index): index
+  //   case .multiple(let indices): indices.first
+  //   }
+  // }
   
+  /// Accesses the index at `position`.
+  /// - Precondition: `position` is within bounds.
   @usableFromInline internal subscript(position: Int) -> Element {
     switch _variant {
     case .single(let index):
@@ -50,6 +68,8 @@ internal import typealias SwiftCollectionsNonEmpty.NonEmptyOrderedSet
     }
   }
   
+  /// Inserts `newIndex`, preserving order of insertion.
+  /// Switches to heap-backed storage on the first insertion beyond one element.
   internal mutating func insert(_ newIndex: Int) {
     switch _variant {
     case .single(let currentIndex):
@@ -59,15 +79,8 @@ internal import typealias SwiftCollectionsNonEmpty.NonEmptyOrderedSet
       _variant = .multiple(indices: elements)
     }
   }
-    
-  @available(*, deprecated, message: "not optimal")
-  internal var _asHeapNonEmptyOrderedSet: NonEmptyOrderedSet<Int> { // TODO: confrom Sequence protocol instead of this
-    switch _variant {
-    case let .single(index): NonEmptyOrderedSet<Int>(element: index)
-    case let .multiple(indices): indices
-    }
-  }
   
+  /// Builds a `RangeSet` of indices relative to `collection`.
   internal func asRangeSet<C>(for collection: C) -> RangeSet<Int> where C: Collection, C.Index == Int {
     switch _variant {
     case let .single(index): RangeSet(CollectionOfOne(index), within: collection) // TODO: check for CollectionOfOne
@@ -77,15 +90,17 @@ internal import typealias SwiftCollectionsNonEmpty.NonEmptyOrderedSet
 }
 
 extension NonEmptyOrderedSet<Int> {
+  /// Builds a `RangeSet` of indices relative to `collection`.
   internal func asRangeSet<C>(for collection: C) -> RangeSet<Int> where C: Collection, C.Index == Int {
     RangeSet(self, within: collection)
   }
 }
 
 extension NonEmptyOrderedIndexSet {
+  /// Storage variant: inline single index or heap-backed non-empty orderedS set.
   internal enum _Variant: Sendable {
     case single(index: Int)
-    case multiple(indices: NonEmptyOrderedSet<Int>) // TODO: may use ContiguousArray / NonEmptyArray / Set / instead of Set
+    case multiple(indices: NonEmptyOrderedSet<Int>)
   }
 }
 
