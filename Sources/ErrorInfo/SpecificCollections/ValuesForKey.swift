@@ -7,7 +7,7 @@
 
 import NonEmpty
 
-/// A NonEmpty collection that stores one or more values associated with a single key.
+/// A `NonEmpty` collection that stores one or more values.
 ///
 /// ## Type Parameters:
 /// - `Value`: The type of the value(s) associated with the key.

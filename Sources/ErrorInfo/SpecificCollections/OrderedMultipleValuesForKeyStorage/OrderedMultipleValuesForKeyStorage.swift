@@ -10,15 +10,15 @@
 /// to store multiple values for key.
 ///
 /// ### Storage Mechanism:
-/// - Uses an `OrderedDictionary` for single-value storage, ensuring fast lookup and insertion.
-/// - Transitions to an `OrderedMultiValueDictionary` when collisions occur (multiple values for the same key).
+/// - Uses an `OrderedDictionary` for single-value-for-key storage, ensuring fast lookup and insertion.
+/// - Transitions to an `OrderedMultiValueDictionary` when first collision occur (multiple values for the same key).
 ///
 /// While all key-values are unique (and stored in `OrderedDictionary`), there is no need to allocate space for
 /// `CollisionAnnotatedRecord` – values can be atores as is.
 ///
 /// ### Efficiency:
 /// - Avoids extra memory overhead when there are no collisions, as no additional space for collisions and values indices is required.
-/// - Introduces more complex structures only when necessary, reducing memory usage and improving performance
+/// - Introduces more complex `OrderedMultiValueDictionary` only when necessary, reducing memory usage and improving performance
 /// when keys are unique.
 @usableFromInline internal struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value> {
   @inlinable internal var _variant: Variant { _muatbleVariant._variant }

@@ -37,17 +37,17 @@ extension ErrorInfo {
   ///
   /// // info now contains: ["age": 30, "email": nil]
   /// ```
-  public static func withOptions(preserveNilValues: Bool = true,
-                                 duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending,
+  public static func withOptions(duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending,
+                                 preserveNilValues: Bool = true,
                                  prefixForKeys: StringLiteralKey? = nil,
                                  collisionSource: CollisionSource.Origin = .fileLine(),
                                  modify: (consuming CustomOptionsView) -> Void) -> Self {
     var info = Self()
-    info.appendWithOptions(preserveNilValues: preserveNilValues,
-                           duplicatePolicy: duplicatePolicy,
-                           prefixForKeys: prefixForKeys,
-                           collisionSource: collisionSource,
-                           modify: modify)
+    info.appendWith(duplicatePolicy: duplicatePolicy,
+                    preserveNilValues: preserveNilValues,
+                    prefixForKeys: prefixForKeys,
+                    collisionSource: collisionSource,
+                    modify: modify)
     return info
   }
   
@@ -79,11 +79,11 @@ extension ErrorInfo {
   ///
   /// // info now contains: ["age": 30, "email": nil]
   /// ```
-  public mutating func appendWithOptions(preserveNilValues: Bool = true,
-                                         duplicatePolicy: ValueDuplicatePolicy = .rejectEqual,
-                                         prefixForKeys: StringLiteralKey? = nil,
-                                         collisionSource: CollisionSource.Origin = .fileLine(),
-                                         modify: (consuming CustomOptionsView) -> Void) {
+  public mutating func appendWith(duplicatePolicy: ValueDuplicatePolicy = .rejectEqual,
+                                  preserveNilValues: Bool = true,
+                                  prefixForKeys: StringLiteralKey? = nil,
+                                  collisionSource: CollisionSource.Origin = .fileLine(),
+                                  modify: (consuming CustomOptionsView) -> Void) {
     withUnsafeMutablePointer(to: &self) { pointer in
       let view = CustomOptionsView(pointer: pointer,
                                    duplicatePolicy: duplicatePolicy,
