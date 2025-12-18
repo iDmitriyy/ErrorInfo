@@ -12,7 +12,30 @@ import NonEmpty
 extension Merge.DictUtils {
   // MARK: - String Imps
   
-  /// decomposition subroutine of func withResolvingCollisionsAdd()
+  /// **Overload for String type**.
+  /// Inserts a key-value pair into the dictionary, appending a random suffix to the key if a collision occurs.
+  ///
+  /// If a key already exists in the dictionary, the function appends a random suffix to the key
+  /// (and repeats this process) until the key becomes unique.
+  ///
+  /// If the value being inserted is equal to the current value for the same key, the insertion is skipped
+  /// if omitIfEqual == true, otherwise add duplicate.
+  ///
+  /// ```swift
+  /// var dict = ["apple": 1]
+  ///
+  /// // Attempt to insert a new key-value pair with the key "apple"
+  /// _putAugmentingWithRandomSuffix(
+  ///     value: 2,
+  ///     assumeModifiedKey: "apple",
+  ///     shouldOmitEqualValue: false,
+  ///     suffixFirstChar: Merge.Constants.randomSuffixBeginningForSubcriptScalar,
+  ///     randomGenerator: &randomGenerator,
+  ///     to: &dict
+  /// )
+  /// print(dict)
+  /// // Output: ["apple": 1, "apple$y7HM": 2]
+  /// ```
   internal static func _putAugmentingWithRandomSuffix<Dict>(_ value: Dict.Value,
                                                             assumeModifiedKey: Dict.Key,
                                                             shouldOmitEqualValue: Bool,
@@ -29,6 +52,26 @@ extension Merge.DictUtils {
                                    to: &recipient)
   }
   
+  /// **Overload for String type**.
+  /// Inserts a key-value pair into the dictionary, appending a random suffix to the key if a collision occurs.
+  ///
+  /// If a key already exists in the dictionary, the function appends a random suffix to the key
+  /// (and repeats this process) until the key becomes unique.
+  ///
+  /// ```swift
+  /// var dict = ["apple": 1]
+  ///
+  /// // Attempt to insert a new key-value pair with the key "apple"
+  /// _putAugmentingWithRandomSuffix(
+  ///     value: 2,
+  ///     assumeModifiedKey: "apple",
+  ///     suffixFirstChar: Merge.Constants.randomSuffixBeginningForSubcriptScalar,
+  ///     randomGenerator: &randomGenerator,
+  ///     to: &dict
+  /// )
+  /// print(dict)
+  /// // Output: ["apple": 1, "apple$y7HM": 2]
+  /// ```
   internal static func _putAugmentingWithRandomSuffix<Dict>(assumeModifiedKey: Dict.Key,
                                                             value: Dict.Value,
                                                             suffixFirstChar: UnicodeScalar,
@@ -45,7 +88,31 @@ extension Merge.DictUtils {
   
   // MARK: - Generic Imps
   
-  /// Decomposition subroutine of `func withKeyAugmentationAdd(...)`
+  /// **Generic RangeReplaceableCollection Imp**.
+  /// Inserts a key-value pair into the dictionary, appending a random suffix to the key if a collision occurs.
+  ///
+  /// If a key already exists in the dictionary, the function appends a random suffix to the key
+  /// (and repeats this process) until the key becomes unique.
+  ///
+  /// If the value being inserted is equal to the current value for the same key, the insertion is skipped
+  /// if omitIfEqual == true, otherwise add duplicate.
+  ///
+  /// ```swift
+  /// var dict = ["apple": 1]
+  ///
+  /// // Attempt to insert a new key-value pair with the key "apple"
+  /// _putAugmentingWithRandomSuffix(
+  ///     value: 2,
+  ///     assumeModifiedKey: "apple",
+  ///     shouldOmitEqualValue: false,
+  ///     suffixFirstChar: Merge.Constants.randomSuffixBeginningForSubcriptScalar,
+  ///     randomGenerator: &randomGenerator,
+  ///     randomSuffix: Merge.Utils.randomSuffix,
+  ///     to: &dict
+  /// )
+  /// print(dict)
+  /// // Output: ["apple": 1, "apple$y7HM": 2]
+  /// ```
   internal static func _putAugmentingWithRandomSuffix<Dict, RndGen>(
     assumeModifiedKey: Dict.Key,
     value: Dict.Value,
@@ -88,6 +155,27 @@ extension Merge.DictUtils {
     recipient[modifiedKey] = value
   }
   
+  /// **Generic RangeReplaceableCollection Imp**.
+  /// Inserts a key-value pair into the dictionary, appending a random suffix to the key if a collision occurs.
+  ///
+  /// If a key already exists in the dictionary, the function appends a random suffix to the key
+  /// (and repeats this process) until the key becomes unique.
+  ///
+  /// ```swift
+  /// var dict = ["apple": 1]
+  ///
+  /// // Attempt to insert a new key-value pair with the key "apple"
+  /// _putAugmentingWithRandomSuffix(
+  ///     value: 2,
+  ///     assumeModifiedKey: "apple",
+  ///     suffixFirstChar: Merge.Constants.randomSuffixBeginningForSubcriptScalar,
+  ///     randomGenerator: &randomGenerator,
+  ///     randomSuffix: Merge.Utils.randomSuffix,
+  ///     to: &dict
+  /// )
+  /// print(dict)
+  /// // Output: ["apple": 1, "apple$y7HM": 2]
+  /// ```
   internal static func _putAugmentingWithRandomSuffix<Dict, RndGen>(
     assumeModifiedKey: Dict.Key,
     value: Dict.Value,
