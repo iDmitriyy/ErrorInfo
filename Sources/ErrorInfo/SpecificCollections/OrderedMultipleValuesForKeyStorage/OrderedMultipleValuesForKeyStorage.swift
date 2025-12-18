@@ -5,12 +5,21 @@
 //  Created by Dmitriy Ignatyev on 05/10/2025.
 //
 
-/// The main purpose of this type is reducing the overhead which `OrderedMultiValueDictionary` has.
+/// Purpose: reducing the overhead which `OrderedMultiValueDictionary` has.
+/// Used by error info types to efficiently manage key-value pairs, typically unique but capable
+/// to store multiple values for key.
 ///
-/// Almost all time Error info instances has 1 value for each key. Until first collision happens, `OrderedDictionary` is used.
-/// When first collision happens, `OrderedDictionary` is replaced by `OrderedMultiValueDictionary`.
-/// Also, while all key-values are unique (and stored in OrderedDictionary), there is no need to allocate space for
-/// `CollisionTaggedValue` – values can be atores as is.
+/// ### Storage Mechanism:
+/// - Uses an `OrderedDictionary` for single-value storage, ensuring fast lookup and insertion.
+/// - Transitions to an `OrderedMultiValueDictionary` when collisions occur (multiple values for the same key).
+///
+/// While all key-values are unique (and stored in `OrderedDictionary`), there is no need to allocate space for
+/// `CollisionAnnotatedRecord` – values can be atores as is.
+///
+/// ### Efficiency:
+/// - Avoids extra memory overhead when there are no collisions, as no additional space for collisions and values indices is required.
+/// - Introduces more complex structures only when necessary, reducing memory usage and improving performance
+/// when keys are unique.
 @usableFromInline internal struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value> {
   @inlinable internal var _variant: Variant { _muatbleVariant._variant }
   

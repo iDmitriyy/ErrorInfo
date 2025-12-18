@@ -8,16 +8,38 @@
 import OrderedCollections
 import SwiftCollectionsNonEmpty
 
-// MARK: - Ordered MultiValueDictionary
-
+/// An insertion‑ordered multi‑value dictionary used by `ErrorInfo` types to record one or more values per key.
+///
+/// Preserves the global insertion order of entries and the per‑key order of values. Per‑key
+/// positions are tracked with `NonEmptyOrderedIndexSet` to avoid heap allocation in the
+/// single‑value case and switch to a heap‑backed set only when needed.
+///
+/// `OrderedMultipleValuesForKeyStorage` is built on top this structure to support multiple values per key, collision handling,
+/// and stable summaries while keeping append and lookup efficient.
+///
+/// Example
+/// ```swift
+/// var dict = OrderedMultiValueDictionary<String, Int>()
+/// dict.append(key: "id", value: 1)
+/// dict.append(key: "id", value: 2)   // same key, second value
+/// dict.append(key: "name", value: 3)
+///
+/// dict.hasValue(forKey: "id") // true
+///
+/// if let values = dict.allValues(forKey: "id") {
+///   Array(values)                    // [1, 2] — order preserved
+/// }
+///
+/// dict.removeAllValues(forKey: "id") // removes both values for "id"
+/// ```
 @usableFromInline
 internal struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   public typealias Element = (key: Key, value: Value)
   
   @usableFromInline internal var _entries: [Element]
-  /// for `allValuesForKey` function
-  /// stores indices for all values for a key
-  @usableFromInline internal var _keyToEntryIndices: Dictionary<Key, NonEmptyOrderedIndexSet> // TODO: ? use RangeSet instead of NonEmptyOrderedIndexSet?
+  
+  @usableFromInline internal var _keyToEntryIndices: Dictionary<Key, NonEmptyOrderedIndexSet>
+  // TODO: ? use RangeSet instead of NonEmptyOrderedIndexSet?
   
   @usableFromInline internal init() {
     _entries = []
