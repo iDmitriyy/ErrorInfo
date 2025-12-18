@@ -26,9 +26,9 @@ extension ErrorInfo {
   /// Returns a sequence of tuples, where each element consists of a key with its origin and a collision-tagged value.
   /// This view provides an enriched sequence of key-value pairs with additional metadata, useful for deep inspection, logging or debugging.
   public var fullInfoView: some Sequence<FullInfoElement> {
-    _storage.lazy.map { key, taggedRecord -> FullInfoElement in
-      let record = (taggedRecord.record.someValue.maybeValue, taggedRecord.record.keyOrigin, taggedRecord.collisionSource)
-      return (key, record)
+    _storage.lazy.map { key, annotatedRecord -> FullInfoElement in
+      let record = annotatedRecord.record
+      return (key, (record.someValue.maybeValue, record.keyOrigin, annotatedRecord.collisionSource))
     }
   }
   

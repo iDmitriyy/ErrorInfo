@@ -14,7 +14,6 @@ extension ErrorInfo {
   
   // TODO: - remake examples for dynamic keys (everywhere), as they are for literal api now
   
-  @_disfavoredOverload
   public func lastValue(forKey dynamicKey: String) -> (ValueExistential)? {
     _storage.lastNonNilValue(forKey: dynamicKey)
   }
@@ -29,7 +28,6 @@ extension ErrorInfo {
     firstValue(forKey: literalKey.rawValue)
   }
   
-  @_disfavoredOverload
   public func firstValue(forKey dynamicKey: String) -> (ValueExistential)? {
     _storage.firstNonNilValue(forKey: dynamicKey)
   }

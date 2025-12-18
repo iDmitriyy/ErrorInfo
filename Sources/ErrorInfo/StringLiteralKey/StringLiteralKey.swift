@@ -67,13 +67,13 @@ extension StringLiteralKey: ExpressibleByStringLiteral { // Improvement: try to 
   public typealias StringLiteralType = StaticString
   
   public init(stringLiteral value: StaticString) {
-    rawValue = String.init(value)
+    rawValue = String(value)
     keyOrigin = .literalConstant
   } // inlining has no effect on perfomance
   
   
   // StaticString completely closes the hole when ErronInfoKey can be initialized with dynamically formed string or interpolation.
-  // // Improvement: use @const instead of static let (check binary size(reduce swift_once) and perfomance on first access)
+  // Improvement: use @const instead of static let (check binary size(reduce swift_once) and perfomance on first access)
 }
 
 extension StringLiteralKey {

@@ -14,7 +14,8 @@ extension ErrorInfo {
     _replaceAllRecordsImp(forKey: literalKey.rawValue, by: newValue, keyOrigin: literalKey.keyOrigin)
   }
   
-  @_disfavoredOverload @discardableResult
+  @_disfavoredOverload
+  @discardableResult
   public mutating func replaceAllRecords(forKey dynamicKey: String,
                                             by newValue: ValueExistential) -> ValuesForKey<ValueExistential>? {
     _replaceAllRecordsImp(forKey: dynamicKey, by: newValue, keyOrigin: .dynamic)

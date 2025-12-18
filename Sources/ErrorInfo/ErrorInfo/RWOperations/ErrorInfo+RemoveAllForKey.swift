@@ -13,7 +13,7 @@ extension ErrorInfo {
     removeAllRecords(forKey: literalKey.rawValue)
   }
   
-  @_disfavoredOverload @discardableResult
+  @discardableResult
   public mutating func removeAllRecords(forKey dynamicKey: String) -> ValuesForKey<ValueExistential>? {
     _storage.removeAllRecords_ReturningNonNilValues(forKey: dynamicKey)
   }

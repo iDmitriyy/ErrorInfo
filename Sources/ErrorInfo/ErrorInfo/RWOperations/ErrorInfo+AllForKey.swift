@@ -15,7 +15,6 @@ extension ErrorInfo {
     allValues(forKey: literalKey.rawValue)
   }
   
-  @_disfavoredOverload
   public func allValues(forKey dynamicKey: String) -> ValuesForKey<ValueExistential>? {
     _storage.allNonNilValues(forKey: dynamicKey)
   }
