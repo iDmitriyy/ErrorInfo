@@ -11,7 +11,7 @@ extension ErrorInfo {
   @usableFromInline internal struct EquatableOptionalAnyValue: Sendable, Equatable, ErrorInfoOptionalRepresentable {
     @usableFromInline internal let maybeValue: OptionalAnyValue
     
-    internal static func value(_ value: ValueType) -> Self {
+    internal static func value(_ value: ValueExistential) -> Self {
       Self(maybeValue: .value(value))
     }
     
@@ -19,7 +19,7 @@ extension ErrorInfo {
       Self(maybeValue: .nilInstance(typeOfWrapped: typeOfWrapped))
     }
     
-    @usableFromInline var getWrapped: (ValueType)? { maybeValue.getWrapped }
+    @usableFromInline var getWrapped: (ValueExistential)? { maybeValue.getWrapped }
     
     var isValue: Bool { maybeValue.isValue }
     

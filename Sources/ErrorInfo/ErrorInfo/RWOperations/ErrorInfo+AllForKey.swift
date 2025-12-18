@@ -11,12 +11,12 @@ extension ErrorInfo {
   // TBD: public func allValuesSlice(forKey key: Key) -> (some Sequence<Value>)? {}
   // replace usage of allValues(forKey:) for better perfomance | reduce allocations
   
-  public func allValues(forKey literalKey: StringLiteralKey) -> ValuesForKey<ValueType>? {
+  public func allValues(forKey literalKey: StringLiteralKey) -> ValuesForKey<ValueExistential>? {
     allValues(forKey: literalKey.rawValue)
   }
   
   @_disfavoredOverload
-  public func allValues(forKey dynamicKey: String) -> ValuesForKey<ValueType>? {
+  public func allValues(forKey dynamicKey: String) -> ValuesForKey<ValueExistential>? {
     _storage.allNonNilValues(forKey: dynamicKey)
   }
 }

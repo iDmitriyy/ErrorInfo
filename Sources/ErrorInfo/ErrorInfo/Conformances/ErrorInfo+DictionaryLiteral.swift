@@ -9,7 +9,7 @@
 
 extension ErrorInfo: ExpressibleByDictionaryLiteral {
   public typealias Key = StringLiteralKey
-  public typealias Value = ValueType? // allows to initialize by dictionary literal with optional values
+  public typealias Value = ValueExistential? // allows to initialize by dictionary literal with optional values
     
   /// Allows initializing an `ErrorInfo` instance directly from a dictionary literal.
   /// Collisions during the merge are tracked with the `CollisionSource.onCreateWithDictionaryLiteral` source.

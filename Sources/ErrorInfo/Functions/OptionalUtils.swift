@@ -87,7 +87,7 @@ extension ErrorInfoFuncs.__PrivateImps {
 // MARK: - Helper Protocol
 
 extension ErrorInfoFuncs.__PrivateImps {
-  /// **Only `Swift.optional` must conform to this protocol**.
+  /// **Only `Swift.Optional` must conform to this protocol**.
   /// A protocol that provides methods to inspect and extract the `Wrapped` type of optional value.
   /// Needed for `typeOfWrapped<T>(any: T)` function.
   ///

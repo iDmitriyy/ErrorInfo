@@ -8,14 +8,14 @@
 // MARK: - Last For Key
 
 extension ErrorInfo {
-  public func lastValue(forKey literalKey: StringLiteralKey) -> (ValueType)? {
+  public func lastValue(forKey literalKey: StringLiteralKey) -> (ValueExistential)? {
     lastValue(forKey: literalKey.rawValue)
   }
   
   // TODO: - remake examples for dynamic keys (everywhere), as they are for literal api now
   
   @_disfavoredOverload
-  public func lastValue(forKey dynamicKey: String) -> (ValueType)? {
+  public func lastValue(forKey dynamicKey: String) -> (ValueExistential)? {
     _storage.lastNonNilValue(forKey: dynamicKey)
   }
 }
@@ -25,12 +25,12 @@ extension ErrorInfo {
 // MARK: - First For Key
 
 extension ErrorInfo {
-  public func firstValue(forKey literalKey: StringLiteralKey) -> (ValueType)? {
+  public func firstValue(forKey literalKey: StringLiteralKey) -> (ValueExistential)? {
     firstValue(forKey: literalKey.rawValue)
   }
   
   @_disfavoredOverload
-  public func firstValue(forKey dynamicKey: String) -> (ValueType)? {
+  public func firstValue(forKey dynamicKey: String) -> (ValueExistential)? {
     _storage.firstNonNilValue(forKey: dynamicKey)
   }
 }

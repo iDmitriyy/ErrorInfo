@@ -8,7 +8,7 @@
 // MARK: - Append ContentsOf
 
 extension ErrorInfo {
-  public mutating func append(contentsOf sequence: some Sequence<(String, ValueType)>,
+  public mutating func append(contentsOf sequence: some Sequence<(String, ValueExistential)>,
                               duplicatePolicy: ValueDuplicatePolicy,
                               collisionSource collisionOrigin: CollisionSource.Origin = .fileLine()) {
     for (dynamicKey, value) in sequence {

@@ -7,11 +7,13 @@
 
 public import protocol InternalCollectionsUtilities._UniqueCollection
 
-/// Protocol defines all methods for `ErrorInfo` types.
-/// Keeps documentation for common methods.
-public protocol ErrorInfoOperationsProtocol {
+/// A protocol that defines the operations for managing key-value pairs in an `ErrorInfo`. Keeps documentation for common methods.
+///
+/// This protocol provides essential methods for adding, retrieving, and manipulating error-related information in a strongly-typed, flexible collection.
+/// It allows multiple values (both `nil` and non-`nil`) to be associated with individual keys.
+public protocol ErrorInfoOperationsProtocol where KeyType == String {
   associatedtype KeyType: Hashable
-  associatedtype ValueType
+  associatedtype ValueExistential
   
   associatedtype Keys: Collection<KeyType> & _UniqueCollection
   associatedtype AllKeys: Collection<KeyType>
@@ -24,6 +26,43 @@ public protocol ErrorInfoOperationsProtocol {
   
   /// Returns empty instance of `ErrorInfo`.
   static var empty: Self { get }
+  
+  // ===-------------------------------------------------------------------------------------------------------------------=== //
+    
+  // MARK: - Subscript
+  
+  /// A restricted subscript used to warn against removing values by mistake.
+  ///
+  /// - Note:
+  /// It is needed to warn users when they try to pass a nil literal, like `info["key"] = nil`
+  ///
+  /// - Deprecated: This subscript is deprecated and will show a warning if used. To remove values, use `removeValue(forKey:)`.
+  /// - Unavailable: This subscript cannot be used for getting or setting values. Use `removeValue(forKey:)` to remove a value.
+  @_disfavoredOverload
+  subscript(_: StringLiteralKey) -> InternalRestrictionToken? {
+    @available(*, unavailable, message: "This is a stub subscript. To remove value use removeValue(forKey:) function")
+    get
+    
+    @available(*, deprecated, message: "To remove value use removeValue(forKey:) function")
+    set
+  }
+  
+  /// Returns the last value associated with the given literal key.
+  ///
+  /// - Returns: The last value associated with key, or `nil` if no value is found.
+  ///
+  /// - Note:
+  /// Use `allValues(forKey:)` if you need to access all values for a key.
+  ///
+  /// # Example:
+  /// ```swift
+  /// var info = ErrorInfo()
+  /// info[.id] = 5
+  /// info[.id] = 6
+  ///
+  /// let id = errorInfo[.id] as? Int // returns 6
+  /// ```
+  subscript(_ literalKey: StringLiteralKey) -> (ValueExistential)? { get }
   
   // ===-------------------------------------------------------------------------------------------------------------------=== //
     
@@ -72,7 +111,7 @@ public protocol ErrorInfoOperationsProtocol {
   ///
   /// // errorInfo.allValues(forKey: .id) // returns [5, 6]
   /// ```
-  func allValues(forKey literalKey: StringLiteralKey) -> ValuesForKey<ValueType>?
+  func allValues(forKey literalKey: StringLiteralKey) -> ValuesForKey<ValueExistential>?
   
   /// Returns all non-nil values associated with a given key in the `ErrorInfo` storage.
   ///
@@ -92,7 +131,8 @@ public protocol ErrorInfoOperationsProtocol {
   ///
   /// // errorInfo.allValues(forKey: "id") // returns [5, 6]
   /// ```
-  @_disfavoredOverload func allValues(forKey dynamicKey: String) -> ValuesForKey<ValueType>?
+  @_disfavoredOverload
+  func allValues(forKey dynamicKey: KeyType) -> ValuesForKey<ValueExistential>?
   
   // ===-------------------------------------------------------------------------------------------------------------------=== //
   
@@ -112,9 +152,10 @@ public protocol ErrorInfoOperationsProtocol {
   ///
   /// errorInfo.lastValue[forKey: .id) // returns 6
   /// ```
-  func lastValue(forKey literalKey: StringLiteralKey) -> (ValueType)?
+  func lastValue(forKey literalKey: StringLiteralKey) -> (ValueExistential)?
   
-  @_disfavoredOverload func lastValue(forKey dynamicKey: String) -> (ValueType)?
+  @_disfavoredOverload
+  func lastValue(forKey dynamicKey: KeyType) -> (ValueExistential)?
   
   // MARK: First For Key
   
@@ -132,9 +173,10 @@ public protocol ErrorInfoOperationsProtocol {
   ///
   /// errorInfo.firstValue(forKey: .id) // returns 5
   /// ```
-  func firstValue(forKey literalKey: StringLiteralKey) -> (ValueType)?
+  func firstValue(forKey literalKey: StringLiteralKey) -> (ValueExistential)?
   
-  @_disfavoredOverload func firstValue(forKey dynamicKey: String) -> (ValueType)?
+  @_disfavoredOverload
+  func firstValue(forKey dynamicKey: KeyType) -> (ValueExistential)?
   
   // ===-------------------------------------------------------------------------------------------------------------------=== //
   
@@ -174,7 +216,8 @@ public protocol ErrorInfoOperationsProtocol {
   /// errorInfo["id"] = 5
   /// errorInfo.hasValue(forKey: "id") // returns true
   /// ```
-  @_disfavoredOverload func hasValue(forKey key: String) -> Bool
+  @_disfavoredOverload
+  func hasValue(forKey key: KeyType) -> Bool
   
   // MARK: Has Multiple Records For Key
   
@@ -210,7 +253,8 @@ public protocol ErrorInfoOperationsProtocol {
   ///
   /// errorInfo.hasMultipleRecords(forKey: "id")  // true because there are multiple records
   /// ```
-  @_disfavoredOverload func hasMultipleRecords(forKey key: String) -> Bool
+  @_disfavoredOverload
+  func hasMultipleRecords(forKey key: KeyType) -> Bool
   
   /// Checks if there is any key in the `ErrorInfo` storage that is associated with more than one record.
   ///
@@ -271,7 +315,8 @@ public protocol ErrorInfoOperationsProtocol {
   /// // because one value is non-nil and one is nil.
   /// ```
   ///
-  @_disfavoredOverload func keyValueLookupResult(forKey key: String) -> KeyValueLookupResult
+  @_disfavoredOverload
+  func keyValueLookupResult(forKey key: KeyType) -> KeyValueLookupResult
   
   // ===-------------------------------------------------------------------------------------------------------------------=== //
   
@@ -311,7 +356,7 @@ public protocol ErrorInfoOperationsProtocol {
   /// // returns nil
   /// ```
   @discardableResult
-  mutating func removeAllRecords(forKey literalKey: StringLiteralKey) -> ValuesForKey<ValueType>?
+  mutating func removeAllRecords(forKey literalKey: StringLiteralKey) -> ValuesForKey<ValueExistential>?
   
   /// Removes all records associated with the specified key and returns the removed non-nil values
   /// as a sequence.
@@ -334,8 +379,9 @@ public protocol ErrorInfoOperationsProtocol {
   /// let removedURL = errorInfo.removeAllRecords(forKey: "url")
   /// // returns nil
   /// ```
-  @_disfavoredOverload @discardableResult
-  mutating func removeAllRecords(forKey dynamicKey: String) -> ValuesForKey<ValueType>?
+  @_disfavoredOverload
+  @discardableResult
+  mutating func removeAllRecords(forKey dynamicKey: KeyType) -> ValuesForKey<ValueExistential>?
   
   // ===-------------------------------------------------------------------------------------------------------------------=== //
   
@@ -365,7 +411,7 @@ public protocol ErrorInfoOperationsProtocol {
   /// ```
   @discardableResult
   mutating func replaceAllRecords(forKey literalKey: StringLiteralKey,
-                                  by newValue: ValueType) -> ValuesForKey<ValueType>?
+                                  by newValue: ValueExistential) -> ValuesForKey<ValueExistential>?
   
   /// Removes all existing records associated with the specified key and replaces them with
   /// a new value, returning the removed non-nil values as a sequence.
@@ -389,7 +435,8 @@ public protocol ErrorInfoOperationsProtocol {
   /// // removed == [5, 6]
   /// // errorInfo now stores single record: `11` for key `"id"`
   /// ```
-  @_disfavoredOverload @discardableResult
-  mutating func replaceAllRecords(forKey dynamicKey: String,
-                                  by newValue: ValueType) -> ValuesForKey<ValueType>?
+  @_disfavoredOverload
+  @discardableResult
+  mutating func replaceAllRecords(forKey dynamicKey: KeyType,
+                                  by newValue: ValueExistential) -> ValuesForKey<ValueExistential>?
 }

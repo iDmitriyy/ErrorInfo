@@ -8,40 +8,18 @@
 extension ErrorInfo {
   // MARK: - User Guidance Subscript
   
-  /// A restricted subscript used to warn against removing values by mistake.
-  ///
-  /// - Note:
-  /// It is needed to warn users when they try to pass a nil literal, like `info["key"] = nil`
-  ///
-  /// - Deprecated: This subscript is deprecated and will show a warning if used. To remove values, use `removeValue(forKey:)`.
-  /// - Unavailable: This subscript cannot be used for getting or setting values. Use `removeValue(forKey:)` to remove a value.
   @_disfavoredOverload
   public subscript(_: StringLiteralKey) -> InternalRestrictionToken? {
-    @available(*, deprecated, message: "To remove value use removeValue(forKey:) function")
-    set {}
-    
     @available(*, unavailable, message: "This is a stub subscript. To remove value use removeValue(forKey:) function")
     get { nil }
+    
+    @available(*, deprecated, message: "To remove value use removeValue(forKey:) function")
+    set {}
   }
   
   // MARK: - Read access Subscript
   
-  /// Returns the last value associated with the given literal key.
-  ///
-  /// - Returns: The last value associated with key, or `nil` if no value is found.
-  ///
-  /// - Note:
-  /// Use `allValues(forKey:)` if you need to access all values for a key.
-  ///
-  /// # Example:
-  /// ```swift
-  /// var info = ErrorInfo()
-  /// info[.id] = 5
-  /// info[.id] = 6
-  ///
-  /// let id = errorInfo[.id] as? Int // returns 6
-  /// ```
-  public subscript(_ literalKey: StringLiteralKey) -> (ValueType)? {
+  public subscript(_ literalKey: StringLiteralKey) -> (ValueExistential)? {
     lastValue(forKey: literalKey)
   }
   
@@ -60,8 +38,8 @@ extension ErrorInfo {
   ///
   /// # Example:
   /// ```swift
-  /// let price: Double? = nil
   /// let message = "Failed to decode"
+  /// let price: Double? = nil
   ///
   /// errorInfo[.message] = message
   /// errorInfo["price"] = price // stores `nil` with Wrapped-type `Double`

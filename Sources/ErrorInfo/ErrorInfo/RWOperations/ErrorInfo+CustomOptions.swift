@@ -142,13 +142,14 @@ extension ErrorInfo.CustomOptionsView {
 
 extension ErrorInfo.CustomOptionsView {
   @_lifetime(borrow self)
-  @_disfavoredOverload @discardableResult
+  @_disfavoredOverload
+  @discardableResult
   public func replaceAllRecords(
     forKey dynamicKey: String,
     by newValue: some ErrorInfo.ValueProtocol,
     preserveNilValues: Bool? = nil,
     duplicatePolicy: ValueDuplicatePolicy? = nil,
-  ) -> ValuesForKey<ErrorInfo.ValueType>? {
+  ) -> ValuesForKey<ErrorInfo.ValueExistential>? {
     let oldValues = pointer.pointee._storage.removeAllRecords_ReturningNonNilValues(forKey: dynamicKey)
     // collisions never happens when replacing
     pointer.pointee._add(key: dynamicKey,

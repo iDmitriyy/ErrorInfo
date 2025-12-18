@@ -47,7 +47,7 @@ extension ErrorInfo {
 }
 
 extension ErrorInfo {
-  internal static func _castOrConvertToCompatible(legacyInfoValue value: Any) -> ValueType {
+  internal static func _castOrConvertToCompatible(legacyInfoValue value: Any) -> ValueExistential {
     // @inlining has no benefits for this func
     
     // For typical NSError, String value is most often used for a key, in general. Then NSNumber, URL, [String], [Any],

@@ -6,10 +6,10 @@
 //
 
 public struct ErrorInfo: Sendable, ErrorInfoOperationsProtocol {  
-  public typealias Element = (key: String, value: ValueType)
+  public typealias Element = (key: String, value: ValueExistential)
   
   public typealias KeyType = String
-  public typealias ValueType = any ValueProtocol
+  public typealias ValueExistential = any ValueProtocol
   
   /// This approach addresses several important concerns:
   /// - Thread Safety: The Sendable requirement is essential to prevent data races and ensure safe concurrent access.
@@ -82,7 +82,7 @@ extension ErrorInfo {
                                             collisionSource: @autoclosure () -> CollisionSource) {
     let optional: EquatableOptionalAnyValue
     if preserveNilValues {
-      optional = .nilInstance(typeOfWrapped: ValueType.self)
+      optional = .nilInstance(typeOfWrapped: ValueExistential.self)
     } else {
       return
     }

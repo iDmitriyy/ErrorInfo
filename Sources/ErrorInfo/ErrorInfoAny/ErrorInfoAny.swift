@@ -8,8 +8,8 @@
 public struct ErrorInfoAny: ErrorInfoOperationsProtocol {
   public typealias Element = (key: String, value: Any)
   
-  public typealias KeyType = String
-  public typealias ValueType = any Any
+  public typealias Key = String
+  public typealias ValueExistential = any Any
   
   internal typealias BackingStorage = ErrorInfoGeneric<String, EquatableOptionalAny>
   
