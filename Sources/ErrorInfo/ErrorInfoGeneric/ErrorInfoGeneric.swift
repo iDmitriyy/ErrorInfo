@@ -73,8 +73,8 @@ extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
       return
     }
 
-    __withCollisionresolvingAdd(key: key,
-                                record: Record(keyOrigin: keyOrigin, someValue: optional),
+    _addWithCollisionResolution(record: Record(keyOrigin: keyOrigin, someValue: optional),
+                                forKey: key,
                                 insertIfEqual: duplicatePolicy.insertIfEqual,
                                 collisionSource: collisionSource())
   }
@@ -86,16 +86,16 @@ extension ErrorInfoGeneric {
                               someValue: GValue,
                               duplicatePolicy: ValueDuplicatePolicy,
                               collisionSource: @autoclosure () -> CollisionSource) {
-    __withCollisionresolvingAdd(key: key,
-                                record: Record(keyOrigin: keyOrigin, someValue: someValue),
+    _addWithCollisionResolution(record: Record(keyOrigin: keyOrigin, someValue: someValue),
+                                forKey: key,
                                 insertIfEqual: duplicatePolicy.insertIfEqual,
                                 collisionSource: collisionSource())
   }
 }
 
 extension ErrorInfoGeneric {
-  internal mutating func __withCollisionresolvingAdd(key: Key,
-                                                     record newRecord: Record,
+  internal mutating func _addWithCollisionResolution(record newRecord: Record,
+                                                     forKey key: Key,
                                                      insertIfEqual: Bool,
                                                      collisionSource: @autoclosure () -> CollisionSource) {
     if insertIfEqual {

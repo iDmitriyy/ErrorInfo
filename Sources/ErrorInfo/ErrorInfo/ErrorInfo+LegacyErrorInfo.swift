@@ -36,8 +36,8 @@ extension ErrorInfo {
     legacyUserInfo.forEach { key, value in
       let interpolatedValue = Self._castOrConvertToCompatible(legacyInfoValue: value)
       let record = BackingStorage.Record(keyOrigin: .dynamic, someValue: .value(interpolatedValue))
-      _storage.__withCollisionresolvingAdd(key: key,
-                                           record: record,
+      _storage._addWithCollisionResolution(record: record,
+                                           forKey: key,
                                            insertIfEqual: true, // no effect here, Swift.Dictionary has unique keys
                                            collisionSource: .onDictionaryConsumption(origin: origin()))
       // May be it is good to split into two separated dictionaries. Static initializer will return something like tuple of

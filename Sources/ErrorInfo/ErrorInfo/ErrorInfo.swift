@@ -5,20 +5,7 @@
 //  Created by Dmitriy Ignatyev on 14.12.2024.
 //
 
-public struct ErrorInfo: Sendable, ErrorInfoOperationsProtocol {  
-  public typealias Element = (key: String, value: ValueExistential)
-  
-  public typealias KeyType = String
-  public typealias ValueExistential = any ValueProtocol
-  
-  /// This approach addresses several important concerns:
-  /// - Thread Safety: The Sendable requirement is essential to prevent data races and ensure safe concurrent access.
-  /// - String Representation: Requiring CustomStringConvertible forces developers to provide meaningful string representations for stored values, which is invaluable for debugging and logging. It also prevents unexpected results when converting values to strings.
-  /// - Collision Resolution: The Equatable requirement allows to detect and potentially resolve collisions if different values are associated with the same key. This adds a layer of robustness.
-  public typealias ValueProtocol = Sendable & Equatable & CustomStringConvertible
-  
-  @usableFromInline internal typealias BackingStorage = ErrorInfoGeneric<KeyType, EquatableOptionalAnyValue>
-  
+public struct ErrorInfo: Sendable, ErrorInfoOperationsProtocol {
   @usableFromInline internal var _storage: ErrorInfoGeneric<KeyType, EquatableOptionalAnyValue>
   
   private init(storage: BackingStorage) {
@@ -40,8 +27,20 @@ public struct ErrorInfo: Sendable, ErrorInfoOperationsProtocol {
 }
 
 extension ErrorInfo {
+  public typealias Element = (key: String, value: ValueExistential)
   
+  public typealias KeyType = String
+  public typealias ValueExistential = any ValueProtocol
+  
+  /// This approach addresses several important concerns:
+  /// - Thread Safety: The Sendable requirement is essential to prevent data races and ensure safe concurrent access.
+  /// - String Representation: Requiring CustomStringConvertible forces developers to provide meaningful string representations for stored values, which is invaluable for debugging and logging. It also prevents unexpected results when converting values to strings.
+  /// - Collision Resolution: The Equatable requirement allows to detect and potentially resolve collisions if different values are associated with the same key. This adds a layer of robustness.
+  public typealias ValueProtocol = Sendable & Equatable & CustomStringConvertible
+  
+  @usableFromInline internal typealias BackingStorage = ErrorInfoGeneric<KeyType, EquatableOptionalAnyValue>
 }
+
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
 // MARK: - Append KeyValue with all arguments passed explicitly
@@ -64,8 +63,8 @@ extension ErrorInfo {
       return
     }
     
-    _storage.__withCollisionresolvingAdd(key: key,
-                                         record: BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
+    _storage._addWithCollisionResolution(record: BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
+                                         forKey: key,
                                          insertIfEqual: duplicatePolicy.insertIfEqual,
                                          collisionSource: collisionSource())
   }
@@ -87,8 +86,8 @@ extension ErrorInfo {
       return
     }
     
-    _storage.__withCollisionresolvingAdd(key: key,
-                                         record: BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
+    _storage._addWithCollisionResolution(record: BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
+                                         forKey: key,
                                          insertIfEqual: duplicatePolicy.insertIfEqual,
                                          collisionSource: collisionSource())
   }
