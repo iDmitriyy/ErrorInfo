@@ -159,52 +159,48 @@ extension StringLiteralKey {
   /// e.g., network, database, validation
   public static let errorType: StringLiteralKey = "error_type"
   
-//  public static let failureReason: StringLiteralKey = "failure_reason"
-//  public static let errorSource: StringLiteralKey = "error_source"
-//  
-//  public static let severity: StringLiteralKey = "severity"
+  public static let failureReason: StringLiteralKey = "failure_reason"
+  public static let errorSource: StringLiteralKey = "error_source"
   
-//  public static let underlyingError: StringLiteralKey = "underlying_error"
-//  public static let exception: StringLiteralKey = "exception"
+  public static let severity: StringLiteralKey = "severity"
   
-//  public static let retryAttemptsLimit: StringLiteralKey = "retry_attempts_limit"
-//  public static let retryCount: StringLiteralKey = "retry_count"
-//  public static let retryDelay: StringLiteralKey = "retry_delay"
+  public static let underlyingError: StringLiteralKey = "underlying_error"
+  public static let exception: StringLiteralKey = "exception"
+  
+  public static let retryAttemptsLimit: StringLiteralKey = "retry_attempts_limit"
+  public static let retryCount: StringLiteralKey = "retry_count"
+  public static let retryDelay: StringLiteralKey = "retry_delay"
 }
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
-//extension StringLiteralKey {
-//  // MARK: - Network & Connectivity Information
-//  
-//  public static let httpStatusCode: StringLiteralKey = "http_status_code"
-//  
-//  
-//  public static let httpMethod: StringLiteralKey = "http_method"
-//  public static let requestMethod: StringLiteralKey = "request_method"
-//  public static let requestURL: StringLiteralKey = "request_url"
-//  public static let requestBody: StringLiteralKey = "request_body"
-//  
-//  public static let responseBody: StringLiteralKey = "response_body"
-//  
-//  public static let apiEndpoint: StringLiteralKey = "api_endpoint"
-//  
-//  
-//  
-//}
+extension StringLiteralKey {
+  // MARK: - Network & Connectivity Information
+  
+  public static let httpStatusCode: StringLiteralKey = "http_status_code"
+  
+  public static let httpMethod: StringLiteralKey = "http_method"
+  public static let requestMethod: StringLiteralKey = "request_method"
+  public static let requestURL: StringLiteralKey = "request_url"
+  public static let requestBody: StringLiteralKey = "request_body"
+  
+  public static let responseBody: StringLiteralKey = "response_body"
+  
+  public static let apiEndpoint: StringLiteralKey = "api_endpoint"
+}
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
-//extension StringLiteralKey {
-//  // MARK: - App Usage Data
-//  
-//  public static let hasPermission: StringLiteralKey = "has_permission"
-//  public static let permissionStatus: StringLiteralKey = "permission_status"
-//  
-//  public static let isLoggedIn: StringLiteralKey = "is_logged_in"
-//  public static let authenticationStatus: StringLiteralKey = "authentication_status"
-//  public static let authorizationStatus: StringLiteralKey = "authorization_status"
-//}
+extension StringLiteralKey {
+  // MARK: - App Usage Data
+  
+  public static let hasPermission: StringLiteralKey = "has_permission"
+  public static let permissionStatus: StringLiteralKey = "permission_status"
+  
+  public static let isLoggedIn: StringLiteralKey = "is_logged_in"
+  public static let authenticationStatus: StringLiteralKey = "authentication_status"
+  public static let authorizationStatus: StringLiteralKey = "authorization_status"
+}
 
 // TBD: https://forums.swift.org/t/static-let-vs-computed-properties-and-binary-size/83706/6
 // `static let` vs computed properties, and binary size
