@@ -16,6 +16,7 @@ extension ErrorInfo {
   /// - Parameters:
   ///   - preserveNilValues: A Boolean value that determines whether nil values should be preserved. Default is true.
   ///   - duplicatePolicy: Specifies the policy for handling duplicate values during modification. The default is .defaultForAppending.
+  ///   - prefixForKeys: An optional prefix to prepend to all keys added. Default is nil.
   ///   - collisionSource: Defines the origin of any collisions for debugging and tracking purposes. The default is `.fileLine()`.
   ///   - modify: A closure that provides a `CustomOptionsView` to perform mutable operations on the `ErrorInfo` instance.
   ///     The closure receives a mutable reference to the `CustomOptionsView`, which can then be used to perform operations
@@ -38,11 +39,13 @@ extension ErrorInfo {
   /// ```
   public static func withOptions(preserveNilValues: Bool = true,
                                  duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending,
+                                 prefixForKeys: StringLiteralKey? = nil,
                                  collisionSource: CollisionSource.Origin = .fileLine(),
                                  modify: (consuming CustomOptionsView) -> Void) -> Self {
     var info = Self()
-    info.modifyWithOptions(preserveNilValues: preserveNilValues,
+    info.appendWithOptions(preserveNilValues: preserveNilValues,
                            duplicatePolicy: duplicatePolicy,
+                           prefixForKeys: prefixForKeys,
                            collisionSource: collisionSource,
                            modify: modify)
     return info
@@ -54,6 +57,7 @@ extension ErrorInfo {
   /// - Parameters:
   ///   - preserveNilValues: A Boolean value that determines whether nil values should be preserved. Default is true.
   ///   - duplicatePolicy: Specifies the policy for handling duplicate values during modification. The default is .defaultForAppending.
+  ///   - prefixForKeys: An optional prefix to prepend to all keys added. Default is nil.
   ///   - collisionSource: Defines the origin of any collisions for debugging and tracking purposes. The default is `.fileLine()`.
   ///   - modify: A closure that provides a `CustomOptionsView` to perform mutable operations on the `ErrorInfo` instance.
   ///     The closure receives a mutable reference to the `CustomOptionsView`, which can then be used to perform operations
@@ -75,14 +79,16 @@ extension ErrorInfo {
   ///
   /// // info now contains: ["age": 30, "email": nil]
   /// ```
-  public mutating func modifyWithOptions(preserveNilValues: Bool = true,
+  public mutating func appendWithOptions(preserveNilValues: Bool = true,
                                          duplicatePolicy: ValueDuplicatePolicy = .rejectEqual,
+                                         prefixForKeys: StringLiteralKey? = nil,
                                          collisionSource: CollisionSource.Origin = .fileLine(),
                                          modify: (consuming CustomOptionsView) -> Void) {
     withUnsafeMutablePointer(to: &self) { pointer in
       let view = CustomOptionsView(pointer: pointer,
                                    duplicatePolicy: duplicatePolicy,
                                    preserveNilValues: preserveNilValues,
+                                   prefixForKeys: prefixForKeys,
                                    collisionOrigin: collisionSource)
       modify(view)
     }
@@ -101,12 +107,11 @@ extension ErrorInfo.CustomOptionsView {
     duplicatePolicy: ValueDuplicatePolicy? = nil,
   ) -> V? {
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
-    get {
-      pointer.pointee.allValues(forKey: literalKey)?.first as? V
-    }
+    get { pointer.pointee.lastValue(forKey: literalKey) as? V }
     nonmutating set {
-      pointer.pointee._add(key: literalKey.rawValue,
-                           keyOrigin: literalKey.keyOrigin,
+      let resolvedKey = Self.resolveKey(literalKey: literalKey, prefixForKeys: prefixForKeys)
+      pointer.pointee._add(key: resolvedKey.rawValue,
+                           keyOrigin: resolvedKey.keyOrigin,
                            value: newValue,
                            preserveNilValues: preserveNilValues ?? self.preserveNilValues,
                            duplicatePolicy: duplicatePolicy ?? self.duplicatePolicy,
@@ -114,51 +119,19 @@ extension ErrorInfo.CustomOptionsView {
     }
   }
   
-  /// `omitEqualValue`has higher priority than provided in `appendWith(typeInfoOptions:, omitEqualValue:, append:)` function.
-  @_disfavoredOverload
-  public subscript<V: ErrorInfo.ValueProtocol>(
-    key dynamicKey: String,
-    preserveNilValues: Bool? = nil,
-    duplicatePolicy: ValueDuplicatePolicy? = nil,
-  ) -> V? {
-    @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
-    get {
-      pointer.pointee.allValues(forKey: dynamicKey)?.first as? V
+  private static func resolveKey(literalKey: StringLiteralKey,
+                                 prefixForKeys: StringLiteralKey?) -> (rawValue: String, keyOrigin: KeyOrigin) {
+    let keyString: String
+    let keyOrigin: KeyOrigin
+    if let prefixForKeys {
+      let combinedLiteralKey = prefixForKeys + literalKey
+      keyString = combinedLiteralKey.rawValue
+      keyOrigin = .modified(original: combinedLiteralKey.keyOrigin)
+    } else {
+      keyString = literalKey.rawValue
+      keyOrigin = literalKey.keyOrigin
     }
-    nonmutating set {
-      pointer.pointee._add(key: dynamicKey,
-                           keyOrigin: .dynamic,
-                           value: newValue,
-                           preserveNilValues: preserveNilValues ?? self.preserveNilValues,
-                           duplicatePolicy: duplicatePolicy ?? self.duplicatePolicy,
-                           collisionSource: .onSubscript(origin: collisionOrigin))
-    }
-  }
-}
-
-// ===-------------------------------------------------------------------------------------------------------------------=== //
-
-// MARK: - Replace All Records For Key
-
-extension ErrorInfo.CustomOptionsView {
-  @_lifetime(borrow self)
-  @_disfavoredOverload
-  @discardableResult
-  public func replaceAllRecords(
-    forKey dynamicKey: String,
-    by newValue: some ErrorInfo.ValueProtocol,
-    preserveNilValues: Bool? = nil,
-    duplicatePolicy: ValueDuplicatePolicy? = nil,
-  ) -> ValuesForKey<ErrorInfo.ValueExistential>? {
-    let oldValues = pointer.pointee._storage.removeAllRecords_ReturningNonNilValues(forKey: dynamicKey)
-    // collisions never happens when replacing
-    pointer.pointee._add(key: dynamicKey,
-                         keyOrigin: .dynamic,
-                         value: newValue,
-                         preserveNilValues: preserveNilValues ?? self.preserveNilValues,
-                         duplicatePolicy: duplicatePolicy ?? self.duplicatePolicy,
-                         collisionSource: .onAppend(origin: collisionOrigin))
-    return oldValues
+    return (keyString, keyOrigin)
   }
 }
 
@@ -171,16 +144,19 @@ extension ErrorInfo {
     private let pointer: UnsafeMutablePointer<ErrorInfo> // TODO: check CoW not triggered | inplace mutation
     private let duplicatePolicy: ValueDuplicatePolicy
     private let preserveNilValues: Bool
+    private let prefixForKeys: StringLiteralKey?
     private let collisionOrigin: CollisionSource.Origin
     
     @_lifetime(borrow pointer)
     fileprivate init(pointer: UnsafeMutablePointer<ErrorInfo>,
                      duplicatePolicy: ValueDuplicatePolicy,
                      preserveNilValues: Bool,
+                     prefixForKeys: StringLiteralKey?,
                      collisionOrigin: CollisionSource.Origin) {
       self.pointer = pointer
       self.duplicatePolicy = duplicatePolicy
       self.preserveNilValues = preserveNilValues
+      self.prefixForKeys = prefixForKeys
       self.collisionOrigin = collisionOrigin
     }
   }

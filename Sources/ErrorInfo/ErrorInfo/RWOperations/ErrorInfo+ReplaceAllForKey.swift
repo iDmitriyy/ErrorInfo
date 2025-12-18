@@ -16,12 +16,12 @@ extension ErrorInfo {
   
   @_disfavoredOverload @discardableResult
   public mutating func replaceAllRecords(forKey dynamicKey: String,
-                                            by newValue: any ValueProtocol) -> ValuesForKey<ValueExistential>? {
+                                            by newValue: ValueExistential) -> ValuesForKey<ValueExistential>? {
     _replaceAllRecordsImp(forKey: dynamicKey, by: newValue, keyOrigin: .dynamic)
   }
   
   internal mutating func _replaceAllRecordsImp(forKey key: String,
-                                               by newValue: any ValueProtocol,
+                                               by newValue: ValueExistential,
                                                keyOrigin: KeyOrigin) -> ValuesForKey<ValueExistential>? {
     let oldValues = removeAllRecords(forKey: key)
     _add(key: key,
