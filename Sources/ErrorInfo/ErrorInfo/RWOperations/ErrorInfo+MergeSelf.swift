@@ -145,10 +145,8 @@ extension ErrorInfo {
                                        forKey: key,
                                        insertIfEqual: true,
                                        collisionSource: annotatedRecord.collisionSource ?? .onMerge(origin: mergeOrigin))
-        // TBD: should collizion source be composite / indirect?
-        // Keep the most simple variant for now
-        // ["a": 1] merge with ["a": 1, a: "1"(collision#1)]
-        // result: ["a": 1, a: "1"(collision#2), a: "1"(collision#1)]
+        // Example: ["a": 1] merge with ["a": 1, "a": 1(collisionX)]
+        //  result: ["a": 1, "a": 1(collisionZ), "a": 1(collisionX)]
       }
     }
     return recipient
