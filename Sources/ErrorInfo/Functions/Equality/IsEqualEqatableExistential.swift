@@ -11,13 +11,13 @@ extension ErrorInfoFuncs {
   @inlinable @inline(__always) // 2.5%-5.5% speedup.
   internal static func isEqualEqatableExistential(a: any ErrorInfo.ValueProtocol, b: any ErrorInfo.ValueProtocol) -> Bool {
     // Unpack existentials for type casting and comparing
-    __PrivateImps._isEqualEqatableExistential(a: a, b: b)
+    __PrivateImps._isEqualExistentialEquatableWithUnboxing(a: a, b: b)
   }
 }
 
 extension ErrorInfoFuncs.__PrivateImps {
   @inlinable @inline(__always)
-  internal static func _isEqualEqatableExistential<A: Equatable>(a: A, b: some Equatable) -> Bool {
+  internal static func _isEqualExistentialEquatableWithUnboxing<A: Equatable>(a: A, b: some Equatable) -> Bool {
     guard let b = b as? A else { return false }
     return a == b
   }

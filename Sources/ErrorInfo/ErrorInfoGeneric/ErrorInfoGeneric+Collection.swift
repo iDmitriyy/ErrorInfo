@@ -6,9 +6,9 @@
 //
 
 extension ErrorInfoGeneric: Collection {
-  public var count: Int { _storage.count }
+  @_transparent public var count: Int { _storage.count }
   
-  public var isEmpty: Bool { _storage.isEmpty }
+  @_transparent public var isEmpty: Bool { _storage.isEmpty }
 }
 
 extension ErrorInfoGeneric: RandomAccessCollection {

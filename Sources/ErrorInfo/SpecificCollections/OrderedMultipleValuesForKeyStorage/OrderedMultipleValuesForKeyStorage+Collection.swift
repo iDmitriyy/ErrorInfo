@@ -6,14 +6,14 @@
 //
 
 extension OrderedMultipleValuesForKeyStorage: Collection {
-  @inlinable public var count: Int {
+  @_transparent public var count: Int {
     switch _variant {
     case .left(let singleValueForKeyDict): singleValueForKeyDict.count
     case .right(let multiValueForKeyDict): multiValueForKeyDict.count
     }
   }
   
-  @inlinable public var isEmpty: Bool {
+  @_transparent public var isEmpty: Bool {
     switch _variant {
     case .left(let singleValueForKeyDict): singleValueForKeyDict.isEmpty
     case .right(let multiValueForKeyDict): multiValueForKeyDict.isEmpty

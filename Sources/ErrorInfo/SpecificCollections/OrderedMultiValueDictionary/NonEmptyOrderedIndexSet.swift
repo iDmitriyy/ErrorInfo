@@ -13,8 +13,8 @@ internal import typealias SwiftCollectionsNonEmpty.NonEmptyOrderedSet
 /// When there are multiple values for key, multiple indices are also stored.
 /// This `NonEmpty Ordered IndexSet` stores single index inlined as a value type.
 /// Heap allocated OrderedSet is only created when there are 2 or more indices.
-internal struct NonEmptyOrderedIndexSet: RandomAccessCollection {
-  typealias Element = Int
+@usableFromInline internal struct NonEmptyOrderedIndexSet: Sendable, RandomAccessCollection {
+  @usableFromInline typealias Element = Int
   
   internal private(set) var _variant: _Variant
   
@@ -22,9 +22,9 @@ internal struct NonEmptyOrderedIndexSet: RandomAccessCollection {
     Self(_variant: .single(index: index))
   }
   
-  internal var startIndex: Int { 0 }
+  @usableFromInline internal var startIndex: Int { 0 }
   
-  internal var endIndex: Int {
+  @usableFromInline internal var endIndex: Int {
     switch _variant {
     case .single: 1
     case .multiple(let indices): indices.endIndex
@@ -38,7 +38,7 @@ internal struct NonEmptyOrderedIndexSet: RandomAccessCollection {
     }
   }
   
-  internal subscript(position: Int) -> Element {
+  @usableFromInline internal subscript(position: Int) -> Element {
     switch _variant {
     case .single(let index):
       switch position {
@@ -83,7 +83,7 @@ extension NonEmptyOrderedSet<Int> {
 }
 
 extension NonEmptyOrderedIndexSet {
-  internal enum _Variant {
+  internal enum _Variant: Sendable {
     case single(index: Int)
     case multiple(indices: NonEmptyOrderedSet<Int>) // TODO: may use ContiguousArray / NonEmptyArray / Set / instead of Set
   }

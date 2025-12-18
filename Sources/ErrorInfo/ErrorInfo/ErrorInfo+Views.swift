@@ -32,6 +32,8 @@ extension ErrorInfo {
     }
   }
   
+  @inlinable
+  @_transparent
   public func fullInfo(forKey literalKey: StringLiteralKey) -> ValuesForKey<FullInfoRecord>? {
     fullInfo(forKey: literalKey.rawValue)
   }

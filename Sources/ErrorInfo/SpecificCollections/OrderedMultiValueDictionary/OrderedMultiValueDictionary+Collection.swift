@@ -6,16 +6,26 @@
 //
 
 extension OrderedMultiValueDictionary: Collection {
+  @inlinable
+  @_transparent
   public var count: Int { _entries.count }
   
+  @inlinable
+  @_transparent
   public var isEmpty: Bool { _entries.isEmpty }
 }
 
 extension OrderedMultiValueDictionary: RandomAccessCollection {
+  @inlinable
+  @_transparent
   public var startIndex: Int { _entries.startIndex }
   
+  @inlinable
+  @_transparent
   public var endIndex: Int { _entries.endIndex }
     
+  @inlinable
+  @inline(__always)
   public subscript(position: Int) -> Element { _entries[position] }
 }
 

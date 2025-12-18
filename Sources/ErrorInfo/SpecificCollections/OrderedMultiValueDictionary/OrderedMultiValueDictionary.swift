@@ -14,10 +14,10 @@ import SwiftCollectionsNonEmpty
 internal struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   public typealias Element = (key: Key, value: Value)
   
-  internal private(set) var _entries: [Element]
+  @usableFromInline internal var _entries: [Element]
   /// for `allValuesForKey` function
   /// stores indices for all values for a key
-  internal private(set) var _keyToEntryIndices: Dictionary<Key, NonEmptyOrderedIndexSet> // TODO: ? use RangeSet instead of NonEmptyOrderedIndexSet?
+  @usableFromInline internal var _keyToEntryIndices: Dictionary<Key, NonEmptyOrderedIndexSet> // TODO: ? use RangeSet instead of NonEmptyOrderedIndexSet?
   
   @usableFromInline internal init() {
     _entries = []
@@ -27,38 +27,6 @@ internal struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   internal init(minimumCapacity: Int) {
     _entries = Array(minimumCapacity: minimumCapacity)
     _keyToEntryIndices = Dictionary(minimumCapacity: minimumCapacity)
-  }
-    
-  func approximatelyUniqueValuesWithKeysSlice() -> some Collection<Element> {
-    var entriesRangeSet: RangeSet<Index> = RangeSet(_entries.indices)
-    
-    for (_, allValuesForKeyIndexSet) in _keyToEntryIndices where allValuesForKeyIndexSet.count > 1 {
-      var valueForKeyIndices = allValuesForKeyIndexSet._asHeapNonEmptyOrderedSet.base
-      
-      var dropFirstCount: Int = 1
-      var currentValue = _entries[allValuesForKeyIndexSet.first].value
-      var nextIndices = valueForKeyIndices.dropFirst(dropFirstCount)
-      while !nextIndices.isEmpty {
-        for entryIndex in nextIndices { // remove equal values
-          let nextValue = _entries[entryIndex].value
-          if ErrorInfoFuncs.isEqualAny(currentValue, nextValue) {
-            valueForKeyIndices.remove(entryIndex)
-            entriesRangeSet.remove(entryIndex, within: _entries)
-          }
-        }
-        // values example: 0 1 1 1 1 2 3 2 3 2 1 4
-        let indicesAfterRemovingDuplicates = valueForKeyIndices.dropFirst(dropFirstCount)
-        if let nextIndex = indicesAfterRemovingDuplicates.first {
-          currentValue = _entries[nextIndex].value
-        }
-        dropFirstCount += 1
-        nextIndices = indicesAfterRemovingDuplicates.dropFirst()
-      }
-    } // end `for (key, allValuesForKeyIndexSet)`
-    
-    let uniqueValuesSlice = _entries[entriesRangeSet]
-    
-    return uniqueValuesSlice
   }
 }
 

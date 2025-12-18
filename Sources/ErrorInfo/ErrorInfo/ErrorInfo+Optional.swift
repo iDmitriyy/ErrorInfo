@@ -23,7 +23,9 @@ extension ErrorInfo {
     
     var isValue: Bool { maybeValue.isValue }
     
-    @usableFromInline static func == (lhs: Self, rhs: Self) -> Bool {
+    @usableFromInline
+    @_transparent
+    static func == (lhs: Self, rhs: Self) -> Bool {
       switch (lhs.maybeValue, rhs.maybeValue) {
       case (.value, .nilInstance),
            (.nilInstance, .value):

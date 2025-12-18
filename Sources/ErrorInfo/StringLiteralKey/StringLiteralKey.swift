@@ -41,7 +41,7 @@
 /// ```
 public struct StringLiteralKey: Hashable, Sendable, CustomStringConvertible, CustomDebugStringConvertible {
   /// A new instance initialized with `rawValue` will be equivalent to this instance.
-  internal let rawValue: String
+  @usableFromInline internal let rawValue: String
   
   public var description: String { rawValue }
   

@@ -96,7 +96,7 @@ extension ErrorInfo {
 extension ErrorInfo.CustomOptionsView {
   /// `duplicatePolicy`has higher priority than provided in `appendWith(typeInfoOptions:, omitEqualValue:, append:)` function.
   public subscript<V: ErrorInfo.ValueProtocol>(
-    key literalKey: StringLiteralKey,
+    _ literalKey: StringLiteralKey,
     preserveNilValues: Bool? = nil,
     duplicatePolicy: ValueDuplicatePolicy? = nil,
   ) -> V? {
@@ -104,7 +104,7 @@ extension ErrorInfo.CustomOptionsView {
     get {
       pointer.pointee.allValues(forKey: literalKey)?.first as? V
     }
-    set {
+    nonmutating set {
       pointer.pointee._add(key: literalKey.rawValue,
                            keyOrigin: literalKey.keyOrigin,
                            value: newValue,
@@ -125,7 +125,7 @@ extension ErrorInfo.CustomOptionsView {
     get {
       pointer.pointee.allValues(forKey: dynamicKey)?.first as? V
     }
-    set {
+    nonmutating set {
       pointer.pointee._add(key: dynamicKey,
                            keyOrigin: .dynamic,
                            value: newValue,
@@ -141,6 +141,7 @@ extension ErrorInfo.CustomOptionsView {
 // MARK: - Replace All Records For Key
 
 extension ErrorInfo.CustomOptionsView {
+  @_lifetime(borrow self)
   @_disfavoredOverload @discardableResult
   public func replaceAllRecords(
     forKey dynamicKey: String,
@@ -165,12 +166,13 @@ extension ErrorInfo.CustomOptionsView {
 // MARK: - CustomOptions View
 
 extension ErrorInfo {
-  public struct CustomOptionsView: ~Copyable { // TODO: ~Escapable
+  public struct CustomOptionsView: ~Copyable, ~Escapable {
     private let pointer: UnsafeMutablePointer<ErrorInfo> // TODO: check CoW not triggered | inplace mutation
     private let duplicatePolicy: ValueDuplicatePolicy
     private let preserveNilValues: Bool
     private let collisionOrigin: CollisionSource.Origin
     
+    @_lifetime(borrow pointer)
     fileprivate init(pointer: UnsafeMutablePointer<ErrorInfo>,
                      duplicatePolicy: ValueDuplicatePolicy,
                      preserveNilValues: Bool,

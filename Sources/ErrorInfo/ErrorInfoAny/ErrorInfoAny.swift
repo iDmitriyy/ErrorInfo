@@ -89,7 +89,9 @@ extension ErrorInfoAny {
         false
         
       case let (.value(lhsInstance), .value(rhsInstance)):
-        "\(lhsInstance)" == "\(rhsInstance)" // FIXME: - Implement
+        // As `Any` instances are flattened in EquatableOptionalAny's initializer, call
+        // _isEqualFlattenedExistentialAnyWithUnboxing func.
+        ErrorInfoFuncs.__PrivateImps._isEqualFlattenedExistentialAnyWithUnboxing(a: lhsInstance, b: rhsInstance)
         
       case let (.nilInstance(lhsType), .nilInstance(rhsType)):
         lhsType == rhsType
