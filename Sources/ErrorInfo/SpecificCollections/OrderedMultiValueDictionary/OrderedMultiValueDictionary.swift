@@ -87,10 +87,10 @@ extension OrderedMultiValueDictionary {
     guard let indexSet = _keyToEntryIndices[key] else { return }
     
     switch indexSet._variant {
-    case .single(let index): // Typically there is only one value for key
+    case .left(let index): // Typically there is only one value for key
       iteration(_entries[index].value)
        
-    case .multiple(let indices):
+    case .right(let indices):
       for index in indices { iteration(_entries[index].value) }
     }
   }
@@ -100,10 +100,10 @@ extension OrderedMultiValueDictionary {
     
     let valuesForKey: ValuesForKey<Value>
     switch indexSet._variant {
-    case .single(let index): // Typically there is only one value for key
+    case .left(let index): // Typically there is only one value for key
       valuesForKey = ValuesForKey(element: _entries[index].value)
        
-    case .multiple(let indices):
+    case .right(let indices):
       let valuesForKeyArray = indices.map { index in _entries[index].value }
       valuesForKey = ValuesForKey(array: valuesForKeyArray)
     }
@@ -116,11 +116,11 @@ extension OrderedMultiValueDictionary {
       
     let removedValues: ValuesForKey<Value>
     switch indexSetForKey._variant {
-    case .single(let index): // Typically there is only one value for key
+    case .left(let index): // Typically there is only one value for key
       let removedElement = _entries.remove(at: index)
       removedValues = ValuesForKey(element: removedElement.value)
        
-    case .multiple(let indicesToRemove):
+    case .right(let indicesToRemove):
       let removedValuesArray = indicesToRemove.map { index in _entries[index].value }
       _entries.removeSubranges(indicesToRemove.asRangeSet(for: _entries))
       removedValues = ValuesForKey(array: removedValuesArray)

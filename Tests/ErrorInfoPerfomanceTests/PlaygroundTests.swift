@@ -14,8 +14,8 @@ struct PlaygroundTests {
     let count = 10
     
     let output = performMeasuredAction(count: count) {
-      for _ in 1...10 {
-//        blackHole("")
+      for _ in 1...1_000_000 {
+        blackHole("")
       }
     }
     

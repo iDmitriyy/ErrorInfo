@@ -32,7 +32,7 @@ internal import typealias SwiftCollectionsNonEmpty.NonEmptyOrderedSet
   
   /// Creates a non-empty set containing a single index stored inline.
   internal static func single(index: Int) -> Self {
-    Self(_variant: .single(index: index))
+    Self(_variant: .left(index))
   }
   
   /// Always zero.
@@ -41,15 +41,15 @@ internal import typealias SwiftCollectionsNonEmpty.NonEmptyOrderedSet
   /// 1 when a single index is stored; otherwise the count of the heap-backed orderedS set.
   @usableFromInline internal var endIndex: Int {
     switch _variant {
-    case .single: 1
-    case .multiple(let indices): indices.endIndex
+    case .left: 1
+    case .right(let indices): indices.endIndex
     }
   }
   
   /// The first stored index.
   // var first: Element {
   //   switch _variant {
-  //   case .single(let index): index
+  //   case .left(let index): index
   //   case .multiple(let indices): indices.first
   //   }
   // }
@@ -58,12 +58,12 @@ internal import typealias SwiftCollectionsNonEmpty.NonEmptyOrderedSet
   /// - Precondition: `position` is within bounds.
   @usableFromInline internal subscript(position: Int) -> Element {
     switch _variant {
-    case .single(let index):
+    case .left(let index):
       switch position {
       case 0: return index
       default: preconditionFailure("Index \(position) is out of bounds")
       }
-    case .multiple(let indices):
+    case .right(let indices):
       return indices.base[position]
     }
   }
@@ -72,19 +72,19 @@ internal import typealias SwiftCollectionsNonEmpty.NonEmptyOrderedSet
   /// Switches to heap-backed storage on the first insertion beyond one element.
   internal mutating func insert(_ newIndex: Int) {
     switch _variant {
-    case .single(let currentIndex):
-      _variant = .multiple(indices: NonEmptyOrderedSet<Int>(elements: currentIndex, newIndex))
-    case .multiple(var elements):
-      elements.append(newIndex) // FIXME: remove cow of elements
-      _variant = .multiple(indices: elements)
+    case .left(let currentIndex):
+      _variant = .right(NonEmptyOrderedSet<Int>(elements: currentIndex, newIndex))
+    case .right(var elements):
+      elements.append(newIndex) // FIXME: remove cow of elements | inout switch / exclusive access
+      _variant = .right(elements)
     }
   }
   
   /// Builds a `RangeSet` of indices relative to `collection`.
   internal func asRangeSet<C>(for collection: C) -> RangeSet<Int> where C: Collection, C.Index == Int {
     switch _variant {
-    case let .single(index): RangeSet(CollectionOfOne(index), within: collection) // TODO: check for CollectionOfOne
-    case let .multiple(indices): RangeSet(indices, within: collection)
+    case let .left(index): RangeSet(CollectionOfOne(index), within: collection) // TODO: check for CollectionOfOne
+    case let .right(indices): RangeSet(indices, within: collection)
     }
   }
 }
@@ -98,10 +98,7 @@ extension NonEmptyOrderedSet<Int> {
 
 extension NonEmptyOrderedIndexSet {
   /// Storage variant: inline single index or heap-backed non-empty orderedS set.
-  internal enum _Variant: Sendable {
-    case single(index: Int)
-    case multiple(indices: NonEmptyOrderedSet<Int>)
-  }
+  typealias _Variant = Either<Int, NonEmptyOrderedSet<Int>>
 }
 
 // TODO: - perfomance checks
