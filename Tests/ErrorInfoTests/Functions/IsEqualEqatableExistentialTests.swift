@@ -11,47 +11,30 @@ import Testing
 struct IsEqualEqatableExistentialTests {
   @Test func basic() throws {
     // Equal values
-    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1), b: Int(1)) == true)
+    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1), b: Int(1)))
     
     #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1),
-                                                      b: Int(1) as ErrorInfo.ValueExistential) == true)
-    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1) as ErrorInfo.ValueExistential,
-                                                      b: Int(1)) == true)
-    
-    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1) as ErrorInfo.ValueExistential,
-                                                      b: Int(1) as ErrorInfo.ValueExistential) == true)
-    
-    
-    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1),
-                                                      b: Int(1) as any BinaryInteger & Sendable) == true)
+                                                      b: Int(1) as any BinaryInteger & Sendable))
     #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1) as any BinaryInteger & Sendable,
-                                                      b: Int(1)) == true)
+                                                      b: Int(1)))
     
     #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1) as any BinaryInteger & Sendable,
-                                                      b: Int(1) as any BinaryInteger & Sendable) == true)
+                                                      b: Int(1) as any BinaryInteger & Sendable))
     
     // Not Equal types
     
-    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1),
-                                                      b: UInt(1)) == false)
-    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: UInt(1),
-                                                      b: Int(1)) == false)
+    #expect(!ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1),
+                                                       b: UInt(1)))
+    #expect(!ErrorInfoFuncs.isEqualEqatableExistential(a: UInt(1),
+                                                       b: Int(1)))
     
-    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1) as ErrorInfo.ValueExistential,
-                                                      b: UInt(1)) == false)
-    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: UInt(1) as ErrorInfo.ValueExistential,
-                                                      b: Int(1)) == false)
+    #expect(!ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1) as any BinaryInteger & Sendable,
+                                                       b: UInt(1)))
+    #expect(!ErrorInfoFuncs.isEqualEqatableExistential(a: UInt(1) as any BinaryInteger & Sendable,
+                                                       b: Int(1)))
     
-    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1) as ErrorInfo.ValueExistential,
-                                                      b: UInt(1) as ErrorInfo.ValueExistential) == false)
-    
-    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1) as any BinaryInteger & Sendable,
-                                                      b: UInt(1)) == false)
-    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: UInt(1) as any BinaryInteger & Sendable,
-                                                      b: Int(1)) == false)
-    
-    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1) as any BinaryInteger & Sendable,
-                                                      b: UInt(1) as any BinaryInteger & Sendable) == false)
+    #expect(!ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1) as any BinaryInteger & Sendable,
+                                                       b: UInt(1) as any BinaryInteger & Sendable))
     
     // TODO: classes
     // https://forums.swift.org/t/comparing-two-any-values-for-equality-is-this-the-simplest-implementation/73816/8

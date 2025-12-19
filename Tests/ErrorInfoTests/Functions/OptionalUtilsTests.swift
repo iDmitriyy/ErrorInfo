@@ -32,6 +32,9 @@ struct OptionalUtilsTests {
     
     checkIsValue(wrappedValue: ((5 as Int?) as Any?) as Any, expectedUnwrappedValue: 5)
     checkIsNil(wrappedValue: ((nil as Int?) as Any?) as Any, expectedType: expectedTypeAny)
+    
+    checkIsValue(wrappedValue: ((5 as Int?) as Any) as Any?, expectedUnwrappedValue: 5)
+    checkIsNil(wrappedValue: ((nil as Int?) as Any) as Any?, expectedType: Int.self)
         
     // 2.
     checkIsValue(wrappedValue: Int??.some(.some(5)), expectedUnwrappedValue: 5)
@@ -49,6 +52,10 @@ struct OptionalUtilsTests {
     checkIsValue(wrappedValue: (Int??.some(.some(5)) as Any?) as Any, expectedUnwrappedValue: 5)
     checkIsNil(wrappedValue: (Int??.some(.none) as Any?) as Any, expectedType: Int.self)
     checkIsNil(wrappedValue: (Int??.none as Any?) as Any, expectedType: expectedTypeAny)
+    
+    checkIsValue(wrappedValue: (Int??.some(.some(5)) as Any) as Any?, expectedUnwrappedValue: 5)
+    checkIsNil(wrappedValue: (Int??.some(.none) as Any) as Any?, expectedType: Int.self)
+    checkIsNil(wrappedValue: (Int??.none as Any) as Any?, expectedType: Int.self)
     
     // 3.
     checkIsValue(wrappedValue: Any???.some(.some(.some(5 as Any))), expectedUnwrappedValue: 5)
@@ -74,6 +81,12 @@ struct OptionalUtilsTests {
     checkIsNil(wrappedValue: (Int???.some(.some(.none)) as Any?) as Any, expectedType: Int.self)
     checkIsNil(wrappedValue: (Int???.some(.none) as Any?) as Any, expectedType: Int.self)
     checkIsNil(wrappedValue: (Int???.none as Any?) as Any, expectedType: expectedTypeAny)
+    
+    checkIsValue(wrappedValue: (Any???.some(.some(.some(5 as Any))) as Any) as Any?, expectedUnwrappedValue: 5)
+    checkIsValue(wrappedValue: (Int???.some(.some(.some(5))) as Any) as Any?, expectedUnwrappedValue: 5)
+    checkIsNil(wrappedValue: (Int???.some(.some(.none)) as Any) as Any?, expectedType: Int.self)
+    checkIsNil(wrappedValue: (Int???.some(.none) as Any) as Any?, expectedType: Int.self)
+    checkIsNil(wrappedValue: (Int???.none as Any) as Any?, expectedType: Int.self)
   }
   
   // MARK: - Reusable funcs

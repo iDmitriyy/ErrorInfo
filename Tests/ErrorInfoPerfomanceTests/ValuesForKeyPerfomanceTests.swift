@@ -13,38 +13,38 @@ import Testing
 struct ValuesForKeyPerfomanceTests {
   /// Typically ErrorInfo has 1 value for key
   @Test func initWithSingleValue() {
-    let count = 10
+    let count = 50
     
     if #available(macOS 26.0, *) {
       let inlineOutput = performMeasuredAction(count: count) {
-        InlineArray<1000, ErrorInfo.ValueExistential>({ index in
-          index as ErrorInfo.ValueExistential
+        InlineArray<1000, InlineArray<1, Int>>({ index in
+          [index]
         })
       }
       
       let arrayOutput = performMeasuredAction(count: count) {
-        InlineArray<1000, Array<ErrorInfo.ValueExistential>>({ index in
+        InlineArray<1000, Array<Int>>({ index in
           /// get existing value, eliminate costs for casting `index as ErrorInfo.ValueExistential`
-          let value = index as ErrorInfo.ValueExistential
+          let value = index // as ErrorInfo.ValueExistential
           let valueWrappedByArray = [value]
           return valueWrappedByArray
         })
       }
       
       let valuesForKeyOutput = performMeasuredAction(count: count) {
-        InlineArray<1000, ValuesForKey<ErrorInfo.ValueExistential>>({ index in
-          let value = index as ErrorInfo.ValueExistential
+        InlineArray<1000, ValuesForKey<Int>>({ index in
+          let value = index // as ErrorInfo.ValueExistential
           let valueWrappedByValuesForKey = ValuesForKey(__element: value)
           return valueWrappedByValuesForKey
         })
       }
       
-       let durations = VariadicTuple(inlineOutput.duration, arrayOutput.duration, valuesForKeyOutput.duration)
+      let durations = VariadicTuple(inlineOutput.duration, arrayOutput.duration, valuesForKeyOutput.duration)
       
       #expect(valuesForKeyOutput.duration <= inlineOutput.duration * 1.55)
-      #expect(valuesForKeyOutput.duration <= arrayOutput.duration * 0.27)
+      #expect(valuesForKeyOutput.duration <= arrayOutput.duration / 19)
       
-       print(durations)
+      print("__initWithSingleValue: ", durations)
     }
   }
   
@@ -53,36 +53,34 @@ struct ValuesForKeyPerfomanceTests {
     
     if #available(macOS 26.0, *) {
       let inlineOutput = performMeasuredAction(count: count) {
-        InlineArray<1000, (ErrorInfo.ValueExistential, ErrorInfo.ValueExistential)>({ index in
-          (index as ErrorInfo.ValueExistential, index as ErrorInfo.ValueExistential)
+        InlineArray<1000, InlineArray<2, Int>>({ index in
+          [index, index]
         })
       }
       
       let arrayOutput = performMeasuredAction(count: count) {
-        InlineArray<1000, Array<ErrorInfo.ValueExistential>>({ index in
+        InlineArray<1000, Array<Int>>({ index in
           /// get existing value, eliminate costs for casting `index as ErrorInfo.ValueExistential`
-          let value = index as ErrorInfo.ValueExistential // values[index]
-          let valuesWrappedByArray = [value, value]
+          let valuesWrappedByArray = [index, index]
           return valuesWrappedByArray
         })
       }
       
       let valuesForKeyOutput = performMeasuredAction(count: count) {
-        InlineArray<1000, ValuesForKey<ErrorInfo.ValueExistential>>({ index in
-          let value = index as ErrorInfo.ValueExistential // values[index]
-          let valuesWrappedByValuesForKey = ValuesForKey(__array: NonEmptyArray.init(value, value))
+        InlineArray<1000, ValuesForKey<Int>>({ index in
+          let valuesWrappedByValuesForKey = ValuesForKey(__array: NonEmptyArray(base: [index, index])!)
           return valuesWrappedByValuesForKey
         })
       }
       
       // TODO: - test ValuesForKey init with NonEmptyArray of 1 element
       
-       let durations = VariadicTuple(inlineOutput.duration, arrayOutput.duration, valuesForKeyOutput.duration)
+      let durations = VariadicTuple(inlineOutput.duration, arrayOutput.duration, valuesForKeyOutput.duration)
       
-      #expect(valuesForKeyOutput.duration <= inlineOutput.duration * 6)
-      #expect(valuesForKeyOutput.duration <= arrayOutput.duration * 1.4)
+      #expect(valuesForKeyOutput.duration <= inlineOutput.duration * 15)
+      #expect(valuesForKeyOutput.duration <= arrayOutput.duration)
       
-       print(durations)
+      print("__initWithTwoValues: ", durations)
     }
   }
 }

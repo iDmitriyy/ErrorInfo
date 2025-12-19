@@ -6,6 +6,7 @@
 //
 
 @usableFromInline
+@frozen
 internal enum Either<L: ~Copyable, R: ~Copyable>: ~Copyable {
   case left(L)
   case right(R)

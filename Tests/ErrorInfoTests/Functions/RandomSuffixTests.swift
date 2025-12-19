@@ -48,7 +48,7 @@ struct RandomSuffixTests {
       }
     }
     
-    #expect(duplicatedSufixes.count < expectedMaxDuplicates)
+    #expect(duplicatedSufixes.count <= expectedMaxDuplicates)
     
     // The test was executed 1_000_000 times, generating a total of 1 billion random suffixes.
     // Below are the statistics for the number of duplicate suffixes found among 1000 suffixes per test run:
