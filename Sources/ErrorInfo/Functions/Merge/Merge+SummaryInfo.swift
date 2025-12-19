@@ -251,10 +251,10 @@ extension Merge._Summary {
   }
   
   /// **[Decomposition of `augmentedIfNeededKey(...)`]** function.
-  private static func _determinePrefix<S>(keysPrefixOption: Merge.Format.KeysPrefixOption<S>,
-                                          infoSource: S,
-                                          infoSourceIndex: Int,
-                                          elementIndex: Int) -> String? {
+  internal static func _determinePrefix<S>(keysPrefixOption: Merge.Format.KeysPrefixOption<S>,
+                                           infoSource: S,
+                                           infoSourceIndex: Int,
+                                           elementIndex: Int) -> String? {
     switch keysPrefixOption {
     case .noPrefix:
       return nil
@@ -274,7 +274,7 @@ extension Merge._Summary {
   /// // output:                "[err1] "
   /// // So a key "id" becomes: "[err1] id"
   /// ```
-  private static func _makePrefixString(_ input: (component: String, blockBoundary: Merge.Format.AnnotationsBoundaryDelimiter)) -> String {
+  internal static func _makePrefixString(_ input: (component: String, blockBoundary: Merge.Format.AnnotationsBoundaryDelimiter)) -> String {
     let (component, blockBoundary) = input
     
     var prefix = ""
@@ -301,11 +301,11 @@ extension Merge._Summary {
   }
   
   /// **[Decomposition of `augmentedIfNeededKey(...)`]** function.
-  private static func _determineKeyOrigin<K, V>(element: (key: K, value: V),
-                                                keyOriginAvailability: Merge.KeyOriginAvailability<(key: K, value: V)>,
-                                                keyHasCollisionAcross: Bool,
-                                                keyHasCollisionWithin: Bool,
-                                                annotationsFormat: Merge.Format.KeyAnnotationsFormat) -> String? {
+  internal static func _determineKeyOrigin<K, V>(element: (key: K, value: V),
+                                                 keyOriginAvailability: Merge.KeyOriginAvailability<(key: K, value: V)>,
+                                                 keyHasCollisionAcross: Bool,
+                                                 keyHasCollisionWithin: Bool,
+                                                 annotationsFormat: Merge.Format.KeyAnnotationsFormat) -> String? {
     switch keyOriginAvailability {
     case let .available(keyOriginPath, interpolation):
       let keyHasCollision = keyHasCollisionAcross || keyHasCollisionWithin
@@ -320,8 +320,8 @@ extension Merge._Summary {
   }
   
   /// **[Decomposition of `augmentedIfNeededKey(...)`]** function.
-  private static func _determineCollisionSource<K, V>(collisionAvailability: Merge.CollisionAvailability<(key: K, value: V)>,
-                                                      element: (key: K, value: V)) -> String? {
+  internal static func _determineCollisionSource<K, V>(collisionAvailability: Merge.CollisionAvailability<(key: K, value: V)>,
+                                                       element: (key: K, value: V)) -> String? {
     switch collisionAvailability {
     case let .available(keyPath, interpolation):
       let collision: CollisionSource? = element[keyPath: keyPath]
@@ -345,11 +345,11 @@ extension Merge._Summary {
   ///                          to: &key)
   /// // "id (literal, onSubscript)"
   /// ```
-  private static func _appendSuffixAnnotations(keyOrigin: String?,
-                                               collisionSource: String?,
-                                               errorInfoSignature: String?,
-                                               annotationsFormat: Merge.Format.KeyAnnotationsFormat,
-                                               to recipient: inout String) {
+  internal static func _appendSuffixAnnotations(keyOrigin: String?,
+                                                collisionSource: String?,
+                                                errorInfoSignature: String?,
+                                                annotationsFormat: Merge.Format.KeyAnnotationsFormat,
+                                                to recipient: inout String) {
     // 1. Fast path
     if keyOrigin == nil, collisionSource == nil, errorInfoSignature == nil { return }
     
@@ -381,30 +381,30 @@ extension Merge._Summary {
     let makeName: (Merge.Format.AnnotationComponentKind) -> String?
     switch annotationsFormat.annotationNameOption {
     case .noNames: makeName = { _ in nil }
-    case let .withNames(separator, nameForComponent): makeName = { separator + nameForComponent($0) }
+    case let .withNames(separator, nameForComponent): makeName = { nameForComponent($0) + separator }
     }
     
     // 4. Append components in one tight loop.
     // In most cases all components are nil (as they are typically added when collision happen)
     var needsSeparator = false // no separator is needed before first component
     for currentComponentKind in exhaustiveOrder {
-      let currentComponent: String? = switch currentComponentKind {
+      let component: String? = switch currentComponentKind {
       case .keyOrigin: keyOrigin
       case .collisionSource: collisionSource
       case .errorInfoSignature: errorInfoSignature
       }
       
-      if let currentComponent {
+      if let component {
         if needsSeparator {
           recipient.append(annotationsFormat.annotationsDelimiters.componentsSeparator)
         } else {
           needsSeparator = true // when first non-nil component appears, toggle to true for next components
         }
         
-        if let name = makeName(currentComponentKind) {
-          recipient.append(name)
+        if let componentName = makeName(currentComponentKind) {
+          recipient.append(componentName)
         }
-        recipient.append(currentComponent)
+        recipient.append(component)
       }
     }
     
@@ -456,7 +456,7 @@ extension Merge._Summary {
     let errorInfoElements = infoProviders.map { $0[keyPath: infoKeyPath] }
     
     // let duplicates = findDuplicateElements(in: errorInfos.map { $0.allKeys })
-    let duplicates = findDuplicateElements(in: errorInfoElements.map { errorInfo in
+    let duplicates = _findDuplicateElements(in: errorInfoElements.map { errorInfo in
       errorInfo.lazy.map { element in element.key[keyPath: keyString] }
     })
         
@@ -498,8 +498,8 @@ extension Merge._Summary {
   /// _generateUniqueSignatures(forSources: sources, buildSignatureForSource: buildRawSignature)
   /// // ["NSURL.6(0)", "NSCocoa.17", "NSURL.6(2)"]
   /// ```
-  private static func _generateUniqueSignatures<S>(forInfoProviders infoProviders: [S],
-                                                   buildSignatureForSource: (S) -> String) -> [String] {
+  internal static func _generateUniqueSignatures<S>(forInfoProviders infoProviders: [S],
+                                                    buildSignatureForSource: (S) -> String) -> [String] {
     var signatureStatuses: [String: _SignatureStatus] = Dictionary(minimumCapacity: infoProviders.count)
     var uniqueSignatures: [String] = Array(minimumCapacity: infoProviders.count)
     
@@ -513,14 +513,14 @@ extension Merge._Summary {
         switch status {
         case .isFirstOccurrence(let previousIndex):
           // When a duplicate happens, replace initially created rawSignature with an indexed version
-          uniqueSignatures[previousIndex] = makeIndexedSignature(rawSignature: rawSignature, index: previousIndex)
+          uniqueSignatures[previousIndex] = _makeIndexedSignature(rawSignature: rawSignature, index: previousIndex)
           signatureStatuses.values[occurenceIndex] = .alreadyMadeUnique
         case .alreadyMadeUnique:
           break
         }
         
         // Add the new indexed signature for this occurrence of duplicated rawSignature
-        signatureToAppend = makeIndexedSignature(rawSignature: rawSignature, index: infoIndex)
+        signatureToAppend = _makeIndexedSignature(rawSignature: rawSignature, index: infoIndex)
       } else {
         signatureStatuses[rawSignature] = .isFirstOccurrence(atIndex: infoIndex)
         signatureToAppend = rawSignature
@@ -532,7 +532,7 @@ extension Merge._Summary {
   }
   
   /// **[Decomposition of `summaryInfo(...)`]** function.
-  private static func makeIndexedSignature(rawSignature: String, index: Int) -> String {
+  internal static func _makeIndexedSignature(rawSignature: String, index: Int) -> String {
     rawSignature + "(\(index))"
   }
   
@@ -591,7 +591,7 @@ extension Merge._Summary {
   /// // Collection #2: [6,1,1] → element `1` is duplicated
   /// result.duplicatesWithinSources // [[], [], [1]]
   /// ```
-  private static func findDuplicateElements<C: Collection>(in collections: [C])
+  internal static func _findDuplicateElements<C: Collection>(in collections: [C])
     -> (duplicatesAcrossSources: Set<C.Element>, duplicatesWithinSources: [Set<C.Element>]) where C.Element: Hashable {
     guard collections.count > 1 else { return ([], []) }
       

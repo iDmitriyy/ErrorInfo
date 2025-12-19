@@ -212,12 +212,12 @@ extension Merge.Format {
   /// "key [origin, collision]"
   public enum AnnotationsBoundaryDelimiter: Sendable {
     /// Attach using only a spacer (e.g., " | ").
-    case onlySpacer(spacer: String)
+    case onlySpacer(_ spacer: String)
     /// Attach using a spacer and enclosing characters (e.g., ( … ), [ … ]).
     case enclosure(spacer: String, opening: Character, closing: Character)
         
     /// " | " spacer.
-    static let verticalBar: Self = .onlySpacer(spacer: " | ")
+    static let verticalBar: Self = .onlySpacer(" | ")
     
     /// Space plus parentheses enclosure.
     static let parentheses: Self = .enclosure(spacer: " ", opening: "(", closing: ")")
