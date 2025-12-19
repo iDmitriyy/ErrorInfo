@@ -11,10 +11,28 @@ struct UInt8KeyErrorInfo {
 }
 
 extension UInt8KeyErrorInfo {
+  enum PrimitiveValue {
+    case string(String)
+    case bool(Bool)
+    case int(Int)
+    case int8(Int8)
+    case int16(Int16)
+    case int32(Int32)
+    case uInt(UInt)
+    case uInt8(UInt8)
+    case uInt16(UInt16)
+    case uInt32(UInt32)
+    case float(Float)
+    case float16(Float16)
+    case float32(Float32)
+  }
+}
+
+extension UInt8KeyErrorInfo {
   struct CustomKey {
-    let rawValue: UInt8
+    fileprivate let rawValue: UInt8
     
-    fileprivate init(rawValue: UInt8) {
+    private init(rawValue: UInt8) {
       self.rawValue = rawValue
     }
   }
@@ -24,12 +42,16 @@ extension UInt8KeyErrorInfo {
 // range 1...9(<100)
 // range 100..<200(<1000)
 extension UInt8KeyErrorInfo.CustomKey {
-  static let a = Self(rawValue: 0)
-  static let aa = Self(rawValue: 10)
-  static let zz = Self(rawValue: 20)
-  static let aaa = Self(rawValue: 30)
-  static let bbb = Self(rawValue: 40)
-  static let ccc = Self(rawValue: 50)
-  static let zzz = Self(rawValue: 255)
+  static let duration = Self(rawValue: 0)
+  static let timestamp = Self(rawValue: 10)
+  static let status = Self(rawValue: 20)
+  static let code = Self(rawValue: 30)
+  static let state = Self(rawValue: 40)
+  static let value = Self(rawValue: 50)
+  static let rawValue = Self(rawValue: 60)
+  static let type = Self(rawValue: 70)
+  static let index = Self(rawValue: 80)
+  static let message = Self(rawValue: 90)
+  static let name = Self(rawValue: 100)
+  static let resource = Self(rawValue: 110)
 }
-

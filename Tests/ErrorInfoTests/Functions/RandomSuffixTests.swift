@@ -64,19 +64,3 @@ struct RandomSuffixTests {
     // So, if this test is run 10 times each day, the situation where 3 duplicates is found happens 1 time per 30 years
   }
 }
-
-struct TestableWithIncrementNumberGenerator: RandomNumberGenerator {
-  private var value: UInt64
-  private let step: UInt32
-  
-  init(value: UInt64, step: UInt32) {
-    self.value = value
-    self.step = step
-  }
-  
-  mutating func next() -> UInt64 {
-    let result = value
-    value &+= UInt64(step)
-    return result
-  }
-}
