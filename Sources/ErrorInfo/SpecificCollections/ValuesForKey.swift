@@ -30,7 +30,8 @@ import NonEmpty
 ///   values.last  // "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
 /// }
 /// ```
-@frozen public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
+@frozen
+public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
   @usableFromInline internal let _elements: Either<Value, NonEmptyArray<Value>>
   
   public typealias Index = Int

@@ -29,9 +29,3 @@ struct PlaygroundTests {
     print("__playground: ", output.duration.asString(fractionDigits: 5)) // it takes ~25ms for 10 million of calls of empty blackHole(())
   } // test func end
 }
-
-extension Double {
-  public func asString(fractionDigits: UInt8) -> String {
-    String(format: "%.\(fractionDigits)f", self)
-  }
-}

@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 05/10/2025.
 //
 
-internal import typealias SwiftCollectionsNonEmpty.NonEmptyOrderedSet
+public import typealias SwiftCollectionsNonEmpty.NonEmptyOrderedSet
 
 // MARK: - NonEmpty Ordered IndexSet
 
@@ -25,38 +25,44 @@ internal import typealias SwiftCollectionsNonEmpty.NonEmptyOrderedSet
 /// indices.insert(5)
 /// Array(indices)       // [2, 5]
 /// ```
-@usableFromInline internal struct NonEmptyOrderedIndexSet: Sendable, RandomAccessCollection {
-  @usableFromInline typealias Element = Int
+@frozen
+public struct NonEmptyOrderedIndexSet: Sendable, RandomAccessCollection {
+  public typealias Element = Int
   
-  internal private(set) var _variant: _Variant
-  
+  @usableFromInline internal var _variant: Either<Int, NonEmptyOrderedSet<Int>>
+    
   /// Creates a non-empty set containing a single index stored inline.
-  internal static func single(index: Int) -> Self {
+  @_spi(PerfomanceTesting)
+  public static func single(index: Int) -> Self {
     Self(_variant: .left(index))
-  }
+  } // no speedup with inlining
   
   /// Always zero.
-  @usableFromInline internal var startIndex: Int { 0 }
+  @inlinable
+  @inline(__always) // no speedup for direct access with inlining, keep @inlinable to be transparent for compiler
+  public var startIndex: Int { 0 }
   
   /// 1 when a single index is stored; otherwise the count of the heap-backed orderedS set.
-  @usableFromInline internal var endIndex: Int {
+  // @usableFromInline internal
+  public var endIndex: Int {
     switch _variant {
     case .left: 1
     case .right(let indices): indices.endIndex
     }
-  }
+  } // inlining worsen performance up to 1.7x when single index (case .left). For .right speedup 2%
   
-  /// The first stored index.
-  // var first: Element {
+  // /// The first stored index.
+  // public var first: Element {
   //   switch _variant {
   //   case .left(let index): index
-  //   case .multiple(let indices): indices.first
+  //   case .right(let indices): indices.first
   //   }
-  // }
+  // } // inlining worsen performance up to 1.7x when single index (case .left). For .right speedup 2%
   
   /// Accesses the index at `position`.
   /// - Precondition: `position` is within bounds.
-  @usableFromInline internal subscript(position: Int) -> Element {
+  @_spi(PerfomanceTesting)
+  public subscript(position: Int) -> Element {
     switch _variant {
     case .left(let index):
       switch position {
@@ -64,20 +70,27 @@ internal import typealias SwiftCollectionsNonEmpty.NonEmptyOrderedSet
       default: preconditionFailure("Index \(position) is out of bounds")
       }
     case .right(let indices):
-      return indices.base[position]
+      return indices[position]
     }
-  }
+  } // inlining worsen performance up to 1.7x when single index (case .left). For .right speedup 2%
   
   /// Inserts `newIndex`, preserving order of insertion.
   /// Switches to heap-backed storage on the first insertion beyond one element.
-  internal mutating func insert(_ newIndex: Int) {
+  @_spi(PerfomanceTesting)
+  public mutating func insert(_ newIndex: Int) {
     switch _variant {
     case .left(let currentIndex):
+      // TBD: newIndex can be equal to currentIndex. However, seems there is no problem from practical perspective
+      // and adding such checks will bring negative impact on prefomance giving no benefits..
       _variant = .right(NonEmptyOrderedSet<Int>(elements: currentIndex, newIndex))
+      
     case .right(var elements):
-      elements.append(newIndex) // FIXME: remove cow of elements | inout switch / exclusive access
+      // On relese builds, compiler optimizes CoW here, like it is inout switch / in-place mutation
+      elements.append(newIndex)
       _variant = .right(elements)
     }
+    // FIXME: NonEmptyOrderedSet<Int>(elements: currentIndex, newIndex) – slow | need to be optimized in lib NonEmpty
+    // Insertion to single element (.left case) is ~15x slower than case .right
   }
   
   /// Builds a `RangeSet` of indices relative to `collection`.
@@ -94,11 +107,6 @@ extension NonEmptyOrderedSet<Int> {
   internal func asRangeSet<C>(for collection: C) -> RangeSet<Int> where C: Collection, C.Index == Int {
     RangeSet(self, within: collection)
   }
-}
-
-extension NonEmptyOrderedIndexSet {
-  /// Storage variant: inline single index or heap-backed non-empty orderedS set.
-  typealias _Variant = Either<Int, NonEmptyOrderedSet<Int>>
 }
 
 // TODO: - perfomance checks

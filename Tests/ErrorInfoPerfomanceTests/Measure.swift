@@ -74,3 +74,15 @@ struct VariadicTuple<each T> {
 public func blackHole<T>(_ thing: T) {
   _ = thing
 }
+
+extension Double {
+  public func asString(fractionDigits: UInt8) -> String {
+    String(format: "%.\(fractionDigits)f", self)
+  }
+}
+
+@inlinable @inline(__always)
+internal func mutate<T: ~Copyable, E>(value: consuming T, mutation: (inout T) throws(E) -> Void) throws(E) -> T {
+  try mutation(&value)
+  return value
+}
