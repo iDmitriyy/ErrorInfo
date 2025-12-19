@@ -35,6 +35,10 @@ extension ErrorInfoFuncs {
     let lhs = flattenOptional(any: lhs)
     let rhs = flattenOptional(any: rhs)
     
+    if T.self is AnyObject.Type {
+      // print("_____ AnyObject \(type(of: lhs))")
+    }
+    
     return switch (lhs, rhs) {
     case (.value, .nilInstance),
          (.nilInstance, .value):

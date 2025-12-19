@@ -71,12 +71,16 @@ extension StringLiteralKey: ExpressibleByStringLiteral { // Improvement: try to 
     keyOrigin = .literalConstant
   } // inlining has no effect on perfomance
   
-  
   // StaticString completely closes the hole when ErronInfoKey can be initialized with dynamically formed string or interpolation.
   // Improvement: use @const instead of static let (check binary size(reduce swift_once) and perfomance on first access)
 }
 
 extension StringLiteralKey {
+//  public subscript(dynamicMember keyPath: KeyPath<StringLiteralKey.Type, StringLiteralKey>) -> StringLiteralKey {
+//    let keyToAppend = StringLiteralKey.self[keyPath: keyPath]
+//    return self + keyToAppend
+//  }
+  
   // Improvement: ?perfomance: borrowing | consuming(copying), @const
   
   public static func + (lhs: Self, rhs: Self) -> Self {

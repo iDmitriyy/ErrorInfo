@@ -137,11 +137,12 @@ extension IsApproximatelyEqualTests {
   }
   
   @Test func `non Equatable Values With Same Description`() {
-    struct NonEquatable {}
-    let a = NonEquatable()
-    let b = NonEquatable()
+    struct NonEquatableStruct {}
+    let a = NonEquatableStruct()
+    let b = NonEquatableStruct()
     // Since NonEquatable is neither Equatable nor class with address, string describing will be same (likely type name)
-    #expect(ErrorInfoFuncs.isEqualAny(a, b))
+    #expect(String(describing: a) == String(describing: b))
+    #expect(!ErrorInfoFuncs.isEqualAny(a, b))
   }
   
   @Test func `non Equatable Values With Different Description`() {
@@ -153,8 +154,6 @@ extension IsApproximatelyEqualTests {
     let a1 = DiffDesc(desc: "foo")
     let a2 = DiffDesc(desc: "foo")
     let b = DiffDesc(desc: "bar")
-    
-    // RefType instances are compared by === even if the conform to CustomStringConvertible
     
     #expect(!ErrorInfoFuncs.isEqualAny(a1, b))
     #expect(!ErrorInfoFuncs.isEqualAny(a2, b))

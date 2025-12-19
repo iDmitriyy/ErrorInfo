@@ -9,20 +9,43 @@
 import Testing
 
 struct AppendPropertiesOfTests {
-  @Test func appendProperties() throws {
+  private let product = Product(name: "MacBook Pro", amount: 1)
+  
+  @Test func noPrefix() throws {
     var info = ErrorInfo()
     
-    struct Product {
-      let name: String
-      let amount: Double
-    }
-    
-    let product = Product(name: "Laptop", amount: 1)
-    
-    info.appendProperties(of: product, keysPrefix: .customName("product")) {
+    info.appendProperties(of: product, keysPrefix: nil) {
       \Product.name; \Product.amount
     }
     
-    // ...
+    #expect(info["name"] as? String == product.name)
+    #expect(info["amount"] as? Double == product.amount)
+  }
+  
+  @Test func defaultsTypeName() throws {
+    var info = ErrorInfo()
+    
+    info.appendProperties(of: product) {
+      \Product.name; \Product.amount
+    }
+    
+    #expect(info["Product.name"] as? String == product.name)
+    #expect(info["Product.amount"] as? Double == product.amount)
+  }
+  
+  @Test func customName() throws {
+    var info = ErrorInfo()
+    
+    info.appendProperties(of: product, keysPrefix: .custom("laptop")) {
+      \Product.name; \Product.amount
+    }
+    
+    #expect(info["laptop.name"] as? String == product.name)
+    #expect(info["laptop.amount"] as? Double == product.amount)
+  }
+  
+  private struct Product {
+    let name: String
+    let amount: Double
   }
 }

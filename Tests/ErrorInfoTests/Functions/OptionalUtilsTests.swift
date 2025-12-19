@@ -99,6 +99,7 @@ struct OptionalUtilsTests {
     let expectedType = RawValue.self
     
     checkTypeOfWrapped(wrappedValue: wrappedValue, expectedType: expectedType, location: location)
+    // TODO: ErrorInfoFuncs.isEqualAny(wrappedValue, expectedUnwrappedValue)
     
     let flattenedOptional = ErrorInfoFuncs.flattenOptional(any: wrappedValue)
     switch flattenedOptional {
@@ -118,6 +119,7 @@ struct OptionalUtilsTests {
     let location = SourceLocation(fileID: #fileID, filePath: #filePath, line: line, column: column)
     
     checkTypeOfWrapped(wrappedValue: wrappedValue, expectedType: expectedType, location: location)
+    // TODO: ErrorInfoFuncs.isEqualAny(wrappedValue, nil as Optional<T>)
     
     let flattenedOptional = ErrorInfoFuncs.flattenOptional(any: wrappedValue)
     switch flattenedOptional {

@@ -12,7 +12,7 @@
 /// - `customName`: Allows you to provide a custom prefix string, like name of an instance's property.
 public enum KeyPathPrefixOption {
   case typeName
-  case customName(_ name: String)
+  case custom(_ name: String)
 }
 
 extension ErrorInfoGeneric where Key == String, GValue: ErrorInfoOptionalRepresentable {
@@ -24,7 +24,7 @@ extension ErrorInfoGeneric where Key == String, GValue: ErrorInfoOptionalReprese
                                       ollisionSource collisionOrigin: @autoclosure () -> CollisionSource.Origin) {
     let keyPathString: String = switch keysPrefix {
     case .typeName: ErrorInfoFuncs.asErrorInfoKeyString(keyPath: keyPath, withTypePrefix: true)
-    case .customName(let name): name + "." + ErrorInfoFuncs.asErrorInfoKeyString(keyPath: keyPath, withTypePrefix: false)
+    case .custom(let name): name + "." + ErrorInfoFuncs.asErrorInfoKeyString(keyPath: keyPath, withTypePrefix: false)
     case nil: ErrorInfoFuncs.asErrorInfoKeyString(keyPath: keyPath, withTypePrefix: false)
     }
     
