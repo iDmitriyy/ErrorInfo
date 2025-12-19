@@ -9,16 +9,16 @@
 import Testing
 
 struct ErrorInfoValueVariantTests {
-  private typealias _Optional = ErrorInfo._Optional
+  private typealias _OptionalAnyValue = ErrorInfo.EquatableOptionalAnyValue
   
   @Test func equality() throws {
-    let equalityFunc: (_Optional, _Optional) -> Bool = { $0 == $1 }
+    let equalityFunc: (_OptionalAnyValue, _OptionalAnyValue) -> Bool = { $0 == $1 }
     
     
     #expect(equalityFunc(.value(10), .value(10)))
     #expect(!equalityFunc(.value(Int(10)), .value(UInt(10))))
     
-    #expect(equalityFunc(.value(10), .value(10 as any ErrorInfoValueType)))
+    #expect(equalityFunc(.value(10), .value(10 as ErrorInfo.ValueExistential)))
     
     
     #expect(equalityFunc(.value(10), .value(10)))
@@ -32,7 +32,7 @@ struct ErrorInfoValueVariantTests {
     #expect(!equalityFunc(.nilInstance(typeOfWrapped: Int.self),
                           .nilInstance(typeOfWrapped: UInt.self)))
     
-    #expect(equalityFunc(.nilInstance(typeOfWrapped: Int.self as any ErrorInfoValueType.Type),
+    #expect(equalityFunc(.nilInstance(typeOfWrapped: Int.self as (any ErrorInfo.ValueProtocol.Type)),
                          .nilInstance(typeOfWrapped: Int.self)))
   }
 }

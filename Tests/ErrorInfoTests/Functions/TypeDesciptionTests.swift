@@ -13,8 +13,8 @@ struct TypeDesciptionTests {
     let integer: Int = 10
     let integerOptional: Int? = 10
     
-    let integerAnyEIV: any ErrorInfoValueType = 10
-    let integerOptionalAnyEIV: (any ErrorInfoValueType)? = 10
+    let integerAnyEIV: ErrorInfo.ValueExistential = 10
+    let integerOptionalAnyEIV: (ErrorInfo.ValueExistential)? = 10
         
     descr(of: integer)
     descr(of: integerOptional)
@@ -106,10 +106,10 @@ struct TypeDesciptionTests {
     let a1 = (Int.self as Any.Type) == Int.self
     #expect(a1)
     
-    let a2 = (Int.self as (any ErrorInfoValueType.Type)) == Int.self
+    let a2 = (Int.self as (any ErrorInfo.ValueProtocol.Type)) == Int.self
     #expect(a2)
     
-    let a3 = (Int.self as (any ErrorInfoValueType.Type)) == (Int.self as Any.Type)
+    let a3 = (Int.self as (any ErrorInfo.ValueProtocol.Type)) == (Int.self as Any.Type)
     #expect(a3)
   }
 }
@@ -135,7 +135,7 @@ extension TypeDesciptionTests {
   
   private final class TestSubClassEIV: TestClass {}
   
-  private struct TestStructEIV: ErrorInfoValueType {
+  private struct TestStructEIV: ErrorInfo.ValueProtocol {
     let value: Int = 10
     
     var description: String { "value: \(value)" }

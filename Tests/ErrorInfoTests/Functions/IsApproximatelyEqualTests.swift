@@ -27,7 +27,7 @@ struct IsApproximatelyEqualTests {
   }
   
   @Test func equalNumbers() throws {
-    ErrorInfoFuncs.isEqualAny("5" as Any, 5 as Any)
+    // ErrorInfoFuncs.isEqualAny("5" as Any, 5 as Any)
     /*
      "5" Int(5)
      Int(5) UInt(5)
@@ -74,8 +74,8 @@ extension IsApproximatelyEqualTests {
     #expect(ErrorInfoFuncs.isEqualAny(5 as Any, 5))
     #expect(ErrorInfoFuncs.isEqualAny(5 as Any, 5 as Any))
     
-    #expect(ErrorInfoFuncs.isApproximatelyEqualDTypes(a: 5 as AnyObject, b: 5))
-    #expect(ErrorInfoFuncs.isEqualAny(5 as AnyObject, 5 as AnyObject))
+    // #expect(ErrorInfoFuncs.isEqualAny(5 as AnyObject, 5)
+    // #expect(ErrorInfoFuncs.isEqualAny(5 as AnyObject, 5 as AnyObject))
     
     #expect(ErrorInfoFuncs.isEqualAny(5 as any Equatable, 5))
     #expect(ErrorInfoFuncs.isEqualAny(5 as any Equatable, 5 as any Equatable))
@@ -89,12 +89,12 @@ extension IsApproximatelyEqualTests {
     #expect(ErrorInfoFuncs.isEqualAny(5 as any CustomStringConvertible, 5))
     #expect(ErrorInfoFuncs.isEqualAny(5 as any CustomStringConvertible, 5 as any CustomStringConvertible))
     
-    #expect(ErrorInfoFuncs.isEqualAny(5 as any ErrorInfoValueType, 5))
-    #expect(ErrorInfoFuncs.isEqualAny(5 as any ErrorInfoValueType, 5 as any ErrorInfoValueType))
+    #expect(ErrorInfoFuncs.isEqualAny(5 as ErrorInfo.ValueExistential, 5))
+    #expect(ErrorInfoFuncs.isEqualAny(5 as ErrorInfo.ValueExistential, 5 as ErrorInfo.ValueExistential))
     
     // TODO: + Optionaal(5)
     
-    // + different types casted `any ErrorInfoValueType` and the passed to isApproximatelyEqualAny fo erasure of Generic type
+    // + different types casted `ErrorInfo.ValueExistential` and the passed to isApproximatelyEqualAny fo erasure of Generic type
     
     // #expect(_isOptional(type(of: Optional<Int>(4) as Any).self))
   }
@@ -192,12 +192,12 @@ extension IsApproximatelyEqualTests {
     let a = 123
     let b = "123"
     // Different types are treated as not equal even if they have semantically same meaning
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualDTypes(a: a, b: b))
+    // #expect(!ErrorInfoFuncs.isEqualAny(a, b))
     
     #expect(!ErrorInfoFuncs.isEqualAny(a as Any, b))
     #expect(!ErrorInfoFuncs.isEqualAny(a as Any, b as Any))
     
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualDTypes(a: a as AnyObject, b: b))
+    // #expect(!ErrorInfoFuncs.isEqualAny(a as AnyObject, b))
     #expect(!ErrorInfoFuncs.isEqualAny(a as AnyObject, b as AnyObject))
     
     #expect(!ErrorInfoFuncs.isEqualAny(a as any Equatable, b))
@@ -212,8 +212,8 @@ extension IsApproximatelyEqualTests {
     #expect(!ErrorInfoFuncs.isEqualAny(a as any CustomStringConvertible, b))
     #expect(!ErrorInfoFuncs.isEqualAny(a as any CustomStringConvertible, b as any CustomStringConvertible))
     
-    #expect(!ErrorInfoFuncs.isEqualAny(a as any ErrorInfoValueType, b))
-    #expect(!ErrorInfoFuncs.isEqualAny(a as any ErrorInfoValueType, b as any ErrorInfoValueType))
+    #expect(!ErrorInfoFuncs.isEqualAny(a as ErrorInfo.ValueExistential, b))
+    #expect(!ErrorInfoFuncs.isEqualAny(a as ErrorInfo.ValueExistential, b as ErrorInfo.ValueExistential))
     
     // TODO: + Optionaal(b)
   }

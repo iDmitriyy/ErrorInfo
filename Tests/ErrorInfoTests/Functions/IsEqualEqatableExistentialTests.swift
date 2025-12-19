@@ -14,12 +14,12 @@ struct IsEqualEqatableExistentialTests {
     #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1), b: Int(1)) == true)
     
     #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1),
-                                                      b: Int(1) as any ErrorInfoValueType) == true)
-    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1) as any ErrorInfoValueType,
+                                                      b: Int(1) as ErrorInfo.ValueExistential) == true)
+    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1) as ErrorInfo.ValueExistential,
                                                       b: Int(1)) == true)
     
-    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1) as any ErrorInfoValueType,
-                                                      b: Int(1) as any ErrorInfoValueType) == true)
+    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1) as ErrorInfo.ValueExistential,
+                                                      b: Int(1) as ErrorInfo.ValueExistential) == true)
     
     
     #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1),
@@ -37,13 +37,13 @@ struct IsEqualEqatableExistentialTests {
     #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: UInt(1),
                                                       b: Int(1)) == false)
     
-    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1) as any ErrorInfoValueType,
+    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1) as ErrorInfo.ValueExistential,
                                                       b: UInt(1)) == false)
-    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: UInt(1) as any ErrorInfoValueType,
+    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: UInt(1) as ErrorInfo.ValueExistential,
                                                       b: Int(1)) == false)
     
-    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1) as any ErrorInfoValueType,
-                                                      b: UInt(1) as any ErrorInfoValueType) == false)
+    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1) as ErrorInfo.ValueExistential,
+                                                      b: UInt(1) as ErrorInfo.ValueExistential) == false)
     
     #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1) as any BinaryInteger & Sendable,
                                                       b: UInt(1)) == false)

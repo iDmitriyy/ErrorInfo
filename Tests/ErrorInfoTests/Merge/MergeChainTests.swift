@@ -11,7 +11,7 @@ import Testing
 
 struct MergeChainTests {
   @Test func basic() throws {
-    typealias Dict = OrderedDictionary<String, any ErrorInfoValueType>
+    typealias Dict = OrderedDictionary<String, ErrorInfo.ValueExistential>
     typealias ODError = ErrorStub<Dict>
     
     let error0 = ODError(code: 2, shortDomain: "NE",

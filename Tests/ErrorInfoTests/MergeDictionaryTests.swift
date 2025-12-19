@@ -22,26 +22,26 @@ struct MergeDictionaryTests {
     let omitEqualValue = true
     var randomGenerator = SystemRandomNumberGenerator()
     
-    Merge.DictUtils
-      .withKeyAugmentationAdd(keyValue: ("0", 0),
-                              to: &dict,
-                              donatorIndex: 0,
-                              omitEqualValue: omitEqualValue,
-                              identity: fileLine,
-                              randomGenerator: &randomGenerator,
-                              resolve: { input in
-                                .modifyDonatorKey(input.element.key)
-                              })
-    Merge.DictUtils
-      .withKeyAugmentationAdd(keyValue: ("0", 0),
-                              to: &dict,
-                              donatorIndex: 1,
-                              omitEqualValue: omitEqualValue,
-                              identity: fileLine,
-                              randomGenerator: &randomGenerator,
-                              resolve: { input in
-                                .modifyDonatorKey(input.element.key)
-                              })
+//    Merge.DictUtils
+//      ._putAugmentingWithRandomSuffix(keyValue: ("0", 0),
+//                              to: &dict,
+//                              donatorIndex: 0,
+//                              omitEqualValue: omitEqualValue,
+//                              identity: fileLine,
+//                              randomGenerator: &randomGenerator,
+//                              resolve: { input in
+//                                .modifyDonatorKey(input.element.key)
+//                              })
+//    Merge.DictUtils
+//      .withKeyAugmentationAdd(keyValue: ("0", 0),
+//                              to: &dict,
+//                              donatorIndex: 1,
+//                              omitEqualValue: omitEqualValue,
+//                              identity: fileLine,
+//                              randomGenerator: &randomGenerator,
+//                              resolve: { input in
+//                                .modifyDonatorKey(input.element.key)
+//                              })
   }
   
   @Test func omitEqualValuesFalse() throws {

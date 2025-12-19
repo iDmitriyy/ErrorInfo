@@ -138,7 +138,7 @@ extension Merge {
     valueTransform: (V) -> W,
   )
     -> OrderedDictionary<String, W> where EInf: Collection<(key: K, value: V)> {
-    // any ErrorInfoValueType change to V (e.g. to be Optional<any ErrorInfoValueType> or String)
+    // ErrorInfo.ValueExistential change to V (e.g. to be Optional<ErrorInfo.ValueExistential> or String)
     var summaryInfo: OrderedDictionary<String, W> = [:]
     
     // context is a var only because of `mutating get` / lazy var

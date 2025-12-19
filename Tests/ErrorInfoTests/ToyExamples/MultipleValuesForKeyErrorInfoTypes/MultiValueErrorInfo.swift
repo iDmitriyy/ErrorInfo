@@ -11,7 +11,7 @@ import OrderedCollections
 /// If a key collision happens, the values are put into a container
 //struct MultiValueErrorInfo: IterableErrorInfo {
 //  typealias Key = String
-//  typealias Value = any ErrorInfoValueType
+//  typealias Value = ErrorInfo.ValueExistential
 //  typealias Element = (key: Key, value: Value)
 //  
 //  private typealias MultiValueStorage = OrderedMultiValueErrorInfoGeneric<Key, Value>
@@ -35,12 +35,3 @@ import OrderedCollections
 //                                       collisionSource: .onSubscript(keyKind: .dynamic))
 //  }
 //}
-
-struct AnyErrorInfoValue: ApproximatelyEquatable {
-  let wrapped: any ErrorInfoValueType
-  
-  static func isApproximatelyEqual(lhs: borrowing AnyErrorInfoValue, rhs: borrowing AnyErrorInfoValue) -> Bool {
-    ErrorInfoFuncs.isEqualAny(lhs, rhs)
-  }
-}
-

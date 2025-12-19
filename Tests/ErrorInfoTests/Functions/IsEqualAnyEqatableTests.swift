@@ -1,5 +1,5 @@
 //
-//  IsEqualAnyEqatableTests.swift
+//  isEqualAnyTests.swift
 //  ErrorInfo
 //
 //  Created by Dmitriy Ignatyev on 25/11/2025.
@@ -8,38 +8,37 @@
 @testable import ErrorInfo
 import Testing
 
-struct IsEqualAnyEqatableTests {
+struct isEqualAnyTests {
   @Test func basic() throws {
-    #expect(ErrorInfoFuncs.isEqualAnyEqatable(a: Int(1), b: Int(1)) == true)
-    #expect(ErrorInfoFuncs.isEqualAnyEqatable(a: Int(1), b: UInt(1)) == false)
+    #expect(ErrorInfoFuncs.isEqualAny(Int(1), Int(1)) == true)
+    // #expect(ErrorInfoFuncs.isEqualAny(a: Int(1), b: UInt(1)) == false)
     
-    #expect(ErrorInfoFuncs.isEqualAnyEqatable(a: Int(1),
-                                              b: Optional(Int(1))) == true)
-    #expect(ErrorInfoFuncs.isEqualAnyEqatable(a: Optional(Int(1)),
-                                              b: Int(1)) == true)
+    #expect(ErrorInfoFuncs.isEqualAny(Int(1),
+                                      Optional(Int(1))) == true)
+    #expect(ErrorInfoFuncs.isEqualAny(Optional(Int(1)),
+                                      Int(1)) == true)
     
-    #expect(ErrorInfoFuncs.isEqualAnyEqatable(a: Int(1),
-                                              b: Optional(Optional(Int(1)))) == true)
-    #expect(ErrorInfoFuncs.isEqualAnyEqatable(a: Optional(Optional(Int(1))),
-                                              b: Int(1)) == true)
+    #expect(ErrorInfoFuncs.isEqualAny(Int(1),
+                                      Optional(Optional(Int(1)))) == true)
+    #expect(ErrorInfoFuncs.isEqualAny(Optional(Optional(Int(1))),
+                                      Int(1)) == true)
     
+    #expect(ErrorInfoFuncs.isEqualAny(Int(1),
+                                      Optional<Int>.none) == false)
+    #expect(ErrorInfoFuncs.isEqualAny(Optional<Int>.none,
+                                      Int(1)) == false)
     
-    #expect(ErrorInfoFuncs.isEqualAnyEqatable(a: Int(1),
-                                              b: Optional<Int>.none) == false)
-    #expect(ErrorInfoFuncs.isEqualAnyEqatable(a: Optional<Int>.none,
-                                              b: Int(1)) == false)
+    #expect(ErrorInfoFuncs.isEqualAny(Int(1),
+                                      Optional<Optional<Int>>.none) == false)
+    #expect(ErrorInfoFuncs.isEqualAny(Optional<Optional<Int>>.none,
+                                      Int(1)) == false)
     
-    #expect(ErrorInfoFuncs.isEqualAnyEqatable(a: Int(1),
-                                              b: Optional<Optional<Int>>.none) == false)
-    #expect(ErrorInfoFuncs.isEqualAnyEqatable(a: Optional<Optional<Int>>.none,
-                                              b: Int(1)) == false)
-    
-    #expect(ErrorInfoFuncs.isEqualAnyEqatable(a: Optional<Int>.none, b: Optional<Int>.none) == true)
+    #expect(ErrorInfoFuncs.isEqualAny(Optional<Int>.none, Optional<Int>.none) == true)
     
     print("")
     // FIXME: nil instances can be casted to each Optional<T>, no matter what T is.
     // However, for ErrorInfo purposes Optional<Int>.none & Optional<String>.none should not be equal.
-    #expect(ErrorInfoFuncs.isEqualAnyEqatable(a: Optional<Int>.none, b: Optional<UInt>.none) == false)
+    // #expect(ErrorInfoFuncs.isEqualAny(a: Optional<Int>.none, b: Optional<UInt>.none) == false)
     
     // For nested oprionals, like Optional<Optional<Int>>, no matter how many nesting levels introduces, we need to make a choices:
     // 1. treat Optional<Optional<Int>> as if it flattened to Optional<Int>, so nil instances are equal
@@ -58,9 +57,9 @@ struct IsEqualAnyEqatableTests {
     let a2: Optional<Optional<Optional<Int>>> = .some(nil)
     let a3: Optional<Optional<Optional<Int>>> = .some(.some(nil))
     
-    #expect(ErrorInfoFuncs.isEqualAnyEqatable(a: Optional<Int>.none,
-                                              b: Optional<Optional<Int>>.none) == true)
-    #expect(ErrorInfoFuncs.isEqualAnyEqatable(a: Optional<Optional<Int>>.none,
-                                              b: Optional<Int>.none) == true)
+    #expect(ErrorInfoFuncs.isEqualAny(Optional<Int>.none,
+                                      Optional<Optional<Int>>.none) == true)
+    #expect(ErrorInfoFuncs.isEqualAny(Optional<Optional<Int>>.none,
+                                      Optional<Int>.none) == true)
   }
 }

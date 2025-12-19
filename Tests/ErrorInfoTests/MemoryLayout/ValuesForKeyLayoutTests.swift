@@ -10,9 +10,9 @@ import Testing
 
 struct ValuesForKeyLayoutTests {
   @Test func `size limits`() {
-    let memoryLayout = MemoryLayout<ValuesForKey<any ErrorInfoValueType>>.self
-    let errorInfoValueTypeLayout = MemoryLayout<any ErrorInfoValueType>.self
-    let arrayLayout = MemoryLayout<Array<any ErrorInfoValueType>>.self
+    let memoryLayout = MemoryLayout<ValuesForKey<ErrorInfo.ValueExistential>>.self
+    let errorInfoValueTypeLayout = MemoryLayout<ErrorInfo.ValueExistential>.self
+    let arrayLayout = MemoryLayout<Array<ErrorInfo.ValueExistential>>.self
     
     // NonEmptyOrderedIndexSet is expected to consume not more than twice amount of memory in comparison with
     // storing single Int index

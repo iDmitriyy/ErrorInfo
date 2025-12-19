@@ -51,9 +51,9 @@ The `ErrorInfo` library introduces a family of structured, type-safe, and `Senda
 | Key transform              | ✅ Yes                    | ☑️ Yes                    | 💥 Data loss |
 | Sendable                   | ✅ Yes                    | ❌ No                     | ❌ No        |
 | Ordered                    |    Yes                    |     No                     |    No        |
-| Type of Value              | `any ErrorInfoValueType`  |            `Any`          |     `Any`     |
+| Type of Value              | `ErrorInfo.ValueExistential`  |            `Any`          |     `Any`     |
 
-*`any ErrorInfoValueType` is typeaias to `Sendable & Equatable & CustomStringConvertible`
+*`ErrorInfo.ValueExistential` is typeaias to `Sendable & Equatable & CustomStringConvertible`
 
 This constraint ensures:
 - ✅ Thread Safety via Sendable

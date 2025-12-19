@@ -9,7 +9,7 @@ import ErrorInfo
 import OrderedCollections
 
 struct CustomKeyErrorInfo {
-  private(set) var storage: OrderedDictionary<Key, any ErrorInfoValueType>
+  private(set) var storage: OrderedDictionary<Key, ErrorInfo.ValueExistential>
   
   struct Key: Hashable {
     let string: String

@@ -6,7 +6,7 @@
 //
 
 struct TimeStampingKeyErrorInfo {
-//  private var storage: MultiValueErrorInfoGeneric<String, any ErrorInfoValueType>
+//  private var storage: MultiValueErrorInfoGeneric<String, ErrorInfo.ValueExistential>
   
   // ContinuousClock.Instant
 }

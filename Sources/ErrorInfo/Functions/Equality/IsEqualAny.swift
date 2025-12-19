@@ -20,12 +20,12 @@ extension ErrorInfoFuncs {
   ///
   /// - Example:
   /// ```swift
-  /// ErrorInfoFuncs.isEqualAny(5, 5)              // true
-  /// ErrorInfoFuncs.isEqualAny(5, "5")            // false
-  /// ErrorInfoFuncs.isEqualAny(5, 6)              // false
-  /// ErrorInfoFuncs.isEqualAny(5, nil)            // false
-  /// ErrorInfoFuncs.isEqualAny(5, 5 as Int?)      // true
-  /// ErrorInfoFuncs.isEqualAny(5, 5 as Int??)     // true
+  /// ErrorInfoFuncs.isEqualAny(a: 5, b: 5)              // true
+  /// ErrorInfoFuncs.isEqualAny(a: 5, b: "5")            // false
+  /// ErrorInfoFuncs.isEqualAny(a: 5, b: 6)              // false
+  /// ErrorInfoFuncs.isEqualAny(a: 5, b: nil)            // false
+  /// ErrorInfoFuncs.isEqualAny(a: 5, b: 5 as Int?)      // true
+  /// ErrorInfoFuncs.isEqualAny(a: 5, b: 5 as Int??)     // true
   ///
   /// let intNil = nil as Int?
   /// let strNil = nil as String?
@@ -47,6 +47,23 @@ extension ErrorInfoFuncs {
       lhsType == rhsType
     }
   }
+  
+//  public static func isEqualAny<A, B>(a lhs: A, b rhs: B) -> Bool {
+//    let lhs = flattenOptional(any: lhs)
+//    let rhs = flattenOptional(any: rhs)
+//
+//    return switch (lhs, rhs) {
+//    case (.value, .nilInstance),
+//         (.nilInstance, .value):
+//      false
+//
+//    case let (.value(lhsInstance), .value(rhsInstance)):
+//      __PrivateImps._isEqualFlattenedExistentialAnyWithUnboxing(a: lhsInstance, b: rhsInstance)
+//
+//    case let (.nilInstance(lhsType), .nilInstance(rhsType)):
+//      lhsType == rhsType
+//    }
+//  }
 }
 
 extension ErrorInfoFuncs.__PrivateImps {

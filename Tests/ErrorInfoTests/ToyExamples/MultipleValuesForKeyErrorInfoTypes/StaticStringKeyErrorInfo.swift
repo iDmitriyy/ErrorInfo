@@ -10,7 +10,7 @@ import OrderedCollections
 
 //struct StaticStringKeyErrorInfo: Sequence {
 //  typealias Key = StaticString
-//  typealias Value = any ErrorInfoValueType
+//  typealias Value = ErrorInfo.ValueExistential
 //  typealias Element = (key: Key, value: Value)
 //  
 //  private typealias MultiValueStorage = OrderedMultiValueErrorInfoGeneric<StaticStringHashableAdapter, Value>
