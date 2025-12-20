@@ -6,15 +6,23 @@
 //
 
 extension ErrorInfoGeneric: Collection {
-  @_transparent public var count: Int { _storage.count }
+  @inlinable
+  @inline(__always)
+  public var count: Int { _storage.count }
   
-  @_transparent public var isEmpty: Bool { _storage.isEmpty }
+  @inlinable
+  @inline(__always)
+  public var isEmpty: Bool { _storage.isEmpty }
 }
 
 extension ErrorInfoGeneric: RandomAccessCollection {
+  @inlinable
   public var startIndex: Int { _storage.startIndex }
   
+  @inlinable
   public var endIndex: Int { _storage.endIndex }
   
+  @inlinable
+  @inline(__always)
   public subscript(position: Int) -> Element { _storage[position] }
 }

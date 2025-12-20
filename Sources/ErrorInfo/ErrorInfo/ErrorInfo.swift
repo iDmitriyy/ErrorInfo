@@ -6,7 +6,16 @@
 //
 
 public struct ErrorInfo: Sendable, ErrorInfoOperationsProtocol {
-  @usableFromInline internal var _storage: ErrorInfoGeneric<KeyType, EquatableOptionalAnyValue>
+  @usableFromInline internal
+  var _storage: ErrorInfoGeneric<KeyType, EquatableOptionalAnyValue>
+  
+  @inlinable
+  @inline(__always)
+  public var propertyTest: Int {
+    _storage.endIndex
+  }
+  
+  public subscript(position: Int) -> String { _storage[position].key }
   
   private init(storage: BackingStorage) {
     _storage = storage

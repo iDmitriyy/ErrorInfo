@@ -18,48 +18,6 @@ extension ErrorInfo {
   /// Use this when you want all operations in the `modify` closure to share the same defaults for
   /// duplicate handling, nil preservation and key prefixing.
   ///
-  /// - Parameters:
-  ///   - duplicatePolicy: How to handle equal values for the same key. Defaults to ``ValueDuplicatePolicy/defaultForAppending``.
-  ///   - preserveNilValues: Whether `nil` assignments (typically emplicit) should be recorded as explicit `nil` entries. Defaults to `true`.
-  ///   - prefixForKeys: A literal prefix to prepend to all keys added within the scope. Defaults to `nil`.
-  ///   - collisionSource: The origin used for collision diagnostics for operations in the scope.
-  ///   - modify: A closure that receives a ``ErrorInfo/CustomOptionsView`` to perform mutations.
-  ///
-  /// - Returns: A new `ErrorInfo` containing the applied changes.
-  ///
-  /// # Example:
-  /// ```swift
-  /// let info = ErrorInfo.withOptions(preserveNilValues: false) {
-  ///   // Global option preserveNilValues = false, nil values are ignored
-  ///   $0["age"] = 30 as Int?
-  ///   $0["email"] = nil as String? // ignored because preserveNilValues == false
-  ///
-  ///   // Override on a per-operation basis: preserve nil values
-  ///   0["username", preserveNilValues: true] = nil as String?
-  /// }
-  ///
-  /// // info now contains: ["age": 30, "username": nil]
-  /// ```
-  public static func withOptions(duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending,
-                                 preserveNilValues: Bool = true,
-                                 prefixForKeys: StringLiteralKey? = nil,
-                                 collisionSource: CollisionSource.Origin,
-                                 modify: (consuming CustomOptionsView) -> Void) -> Self {
-    var info = Self()
-    info.appendWith(duplicatePolicy: duplicatePolicy,
-                    preserveNilValues: preserveNilValues,
-                    prefixForKeys: prefixForKeys,
-                    collisionSource: collisionSource,
-                    modify: modify)
-    return info
-  }
-  
-  /// Creates a new `ErrorInfo` and performs mutations inside a scoped options context.
-  /// The provided options can be overridden at the individual operation level (e.g., using subscripts or functions)..
-  ///
-  /// Use this when you want all operations in the `modify` closure to share the same defaults for
-  /// duplicate handling, nil preservation and key prefixing.
-  ///
   /// This convenience overload records the call site (`#fileID`, `#line`) as the collision origin for operations
   /// executed within the scope.
   ///
@@ -101,9 +59,7 @@ extension ErrorInfo {
                 modify: modify)
   }
   
-  // MARK: - Mutating methods
-  
-  /// Mutates `self` by performing operations inside a scoped options context.
+  /// Creates a new `ErrorInfo` and performs mutations inside a scoped options context.
   /// The provided options can be overridden at the individual operation level (e.g., using subscripts or functions)..
   ///
   /// Use this when you want all operations in the `modify` closure to share the same defaults for
@@ -115,6 +71,8 @@ extension ErrorInfo {
   ///   - prefixForKeys: A literal prefix to prepend to all keys added within the scope. Defaults to `nil`.
   ///   - collisionSource: The origin used for collision diagnostics for operations in the scope.
   ///   - modify: A closure that receives a ``ErrorInfo/CustomOptionsView`` to perform mutations.
+  ///
+  /// - Returns: A new `ErrorInfo` containing the applied changes.
   ///
   /// # Example:
   /// ```swift
@@ -129,20 +87,21 @@ extension ErrorInfo {
   ///
   /// // info now contains: ["age": 30, "username": nil]
   /// ```
-  public mutating func appendWith(duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending,
-                                  preserveNilValues: Bool = true,
-                                  prefixForKeys: StringLiteralKey? = nil,
-                                  collisionSource: CollisionSource.Origin,
-                                  modify: (consuming CustomOptionsView) -> Void) {
-    withUnsafeMutablePointer(to: &self) { pointer in
-      let view = CustomOptionsView(pointer: pointer,
-                                   duplicatePolicy: duplicatePolicy,
-                                   preserveNilValues: preserveNilValues,
-                                   prefixForKeys: prefixForKeys,
-                                   collisionOrigin: collisionSource)
-      modify(view)
-    }
+  public static func withOptions(duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending,
+                                 preserveNilValues: Bool = true,
+                                 prefixForKeys: StringLiteralKey? = nil,
+                                 collisionSource: CollisionSource.Origin,
+                                 modify: (consuming CustomOptionsView) -> Void) -> Self {
+    var info = Self()
+    info.appendWith(duplicatePolicy: duplicatePolicy,
+                    preserveNilValues: preserveNilValues,
+                    prefixForKeys: prefixForKeys,
+                    collisionSource: collisionSource,
+                    modify: modify)
+    return info
   }
+  
+  // MARK: - Mutating methods
   
   /// Mutates `self` by performing operations inside a scoped options context.
   /// The provided options can be overridden at the individual operation level (e.g., using subscripts or functions)..
@@ -187,6 +146,47 @@ extension ErrorInfo {
                prefixForKeys: prefixForKeys,
                collisionSource: .fileLine(file: file, line: line),
                modify: modify)
+  }
+  
+  /// Mutates `self` by performing operations inside a scoped options context.
+  /// The provided options can be overridden at the individual operation level (e.g., using subscripts or functions)..
+  ///
+  /// Use this when you want all operations in the `modify` closure to share the same defaults for
+  /// duplicate handling, nil preservation and key prefixing.
+  ///
+  /// - Parameters:
+  ///   - duplicatePolicy: How to handle equal values for the same key. Defaults to ``ValueDuplicatePolicy/defaultForAppending``.
+  ///   - preserveNilValues: Whether `nil` assignments (typically emplicit) should be recorded as explicit `nil` entries. Defaults to `true`.
+  ///   - prefixForKeys: A literal prefix to prepend to all keys added within the scope. Defaults to `nil`.
+  ///   - collisionSource: The origin used for collision diagnostics for operations in the scope.
+  ///   - modify: A closure that receives a ``ErrorInfo/CustomOptionsView`` to perform mutations.
+  ///
+  /// # Example:
+  /// ```swift
+  /// let info = ErrorInfo.withOptions(preserveNilValues: false) {
+  ///   // Global option preserveNilValues = false, nil values are ignored
+  ///   $0["age"] = 30 as Int?
+  ///   $0["email"] = nil as String? // ignored because preserveNilValues == false
+  ///
+  ///   // Override on a per-operation basis: preserve nil values
+  ///   0["username", preserveNilValues: true] = nil as String?
+  /// }
+  ///
+  /// // info now contains: ["age": 30, "username": nil]
+  /// ```
+  public mutating func appendWith(duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending,
+                                  preserveNilValues: Bool = true,
+                                  prefixForKeys: StringLiteralKey? = nil,
+                                  collisionSource: CollisionSource.Origin,
+                                  modify: (consuming CustomOptionsView) -> Void) {
+    withUnsafeMutablePointer(to: &self) { pointer in
+      let view = CustomOptionsView(pointer: pointer,
+                                   duplicatePolicy: duplicatePolicy,
+                                   preserveNilValues: preserveNilValues,
+                                   prefixForKeys: prefixForKeys,
+                                   collisionOrigin: collisionSource)
+      modify(view)
+    }
   }
 }
 

@@ -58,10 +58,10 @@ public struct ErrorInfoAny: ErrorInfoOperationsProtocol {
 extension ErrorInfoAny {
   public typealias Element = (key: String, value: Any)
   
-  public typealias Key = String
-  public typealias ValueExistential = any Any
+  public typealias KeyType = String
+  public typealias ValueExistential = Any
   
-  internal typealias BackingStorage = ErrorInfoGeneric<String, EquatableOptionalAny>
+  @usableFromInline internal typealias BackingStorage = ErrorInfoGeneric<String, EquatableOptionalAny>
 }
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //

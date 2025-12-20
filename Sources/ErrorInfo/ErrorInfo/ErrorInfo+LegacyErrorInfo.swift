@@ -10,6 +10,12 @@ import Foundation
 // MARK: - Init with [String: Any]
 
 extension ErrorInfo {
+  public init(legacyUserInfo: [String: Any],
+              file: StaticString = #fileID,
+              line: UInt = #line) {
+    self.init(legacyUserInfo: legacyUserInfo, collisionSource: .fileLine(file: file, line: line))
+  }
+  
   /// Initializes an `ErrorInfo` instance using a legacy `[String: Any]` user info dictionary.
   ///
   /// This initializer takes a `[String: Any]` dictionary, processes each key-value pair,
@@ -44,12 +50,6 @@ extension ErrorInfo {
       // (Self, nonSendableValues: [(key:, value:)])
     }
   }
-  
-  public init(legacyUserInfo: [String: Any],
-              file: StaticString = #fileID,
-              line: UInt = #line) {
-    self.init(legacyUserInfo: legacyUserInfo, collisionSource: .fileLine(file: file, line: line))
-  }
 }
 
 extension ErrorInfo {
@@ -82,6 +82,7 @@ extension ErrorInfo {
       case let value as Date: value
     #endif
     case let value as [String]: value
+    case let value as [String: String]: value
     // DEFERRED:
     //  case let value as [Any]: value.map(_castOrConvertToCompatible(legacyInfoValue:))
     //  case let value as [String: Any]: value.mapValues(_castOrConvertToCompatible(legacyInfoValue:))

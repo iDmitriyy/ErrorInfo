@@ -41,6 +41,7 @@ extension ErrorInfoAny {
     
     var isValue: Bool { maybeValue.isValue }
     
+    @usableFromInline
     var getWrapped: Any? { maybeValue.getWrapped }
     
     @usableFromInline

@@ -1,11 +1,11 @@
 //
-//  ErrorInfo+Sequence.swift
+//  ErrorInfoAny+Sequence.swift
 //  ErrorInfo
 //
-//  Created by Dmitriy Ignatyev on 28/11/2025.
+//  Created by Dmitriy Ignatyev on 21/12/2025.
 //
 
-extension ErrorInfo: Sequence {
+extension ErrorInfoAny: Sequence {
   public struct Iterator: IteratorProtocol {
     @usableFromInline
     internal var base: BackingStorage.Iterator

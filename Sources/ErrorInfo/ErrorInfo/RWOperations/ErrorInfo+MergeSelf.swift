@@ -10,6 +10,15 @@
 // MARK: - Instance methods
 
 extension ErrorInfo {
+  public mutating func merge(with firstDonator: Self,
+                             _ otherDonators: Self...,
+                             file: StaticString = #fileID,
+                             line: UInt = #line) {
+    self = Self._mergedImp(recipient: self,
+                           donators: [firstDonator] + otherDonators,
+                           collisionSource: .fileLine(file: file, line: line))
+  }
+  
   /// Merges the current `ErrorInfo` instance with one or more other `ErrorInfo` instances.
   /// Duplicate values within each `ErrorInfo` are retained.
   ///
@@ -34,13 +43,13 @@ extension ErrorInfo {
                            collisionSource: mergeOrigin)
   }
   
-  public mutating func merge(with firstDonator: Self,
-                             _ otherDonators: Self...,
-                             file: StaticString = #fileID,
-                             line: UInt = #line) {
-    self = Self._mergedImp(recipient: self,
-                           donators: [firstDonator] + otherDonators,
-                           collisionSource: .fileLine(file: file, line: line))
+  public consuming func merged(with firstDonator: Self,
+                               _ otherDonators: Self...,
+                               file: StaticString = #fileID,
+                               line: UInt = #line) -> Self {
+    Self._mergedImp(recipient: self,
+                    donators: [firstDonator] + otherDonators,
+                    collisionSource: .fileLine(file: file, line: line))
   }
   
   /// Returns a new `ErrorInfo` instance by merging the current instance with one or more others.
@@ -65,15 +74,6 @@ extension ErrorInfo {
     Self._mergedImp(recipient: self,
                     donators: [firstDonator] + otherDonators,
                     collisionSource: mergeOrigin)
-  }
-  
-  public consuming func merged(with firstDonator: Self,
-                               _ otherDonators: Self...,
-                               file: StaticString = #fileID,
-                               line: UInt = #line) -> Self {
-    Self._mergedImp(recipient: self,
-                    donators: [firstDonator] + otherDonators,
-                    collisionSource: .fileLine(file: file, line: line))
   }
 }
 

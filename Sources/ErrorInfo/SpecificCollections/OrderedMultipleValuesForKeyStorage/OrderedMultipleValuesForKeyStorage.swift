@@ -21,7 +21,9 @@
 /// - Introduces more complex `OrderedMultiValueDictionary` only when necessary, reducing memory usage and improving performance
 /// when keys are unique.
 @usableFromInline internal struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value> {
-  @inlinable internal var _variant: Variant { _muatbleVariant._variant }
+  @inlinable
+  @inline(__always)
+  internal var _variant: Variant { _muatbleVariant._variant }
   
   // FIXME: private set
   @usableFromInline internal var _muatbleVariant: _Variant

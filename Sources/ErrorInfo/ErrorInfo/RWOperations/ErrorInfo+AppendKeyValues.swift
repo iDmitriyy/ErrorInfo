@@ -8,6 +8,12 @@
 // MARK: - Append KeyValues literal
 
 extension ErrorInfo {
+  public mutating func appendKeyValues(_ literal: KeyValuePairs<Key, Value>,
+                                       file: StaticString = #fileID,
+                                       line: UInt = #line) {
+    appendKeyValues(literal, collisionSource: .fileLine(file: file, line: line))
+  }
+  
   /// Allows to append key-value pairs from Dictionary literal into the existing `ErrorInfo` instance.
   /// Collisions during appending are tracked with the `CollisionSource.onDictionaryConsumption` source.
   ///
@@ -30,12 +36,6 @@ extension ErrorInfo {
   public mutating func appendKeyValues(_ literal: KeyValuePairs<Key, Value>,
                                        collisionSource origin: @autoclosure () -> CollisionSource.Origin) {
     _appendKeyValuesImp(_dictionaryLiteral: literal, collisionSource: .onDictionaryConsumption(origin: origin()))
-  }
-  
-  public mutating func appendKeyValues(_ literal: KeyValuePairs<Key, Value>,
-                                       file: StaticString = #fileID,
-                                       line: UInt = #line) {
-    appendKeyValues(literal, collisionSource: .fileLine(file: file, line: line))
   }
 }
 
