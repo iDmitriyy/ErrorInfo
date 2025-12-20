@@ -47,6 +47,7 @@ extension ErrorInfoGeneric {
   ///
   /// - `keyOrigin`: Where the key came from (literal, dynamic, modified, etc.).
   /// - `someValue`: The stored value in `RecordValue` form.
+  @frozen
   public struct Record: CustomDebugStringConvertible {
     public let keyOrigin: KeyOrigin
     public let someValue: RecordValue

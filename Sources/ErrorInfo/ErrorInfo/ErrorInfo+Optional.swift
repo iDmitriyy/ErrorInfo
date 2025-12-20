@@ -16,6 +16,7 @@ extension ErrorInfo {
   /// - `.nilInstance(T)` equals `.nilInstance(U)` only if `T == U`.
   /// - `.value` never equals `.nilInstance`.
   @usableFromInline
+  @frozen
   internal struct EquatableOptionalAnyValue: Sendable, Equatable, ErrorInfoOptionalRepresentable,
     CustomDebugStringConvertible {
     @usableFromInline internal let maybeValue: OptionalAnyValue
@@ -74,6 +75,7 @@ extension ErrorInfo {
   /// b.getWrapped // 42
   /// b.getWrapped // nil
   /// ```
+  @frozen
   public enum OptionalAnyValue: Sendable, CustomDebugStringConvertible {
     case value(any ValueProtocol)
     case nilInstance(typeOfWrapped: any Sendable.Type)

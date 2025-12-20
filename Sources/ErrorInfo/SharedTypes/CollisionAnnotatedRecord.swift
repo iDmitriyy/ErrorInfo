@@ -27,6 +27,7 @@
 /// // Creating a value with a collision source
 /// let collidedValue = CollisionAnnotatedRecord.collidedValue(42, collisionSource: .onCreateWithDictionaryLiteral)
 /// ```
+@frozen
 public struct CollisionAnnotatedRecord<Record>: CustomDebugStringConvertible {
   public let record: Record
   @usableFromInline internal let _collisionSource: HeapBox<CollisionSource>?
@@ -71,7 +72,8 @@ extension CollisionAnnotatedRecord: Sendable where Record: Sendable {}
 
 /// A lightweight box that wraps a value on the heap. Used internally to store collision sources
 /// with minimal memory overhead, only allocating memory when necessary.
-@usableFromInline internal final class HeapBox<T> {
+@usableFromInline
+internal final class HeapBox<T> {
   @usableFromInline internal let wrapped: T
   
   @usableFromInline
