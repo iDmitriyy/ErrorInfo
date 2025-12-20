@@ -24,7 +24,7 @@ extension ErrorInfo {
 // MARK: - Full Info View
 
 extension ErrorInfo {
-  public typealias FullInfoRecord = (value: OptionalAnyValue, keyOrigin: KeyOrigin, collisionSource: CollisionSource?)
+  public typealias FullInfoRecord = (value: OptionalValue, keyOrigin: KeyOrigin, collisionSource: CollisionSource?)
   public typealias FullInfoElement = (key: String, record: FullInfoRecord)
   
   // MARK: FullInfo All
@@ -40,8 +40,6 @@ extension ErrorInfo {
   
   // MARK: FullInfo for Key
   
-  @inlinable
-  @_transparent
   public func fullInfo(forKey literalKey: StringLiteralKey) -> ValuesForKey<FullInfoRecord>? {
     fullInfo(forKey: literalKey.rawValue)
   }

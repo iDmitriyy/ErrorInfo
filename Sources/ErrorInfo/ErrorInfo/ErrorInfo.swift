@@ -7,7 +7,7 @@
 
 public struct ErrorInfo: Sendable, ErrorInfoOperationsProtocol {
   @usableFromInline
-  internal var _storage: ErrorInfoGeneric<KeyType, EquatableOptionalAnyValue>
+  internal var _storage: ErrorInfoGeneric<KeyType, EquatableOptionalValue>
   
   private init(storage: BackingStorage) {
     _storage = storage
@@ -45,7 +45,7 @@ extension ErrorInfo {
   public typealias ValueProtocol = Sendable & Equatable & CustomStringConvertible
   
   @usableFromInline
-  internal typealias BackingStorage = ErrorInfoGeneric<KeyType, EquatableOptionalAnyValue>
+  internal typealias BackingStorage = ErrorInfoGeneric<KeyType, EquatableOptionalValue>
 }
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
@@ -61,7 +61,7 @@ extension ErrorInfo {
                                                 preserveNilValues: Bool,
                                                 duplicatePolicy: ValueDuplicatePolicy,
                                                 collisionSource: @autoclosure () -> CollisionSource) {
-    let optional: EquatableOptionalAnyValue
+    let optional: EquatableOptionalValue
     if let newValue {
       optional = .value(newValue)
     } else if preserveNilValues {
@@ -97,7 +97,7 @@ extension ErrorInfo {
                                             preserveNilValues: Bool,
                                             duplicatePolicy: ValueDuplicatePolicy,
                                             collisionSource: @autoclosure () -> CollisionSource) {
-    let optional: EquatableOptionalAnyValue
+    let optional: EquatableOptionalValue
     if preserveNilValues {
       optional = .nilInstance(typeOfWrapped: ValueExistential.self)
     } else {

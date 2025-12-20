@@ -10,6 +10,12 @@
 extension ErrorInfoAny {
   /// An equatable, type‑erased optional wrapper used by `ErrorInfoAny`.
   ///
+  /// Enables safe, predictable equality comparisons for optional values, flattening nested optionals and ensuring
+  /// type-safe equality, avoiding issues like type mismatches or undefined behavior.
+  ///
+  /// - Note: Flattening occurs during the initialization of the `EquatableOptionalAny` instance.
+  ///   After initialization, instances can be compared for equality with each other.
+  ///
   /// Values are flattened so `Optional(Optional(x))` is treated as a single optional. Equality rules:
   /// - Two `.value` cases compare using structural equality by value for `Equatable` conformers.
   /// - Two `.nilInstance` cases are equal when their wrapped types are the same.
@@ -26,7 +32,7 @@ extension ErrorInfoAny {
       maybeValue = _unverifiedMaybeValue
     }
     
-    init(anyValue: any Any) {
+    private init(anyValue: any Any) {
       maybeValue = ErrorInfoFuncs.flattenOptional(any: anyValue)
     }
     

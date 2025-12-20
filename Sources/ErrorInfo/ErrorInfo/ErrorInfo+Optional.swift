@@ -10,6 +10,17 @@
 extension ErrorInfo {
   /// An internal, equatable wrapper for optional `ValueProtocol` existentials.
   ///
+  /// Enables safe, predictable equality comparisons for ``ErrorInfo.OptionalValue`` ensuring
+  /// type-safe equality, avoiding issues like type mismatches or undefined behavior.
+  ///
+  /// - Note: No flattening is needed (in comparison to ``ErrorInfoOptionalAny``).
+  /// `Swift.Optional` doesn't conform to `CustomStringConvertible` protocol,
+  /// which is required by ``ErrorInfo.ValueProtocol``.
+  /// Thats why optional value can not be casted as `any ValueProtocol`.
+  /// There can exist an `Optional<any ValueProtocol>`, but once this optional
+  /// unwrapped, we get `any ValueProtocol` existential, which by itself can not
+  /// contain another optional.
+  ///
   /// Used by `ErrorInfo` to uniformly compare values when enforcing ``ValueDuplicatePolicy``.
   /// Equality semantics:
   /// - `.value(lhs)` equals `.value(rhs)` when the underlying `ValueProtocol` values are equal.
@@ -17,10 +28,11 @@ extension ErrorInfo {
   /// - `.value` never equals `.nilInstance`.
   @usableFromInline
   @frozen
-  internal struct EquatableOptionalAnyValue: Sendable, Equatable, ErrorInfoOptionalRepresentable,
+  internal struct EquatableOptionalValue: Sendable, Equatable, ErrorInfoOptionalRepresentable,
     CustomDebugStringConvertible {
+    
     @usableFromInline
-    internal let maybeValue: OptionalAnyValue
+    internal let maybeValue: OptionalValue
     
     static func value(_ value: ValueExistential) -> Self {
       Self(maybeValue: .value(value))
@@ -76,7 +88,7 @@ extension ErrorInfo {
   /// b.getWrapped // nil
   /// ```
   @frozen
-  public enum OptionalAnyValue: Sendable, CustomDebugStringConvertible {
+  public enum OptionalValue: Sendable, CustomDebugStringConvertible {
     case value(any ValueProtocol)
     case nilInstance(typeOfWrapped: any Sendable.Type)
     
