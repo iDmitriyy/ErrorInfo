@@ -27,8 +27,8 @@
 /// // Creating a value with a collision source
 /// let collidedValue = CollisionAnnotatedRecord.collidedValue(42, collisionSource: .onCreateWithDictionaryLiteral)
 /// ```
-public struct CollisionAnnotatedRecord<Value> {
-  public let record: Value
+public struct CollisionAnnotatedRecord<Record>: CustomDebugStringConvertible {
+  public let record: Record
   @usableFromInline internal let _collisionSource: HeapBox<CollisionSource>?
   
   @inlinable
@@ -41,23 +41,31 @@ public struct CollisionAnnotatedRecord<Value> {
   
   @inlinable
   @inline(__always)
-  internal init(value: Value, collisionSource: CollisionSource?) {
-    self.record = value
-    self._collisionSource = collisionSource.map(HeapBox.init) // TODO: check prefomnace when using if-let
+  internal init(value: Record, collisionSource: CollisionSource?) {
+    record = value
+    _collisionSource = collisionSource.map(HeapBox.init) // TODO: check prefomnace when using if-let
   }
   
   @inlinable
   @inline(__always) // 50x speedup
-  internal static func value(_ value: Value) -> Self { Self(value: value, collisionSource: nil) }
+  internal static func value(_ value: Record) -> Self { Self(value: value, collisionSource: nil) }
   
   @inlinable
   @inline(__always) // 6x speedup
-  internal static func collidedValue(_ value: Value, collisionSource: CollisionSource) -> Self {
+  internal static func collidedValue(_ value: Record, collisionSource: CollisionSource) -> Self {
     Self(value: value, collisionSource: collisionSource)
+  }
+  
+  public var debugDescription: String {
+    if let source = collisionSource {
+      "(record: {\(String(reflecting: record))}, collisionSource: \(String(reflecting: source)))"
+    } else {
+      "(record: {\(String(reflecting: record)))}"
+    }
   }
 }
 
-extension CollisionAnnotatedRecord: Sendable where Value: Sendable, CollisionSource: Sendable {}
+extension CollisionAnnotatedRecord: Sendable where Record: Sendable {}
 
 // MARK: - HeapBox
 

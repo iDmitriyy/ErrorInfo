@@ -20,7 +20,7 @@
 /// ## Methods:
 /// - `defaultInterpolation()`: Returns a default string representation for the `KeyOrigin` case.
 /// - `shortSignInterpolation()`: Returns a shorter, abbreviated string for the `KeyOrigin` case, useful for compact representations.
-public enum KeyOrigin: Sendable, Equatable {
+public enum KeyOrigin: Sendable, Equatable, CustomDebugStringConvertible {
   // TODO: memory footprint : ?Int8 ?make as OptionSet
   // Optionset can be private to protect from incorrect usage, e.g. not allow to conaint all options, but allow only
   // valid combinations like literalConstant + modified
@@ -75,4 +75,6 @@ public enum KeyOrigin: Sendable, Equatable {
     case .unverifiedMapped(let original): "um_" + original.shortSignInterpolation()
     }
   }
+  
+  public var debugDescription: String { defaultInterpolation() }
 }

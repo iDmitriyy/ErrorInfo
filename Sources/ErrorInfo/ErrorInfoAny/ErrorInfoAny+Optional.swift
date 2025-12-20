@@ -15,7 +15,8 @@ extension ErrorInfoAny {
   /// - Two `.nilInstance` cases are equal when their wrapped types are the same.
   /// - `.value` and `.nilInstance` are never equal.
   @usableFromInline
-  internal struct EquatableOptionalAny: Equatable, ErrorInfoOptionalRepresentable {
+  @frozen
+  internal struct EquatableOptionalAny: Equatable, ErrorInfoOptionalRepresentable, CustomDebugStringConvertible {
     typealias Wrapped = Any
     typealias TypeOfWrapped = any Any.Type
     
@@ -41,6 +42,9 @@ extension ErrorInfoAny {
     var isValue: Bool { maybeValue.isValue }
     
     var getWrapped: Any? { maybeValue.getWrapped }
+    
+    @usableFromInline
+    var debugDescription: String { maybeValue.debugDescription }
     
     @usableFromInline
     static func == (lhs: Self, rhs: Self) -> Bool {
@@ -76,23 +80,31 @@ extension ErrorInfoAny {
 /// value.isValue          // true
 /// nilInstance.getWrapped // nil
 /// ```
-public enum ErrorInfoOptionalAny: ErrorInfoOptionalRepresentable {
+@frozen
+public enum ErrorInfoOptionalAny: ErrorInfoOptionalRepresentable, CustomDebugStringConvertible {
+  public typealias TypeOfWrapped = any Any.Type
+  
   case value(Any)
   case nilInstance(typeOfWrapped: any Any.Type)
   
-  public typealias TypeOfWrapped = any Any.Type
-  
-  var isValue: Bool {
+  public var isValue: Bool {
     switch self {
     case .value: true
     case .nilInstance: false
     }
   }
   
-  var getWrapped: Any? {
+  public var getWrapped: Any? {
     switch self {
     case .value(let value): value
     case .nilInstance: nil
+    }
+  }
+  
+  public var debugDescription: String {
+    switch self {
+    case .value(let value): "value(\(String(reflecting: value)))"
+    case .nilInstance(let type): "nilInstance<\(type)>"
     }
   }
 }

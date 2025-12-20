@@ -44,8 +44,14 @@ public struct StringLiteralKey: Hashable, Sendable, CustomStringConvertible, Cus
   @usableFromInline internal let rawValue: String
   
   public var description: String { rawValue }
-  
-  public var debugDescription: String { rawValue }
+    
+  public var debugDescription: String {
+    switch keyOrigin {
+    case .literalConstant: #"StringLiteralKey(literal: "\#(rawValue)")"#
+    case .combinedLiterals: #"StringLiteralKey(combined: "\#(rawValue)")"#
+    default: #"StringLiteralKey(\#(keyOrigin): "\#(rawValue)")"#
+    }
+  }
   
   internal let keyOrigin: KeyOrigin
   
@@ -80,9 +86,7 @@ extension StringLiteralKey {
 //    let keyToAppend = StringLiteralKey.self[keyPath: keyPath]
 //    return self + keyToAppend
 //  }
-  
-  // Improvement: ?perfomance: borrowing | consuming(copying), @const
-  
+    
   public static func + (lhs: Self, rhs: Self) -> Self {
     Self(_combinedLiteralsString: lhs.rawValue + "_" + rhs.rawValue)
   } // inlining has no effect on perfomance

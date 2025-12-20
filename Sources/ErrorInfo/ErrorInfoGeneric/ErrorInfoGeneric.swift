@@ -5,6 +5,8 @@
 //  Created by Dmitriy Ignatyev on 13/12/2025.
 //
 
+private import InternalCollectionsUtilities
+
 /// A generic container for error information with per‑key multi‑value support.
 ///
 /// `ErrorInfoGeneric` is used as a backing storage for `ErrorInfo` types. It preserves insertion order, tracks collisions, and can store multiple
@@ -45,15 +47,25 @@ extension ErrorInfoGeneric {
   ///
   /// - `keyOrigin`: Where the key came from (literal, dynamic, modified, etc.).
   /// - `someValue`: The stored value in `RecordValue` form.
-  public struct Record {
+  public struct Record: CustomDebugStringConvertible {
     public let keyOrigin: KeyOrigin
     public let someValue: RecordValue
+    
+    public var debugDescription: String {
+      "keyOrigin: \(String(reflecting: keyOrigin)) someValue: \(String(reflecting: someValue))"
+    }
   }
 }
 
 extension ErrorInfoGeneric: Sendable where Key: Sendable, RecordValue: Sendable {}
 
 extension ErrorInfoGeneric.Record: Sendable where RecordValue: Sendable {}
+
+extension ErrorInfoGeneric: CustomDebugStringConvertible {
+  public var debugDescription: String {
+    _dictionaryDescription(for: self)
+  }
+}
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 

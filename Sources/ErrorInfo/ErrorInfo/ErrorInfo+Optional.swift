@@ -15,20 +15,26 @@ extension ErrorInfo {
   /// - `.value(lhs)` equals `.value(rhs)` when the underlying `ValueProtocol` values are equal.
   /// - `.nilInstance(T)` equals `.nilInstance(U)` only if `T == U`.
   /// - `.value` never equals `.nilInstance`.
-  @usableFromInline internal struct EquatableOptionalAnyValue: Sendable, Equatable, ErrorInfoOptionalRepresentable {
+  @usableFromInline
+  internal struct EquatableOptionalAnyValue: Sendable, Equatable, ErrorInfoOptionalRepresentable,
+    CustomDebugStringConvertible {
     @usableFromInline internal let maybeValue: OptionalAnyValue
     
-    internal static func value(_ value: ValueExistential) -> Self {
+    static func value(_ value: ValueExistential) -> Self {
       Self(maybeValue: .value(value))
     }
     
-    internal static func nilInstance(typeOfWrapped: any Sendable.Type) -> Self {
+    static func nilInstance(typeOfWrapped: any Sendable.Type) -> Self {
       Self(maybeValue: .nilInstance(typeOfWrapped: typeOfWrapped))
     }
     
-    @usableFromInline var getWrapped: (ValueExistential)? { maybeValue.getWrapped }
+    @usableFromInline
+    var getWrapped: ValueExistential? { maybeValue.getWrapped }
     
     var isValue: Bool { maybeValue.isValue }
+    
+    @usableFromInline
+    var debugDescription: String { maybeValue.debugDescription }
     
     @usableFromInline
     @_transparent
@@ -68,7 +74,7 @@ extension ErrorInfo {
   /// b.getWrapped // 42
   /// b.getWrapped // nil
   /// ```
-  public enum OptionalAnyValue: Sendable {
+  public enum OptionalAnyValue: Sendable, CustomDebugStringConvertible {
     case value(any ValueProtocol)
     case nilInstance(typeOfWrapped: any Sendable.Type)
     
@@ -92,8 +98,12 @@ extension ErrorInfo {
       case .nilInstance: true
       }
     } // inlining has no effect on perfomance
+    
+    public var debugDescription: String {
+      switch self {
+      case .value(let value): "value(\(String(reflecting: value)))"
+      case .nilInstance(let type): "nilInstance<\(type)>"
+      }
+    }
   }
 }
-
-// DEFERRED: - add DebugStringConvertible
-

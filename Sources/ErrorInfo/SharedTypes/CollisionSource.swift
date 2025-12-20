@@ -38,7 +38,7 @@
 /// let collision2 = CollisionSource.onMerge(origin: origin)
 /// collision2.defaultStringInterpolation() // "onMerge(file_line: Main.swift:42)"
 /// ```
-public struct CollisionSource: Sendable {
+public struct CollisionSource: Sendable, CustomDebugStringConvertible {
   // Stored backing enum
   private let backing: CollisionSourceBacking
   
@@ -147,6 +147,10 @@ public struct CollisionSource: Sendable {
     case let .onSequenceConsumption(origin):
       return origin._defaultStringInterpolation(collisionName: "onSequenceConsumption")
     }
+  }
+  
+  public var debugDescription: String {
+    defaultStringInterpolation()
   }
   
   // collision short indicator variants: `   @#@    >X<    !*!  >collision*   `
