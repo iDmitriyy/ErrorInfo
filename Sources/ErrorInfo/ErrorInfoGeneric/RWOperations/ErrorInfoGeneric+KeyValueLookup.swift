@@ -8,7 +8,7 @@
 // MARK: - HasValue For Key
 
 extension ErrorInfoGeneric {
-  func hasSomeValue(forKey key: Key) -> Bool {
+  public func hasSomeValue(forKey key: Key) -> Bool {
     _storage.hasValue(forKey: key)
   }
 }
@@ -22,6 +22,8 @@ extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
     case .multipleRecords(let valuesCount, _): valuesCount > 0
     }
   }
+
+  // DEFERRED: optimize – for hasNonNilValue / hasNilInstance it is enough to find first value and return early
   
   func hasNilInstance(forKey key: Key) -> Bool {
     switch keyValueLookupResult_Optional(forKey: key) {
@@ -40,8 +42,8 @@ extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
 extension ErrorInfoGeneric {
   func hasMultipleRecords(forKey key: Key) -> Bool {
     guard let recordsForKey = _storage.allValues(forKey: key) else { return false }
-    return recordsForKey.count > 1 // TODO: - optimize
-    // recordsCount(forKey:) | valuesCount(forKey:)
+    return recordsForKey.count > 1
+    // TODO: - optimize _storage.hasMultipleValues(forKey: key)
   }
 }
 
@@ -55,13 +57,10 @@ extension ErrorInfoGeneric {
 
 // MARK: - KeyValue Lookup Result
 
-
 extension ErrorInfoGeneric {
   func keyValueLookupResult_NonOptional(forKey key: Key) -> KeyNonOptionalValueLookupResult {
     if let taggedRecords = _storage.allValues(forKey: key) {
-      var valuesCount: UInt16 = UInt16(taggedRecords.count)
-
-      // TODO: - UInt16 overflow crash test (on MacOS)
+      let valuesCount = taggedRecords.count
       switch valuesCount {
       case 1: return .singleValue
       default: return .multipleRecords(valuesCount: valuesCount)
@@ -88,8 +87,8 @@ extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
 //    }
     
     if let taggedRecords = _storage.allValues(forKey: key) {
-      var valuesCount: UInt16 = 0
-      var nilInstancesCount: UInt16 = 0
+      var valuesCount: Int = 0
+      var nilInstancesCount: Int = 0
       for taggedRecord in taggedRecords {
         if taggedRecord.record.someValue.isValue {
           valuesCount += 1
@@ -97,7 +96,7 @@ extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
           nilInstancesCount += 1
         }
       }
-      // TODO: - UInt16 overflow crash test (on MacOS) | check perfomance for Int
+      
       switch (valuesCount, nilInstancesCount) {
       case (1, 0): return .singleValue
       case (0, 1): return .singleNil

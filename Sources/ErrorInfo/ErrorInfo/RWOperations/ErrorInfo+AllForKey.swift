@@ -8,7 +8,7 @@
 // MARK: - AllValues ForKey
 
 extension ErrorInfo {
-  // TBD: public func allValuesSlice(forKey key: Key) -> (some Sequence<Value>)? {}
+  // DEFERRED: public func allValuesSlice(forKey key: Key) -> (some Sequence<Value>)? {}
   // replace usage of allValues(forKey:) for better perfomance | reduce allocations
   
   public func allValues(forKey literalKey: StringLiteralKey) -> ValuesForKey<ValueExistential>? {

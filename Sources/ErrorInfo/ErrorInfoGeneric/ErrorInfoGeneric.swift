@@ -9,7 +9,7 @@
 ///
 /// `ErrorInfoGeneric` is used as a backing storage for `ErrorInfo` types. It preserves insertion order, tracks collisions, and can store multiple
 /// values per key.
-/// The generic `RecordValue` controls the stored value representation (e.g. an optional-capable or non-optional wrapper).
+/// The generic `RecordValue` controls the stored value representation (e.g. an optional-capable / non-optional / equatable etc. wrapper).
 /// Duplicate handling based on equality is enabled only when `RecordValue` conforms to `Equatable`.
 ///
 /// - Key: Any `Hashable` (commonly `String`).

@@ -34,7 +34,7 @@ struct OrderedMultipleValuesForKeyStoragePerfomanceTests {
     // on debug builds:
     // ~1.5 slower vs OrderedDictionary
     // ~9.5x slower vs Swift.Dictionary
-    // TBD: compare on optimized build
+    // TODO: compare on optimized build
     let orderedMultiValueStorageOutput = performMeasuredAction(count: count) {
       var dict = OrderedMultipleValuesForKeyStorage<Int, Int>()
       for element in elements {

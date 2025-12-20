@@ -82,7 +82,7 @@ extension ErrorInfo {
       case let value as Date: value
     #endif
     case let value as [String]: value
-    // TBD:
+    // DEFERRED:
     //  case let value as [Any]: value.map(_castOrConvertToCompatible(legacyInfoValue:))
     //  case let value as [String: Any]: value.mapValues(_castOrConvertToCompatible(legacyInfoValue:))
     default: String(describing: value)

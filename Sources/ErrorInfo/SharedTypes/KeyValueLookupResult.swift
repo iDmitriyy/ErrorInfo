@@ -18,7 +18,7 @@ public enum KeyValueLookupResult {
   
   /// Indicates that multiple values (both non-nil and nil) are associated with the key.
   /// Contains the count of non-nil and nil values.
-  case multipleRecords(valuesCount: UInt16, nilCount: UInt16)
+  case multipleRecords(valuesCount: Int, nilCount: Int)
 }
 
 public enum KeyNonOptionalValueLookupResult {
@@ -30,5 +30,5 @@ public enum KeyNonOptionalValueLookupResult {
     
   /// Indicates that multiple values are associated with the key.
   /// Contains the count of non-nil values.
-  case multipleRecords(valuesCount: UInt16)
+  case multipleRecords(valuesCount: Int)
 }

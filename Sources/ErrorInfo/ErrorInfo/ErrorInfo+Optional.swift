@@ -95,5 +95,5 @@ extension ErrorInfo {
   }
 }
 
-// TBD: - add DebugStringConvertible
+// DEFERRED: - add DebugStringConvertible
 

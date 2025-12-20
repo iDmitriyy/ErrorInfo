@@ -89,7 +89,7 @@ extension ErrorInfo {
     appendProperties(of: instance, keysPrefix: keysPrefix, collisionSource: .fileLine(file: file, line: line), keys: keys)
   }
   
-  // TBD: - slow on release builds. 5 properties takes ~0.0004s.
+  // DEFERRED: - slow on release builds. 5 properties takes ~0.0004s.
   
   @resultBuilder
   public struct ErrorInfoKeyPathsBuilder {

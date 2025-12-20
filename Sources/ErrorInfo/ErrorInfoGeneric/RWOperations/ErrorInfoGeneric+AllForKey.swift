@@ -79,5 +79,5 @@ extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepre
   }
 }
 
-// TBD: check perfomance for args when they have no semantical effect, e.g. preserveNilValues: true or duplicatePolicy: .allowEqual
+// DEFERRED: check perfomance for args when they have no semantical effect, e.g. preserveNilValues: true or duplicatePolicy: .allowEqual
 // Constant values / if branches should be optimized by compiler. Check it

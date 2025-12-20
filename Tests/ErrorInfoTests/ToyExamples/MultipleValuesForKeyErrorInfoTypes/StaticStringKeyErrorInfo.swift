@@ -43,7 +43,7 @@ import OrderedCollections
 //    }
 //  }
 //
-//  // TBD: this is not proper imp
+//  // DEFERRED: this is not proper imp
 //  static func == (lhs: StaticStringHashableAdapter, rhs: StaticStringHashableAdapter) -> Bool {
 //    lhs.base.withUTF8Buffer { lhsBuffer in
 //      rhs.base.withUTF8Buffer { rhsBuffer in

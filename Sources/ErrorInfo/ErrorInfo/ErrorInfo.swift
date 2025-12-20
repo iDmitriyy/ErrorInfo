@@ -110,4 +110,4 @@ extension ErrorInfo {
 }
 
 // TODO: - add tests for elements ordering stability
-// TBD: - add overloads for Sendable AnyObjects & actors
+// DEFERRED: - add overloads for Sendable AnyObjects & actors
