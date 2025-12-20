@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 27/10/2025.
 //
 
-@testable import ErrorInfo
+@testable @_spi(PerfomanceTesting) import ErrorInfo
 import Testing
 
 // MARK: 3. Internal NonEmptyOrderedIndexSet Tests
@@ -16,9 +16,9 @@ struct NonEmptyOrderedIndexSetTests {
     indexSet.insert(3)
 
     switch indexSet._variant {
-    case .single:
+    case .left:
       Issue.record("Expected to transition to .multiple")
-    case .multiple(let indices):
+    case .right(let indices):
       #expect(indices.apply(Array.init) == [1, 3])
     }
   }

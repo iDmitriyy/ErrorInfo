@@ -67,6 +67,12 @@ extension Merge {
     //   default = Interpolation { $0.shortSignInterpolation }
     // }
   }
+  
+  public enum TransformResult<V, N> {
+    case value(V)
+    case nilInstance(N)
+    case skip
+  }
 }
 
 extension Merge {
