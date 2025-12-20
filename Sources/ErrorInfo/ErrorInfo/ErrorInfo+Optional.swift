@@ -19,7 +19,8 @@ extension ErrorInfo {
   @frozen
   internal struct EquatableOptionalAnyValue: Sendable, Equatable, ErrorInfoOptionalRepresentable,
     CustomDebugStringConvertible {
-    @usableFromInline internal let maybeValue: OptionalAnyValue
+    @usableFromInline
+    internal let maybeValue: OptionalAnyValue
     
     static func value(_ value: ValueExistential) -> Self {
       Self(maybeValue: .value(value))
@@ -30,15 +31,14 @@ extension ErrorInfo {
     }
     
     @usableFromInline
-    var getWrapped: ValueExistential? { maybeValue.getWrapped }
+    var getWrapped: ValueExistential? { maybeValue.getWrapped } // inlining has no effect on perfomance
     
-    var isValue: Bool { maybeValue.isValue }
+    var isValue: Bool { maybeValue.isValue } // inlining has no effect on perfomance
     
     @usableFromInline
     var debugDescription: String { maybeValue.debugDescription }
     
     @usableFromInline
-    @_transparent
     static func == (lhs: Self, rhs: Self) -> Bool {
       switch (lhs.maybeValue, rhs.maybeValue) {
       case (.value, .nilInstance),

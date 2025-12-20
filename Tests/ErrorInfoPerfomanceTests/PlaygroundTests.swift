@@ -15,12 +15,11 @@ struct PlaygroundTests {
         
     var infos: [ErrorInfo] = []
     for index in 1...1000 {
-      infos.append(["": 10, "20": "AAAA"]) // , "20": "AAAA"
+      infos.append(["": 10, "20": "AAAA", "20": "AAAA", "20": "AAAA", "20": "AAAA"]) // , "20": "AAAA"
     }
     infos.shuffle()
     
     let output = performMeasuredAction(count: count) {
-      
       for _ in 1...1_000 {
         for infoIndex in infos.indices {
           for element in infos[infoIndex] {
@@ -29,7 +28,6 @@ struct PlaygroundTests {
         }
       }
     }
-    
     
     // 1 element iteration
     // __playground:  1878.61166
@@ -65,9 +63,8 @@ struct PlaygroundTests {
     
     
     
-    
-    
-    
+    // __playground:  212.98750
+    // __playground:  165.03579
     
 //    let output = performMeasuredAction(count: count) {
 //      for _ in 1...1_000_000 {
