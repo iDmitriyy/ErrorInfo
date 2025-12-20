@@ -77,35 +77,35 @@ extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
 
 // MARK: Append ContentsOf
 
-extension ErrorInfoGeneric {
-  // TODO: - GValue & GValue.Wrapped are really existentials, need make pissoble to append generic values, not existentials
-  mutating func append(contentsOf sequence: some Sequence<(Key, GValue)>,
-                       duplicatePolicy: ValueDuplicatePolicy,
-                       collisionSource collisionOrigin: CollisionSource.Origin = .fileLine()) {
-    for (key, someValue) in sequence {
-      _add(key: key,
-           keyOrigin: .dynamic,
-           someValue: someValue,
-           duplicatePolicy: duplicatePolicy,
-           collisionSource: .onSequenceConsumption(origin: collisionOrigin))
-    }
-  }
-}
-
-extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
-  mutating func append(contentsOf sequence: some Sequence<(Key, GValue.Wrapped)>,
-                       typeOfWrapped: GValue.TypeOfWrapped,
-                       duplicatePolicy: ValueDuplicatePolicy,
-                       collisionSource collisionOrigin: CollisionSource.Origin) {
-    
-    for (key, nonNilValue) in sequence {
-      _add(key: key,
-           keyOrigin: .dynamic,
-           optionalValue: nonNilValue,
-           typeOfWrapped: typeOfWrapped, // TODO: - typeOfWrapped | one for all elements?
-           preserveNilValues: true, // has no effect in this func
-           duplicatePolicy: duplicatePolicy,
-           collisionSource: .onSequenceConsumption(origin: collisionOrigin))
-    }
-  }
-}
+//extension ErrorInfoGeneric {
+//  // TODO: - GValue & GValue.Wrapped are really existentials, need make pissoble to append generic values, not existentials
+//  mutating func append(contentsOf sequence: some Sequence<(Key, GValue)>,
+//                       duplicatePolicy: ValueDuplicatePolicy,
+//                       collisionSource collisionOrigin: CollisionSource.Origin) {
+//    for (key, someValue) in sequence {
+//      _add(key: key,
+//           keyOrigin: .dynamic,
+//           someValue: someValue,
+//           duplicatePolicy: duplicatePolicy,
+//           collisionSource: .onSequenceConsumption(origin: collisionOrigin))
+//    }
+//  }
+//}
+//
+//extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
+//  mutating func append(contentsOf sequence: some Sequence<(Key, GValue.Wrapped)>,
+//                       typeOfWrapped: GValue.TypeOfWrapped,
+//                       duplicatePolicy: ValueDuplicatePolicy,
+//                       collisionSource collisionOrigin: CollisionSource.Origin) {
+//    
+//    for (key, nonNilValue) in sequence {
+//      _add(key: key,
+//           keyOrigin: .dynamic,
+//           optionalValue: nonNilValue,
+//           typeOfWrapped: typeOfWrapped, // TODO: - typeOfWrapped | one for all elements?
+//           preserveNilValues: true, // has no effect in this func
+//           duplicatePolicy: duplicatePolicy,
+//           collisionSource: .onSequenceConsumption(origin: collisionOrigin))
+//    }
+//  }
+//}

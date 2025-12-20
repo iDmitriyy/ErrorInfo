@@ -158,7 +158,7 @@ extension CollisionSource {
   public enum Origin: Sendable, ExpressibleByStringLiteral {
     public typealias StringLiteralType = StaticString
     
-    case fileLine(file: StaticString = #fileID, line: UInt = #line)
+    case fileLine(file: StaticString, line: UInt)
     case function(function: String = #function)
     case custom(origin: String)
     

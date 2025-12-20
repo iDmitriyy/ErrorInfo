@@ -28,8 +28,14 @@ extension ErrorInfo {
   /// ])
   /// ```
   public mutating func appendKeyValues(_ literal: KeyValuePairs<Key, Value>,
-                                       collisionSource origin: @autoclosure () -> CollisionSource.Origin = .fileLine()) {
+                                       collisionSource origin: @autoclosure () -> CollisionSource.Origin) {
     _appendKeyValuesImp(_dictionaryLiteral: literal, collisionSource: .onDictionaryConsumption(origin: origin()))
+  }
+  
+  public mutating func appendKeyValues(_ literal: KeyValuePairs<Key, Value>,
+                                       file: StaticString = #fileID,
+                                       line: UInt = #line) {
+    appendKeyValues(literal, collisionSource: .fileLine(file: file, line: line))
   }
 }
 
@@ -39,7 +45,7 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   internal mutating func _appendKeyValuesImp(_dictionaryLiteral elements: some Collection<(key: Key, value: Value)>,
-                                            collisionSource: @autoclosure () -> CollisionSource) {
+                                             collisionSource: @autoclosure () -> CollisionSource) {
     // Improvement: try reserve capacity. perfomance tests
     for (literalKey, value) in elements {
       if let value {

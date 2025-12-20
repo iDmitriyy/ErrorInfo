@@ -28,10 +28,19 @@ extension ErrorInfo {
   /// ```
   public mutating func merge(with firstDonator: Self,
                              _ otherDonators: Self...,
-                             collisionSource mergeOrigin: CollisionSource.Origin = .fileLine()) {
+                             collisionSource mergeOrigin: CollisionSource.Origin) {
     self = Self._mergedImp(recipient: self,
                            donators: [firstDonator] + otherDonators,
                            collisionSource: mergeOrigin)
+  }
+  
+  public mutating func merge(with firstDonator: Self,
+                             _ otherDonators: Self...,
+                             file: StaticString = #fileID,
+                             line: UInt = #line) {
+    self = Self._mergedImp(recipient: self,
+                           donators: [firstDonator] + otherDonators,
+                           collisionSource: .fileLine(file: file, line: line))
   }
   
   /// Returns a new `ErrorInfo` instance by merging the current instance with one or more others.
@@ -52,10 +61,19 @@ extension ErrorInfo {
   /// ```
   public consuming func merged(with firstDonator: Self,
                                _ otherDonators: Self...,
-                               collisionSource mergeOrigin: CollisionSource.Origin = .fileLine()) -> Self {
+                               collisionSource mergeOrigin: CollisionSource.Origin) -> Self {
     Self._mergedImp(recipient: self,
                     donators: [firstDonator] + otherDonators,
                     collisionSource: mergeOrigin)
+  }
+  
+  public consuming func merged(with firstDonator: Self,
+                               _ otherDonators: Self...,
+                               file: StaticString = #fileID,
+                               line: UInt = #line) -> Self {
+    Self._mergedImp(recipient: self,
+                    donators: [firstDonator] + otherDonators,
+                    collisionSource: .fileLine(file: file, line: line))
   }
 }
 
@@ -86,10 +104,11 @@ extension ErrorInfo {
   public static func merged(_ recipient: Self,
                             _ firstDonator: Self,
                             _ otherDonators: Self...,
-                            collisionSource mergeOrigin: CollisionSource.Origin = .fileLine()) -> Self {
+                            file: StaticString = #fileID,
+                            line: UInt = #line) -> Self {
     _mergedImp(recipient: recipient,
                donators: [firstDonator] + otherDonators,
-               collisionSource: mergeOrigin)
+               collisionSource: .fileLine(file: file, line: line))
   }
   
   /// Merges multiple `ErrorInfo` instances from an array and returns the resulting merged instance.
@@ -108,7 +127,7 @@ extension ErrorInfo {
   /// // mergedInfo contains both errorCode and errorMessage.
   /// ```
   public static func merged(errorInfosArray: consuming [Self],
-                            collisionSource mergeOrigin: CollisionSource.Origin = .fileLine()) -> Self {
+                            collisionSource mergeOrigin: CollisionSource.Origin) -> Self {
     switch errorInfosArray.count {
     case 0: return .empty
     case 1: return errorInfosArray[0]

@@ -30,7 +30,7 @@ extension ErrorInfo {
   /// let errorInfo = ErrorInfo(legacyUserInfo: legacyData)
   /// ```
   public init(legacyUserInfo: [String: Any],
-              collisionSource origin: @autoclosure () -> CollisionSource.Origin = .fileLine()) {
+              collisionSource origin: @autoclosure () -> CollisionSource.Origin) {
     self.init(minimumCapacity: legacyUserInfo.count)
     
     legacyUserInfo.forEach { key, value in
@@ -43,6 +43,12 @@ extension ErrorInfo {
       // May be it is good to split into two separated dictionaries. Static initializer will return something like tuple of
       // (Self, nonSendableValues: [(key:, value:)])
     }
+  }
+  
+  public init(legacyUserInfo: [String: Any],
+              file: StaticString = #fileID,
+              line: UInt = #line) {
+    self.init(legacyUserInfo: legacyUserInfo, collisionSource: .fileLine(file: file, line: line))
   }
 }
 

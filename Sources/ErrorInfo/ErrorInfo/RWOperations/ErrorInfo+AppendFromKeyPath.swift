@@ -56,7 +56,7 @@ extension ErrorInfo {
   public mutating func appendProperties<R, each V: ValueProtocol>(
     of instance: R,
     keysPrefix: KeyPathPrefixOption? = .typeName,
-    collisionSource collisionOrigin: CollisionSource.Origin = .fileLine(),
+    collisionSource collisionOrigin: CollisionSource.Origin,
     @ErrorInfoKeyPathsBuilder keys: () -> (repeat KeyPath<R, each V>),
   ) {
     let keyPaths = keys() // R.self
@@ -78,7 +78,19 @@ extension ErrorInfo {
            collisionSource: .onAppend(origin: collisionOrigin))
     }
   }
+  
+  public mutating func appendProperties<R, each V: ValueProtocol>(
+    of instance: R,
+    keysPrefix: KeyPathPrefixOption? = .typeName,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @ErrorInfoKeyPathsBuilder keys: () -> (repeat KeyPath<R, each V>),
+  ) {
+    appendProperties(of: instance, keysPrefix: keysPrefix, collisionSource: .fileLine(file: file, line: line), keys: keys)
+  }
+  
   // TBD: - slow on release builds. 5 properties takes ~0.0004s.
+  
   @resultBuilder
   public struct ErrorInfoKeyPathsBuilder {
     public static func buildBlock<R, each V: ValueProtocol>(_ values: repeat KeyPath<R, each V>) -> (repeat KeyPath<R, each V>) {

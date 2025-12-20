@@ -40,7 +40,7 @@ extension ErrorInfo {
   public static func withOptions(duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending,
                                  preserveNilValues: Bool = true,
                                  prefixForKeys: StringLiteralKey? = nil,
-                                 collisionSource: CollisionSource.Origin = .fileLine(),
+                                 collisionSource: CollisionSource.Origin,
                                  modify: (consuming CustomOptionsView) -> Void) -> Self {
     var info = Self()
     info.appendWith(duplicatePolicy: duplicatePolicy,
@@ -49,6 +49,19 @@ extension ErrorInfo {
                     collisionSource: collisionSource,
                     modify: modify)
     return info
+  }
+  
+  public static func withOptions(duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending,
+                                 preserveNilValues: Bool = true,
+                                 prefixForKeys: StringLiteralKey? = nil,
+                                 file: StaticString = #fileID,
+                                 line: UInt = #line,
+                                 modify: (consuming CustomOptionsView) -> Void) -> Self {
+    withOptions(duplicatePolicy: duplicatePolicy,
+                preserveNilValues: preserveNilValues,
+                prefixForKeys: prefixForKeys,
+                collisionSource: .fileLine(file: file, line: line),
+                modify: modify)
   }
   
   /// Modifies the current `ErrorInfo` instance with custom options that apply to all mutable operations performed on it.
@@ -82,7 +95,7 @@ extension ErrorInfo {
   public mutating func appendWith(duplicatePolicy: ValueDuplicatePolicy = .rejectEqual,
                                   preserveNilValues: Bool = true,
                                   prefixForKeys: StringLiteralKey? = nil,
-                                  collisionSource: CollisionSource.Origin = .fileLine(),
+                                  collisionSource: CollisionSource.Origin,
                                   modify: (consuming CustomOptionsView) -> Void) {
     withUnsafeMutablePointer(to: &self) { pointer in
       let view = CustomOptionsView(pointer: pointer,
@@ -92,6 +105,19 @@ extension ErrorInfo {
                                    collisionOrigin: collisionSource)
       modify(view)
     }
+  }
+  
+  public mutating func appendWith(duplicatePolicy: ValueDuplicatePolicy = .rejectEqual,
+                                  preserveNilValues: Bool = true,
+                                  prefixForKeys: StringLiteralKey? = nil,
+                                  file: StaticString = #fileID,
+                                  line: UInt = #line,
+                                  modify: (consuming CustomOptionsView) -> Void) {
+    appendWith(duplicatePolicy: duplicatePolicy,
+               preserveNilValues: preserveNilValues,
+               prefixForKeys: prefixForKeys,
+               collisionSource: .fileLine(file: file, line: line),
+               modify: modify)
   }
 }
 
