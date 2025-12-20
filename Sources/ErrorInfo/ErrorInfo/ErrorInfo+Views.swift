@@ -10,8 +10,12 @@ public import protocol InternalCollectionsUtilities._UniqueCollection
 // MARK: - Keys
 
 extension ErrorInfo {
+  @inlinable
+  @inline(__always)
   public var keys: some Collection<String> & _UniqueCollection { _storage.keys }
   
+  @inlinable
+  @inline(__always)
   public var allKeys: some Collection<String> { _storage.allKeys }
 }
 
@@ -23,6 +27,8 @@ extension ErrorInfo {
   public typealias FullInfoRecord = (value: OptionalAnyValue, keyOrigin: KeyOrigin, collisionSource: CollisionSource?)
   public typealias FullInfoElement = (key: String, record: FullInfoRecord)
   
+  // MARK: FullInfo All
+  
   /// Returns a sequence of tuples, where each element consists of a key with its origin and a collision-tagged value.
   /// This view provides an enriched sequence of key-value pairs with additional metadata, useful for deep inspection, logging or debugging.
   public var fullInfoView: some Sequence<FullInfoElement> {
@@ -31,6 +37,8 @@ extension ErrorInfo {
       return (key, (record.someValue.maybeValue, record.keyOrigin, annotatedRecord.collisionSource))
     }
   }
+  
+  // MARK: FullInfo for Key
   
   @inlinable
   @_transparent

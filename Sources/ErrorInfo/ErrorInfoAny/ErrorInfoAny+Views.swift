@@ -12,3 +12,38 @@ extension ErrorInfoAny {
   
   public var allKeys: some Collection<String> { _storage.allKeys }
 }
+
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// MARK: - Full Info View
+
+extension ErrorInfoAny {
+  public typealias FullInfoRecord = (value: ErrorInfoOptionalAny, keyOrigin: KeyOrigin, collisionSource: CollisionSource?)
+  public typealias FullInfoElement = (key: String, record: FullInfoRecord)
+  
+  // MARK: FullInfo All
+  
+  public var fullInfoView: some Sequence<FullInfoElement> {
+    _storage.lazy.map { key, annotatedRecord -> FullInfoElement in
+      let record = annotatedRecord.record
+      return (key, (record.someValue.maybeValue, record.keyOrigin, annotatedRecord.collisionSource))
+    }
+  }
+  
+  // MARK: FullInfo for Key
+  
+  @inlinable
+  @_transparent
+  public func fullInfo(forKey literalKey: StringLiteralKey) -> ValuesForKey<FullInfoRecord>? {
+    fullInfo(forKey: literalKey.rawValue)
+  }
+  
+  @_disfavoredOverload
+  public func fullInfo(forKey dynamicKey: String) -> ValuesForKey<FullInfoRecord>? {
+    guard let annotatedRecords = _storage.allAnnotatedRecords(forKey: dynamicKey) else { return nil }
+
+    return annotatedRecords.map { annotatedRecord -> FullInfoRecord in
+      (annotatedRecord.record.someValue.maybeValue, annotatedRecord.record.keyOrigin, annotatedRecord.collisionSource)
+    }
+  }
+}

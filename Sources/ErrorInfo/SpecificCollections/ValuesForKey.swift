@@ -41,13 +41,15 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
   /// Creates a `ValuesForKey` instance with a single value.
   ///
   /// - Parameter element: The value to store.
-  @inlinable @inline(__always)
+  @inlinable
+  @inline(__always)
   internal init(element: Value) { _elements = .left(element) }
   
   /// Creates a `ValuesForKey` instance with multiple values.
   ///
   /// - Parameter array: A non-empty array of values to store.
-  @inlinable @inline(__always)
+  @inlinable
+  @inline(__always)
   internal init(array: NonEmptyArray<Element>) {
     _elements = .right(array)
   }
@@ -59,7 +61,8 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
   /// - Parameter position: The index of the element to access.
   /// - Returns: The value at the specified position.
   /// - Precondition: The index must be within bounds (0 for a single value).
-  @inlinable @inline(__always) // 10.5x speedup
+  @inlinable
+  @inline(__always) // 10.5x speedup
   public subscript(position: Int) -> Value {
     switch _elements {
     case .left(let element):
@@ -91,7 +94,8 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
   ///
   /// - Returns: The first value stored, whether it's a single value or the first element
   /// in the non-empty array.
-  @inlinable @inline(__always) // 13.5x speedup
+  @inlinable
+  @inline(__always) // 13.5x speedup
   public var first: Value {
     switch _elements {
     case .left(let element): element
@@ -103,7 +107,8 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
   ///
   /// - Returns: The last value stored, whether it's a single value or the last element
   /// in the non-empty array.
-  @inlinable @inline(__always) // 13.5x speedup
+  @inlinable
+  @inline(__always) // 13.5x speedup
   public var last: Value {
     switch _elements {
     case .left(let element): element

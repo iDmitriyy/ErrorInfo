@@ -15,19 +15,25 @@ struct PlaygroundTests {
         
     var infos: [ErrorInfo] = []
     for index in 1...1000 {
-      infos.append(["": 10, "20": "AAAA", "20": "AAAA", "20": "AAAA", "20": "AAAA"]) // , "20": "AAAA"
+      infos.append([:]) // "": 10, "20": "AAAA"
     }
     infos.shuffle()
     
     let output = performMeasuredAction(count: count) {
       for _ in 1...1_000 {
         for infoIndex in infos.indices {
-          for element in infos[infoIndex] {
-            blackHole(element)
-          }
+          blackHole(infos[infoIndex].allKeys)
         }
       }
     }
+    
+    // .allKeys
+    // __playground:  1117.44792
+    // __playground:  971.86592
+    
+    // .keys
+    // __playground:  1119.86362
+    // __playground:  987.67208
     
     // 1 element iteration
     // __playground:  1878.61166

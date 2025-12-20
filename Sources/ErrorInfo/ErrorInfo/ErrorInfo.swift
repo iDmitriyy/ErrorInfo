@@ -6,16 +6,8 @@
 //
 
 public struct ErrorInfo: Sendable, ErrorInfoOperationsProtocol {
-  @usableFromInline internal
-  var _storage: ErrorInfoGeneric<KeyType, EquatableOptionalAnyValue>
-  
-  @inlinable
-  @inline(__always)
-  public var propertyTest: Int {
-    _storage.endIndex
-  }
-  
-  public subscript(position: Int) -> String { _storage[position].key }
+  @usableFromInline
+  internal var _storage: ErrorInfoGeneric<KeyType, EquatableOptionalAnyValue>
   
   private init(storage: BackingStorage) {
     _storage = storage
@@ -52,7 +44,8 @@ extension ErrorInfo {
   ///   This adds a layer of robustness.
   public typealias ValueProtocol = Sendable & Equatable & CustomStringConvertible
   
-  @usableFromInline internal typealias BackingStorage = ErrorInfoGeneric<KeyType, EquatableOptionalAnyValue>
+  @usableFromInline
+  internal typealias BackingStorage = ErrorInfoGeneric<KeyType, EquatableOptionalAnyValue>
 }
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
