@@ -5,14 +5,37 @@
 //  Created by Dmitriy Ignatyev on 13/12/2025.
 //
 
+/// A non‑Sendable, type‑erased compatibility layer for legacy `[String: Any]` usage.
+///
+/// `ErrorInfoAny` is intended for codebases and modules that can’t yet adopt the strongly‑typed, `Sendable`
+/// ``ErrorInfo``. It accepts heterogeneous values (`Any`) while mirroring many of ``ErrorInfo``’s capabilities:
+///
+/// - Preserves insertion order
+/// - Supports multiple values per key
+/// - Tracks key origin and collision metadata (see ``KeyOrigin``)
+/// - Honors duplicate‑value policies (see ``ValueDuplicatePolicy``)
+///
+/// Prefer ``ErrorInfo`` whenever you can use `Sendable` types. Use `ErrorInfoAny` to bridge existing APIs that
+/// exchange `[String: Any]` (e.g. legacy userInfo dictionaries) during incremental migration.
+///
+/// ## When to use
+/// - You integrate with third‑party or legacy APIs that require `[String: Any]` payloads.
+/// - Your module cannot adopt `Sendable` yet but you want the ordering, collision tracking, and duplicate‑handling
+///   semantics provided by ``ErrorInfo``.
+///
+/// ## Migration tips
+/// - Keep boundaries narrow: convert to/from `[String: Any]` only at API edges.
+/// - Start producing `ErrorInfoAny` internally, then down‑convert to `[String: Any]` when calling legacy APIs.
+/// - Once your code becomes `Sendable`‑ready, switch to ``ErrorInfo``.
+///
+/// ## Example: Bridging at a legacy boundary
+/// ```swift
+/// func sendToLegacyAPI(_ info: ErrorInfoAny) {
+///   let userInfo: [String: Any] = info.asDictionary()
+///   legacyAPI.send(userInfo)
+/// }
+/// ```
 public struct ErrorInfoAny: ErrorInfoOperationsProtocol {
-  public typealias Element = (key: String, value: Any)
-  
-  public typealias Key = String
-  public typealias ValueExistential = any Any
-  
-  internal typealias BackingStorage = ErrorInfoGeneric<String, EquatableOptionalAny>
-  
   @usableFromInline internal var _storage: ErrorInfoGeneric<String, EquatableOptionalAny>
   
   // MARK: - Initializers
@@ -33,6 +56,20 @@ public struct ErrorInfoAny: ErrorInfoOperationsProtocol {
 }
 
 extension ErrorInfoAny {
+  public typealias Element = (key: String, value: Any)
+  
+  public typealias Key = String
+  public typealias ValueExistential = any Any
+  
+  internal typealias BackingStorage = ErrorInfoGeneric<String, EquatableOptionalAny>
+}
+
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// MARK: - Append KeyValue with all arguments passed explicitly
+
+extension ErrorInfoAny {
+  /// The root appending function for public API imps. The term "_add" is chosen to visually / syntatically differentiate from family of public `append()`functions.
   @usableFromInline
   internal mutating func _add<V>(key: String,
                                  keyOrigin: KeyOrigin,
@@ -51,74 +88,3 @@ extension ErrorInfoAny {
                   collisionSource: collisionSource())
   }
 }
-
-extension ErrorInfoAny {
-  @usableFromInline
-  internal struct EquatableOptionalAny: Equatable, ErrorInfoOptionalRepresentable {
-    typealias Wrapped = Any
-    typealias TypeOfWrapped = any Any.Type
-    
-    let maybeValue: ErrorInfoOptionalAny
-    
-    private init(_unverifiedMaybeValue: ErrorInfoOptionalAny) {
-      maybeValue = _unverifiedMaybeValue
-    }
-    
-    init(anyValue: any Any) {
-      maybeValue = ErrorInfoFuncs.flattenOptional(any: anyValue)
-    }
-    
-    static func value(_ anyValue: Any) -> Self {
-      Self(anyValue: anyValue)
-    }
-    
-    static func nilInstance(typeOfWrapped: any Any.Type) -> Self {
-      // FIXME: - type can be incorrect, extract root type
-      Self(_unverifiedMaybeValue: .nilInstance(typeOfWrapped: typeOfWrapped))
-    }
-    
-    var isValue: Bool { maybeValue.isValue }
-    
-    var getWrapped: Any? { maybeValue.getWrapped }
-    
-    @usableFromInline
-    static func == (lhs: Self, rhs: Self) -> Bool {
-      switch (lhs.maybeValue, rhs.maybeValue) {
-      case (.value, .nilInstance),
-           (.nilInstance, .value):
-        false
-        
-      case let (.value(lhsInstance), .value(rhsInstance)):
-        // As `Any` instances are flattened in EquatableOptionalAny's initializer, call
-        // _isEqualFlattenedExistentialAnyWithUnboxing func.
-        ErrorInfoFuncs.__PrivateImps._isEqualFlattenedExistentialAnyWithUnboxing(a: lhsInstance, b: rhsInstance)
-        
-      case let (.nilInstance(lhsType), .nilInstance(rhsType)):
-        lhsType == rhsType
-      }
-    }
-  }
-}
-
-public enum ErrorInfoOptionalAny: ErrorInfoOptionalRepresentable {
-  case value(Any)
-  case nilInstance(typeOfWrapped: any Any.Type)
-  
-  public typealias TypeOfWrapped = any Any.Type
-  
-  var isValue: Bool {
-    switch self {
-    case .value: true
-    case .nilInstance: false
-    }
-  }
-  
-  var getWrapped: Any? {
-    switch self {
-    case .value(let value): value
-    case .nilInstance: nil
-    }
-  }
-}
-
-// TypeEnhancedOptional

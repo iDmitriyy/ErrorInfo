@@ -11,7 +11,7 @@ extension ErrorInfoGeneric {}
 
 extension ErrorInfoGeneric {
   /// Instead of subscript overload with `String` key to prevent pollution of autocomplete for `ErronInfoLiteralKey` by tons of String methods.
-  mutating func append(key: Key, keyOrigin: KeyOrigin, someValue newValue: GValue) {
+  mutating func append(key: Key, keyOrigin: KeyOrigin, someValue newValue: RecordValue) {
     _add(key: key,
          keyOrigin: keyOrigin,
          someValue: newValue,
@@ -20,11 +20,11 @@ extension ErrorInfoGeneric {
   }
 }
 
-extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
+extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
   mutating func append(key: Key,
                        keyOrigin: KeyOrigin,
-                       optionalValue: GValue.Wrapped?,
-                       typeOfWrapped: GValue.TypeOfWrapped,
+                       optionalValue: RecordValue.Wrapped?,
+                       typeOfWrapped: RecordValue.TypeOfWrapped,
                        preserveNilValues: Bool) {
     _add(key: key,
          keyOrigin: keyOrigin,
@@ -41,7 +41,7 @@ extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
 // MARK: Append IfNotNil
 
 extension ErrorInfoGeneric {
-  mutating func appendIfNotNil(someValue: GValue?,
+  mutating func appendIfNotNil(someValue: RecordValue?,
                                forKey key: Key,
                                keyOrigin: KeyOrigin,
                                duplicatePolicy: ValueDuplicatePolicy) {
@@ -55,9 +55,9 @@ extension ErrorInfoGeneric {
   }
 }
 
-extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
-  mutating func appendIfNotNil(optionalValue: GValue.Wrapped?,
-                               typeOfWrapped: GValue.TypeOfWrapped,
+extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
+  mutating func appendIfNotNil(optionalValue: RecordValue.Wrapped?,
+                               typeOfWrapped: RecordValue.TypeOfWrapped,
                                forKey key: Key,
                                keyOrigin: KeyOrigin,
                                duplicatePolicy: ValueDuplicatePolicy) {
@@ -78,8 +78,8 @@ extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
 // MARK: Append ContentsOf
 
 //extension ErrorInfoGeneric {
-//  // TODO: - GValue & GValue.Wrapped are really existentials, need make pissoble to append generic values, not existentials
-//  mutating func append(contentsOf sequence: some Sequence<(Key, GValue)>,
+//  // TODO: - RecordValue & RecordValue.Wrapped are really existentials, need make pissoble to append generic values, not existentials
+//  mutating func append(contentsOf sequence: some Sequence<(Key, RecordValue)>,
 //                       duplicatePolicy: ValueDuplicatePolicy,
 //                       collisionSource collisionOrigin: CollisionSource.Origin) {
 //    for (key, someValue) in sequence {
@@ -92,9 +92,9 @@ extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
 //  }
 //}
 //
-//extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
-//  mutating func append(contentsOf sequence: some Sequence<(Key, GValue.Wrapped)>,
-//                       typeOfWrapped: GValue.TypeOfWrapped,
+//extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
+//  mutating func append(contentsOf sequence: some Sequence<(Key, RecordValue.Wrapped)>,
+//                       typeOfWrapped: RecordValue.TypeOfWrapped,
 //                       duplicatePolicy: ValueDuplicatePolicy,
 //                       collisionSource collisionOrigin: CollisionSource.Origin) {
 //    

@@ -15,12 +15,12 @@ public enum KeyPathPrefixOption {
   case custom(_ name: String)
 }
 
-extension ErrorInfoGeneric where Key == String, GValue: ErrorInfoOptionalRepresentable {
+extension ErrorInfoGeneric where Key == String, RecordValue: ErrorInfoOptionalRepresentable {
   mutating func _appendProperty<R, V>(of instance: R,
                                       keyPath: KeyPath<R, V>,
                                       keysPrefix: KeyPathPrefixOption?,
-                                      typeOfWrapped: GValue.TypeOfWrapped,
-                                      converToExistential: (V) -> GValue.Wrapped,
+                                      typeOfWrapped: RecordValue.TypeOfWrapped,
+                                      converToExistential: (V) -> RecordValue.Wrapped,
                                       ollisionSource collisionOrigin: @autoclosure () -> CollisionSource.Origin) {
     let keyPathString: String = switch keysPrefix {
     case .typeName: ErrorInfoFuncs.asErrorInfoKeyString(keyPath: keyPath, withTypePrefix: true)

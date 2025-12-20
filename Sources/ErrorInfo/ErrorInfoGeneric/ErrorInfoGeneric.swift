@@ -5,16 +5,14 @@
 //  Created by Dmitriy Ignatyev on 13/12/2025.
 //
 
-/// ### Configurable
-/// - Value Type: any ErrorInfo | Any | ...
-/// - Optionality: yes custom | yes regular | non-optional
-/// - Key Type (typically String) | may be ASCIIString, StaticString
+/// A generic container for error information with per‑key multi‑value support.
 ///
-/// ### Builtin / non configurable:
-/// - collisionSource
-/// - keyOrigin
-/// - StringLiteralKey
-public struct ErrorInfoGeneric<Key: Hashable, GValue: Equatable>: Sequence {
+/// `ErrorInfoGeneric` is used as a backing storage for `ErrorInfo` types. It preserves insertion order, tracks collisions, and can store multiple
+/// values per key. The generic `RecordValue` controls the stored value representation (e.g. an equatable optional or non-optional wrapper).
+///
+/// - Key: Any `Hashable` (commonly `String`).
+/// - Value: `RecordValue` determines comparison semantics for duplicate handling.
+public struct ErrorInfoGeneric<Key: Hashable, RecordValue: Equatable>: Sequence {
   public typealias Element = (key: Key, value: AnnotatedRecord)
   public typealias AnnotatedRecord = CollisionAnnotatedRecord<Record>
   
@@ -41,30 +39,38 @@ public struct ErrorInfoGeneric<Key: Hashable, GValue: Equatable>: Sequence {
 }
 
 extension ErrorInfoGeneric {
+  /// A single stored record combining the key origin with the value representation.
+  ///
+  /// - `keyOrigin`: Where the key came from (literal, dynamic, modified, etc.).
+  /// - `someValue`: The stored value in `RecordValue` form.
   public struct Record {
     public let keyOrigin: KeyOrigin
-    public let someValue: GValue
+    public let someValue: RecordValue
   }
 }
 
-extension ErrorInfoGeneric: Sendable where Key: Sendable, GValue: Sendable {}
+extension ErrorInfoGeneric: Sendable where Key: Sendable, RecordValue: Sendable {}
 
-extension ErrorInfoGeneric.Record: Sendable where GValue: Sendable {}
+extension ErrorInfoGeneric.Record: Sendable where RecordValue: Sendable {}
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
 // MARK: - Append KeyValue with all arguments passed explicitly
 
-extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
-  /// The root appending function for public API imps. The term "_add" is chosen to visually / syntatically differentiate from family of public `append()`functions.
+extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
+  /// Adds a value for a key, handling optional preservation and duplicate policy.
+  ///
+  /// - If `newValue` is `nil` and `preserveNilValues == true`, an explicit `nil` record is stored for `typeOfWrapped`.
+  /// - If `duplicatePolicy == .rejectEqual`, equal values for the same key are skipped.
+  /// - Collisions are annotated using the provided `collisionSource`.
   internal mutating func _add(key: Key,
                               keyOrigin: KeyOrigin,
-                              optionalValue newValue: GValue.Wrapped?,
-                              typeOfWrapped: GValue.TypeOfWrapped,
+                              optionalValue newValue: RecordValue.Wrapped?,
+                              typeOfWrapped: RecordValue.TypeOfWrapped,
                               preserveNilValues: Bool,
                               duplicatePolicy: ValueDuplicatePolicy,
                               collisionSource: @autoclosure () -> CollisionSource) {
-    let optional: GValue
+    let optional: RecordValue
     if let newValue {
       optional = .value(newValue)
     } else if preserveNilValues {
@@ -81,9 +87,10 @@ extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
 }
 
 extension ErrorInfoGeneric {
+  /// Adds a some value (optional or not depending on generic context) for a key honoring the duplicate policy and collision source.
   internal mutating func _add(key: Key,
                               keyOrigin: KeyOrigin,
-                              someValue: GValue,
+                              someValue: RecordValue,
                               duplicatePolicy: ValueDuplicatePolicy,
                               collisionSource: @autoclosure () -> CollisionSource) {
     _addWithCollisionResolution(record: Record(keyOrigin: keyOrigin, someValue: someValue),
@@ -94,6 +101,11 @@ extension ErrorInfoGeneric {
 }
 
 extension ErrorInfoGeneric {
+  /// Core insertion routine that enforces duplicate policy and tags collisions.
+  ///
+  /// - If `insertIfEqual` is `false`, the new record is compared against existing values for the key using `RecordValue`'s `Equatable`.
+  ///   The insertion is skipped when an equal value already exists.
+  /// - Otherwise the record is always appended.
   internal mutating func _addWithCollisionResolution(record newRecord: Record,
                                                      forKey key: Key,
                                                      insertIfEqual: Bool,
@@ -120,3 +132,4 @@ extension ErrorInfoGeneric {
 }
 
 // Improvement: ErrorInfoGeneric @_specialize(where Self == ...)
+

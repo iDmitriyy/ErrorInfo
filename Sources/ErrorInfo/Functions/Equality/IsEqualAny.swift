@@ -2,7 +2,7 @@
 //  IsEqualAny.swift
 //  ErrorInfo
 //
-//  Created by tmp on 18/12/2025.
+//  Created by Dmitriy Ignatyev on 18/12/2025.
 //
 
 extension ErrorInfoFuncs {

@@ -2,7 +2,7 @@
 //  Merge+SummaryInfoTests.swift
 //  ErrorInfo
 //
-//  Created by tmp on 19/12/2025.
+//  Created by Dmitriy Ignatyev on 19/12/2025.
 //
 
 @testable import ErrorInfo

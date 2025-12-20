@@ -8,7 +8,7 @@
 // MARK: - AllValues ForKey
 
 extension ErrorInfoGeneric {
-  func allSomeValues(forKey key: Key) -> ValuesForKey<GValue>? {
+  func allSomeValues(forKey key: Key) -> ValuesForKey<RecordValue>? {
     _storage.allValues(forKey: key)?._compactMap { $0.record.someValue }
   }
   
@@ -17,8 +17,8 @@ extension ErrorInfoGeneric {
   }
 }
 
-extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
-  func allNonNilValues(forKey key: Key) -> ValuesForKey<GValue.Wrapped>? {
+extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
+  func allNonNilValues(forKey key: Key) -> ValuesForKey<RecordValue.Wrapped>? {
     _storage.allValues(forKey: key)?._compactMap { $0.record.someValue.getWrapped }
   }
 }
@@ -32,14 +32,14 @@ extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
 
 extension ErrorInfoGeneric {
   @discardableResult
-  mutating func removeAllRecords_ReturningSomeValues(forKey key: Key) -> ValuesForKey<GValue>? {
+  mutating func removeAllRecords_ReturningSomeValues(forKey key: Key) -> ValuesForKey<RecordValue>? {
     _storage.removeAllValues(forKey: key)?._compactMap { $0.record.someValue }
   }
 }
 
-extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
+extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
   @discardableResult
-  mutating func removeAllRecords_ReturningNonNilValues(forKey key: Key) -> ValuesForKey<GValue.Wrapped>? {
+  mutating func removeAllRecords_ReturningNonNilValues(forKey key: Key) -> ValuesForKey<RecordValue.Wrapped>? {
     _storage.removeAllValues(forKey: key)?._compactMap { $0.record.someValue.getWrapped }
   }
 }
@@ -51,7 +51,7 @@ extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
 extension ErrorInfoGeneric {
   internal mutating func _replaceAllRecords(forKey key: Key,
                                             keyOrigin: KeyOrigin,
-                                            bySomeValue newValue: GValue) -> ValuesForKey<GValue>? {
+                                            bySomeValue newValue: RecordValue) -> ValuesForKey<RecordValue>? {
     let oldValues = removeAllRecords_ReturningSomeValues(forKey: key)
     _add(key: key,
          keyOrigin: keyOrigin,
@@ -62,11 +62,11 @@ extension ErrorInfoGeneric {
   }
 }
 
-extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
+extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
   internal mutating func _replaceAllRecords(forKey key: Key,
                                             keyOrigin: KeyOrigin,
-                                            byNonNilValue newValue: GValue.Wrapped,
-                                            typeOfWrapped: GValue.TypeOfWrapped) -> ValuesForKey<GValue.Wrapped>? {
+                                            byNonNilValue newValue: RecordValue.Wrapped,
+                                            typeOfWrapped: RecordValue.TypeOfWrapped) -> ValuesForKey<RecordValue.Wrapped>? {
     let oldValues = removeAllRecords_ReturningNonNilValues(forKey: key)
     _add(key: key,
          keyOrigin: keyOrigin,

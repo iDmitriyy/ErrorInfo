@@ -8,14 +8,14 @@
 // MARK: - Last For Key
 
 extension ErrorInfoGeneric {
-  func lastSomeValue(forKey key: Key) -> GValue? {
+  func lastSomeValue(forKey key: Key) -> RecordValue? {
     guard let allRecordsForKey = _storage.allValues(forKey: key) else { return nil }
     return allRecordsForKey.last.record.someValue
   }
 }
 
-extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
-  func lastNonNilValue(forKey key: Key) -> GValue.Wrapped? {
+extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
+  func lastNonNilValue(forKey key: Key) -> RecordValue.Wrapped? {
     guard let allRecordsForKey = _storage.allValues(forKey: key) else { return nil }
     
     let reversedRecords: ReversedCollection<_> = allRecordsForKey.reversed()
@@ -33,14 +33,14 @@ extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
 // MARK: - First For Key
 
 extension ErrorInfoGeneric {
-  func firstSomeValue(forKey key: Key) -> GValue? {
+  func firstSomeValue(forKey key: Key) -> RecordValue? {
     guard let allRecordsForKey = _storage.allValues(forKey: key) else { return nil }
     return allRecordsForKey.first.record.someValue
   }
 }
 
-extension ErrorInfoGeneric where GValue: ErrorInfoOptionalRepresentable {
-  func firstNonNilValue(forKey key: Key) -> GValue.Wrapped? {
+extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
+  func firstNonNilValue(forKey key: Key) -> RecordValue.Wrapped? {
     guard let allRecordsForKey = _storage.allValues(forKey: key) else { return nil }
 
     for annotatedRecord in allRecordsForKey {

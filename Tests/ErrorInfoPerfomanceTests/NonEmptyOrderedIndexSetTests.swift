@@ -2,7 +2,7 @@
 //  NonEmptyOrderedIndexSetTests.swift
 //  ErrorInfo
 //
-//  Created by tmp on 19/12/2025.
+//  Created by Dmitriy Ignatyev on 19/12/2025.
 //
 
 @_spi(PerfomanceTesting) import ErrorInfo

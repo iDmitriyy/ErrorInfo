@@ -1,13 +1,20 @@
 //
-//  ErrorInfo+ValueVariant.swift
+//  ErrorInfo+Optional.swift
 //  ErrorInfo
 //
 //  Created by Dmitriy Ignatyev on 24/11/2025.
 //
 
-// MARK: - Optional
+// MARK: - Equatable OptionalAnyValue
 
 extension ErrorInfo {
+  /// An internal, equatable wrapper for optional `ValueProtocol` existentials.
+  ///
+  /// Used by `ErrorInfo` to uniformly compare values when enforcing ``ValueDuplicatePolicy``.
+  /// Equality semantics:
+  /// - `.value(lhs)` equals `.value(rhs)` when the underlying `ValueProtocol` values are equal.
+  /// - `.nilInstance(T)` equals `.nilInstance(U)` only if `T == U`.
+  /// - `.value` never equals `.nilInstance`.
   @usableFromInline internal struct EquatableOptionalAnyValue: Sendable, Equatable, ErrorInfoOptionalRepresentable {
     @usableFromInline internal let maybeValue: OptionalAnyValue
     
@@ -41,9 +48,26 @@ extension ErrorInfo {
   }
 }
 
-// MARK: - MaybeValue
+// MARK: - OptionalAnyValue
 
 extension ErrorInfo {
+  /// A type‑erased optional container for `ErrorInfo` values.
+  ///
+  /// Represents either a concrete value (`.value`) or an explicit `nil` for a specific wrapped type (`.nilInstance`).
+  ///
+  /// - Note: The wrapped type of a `nil` instance is preserved for diagnostics and duplicate handling.
+  ///
+  /// # Example
+  /// ```swift
+  /// let a: ErrorInfo.OptionalAnyValue = .value(42 as Int)
+  /// let b: ErrorInfo.OptionalAnyValue = .nilInstance(typeOfWrapped: String.self)
+  ///
+  /// a.isNil  // false
+  /// b.isNil  // true
+  ///
+  /// b.getWrapped // 42
+  /// b.getWrapped // nil
+  /// ```
   public enum OptionalAnyValue: Sendable {
     case value(any ValueProtocol)
     case nilInstance(typeOfWrapped: any Sendable.Type)
@@ -71,4 +95,5 @@ extension ErrorInfo {
   }
 }
 
-// TBD: - add Custom(Debug)StringConvertible
+// TBD: - add DebugStringConvertible
+
