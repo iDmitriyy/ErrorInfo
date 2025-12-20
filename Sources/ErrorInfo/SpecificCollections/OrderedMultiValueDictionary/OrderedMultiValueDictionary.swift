@@ -75,13 +75,13 @@ extension OrderedMultiValueDictionary {
 // MARK: All Values For Key
 
 extension OrderedMultiValueDictionary {
-  internal func allValuesSlice(forKey key: Key) -> (some Sequence<Value>)? { // & ~Escapable
-    if let allValuesForKeyIndices = _keyToEntryIndices[key] {
-      ValuesForKeySlice(entries: _entries, valueIndices: allValuesForKeyIndices)
-    } else {
-      nil as Optional<ValuesForKeySlice>
-    }
-  }
+//  internal func allValuesSlice(forKey key: Key) -> (some Sequence<Value>)? { // & ~Escapable
+//    if let allValuesForKeyIndices = _keyToEntryIndices[key] {
+//      ValuesForKeySlice(entries: _entries, valueIndices: allValuesForKeyIndices)
+//    } else {
+//      nil as Optional<ValuesForKeySlice>
+//    }
+//  }
   
   internal func iterateAllValues(forKey key: Key, _ iteration: (Value) -> Void) {
     guard let indexSet = _keyToEntryIndices[key] else { return }

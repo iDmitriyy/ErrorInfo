@@ -30,6 +30,8 @@ protocol ErrorInfoOptionalRepresentable {
 }
 
 extension ErrorInfoOptionalRepresentable {
-//  @inlinable @inline(__always) var isNil: Bool { !isValue }
+  @inlinable
+  @inline(__always)
+  var isNil: Bool { !isValue }
 }
 

@@ -118,7 +118,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
     if insertIfEqual {
       _storage.append(key: key, value: newRecord, collisionSource: collisionSource())
     } else {
-      if let currentValues = _storage.allValuesSlice(forKey: key) {
+      if let currentValues = _storage.allValues(forKey: key) {
         // TODO: perfomace Test: _storage.containsValues(forKey:, where:) might be faster than allValuesSlice(forKey:).contains
         let isEqualToOneOfCurrent = currentValues.contains(where: { currentAnnotatedRecord in
           newRecord.someValue == currentAnnotatedRecord.record.someValue
