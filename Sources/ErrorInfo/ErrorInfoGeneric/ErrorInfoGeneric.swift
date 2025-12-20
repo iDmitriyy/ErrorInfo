@@ -8,11 +8,13 @@
 /// A generic container for error information with per‑key multi‑value support.
 ///
 /// `ErrorInfoGeneric` is used as a backing storage for `ErrorInfo` types. It preserves insertion order, tracks collisions, and can store multiple
-/// values per key. The generic `RecordValue` controls the stored value representation (e.g. an equatable optional or non-optional wrapper).
+/// values per key.
+/// The generic `RecordValue` controls the stored value representation (e.g. an optional-capable or non-optional wrapper).
+/// Duplicate handling based on equality is enabled only when `RecordValue` conforms to `Equatable`.
 ///
 /// - Key: Any `Hashable` (commonly `String`).
-/// - Value: `RecordValue` determines comparison semantics for duplicate handling.
-public struct ErrorInfoGeneric<Key: Hashable, RecordValue: Equatable>: Sequence {
+/// - Value: `RecordValue` determines comparison semantics for duplicate handling when it conforms to `Equatable`.
+public struct ErrorInfoGeneric<Key: Hashable, RecordValue>: Sequence {
   public typealias Element = (key: Key, value: AnnotatedRecord)
   public typealias AnnotatedRecord = CollisionAnnotatedRecord<Record>
   
@@ -57,8 +59,9 @@ extension ErrorInfoGeneric.Record: Sendable where RecordValue: Sendable {}
 
 // MARK: - Append KeyValue with all arguments passed explicitly
 
-extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
+extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepresentable {
   /// Adds a value for a key, handling optional preservation and duplicate policy.
+  /// - Availability: Only when `RecordValue` conforms to `Equatable`.
   ///
   /// - If `newValue` is `nil` and `preserveNilValues == true`, an explicit `nil` record is stored for `typeOfWrapped`.
   /// - If `duplicatePolicy == .rejectEqual`, equal values for the same key are skipped.
@@ -86,8 +89,9 @@ extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
   }
 }
 
-extension ErrorInfoGeneric {
-  /// Adds a some value (optional or not depending on generic context) for a key honoring the duplicate policy and collision source.
+extension ErrorInfoGeneric where RecordValue: Equatable {
+  /// Adds a value (optional or not depending on generic context) for a key, honoring the duplicate policy and collision source.
+  /// - Availability: Only when `RecordValue` conforms to `Equatable`.
   internal mutating func _add(key: Key,
                               keyOrigin: KeyOrigin,
                               someValue: RecordValue,
@@ -100,8 +104,9 @@ extension ErrorInfoGeneric {
   }
 }
 
-extension ErrorInfoGeneric {
+extension ErrorInfoGeneric where RecordValue: Equatable {
   /// Core insertion routine that enforces duplicate policy and tags collisions.
+  /// - Availability: Only when `RecordValue` conforms to `Equatable`.
   ///
   /// - If `insertIfEqual` is `false`, the new record is compared against existing values for the key using `RecordValue`'s `Equatable`.
   ///   The insertion is skipped when an equal value already exists.
@@ -115,8 +120,8 @@ extension ErrorInfoGeneric {
     } else {
       if let currentValues = _storage.allValuesSlice(forKey: key) {
         // TODO: perfomace Test: _storage.containsValues(forKey:, where:) might be faster than allValuesSlice(forKey:).contains
-        let isEqualToOneOfCurrent = currentValues.contains(where: { currentTaggedRecord in
-          newRecord.someValue == currentTaggedRecord.record.someValue
+        let isEqualToOneOfCurrent = currentValues.contains(where: { currentAnnotatedRecord in
+          newRecord.someValue == currentAnnotatedRecord.record.someValue
         })
         
         if isEqualToOneOfCurrent {
@@ -132,4 +137,3 @@ extension ErrorInfoGeneric {
 }
 
 // Improvement: ErrorInfoGeneric @_specialize(where Self == ...)
-

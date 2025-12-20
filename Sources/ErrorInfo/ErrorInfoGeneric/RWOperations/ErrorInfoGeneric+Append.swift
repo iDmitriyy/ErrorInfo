@@ -9,7 +9,7 @@ extension ErrorInfoGeneric {}
 
 // MARK: - Append
 
-extension ErrorInfoGeneric {
+extension ErrorInfoGeneric where RecordValue: Equatable {
   /// Instead of subscript overload with `String` key to prevent pollution of autocomplete for `ErronInfoLiteralKey` by tons of String methods.
   mutating func append(key: Key, keyOrigin: KeyOrigin, someValue newValue: RecordValue) {
     _add(key: key,
@@ -20,7 +20,7 @@ extension ErrorInfoGeneric {
   }
 }
 
-extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
+extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepresentable {
   mutating func append(key: Key,
                        keyOrigin: KeyOrigin,
                        optionalValue: RecordValue.Wrapped?,
@@ -40,7 +40,7 @@ extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
 
 // MARK: Append IfNotNil
 
-extension ErrorInfoGeneric {
+extension ErrorInfoGeneric where RecordValue: Equatable {
   mutating func appendIfNotNil(someValue: RecordValue?,
                                forKey key: Key,
                                keyOrigin: KeyOrigin,
@@ -55,7 +55,7 @@ extension ErrorInfoGeneric {
   }
 }
 
-extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
+extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepresentable {
   mutating func appendIfNotNil(optionalValue: RecordValue.Wrapped?,
                                typeOfWrapped: RecordValue.TypeOfWrapped,
                                forKey key: Key,

@@ -15,7 +15,7 @@ public enum KeyPathPrefixOption {
   case custom(_ name: String)
 }
 
-extension ErrorInfoGeneric where Key == String, RecordValue: ErrorInfoOptionalRepresentable {
+extension ErrorInfoGeneric where Key == String, RecordValue: Equatable & ErrorInfoOptionalRepresentable {
   mutating func _appendProperty<R, V>(of instance: R,
                                       keyPath: KeyPath<R, V>,
                                       keysPrefix: KeyPathPrefixOption?,

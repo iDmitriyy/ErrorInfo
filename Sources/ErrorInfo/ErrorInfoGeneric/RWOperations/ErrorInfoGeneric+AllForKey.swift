@@ -48,7 +48,7 @@ extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
 
 // MARK: - Replace All Records For Key
 
-extension ErrorInfoGeneric {
+extension ErrorInfoGeneric where RecordValue: Equatable {
   internal mutating func _replaceAllRecords(forKey key: Key,
                                             keyOrigin: KeyOrigin,
                                             bySomeValue newValue: RecordValue) -> ValuesForKey<RecordValue>? {
@@ -62,7 +62,7 @@ extension ErrorInfoGeneric {
   }
 }
 
-extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
+extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepresentable {
   internal mutating func _replaceAllRecords(forKey key: Key,
                                             keyOrigin: KeyOrigin,
                                             byNonNilValue newValue: RecordValue.Wrapped,
