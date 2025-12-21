@@ -21,6 +21,7 @@
 /// }
 /// ```
 public struct ValueDuplicatePolicy: Sendable {
+  @usableFromInline
   internal let insertIfEqual: Bool
   
   private init(insertIfEqual: Bool) {

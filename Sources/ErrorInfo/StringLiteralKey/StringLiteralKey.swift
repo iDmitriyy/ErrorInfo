@@ -41,7 +41,8 @@
 /// ```
 public struct StringLiteralKey: Hashable, Sendable, CustomStringConvertible, CustomDebugStringConvertible {
   /// A new instance initialized with `rawValue` will be equivalent to this instance.
-  @usableFromInline internal let rawValue: String
+  @usableFromInline
+  internal let rawValue: String
   
   public var description: String { rawValue }
     
@@ -53,6 +54,7 @@ public struct StringLiteralKey: Hashable, Sendable, CustomStringConvertible, Cus
     }
   }
   
+  @usableFromInline
   internal let keyOrigin: KeyOrigin
   
   private init(_combinedLiteralsString: String) {

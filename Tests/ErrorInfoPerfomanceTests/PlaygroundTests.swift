@@ -20,13 +20,23 @@ struct PlaygroundTests {
     infos.shuffle()
     
     let output = performMeasuredAction(count: count) {
-      for _ in 1...1_000 {
-        for infoIndex in infos.indices {
-          blackHole(infos[infoIndex].allKeys)
-        }
+//      var info = ErrorInfo()
+      for index in 1...1_000_000 {
+//        info.appendValue(index, forKey: "\(index)")
+//        for infoIndex in infos.indices {
+//          blackHole(infos[infoIndex].allKeys)
+//        }
+        
+        let info: ErrorInfo = ["key000000123": index,
+                               "key000000124": index,
+                               "key000000122": index,
+                               "key000000127": index,
+                               "key000000125": index]
+        blackHole(info)
       }
+//      blackHole(info)
     }
-    
+    // 0.0000030
     // .allKeys
     // __playground:  1117.44792
     // __playground:  971.86592
@@ -53,10 +63,8 @@ struct PlaygroundTests {
     // __playground:  829.90150 - inlined in GenericInfo
     // __playground:  368.27838 - inline OrderedMultipleValuesForKeyStorage
     
-    
     // startIndex
     // __playground:  136.69942
-    
     
     // Count
     // __playground:  276.77834
@@ -65,9 +73,6 @@ struct PlaygroundTests {
     // isEmpty
     // __playground:  274.04075
     // __playground:  132.46879
-    
-    
-    
     
     // __playground:  212.98750
     // __playground:  165.03579

@@ -52,6 +52,12 @@ extension ErrorInfoGeneric {
     public let keyOrigin: KeyOrigin
     public let someValue: RecordValue
     
+    @usableFromInline
+    internal init(keyOrigin: KeyOrigin, someValue: RecordValue) {
+      self.keyOrigin = keyOrigin
+      self.someValue = someValue
+    }
+    
     public var debugDescription: String {
       "keyOrigin: \(String(reflecting: keyOrigin)) someValue: \(String(reflecting: someValue))"
     }

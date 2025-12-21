@@ -34,10 +34,12 @@ extension ErrorInfo {
     @usableFromInline
     internal let maybeValue: OptionalValue
     
+    @usableFromInline
     static func value(_ value: ValueExistential) -> Self {
       Self(maybeValue: .value(value))
     }
     
+    @usableFromInline
     static func nilInstance(typeOfWrapped: any Sendable.Type) -> Self {
       Self(maybeValue: .nilInstance(typeOfWrapped: typeOfWrapped))
     }
