@@ -58,64 +58,6 @@ extension ErrorInfo {
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
-// MARK: Append reflecting Any Value
-
-extension ErrorInfo {
-  // DEFERRED: imp
-  // public mutating func appendValueString(reflecting newValue: (some Sendable)?, forKey literalKey: StringLiteralKey) {
-  //   if let newValue {
-  //     // there can be nested optional here
-  //   } else {
-  //     // add nil with Wrapped type
-  //   }
-  // }
-  
-  public mutating func appendValueString(reflecting newValue: (some Any)?, forKey literalKey: StringLiteralKey) {
-    _appendReflecting(anyValue: newValue, key: literalKey.rawValue, keyOrigin: literalKey.keyOrigin)
-  }
-  
-  /// Appends a value by storing its reflective string representation.
-  ///
-  /// Use this overload when the value does not conform to
-  /// `Sendable`, `Equatable`, or `CustomStringConvertible`, which are required
-  /// for values stored directly in `ErrorInfo`.
-  ///
-  /// The value is converted using `String(reflecting:)`, and the resulting
-  /// string is appended under the given key, allowing arbitrary values to be
-  /// recorded without additional conformances.
-  ///
-  /// If `newValue` is `nil`, a `nil` entry is appended according to the
-  /// current nil-preservation rules.
-  ///
-  /// - Parameters:
-  ///   - dynamicKey: The key under which to store the reflected value.
-  ///   - newValue: The value to reflect and append.
-  ///
-  /// ## Example
-  /// ```swift
-  /// struct NonConformingType { let id: Int }
-  ///
-  /// var info = ErrorInfo()
-  /// info.append(key: "payload", reflectingValue: NonConformingType(id: 42))
-  ///
-  /// // Stores: "NonConformingType(id: 42)"
-  /// ```
-  @_disfavoredOverload
-  public mutating func appendValueString(reflecting newValue: (some Any)?, forKey dynamicKey: String) {
-    _appendReflecting(anyValue: newValue, key: dynamicKey, keyOrigin: .dynamic)
-  }
-  
-  private mutating func _appendReflecting(anyValue newValue: (some Any)?,
-                                          key: String,
-                                          keyOrigin: KeyOrigin) {
-    let debugDescr = newValue.map { String(reflecting: $0) }
-    let optionalDecr = prettyDescriptionOfOptional(any: debugDescr) // TODO: extract wrapped type and append to nil
-    _singleKeyValuePairAppend(key: key, keyOrigin: keyOrigin, value: optionalDecr)
-  }
-}
-
-// ===-------------------------------------------------------------------------------------------------------------------=== //
-
 extension ErrorInfo {
   internal mutating func _singleKeyValuePairAppend(key: String,
                                                    keyOrigin: KeyOrigin,

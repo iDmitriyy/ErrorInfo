@@ -8,17 +8,17 @@
 // MARK: - Append KeyValues literal
 
 extension ErrorInfo {
-  public mutating func appendKeyValues(_ literal: KeyValuePairs<Key, Value>,
+  public mutating func appendKeyValues(_ dictionaryLiteral: KeyValuePairs<Key, Value>,
                                        file: StaticString = #fileID,
                                        line: UInt = #line) {
-    appendKeyValues(literal, collisionSource: .fileLine(file: file, line: line))
+    appendKeyValues(dictionaryLiteral, collisionSource: .fileLine(file: file, line: line))
   }
   
   /// Allows to append key-value pairs from Dictionary literal into the existing `ErrorInfo` instance.
   /// Collisions during appending are tracked with the `CollisionSource.onDictionaryConsumption` source.
   ///
   /// - Parameters:
-  ///   - literal: The key-value pairs to merge into the errorInfo.
+  ///   - dictionaryLiteral: The key-value pairs to merge into the errorInfo.
   ///   - origin: The source of the collision (default is `.fileLine()`).
   ///
   /// - Note:
@@ -33,9 +33,9 @@ extension ErrorInfo {
   ///   .request + .id = 3
   /// ])
   /// ```
-  public mutating func appendKeyValues(_ literal: KeyValuePairs<Key, Value>,
+  public mutating func appendKeyValues(_ dictionaryLiteral: KeyValuePairs<Key, Value>,
                                        collisionSource origin: @autoclosure () -> CollisionSource.Origin) {
-    _appendKeyValuesImp(_dictionaryLiteral: literal, collisionSource: .onDictionaryConsumption(origin: origin()))
+    _appendKeyValuesImp(_dictionaryLiteral: dictionaryLiteral, collisionSource: .onDictionaryConsumption(origin: origin()))
   }
 }
 
@@ -57,11 +57,11 @@ extension ErrorInfo {
              duplicatePolicy: .allowEqual,
              collisionSource: collisionSource())
       } else {
-        _addExistentialNil(key: literalKey.rawValue,
-                           keyOrigin: literalKey.keyOrigin,
-                           preserveNilValues: true,
-                           duplicatePolicy: .allowEqual,
-                           collisionSource: collisionSource())
+        _addNil(key: literalKey.rawValue,
+                keyOrigin: literalKey.keyOrigin,
+                typeOfWrapped: ValueExistential.self,
+                duplicatePolicy: .allowEqual,
+                collisionSource: collisionSource())
       }
     }
   }

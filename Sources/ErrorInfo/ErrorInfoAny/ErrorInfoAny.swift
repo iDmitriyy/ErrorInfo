@@ -9,7 +9,6 @@
 ///
 /// `ErrorInfoAny` is intended for codebases and modules that can’t yet adopt the strongly‑typed, `Sendable`
 /// ``ErrorInfo``. It accepts heterogeneous values (`Any`) while mirroring many of ``ErrorInfo``’s capabilities:
-///
 /// - Preserves insertion order
 /// - Supports multiple values per key
 /// - Tracks key origin and collision metadata (see ``KeyOrigin``)
