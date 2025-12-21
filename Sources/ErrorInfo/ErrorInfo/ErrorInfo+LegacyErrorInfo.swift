@@ -41,7 +41,7 @@ extension ErrorInfo {
     
     legacyUserInfo.forEach { key, value in
       let interpolatedValue = Self._castOrConvertToCompatible(legacyInfoValue: value)
-      let record = BackingStorage.Record(keyOrigin: .dynamic, someValue: .value(interpolatedValue))
+      let record = BackingStorage.Record(keyOrigin: .fromCollection, someValue: .value(interpolatedValue))
       _storage._addWithCollisionResolution(record: record,
                                            forKey: key,
                                            insertIfEqual: true, // no effect here, Swift.Dictionary has unique keys

@@ -60,7 +60,7 @@ extension ErrorInfo {
                                                 collisionSource collisionOrigin: CollisionSource.Origin) {
     for (dynamicKey, value) in sequence {
       _add(key: dynamicKey,
-           keyOrigin: .dynamic,
+           keyOrigin: .fromCollection,
            value: value,
            preserveNilValues: true, // has no effect here
            duplicatePolicy: duplicatePolicy,

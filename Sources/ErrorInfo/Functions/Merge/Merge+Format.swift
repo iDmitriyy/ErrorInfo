@@ -152,7 +152,7 @@ extension Merge.Format {
     public static let dynamic = Self(rawValue: 1 << 2)
     
     /// Keys mapped or modified after creation.
-    public static let modified = Self(rawValue: 1 << 3)
+    public static let modified = Self(rawValue: 1 << 4)
     
     /// Convenience that enables all origin kinds.
     public static let allOrigins: Self = [.literal, .keyPath, .dynamic, .modified]
@@ -161,8 +161,8 @@ extension Merge.Format {
     @inlinable internal func matches(keyOrigin: KeyOrigin) -> Bool {
       let mask: Self = switch keyOrigin {
       case .literalConstant, .combinedLiterals: .literal
-      case .dynamic: .dynamic
       case .keyPath: .keyPath
+      case .dynamic, .fromCollection: .dynamic
       case .unverifiedMapped, .modified: .modified
       }
       return contains(mask)

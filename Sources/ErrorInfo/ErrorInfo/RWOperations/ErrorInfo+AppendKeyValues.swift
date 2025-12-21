@@ -44,7 +44,7 @@ extension ErrorInfo {
 // MARK: - Imp
 
 extension ErrorInfo {
-  internal mutating func _appendKeyValuesImp(_dictionaryLiteral elements: some Collection<(key: Key, value: Value)>,
+  internal mutating func _appendKeyValuesImp(_dictionaryLiteral elements: some Collection<(key: StringLiteralKey, value: Value)>,
                                              collisionSource: @autoclosure () -> CollisionSource) {
     // Improvement: try reserve capacity. perfomance tests
     for (literalKey, value) in elements {

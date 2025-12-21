@@ -64,7 +64,7 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   // DEFERRED: imp
-  // public mutating func append(key _: StringLiteralKey, reflectingValue newValue: (some Sendable)?) {
+  // public mutating func appendValueString(reflectingValue newValue: (some Sendable)?, forKey literalKey: StringLiteralKey) {
   //   if let newValue {
   //     // there can be nested optional here
   //   } else {
@@ -72,7 +72,7 @@ extension ErrorInfo {
   //   }
   // }
   
-  public mutating func append(key literalKey: StringLiteralKey, reflectingValue newValue: (some Any)?) {
+  public mutating func appendValueString(reflecting newValue: (some Any)?, forKey literalKey: StringLiteralKey) {
     _appendReflecting(anyValue: newValue, key: literalKey.rawValue, keyOrigin: literalKey.keyOrigin)
   }
   
@@ -103,7 +103,7 @@ extension ErrorInfo {
   /// // Stores: "NonConformingType(id: 42)"
   /// ```
   @_disfavoredOverload
-  public mutating func append(key dynamicKey: String, reflectingValue newValue: (some Any)?) {
+  public mutating func appendValueString(reflecting newValue: (some Any)?, forKey dynamicKey: String) {
     _appendReflecting(anyValue: newValue, key: dynamicKey, keyOrigin: .dynamic)
   }
   

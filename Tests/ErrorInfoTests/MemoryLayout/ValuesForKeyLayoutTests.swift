@@ -25,6 +25,9 @@ struct ValuesForKeyLayoutTests {
     
     print("")
     
+    let recordLayout = MemoryLayout<ErrorInfo.BackingStorage.Record>.self
+    print(VariadicTuple(recordLayout.size, recordLayout.stride))
+    
     #expect(memoryLayout.stride == errorInfoValueTypeLayout.stride + arrayLayout.stride)
   }
 }
