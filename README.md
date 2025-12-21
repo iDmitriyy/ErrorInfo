@@ -39,21 +39,21 @@ The `ErrorInfo` library introduces a family of structured, type-safe, and `Senda
 
 ### Provided Types
 
-| Feature                    |        `ErrorInfo`        |     `LegacyErrorInfo`     | `[String: Any]` |
+| Feature                    |        `ErrorInfo`        |      `ErrorInfoAny `      |`[String: Any]`|
 |----------------------------|---------------------------|---------------------------|---------------|
-| Collision Resolution       | ✅ Yes (store all values) | ☑️ Yes (key augmentation) | ❌ No        |
-| Prevent implicit overwrite | ✅ No                     | ✅ No                     | ❌ Yes       |
+| Prevent implicit overwrite | ✅ Yes                    | ✅ Yes                    | ❌ No        |
+| Collision Resolution       | ✅ Yes                    | ✅ Yes                    | ❌ No        |
 | Prevent equal values       | ✅ Yes                    | ✅ Yes                    | －            |
 | Preserve nil values        | ✅ Yes                    | ✅ Yes                    | ❌ No        |
 | Collision source           | ✅ Yes                    | ✅ Yes                    | ❌ No        |
-| Type info                  | ✅ Yes                    | ✅ Yes                    | ❌ No        |
-| Merge                      | ✅ Yes                    | ☑️ Yes                    | 💥 Data loss |
-| Key transform              | ✅ Yes                    | ☑️ Yes                    | 💥 Data loss |
+| Key transforms             | ✅ Yes                    | ✅ Yes                    | 💥 Data loss |
+| Key origin                 | ✅ Yes                    | ✅ Yes                    | ❌ No        |
+| Merge                      | ✅ Yes                    | ✅ Yes                    | 💥 Data loss |
+| Ordered                    | ✅ Yes                    | ✅ Yes                    | ❌ No        |
 | Sendable                   | ✅ Yes                    | ❌ No                     | ❌ No        |
-| Ordered                    |    Yes                    |     No                     |    No        |
-| Type of Value              | `ErrorInfo.ValueExistential`  |            `Any`          |     `Any`     |
+| Type of Value              |`ErrorInfo.ValueExistential`|           `Any`           |     `Any`    |
 
-*`ErrorInfo.ValueExistential` is typeaias to `Sendable & Equatable & CustomStringConvertible`
+*`ErrorInfo.ValueExistential` is typeaias to `any Sendable & Equatable & CustomStringConvertible`
 
 This constraint ensures:
 - ✅ Thread Safety via Sendable
