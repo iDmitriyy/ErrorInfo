@@ -16,7 +16,7 @@ extension ErrorInfo {
          value: newValue,
          preserveNilValues: true,
          duplicatePolicy: .defaultForAppending,
-         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead
+         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
   }
   
   @available(*, deprecated, message: "for literal keys use subscript instead, append() is intended for dynamic keys)")
@@ -27,7 +27,7 @@ extension ErrorInfo {
          value: newValue,
          preserveNilValues: true,
          duplicatePolicy: .defaultForAppending,
-         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead
+         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
   }
 }
 
@@ -42,8 +42,7 @@ extension ErrorInfo {
     guard let value else { return }
     _singleKeyValuePairAppend(key: literalKey.rawValue,
                               keyOrigin: literalKey.keyOrigin,
-                              value: value,
-                              duplicatePolicy: duplicatePolicy)
+                              value: value)
   }
   
   @_disfavoredOverload
@@ -53,8 +52,7 @@ extension ErrorInfo {
     guard let value else { return }
     _singleKeyValuePairAppend(key: dynamicKey,
                               keyOrigin: .dynamic,
-                              value: value,
-                              duplicatePolicy: duplicatePolicy)
+                              value: value)
   }
 }
 
@@ -64,7 +62,7 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   // DEFERRED: imp
-  // public mutating func appendValueString(reflectingValue newValue: (some Sendable)?, forKey literalKey: StringLiteralKey) {
+  // public mutating func appendValueString(reflecting newValue: (some Sendable)?, forKey literalKey: StringLiteralKey) {
   //   if let newValue {
   //     // there can be nested optional here
   //   } else {
@@ -111,8 +109,8 @@ extension ErrorInfo {
                                           key: String,
                                           keyOrigin: KeyOrigin) {
     let debugDescr = newValue.map { String(reflecting: $0) }
-    let optionalSecr = prettyDescriptionOfOptional(any: debugDescr) // TODO: extract wrapped type and append to nil
-    _singleKeyValuePairAppend(key: key, keyOrigin: keyOrigin, value: optionalSecr, duplicatePolicy: .defaultForAppending)
+    let optionalDecr = prettyDescriptionOfOptional(any: debugDescr) // TODO: extract wrapped type and append to nil
+    _singleKeyValuePairAppend(key: key, keyOrigin: keyOrigin, value: optionalDecr)
   }
 }
 
@@ -121,13 +119,12 @@ extension ErrorInfo {
 extension ErrorInfo {
   internal mutating func _singleKeyValuePairAppend(key: String,
                                                    keyOrigin: KeyOrigin,
-                                                   value: some ValueProtocol,
-                                                   duplicatePolicy: ValueDuplicatePolicy) {
+                                                   value: some ValueProtocol) {
     _add(key: key,
          keyOrigin: keyOrigin,
          value: value,
          preserveNilValues: true, // has no effect in this func
-         duplicatePolicy: duplicatePolicy,
-         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead
+         duplicatePolicy: .defaultForAppending,
+         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
   }
 }

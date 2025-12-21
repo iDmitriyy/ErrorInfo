@@ -16,7 +16,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
          keyOrigin: keyOrigin,
          someValue: newValue,
          duplicatePolicy: .defaultForAppending,
-         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead
+         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
   }
 }
 
@@ -32,7 +32,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepre
          typeOfWrapped: typeOfWrapped,
          preserveNilValues: preserveNilValues,
          duplicatePolicy: .defaultForAppending,
-         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead
+         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
   }
 }
 
@@ -51,7 +51,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
          keyOrigin: keyOrigin,
          someValue: someValue,
          duplicatePolicy: duplicatePolicy,
-         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead
+         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
   }
 }
 
@@ -69,7 +69,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepre
          typeOfWrapped: typeOfWrapped,
          preserveNilValues: true, // has no effect in this func, unwrapped above
          duplicatePolicy: duplicatePolicy,
-         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead
+         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
   }
 }
 
