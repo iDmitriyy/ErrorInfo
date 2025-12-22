@@ -8,19 +8,6 @@
 // MARK: - Last For Key
 
 extension ErrorInfo {
-  /// extension ErrorInfo {
-  ///     /// Returns the last recorded entry including explicit nils.
-  ///     /// Use when you need legacy-like removal semantics.
-  ///     public func lastRecorded(forKey key: String) -> OptionalValue? {
-  ///         fullInfo(forKey: key)?.last?.value
-  ///     }
-  /// }
-  /// if let lastRecord = info.fullInfo(forKey: .url)?.last {
-  ///   switch lastRecord.value {
-  ///   case .value(let v): print("last value:", v)
-  ///   case .nilInstance: print("last write was a nil")
-  ///   }
-  /// }
   public func lastValue(forKey literalKey: StringLiteralKey) -> (ValueExistential)? {
     lastValue(forKey: literalKey.rawValue)
   }
@@ -29,6 +16,32 @@ extension ErrorInfo {
   
   public func lastValue(forKey dynamicKey: String) -> (ValueExistential)? {
     _storage.lastNonNilValue(forKey: dynamicKey)
+  }
+  
+  /// Returns the last recorded entry for the given key, including explicit or implicit `nil`.
+  ///
+  /// Use this when you need to audit the final write for a key.
+  /// For everyday reads of the latest meaningful value, prefer ``lastValue(forKey:)`` or the subscript.
+  ///
+  /// - Parameter dynamicKey: The key to look up.
+  /// - Returns: The last recorded ``ErrorInfo/OptionalValue`` (either `.value` or `.nilInstance`),
+  ///   or `nil` if the key has never been recorded.
+  ///
+  /// # Example
+  /// ```swift
+  /// var info = ErrorInfo()
+  /// info[.id] = 5
+  /// info[.id] = nil as Int?
+  ///
+  /// if let last = info.lastRecorded(forKey: .id) {
+  ///   switch last {
+  ///   case .value(let v): print("last value:", v)
+  ///   case .nilInstance: print("last write was an explicit nil")
+  ///   }
+  /// }
+  /// ```
+  public func lastRecorded(forKey dynamicKey: String) -> OptionalValue? {
+    fullInfo(forKey: dynamicKey)?.last.value
   }
 }
 
@@ -45,3 +58,4 @@ extension ErrorInfo {
     _storage.firstNonNilValue(forKey: dynamicKey)
   }
 }
+
