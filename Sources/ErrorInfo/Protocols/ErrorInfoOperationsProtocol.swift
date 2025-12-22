@@ -11,7 +11,7 @@ public import protocol InternalCollectionsUtilities._UniqueCollection
 /// Keeps documentation for common methods.
 ///
 /// This protocol provides essential methods for adding, retrieving, and manipulating error-related information in a strongly-typed, flexible collection.
-/// It allows multiple values (both `nil` and non-`nil`) to be associated with individual keys.
+/// It allows multiple values (both `nil` and `non-nil`) to be associated with individual keys.
 public protocol ErrorInfoOperationsProtocol where KeyType == String {
   associatedtype KeyType: Hashable
   associatedtype ValueExistential
@@ -70,12 +70,11 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   /// - Subscript is returning the last non‑nil value.
   ///   This matches how most callers read “the latest meaningful value” and prevents a trailing `nil`
   ///   from blanking useful context.
-  /// - Iteration and the firstValue/lastValue APIs already operate on non‑nil values;
+  /// - Iteration and the `lastValue` / `firstValue` APIs already operate on non‑nil values;
   ///   the subscript should remain consistent with that model for predictability and ergonomics.
   /// - Explicit `nil` is still preserved as a record for auditing and legacy‑style “removal” semantics.
-  ///   When you need to know that the last write was `nil`, use `fullInfo(forKey:)` or
-  ///   a convenience  `lastRecorded(forKey:)` to inspect the final record including `nil`
-  ///   and its provenance (``KeyOrigin``, ``CollisionSource``).
+  ///   When you need to know that the last write was `nil`, use `lastRecorded(forKey:)` or
+  ///   `fullInfo(forKey:)` to inspect the final record including `nil`.
   /// - This approach balances resilience (no silent loss of a good value due to a late `nil`)
   ///   with precision (you can still detect and reason about `nil` writes when you care).
   ///

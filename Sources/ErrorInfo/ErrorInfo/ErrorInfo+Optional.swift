@@ -8,7 +8,7 @@
 // MARK: - Equatable OptionalAnyValue
 
 extension ErrorInfo {
-  /// An internal, equatable wrapper for optional `ValueProtocol` existentials.
+  /// An internal, equatable wrapper for optional ``ErrorInfo.ValueProtocol`` existentials.
   ///
   /// Enables safe, predictable equality comparisons for ``ErrorInfo.OptionalValue`` ensuring
   /// type-safe equality, avoiding issues like type mismatches or undefined behavior.
@@ -19,9 +19,9 @@ extension ErrorInfo {
   /// Thats why optional value can not be casted as `any ValueProtocol`.
   /// There can exist an `Optional<any ValueProtocol>`, but once this optional
   /// unwrapped, we get `any ValueProtocol` existential, which by itself can not
-  /// contain another optional.
+  /// contain another optional inside.
   ///
-  /// Used by `ErrorInfo` to uniformly compare values when enforcing ``ValueDuplicatePolicy``.
+  /// Used by ``ErrorInfo`` to uniformly compare values when enforcing ``ValueDuplicatePolicy``.
   /// Equality semantics:
   /// - `.value(lhs)` equals `.value(rhs)` when the underlying `ValueProtocol` values are equal.
   /// - `.nilInstance(T)` equals `.nilInstance(U)` only if `T == U`.

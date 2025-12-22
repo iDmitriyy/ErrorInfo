@@ -7,7 +7,7 @@
 
 // MARK: - Pretty Description for Any & Optional<T>
 
-/// Returns a string representation of any value removing redundant `Optional( )` wrappers.
+/// Returns a string representation of an optional value removing redundant `Optional( )` wrappers from result string.
 ///
 /// It removes all occurrences of `Optional(...)` from the string representation, leaving only the unwrapped value.
 /// If the value is `nil`, it returns `"nil"`.
@@ -21,7 +21,7 @@
 /// unwrappedDescription(of: Optional("World") as Any)             // "World"
 /// ```
 ///
-/// - Parameter any: A value of any type, which may or may not be an optional.
+/// - Parameter any: A value of any type, which may or may not be `nil` or wrapped in multiple `Optional` layers.
 /// - Returns: A string representation of the unwrapped value, or `"nil"` if the value is `nil`.
 public func unwrappedDescription(of any: some Any) -> String {
   if let value = _specialize(any, for: String.self) { return value }
@@ -45,7 +45,7 @@ public func unwrappedDescription(of any: some Any) -> String {
   return isModified ? String(intermediate) : description
 } // inlining has no effect on perfomance
 
-/// Returns a string representation of an optional value removing redundant `Optional( )` wrappers.
+/// Returns a string representation of an optional value removing redundant `Optional( )` wrappers from result string.
 ///
 /// It removes all occurrences of `Optional(...)` from the string representation, leaving only the unwrapped value.
 /// If the value is `nil`, it returns `"nil"`.
@@ -53,9 +53,10 @@ public func unwrappedDescription(of any: some Any) -> String {
 ///
 /// # Example:
 /// ```swift
-/// unwrappedDescription(of: Optional(42))         // "42"
-/// unwrappedDescription(of: nil as Optional<Int>) // "nil"
-/// unwrappedDescription(of: Optional("Hello"))    // "Hello"
+/// unwrappedDescription(of: Optional(Optional(42))) as Any        // "42"
+/// unwrappedDescription(of: Optional<Optional<Int>>.none) as Any  // "nil"
+/// unwrappedDescription(of: "Hello" as Any)                       // "Hello"
+/// unwrappedDescription(of: Optional("World") as Any)             // "World"
 /// ```
 ///
 /// - Parameter any: An optional value of any type, which may or may not be `nil` or wrapped in multiple `Optional` layers.
