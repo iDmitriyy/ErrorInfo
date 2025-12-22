@@ -15,7 +15,7 @@ extension ErrorInfo {
   // if `address` is renamed in sources, then "address" literal alsso needed to be cnhaged manualy, which is not what we want.
   // Macro also closses the hole that valueName can be en empty string: .valueName(""). binding can not be empty
   
-  /// Appends properties from the given instance (struct, class...) to `ErrorInfo`, allowing you to specify key path prefix.
+  /// Appends values from key paths of an instance to `ErrorInfo`, optionally prefixing keys.
   ///
   /// This method allows you to append properties of an instance to the `ErrorInfo` storage,
   /// converting the specified key paths into strings.

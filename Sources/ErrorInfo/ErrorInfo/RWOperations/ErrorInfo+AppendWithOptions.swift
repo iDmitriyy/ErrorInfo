@@ -12,7 +12,7 @@
 extension ErrorInfo {
   // MARK: - Static initializer
   
-  /// Creates a new `ErrorInfo` and performs mutations inside a scoped options context.
+  /// Creates a new `ErrorInfo` in a scoped options context and performs mutations inside.
   /// The provided options can be overridden at the individual operation level (e.g., using subscripts or functions)..
   ///
   /// Use this when you want all operations in the `modify` closure to share the same defaults for
@@ -59,7 +59,8 @@ extension ErrorInfo {
                 modify: modify)
   }
   
-  /// Creates a new `ErrorInfo` and performs mutations inside a scoped options context.
+  /// Creates a new `ErrorInfo` in a scoped options context and performs mutations inside.
+  ///
   /// The provided options can be overridden at the individual operation level (e.g., using subscripts or functions)..
   ///
   /// Use this when you want all operations in the `modify` closure to share the same defaults for
@@ -103,7 +104,7 @@ extension ErrorInfo {
   
   // MARK: - Mutating methods
   
-  /// Mutates `self` by performing operations inside a scoped options context.
+  /// Mutates `self` in a scoped options context  by performing the given operations.
   /// The provided options can be overridden at the individual operation level (e.g., using subscripts or functions)..
   ///
   /// Use this when you want all operations in the `modify` closure to share the same defaults for
@@ -148,7 +149,7 @@ extension ErrorInfo {
                modify: modify)
   }
   
-  /// Mutates `self` by performing operations inside a scoped options context.
+  /// Mutates `self` in a scoped options context  by performing the given operations.
   /// The provided options can be overridden at the individual operation level (e.g., using subscripts or functions)..
   ///
   /// Use this when you want all operations in the `modify` closure to share the same defaults for

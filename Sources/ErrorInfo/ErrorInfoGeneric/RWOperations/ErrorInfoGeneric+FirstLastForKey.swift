@@ -16,15 +16,19 @@ extension ErrorInfoGeneric {
 
 extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
   func lastNonNilValue(forKey key: Key) -> RecordValue.Wrapped? {
-    guard let allRecordsForKey = _storage.allValues(forKey: key) else { return nil }
+    guard let annotatedRecords = _storage.allValues(forKey: key) else { return nil }
     
-    let reversedRecords: ReversedCollection<_> = allRecordsForKey.reversed()
-    for annotatedRecord in reversedRecords {
-      if let value = annotatedRecord.record.someValue.getWrapped {
-        return value
+    if let last = annotatedRecords.last.record.someValue.getWrapped { // fast path
+      return last
+    } else {
+      // ieration by indices.dropLast().reversed() is faster than iteration over allRecordsForKey.dropLast().reversed()
+      for index in annotatedRecords.indices.dropLast().reversed() {
+        if let value = annotatedRecords[index].record.someValue.getWrapped {
+          return value
+        }
       }
+      return nil
     }
-    return nil
   }
 }
 
@@ -41,13 +45,18 @@ extension ErrorInfoGeneric {
 
 extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
   func firstNonNilValue(forKey key: Key) -> RecordValue.Wrapped? {
-    guard let allRecordsForKey = _storage.allValues(forKey: key) else { return nil }
+    guard let annotatedRecords = _storage.allValues(forKey: key) else { return nil }
 
-    for annotatedRecord in allRecordsForKey {
-      if let value = annotatedRecord.record.someValue.getWrapped {
-        return value
+    if let first = annotatedRecords.first.record.someValue.getWrapped { // fast path
+      return first
+    } else {
+      // ieration by indices.dropFirst() is faster than iteration over allRecordsForKey.dropFirst()
+      for index in annotatedRecords.indices.dropFirst() {
+        if let value = annotatedRecords[index].record.someValue.getWrapped {
+          return value
+        }
       }
+      return nil
     }
-    return nil
   }
 }

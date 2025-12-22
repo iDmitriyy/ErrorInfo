@@ -83,7 +83,7 @@ extension ErrorInfo {
   /// }
   /// ```
   public func lastRecorded(forKey literalKey: StringLiteralKey) -> OptionalValue? {
-    fullInfo(forKey: literalKey)?.last.value
+    lastRecorded(forKey: literalKey.rawValue)
   }
   
   /// Returns the last recorded entry for the given key, including explicit or implicit `nil`.
@@ -111,7 +111,7 @@ extension ErrorInfo {
   /// }
   /// ```
   public func lastRecorded(forKey dynamicKey: String) -> OptionalValue? {
-    fullInfo(forKey: dynamicKey)?.last.value
+    _storage.lastSomeValue(forKey: dynamicKey)?.maybeValue
   }
 }
 

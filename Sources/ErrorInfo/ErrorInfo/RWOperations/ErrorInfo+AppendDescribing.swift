@@ -9,6 +9,7 @@
 // MARK: - Append describing
 
 extension ErrorInfo {
+  /// Appends the string produced by `String(describing:)` for the given value.
   public mutating func appendString<V: Sendable>(describing newValue: V?,
                                                  forKey literalKey: StringLiteralKey) {
     _appendStringOf(anySendableValue: newValue,
@@ -49,6 +50,7 @@ extension ErrorInfo {
 // MARK: - Append reflecting Any Value
 
 extension ErrorInfo {
+  /// Appends the string produced by `String(reflecting:)` for the given value.
   public mutating func appendString<V: Sendable>(reflecting newValue: V?,
                                                  forKey literalKey: StringLiteralKey) {
     _appendStringOf(anySendableValue: newValue,

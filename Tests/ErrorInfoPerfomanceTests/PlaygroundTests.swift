@@ -15,28 +15,60 @@ struct PlaygroundTests {
         
     var infos: [ErrorInfo] = []
     for index in 1...1000 {
-      infos.append([:]) // "": 10, "20": "AAAA"
+      infos.append(["20": nil as String?]) // "": 10, "20": "AAAA"
     }
     infos.shuffle()
     
     let output = performMeasuredAction(count: count) {
 //      var info = ErrorInfo()
-      for index in 1...1_000_000 {
-//        info.appendValue(index, forKey: "\(index)")
-//        for infoIndex in infos.indices {
-//          blackHole(infos[infoIndex].allKeys)
-//        }
-        
-        let info: ErrorInfo = ["key000000123": index,
-                               "key000000124": index,
-                               "key000000122": index,
-                               "key000000127": index,
-                               "key000000125": index]
-        blackHole(info)
+      for index in 1...1_000 {
+        for infoIndex in infos.indices {
+          blackHole(infos[infoIndex].lastRecorded(forKey: "20"))
+        }
       }
-//      blackHole(info)
     }
-    // 0.0000030
+    
+    // lastRecorded(forKey:) 1 value
+    // __playground:  1351.15592 imp fullInfo(forKey:
+    // __playground:  934.76617 imp firstSomeValue(forKey:
+    
+    // lastRecorded(forKey:) 2 values
+    // __playground:  4387.46592 imp fullInfo(forKey:
+    // __playground:  3034.21750 imp firstSomeValue(forKey:
+    
+    // firstValue(forKey:) 1 value
+    // __playground:  1923.99688 allRecordsForKey iteration
+    // __playground:  1328.89642 allRecordsForKey.indices
+    // __playground:  1118.80925 – fast path with if let without for loop
+    
+    // firstValue(forKey:) 2 values (value at start)
+    // __playground:  3390.59883 allRecordsForKey iteration
+    // __playground:  3033.20338 allRecordsForKey.indices
+    // __playground:  2980.96275 – fast path with if let without for loop
+    
+    // firstValue(forKey:) 2 values (nil at start)
+    // __playground:  4220.67258 allRecordsForKey iteration
+    // __playground:  3628.39821 allRecordsForKey.indices
+    // __playground:  3620.53942 – fast path with if let without for loop
+    
+    
+    // lastValue(forKey:) 1 value
+    // __playground:  2418.18941 allRecordsForKey.reversed()
+    // __playground:  1326.62396 allRecordsForKey.indices.reversed()
+    // __playground:  1114.40604 __playground:  1118.80925
+    
+    // lastValue(forKey:) 2 values (value at end)
+    // __playground:  3674.42858 allRecordsForKey.reversed()
+    // __playground:  3011.19642 allRecordsForKey.indices.reversed()
+    // __playground:  2919.35504 – fast path with if let without for loop
+    
+    // lastValue(forKey:) 2 values (nil at end)
+    // __playground:  4200.32629 allRecordsForKey.reversed()
+    // __playground:  3470.00304 allRecordsForKey.indices.reversed()
+    // __playground:  3513.45225 – fast path with if let without for loop
+    
+    
+    
     // .allKeys
     // __playground:  1117.44792
     // __playground:  971.86592
