@@ -9,7 +9,7 @@
 ///
 /// Conforming types represent either a concrete value (`Wrapped`) or a typed
 /// `nil` that preserves the intended wrapped type (`TypeOfWrapped`). This lets
-/// higher-level APIs filter non-nil values while keeping type information for
+/// higher-level APIs filter `non-nil` values while keeping type information for
 /// missing values.
 protocol ErrorInfoOptionalRepresentable {
   /// The underlying non-optional value type.

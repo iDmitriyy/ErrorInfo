@@ -16,7 +16,7 @@ extension ErrorInfo {
   /// The provided options can be overridden at the individual operation level (e.g., using subscripts or functions)..
   ///
   /// Use this when you want all operations in the `modify` closure to share the same defaults for
-  /// duplicate handling, nil preservation and key prefixing.
+  /// duplicate handling, `nil` preservation and key prefixing.
   ///
   /// This convenience overload records the call site (`#fileID`, `#line`) as the collision origin for operations
   /// executed within the scope.
@@ -36,12 +36,12 @@ extension ErrorInfo {
   /// # Example:
   /// ```swift
   /// let info = ErrorInfo.withOptions(preserveNilValues: false) {
-  ///   // Global option preserveNilValues = false, nil values are ignored
+  ///   // Global option preserveNilValues = false, `nil` values are ignored
   ///   $0["age"] = 30 as Int?
-  ///   $0["email"] = nil as String? // ignored because preserveNilValues == false
+  ///   $0["email"] = `nil` as String? // ignored because preserveNilValues == false
   ///
-  ///   // Override on a per-operation basis: preserve nil values
-  ///   0["username", preserveNilValues: true] = nil as String?
+  ///   // Override on a per-operation basis: preserve `nil` values
+  ///   0["username", preserveNilValues: true] = `nil` as String?
   /// }
   ///
   /// // info now contains: ["age": 30, "username": nil]
@@ -64,7 +64,7 @@ extension ErrorInfo {
   /// The provided options can be overridden at the individual operation level (e.g., using subscripts or functions)..
   ///
   /// Use this when you want all operations in the `modify` closure to share the same defaults for
-  /// duplicate handling, nil preservation and key prefixing.
+  /// duplicate handling, `nil` preservation and key prefixing.
   ///
   /// - Parameters:
   ///   - duplicatePolicy: How to handle equal values for the same key. Defaults to ``ValueDuplicatePolicy/defaultForAppending``.
@@ -78,11 +78,11 @@ extension ErrorInfo {
   /// # Example:
   /// ```swift
   /// let info = ErrorInfo.withOptions(preserveNilValues: false) {
-  ///   // Global option preserveNilValues = false, nil values are ignored
+  ///   // Global option preserveNilValues = false, `nil` values are ignored
   ///   $0["age"] = 30 as Int?
   ///   $0["email"] = nil as String? // ignored because preserveNilValues == false
   ///
-  ///   // Override on a per-operation basis: preserve nil values
+  ///   // Override on a per-operation basis: preserve `nil` values
   ///   0["username", preserveNilValues: true] = nil as String?
   /// }
   ///
@@ -108,7 +108,7 @@ extension ErrorInfo {
   /// The provided options can be overridden at the individual operation level (e.g., using subscripts or functions)..
   ///
   /// Use this when you want all operations in the `modify` closure to share the same defaults for
-  /// duplicate handling, nil preservation and key prefixing.
+  /// duplicate handling, `nil` preservation and key prefixing.
   ///
   /// This convenience overload records the call site (`#fileID`, `#line`) as the collision origin for operations
   /// executed within the scope.
@@ -126,11 +126,11 @@ extension ErrorInfo {
   /// # Example:
   /// ```swift
   /// let info = ErrorInfo.withOptions(preserveNilValues: false) {
-  ///   // Global option preserveNilValues = false, nil values are ignored
+  ///   // Global option preserveNilValues = false, `nil` values are ignored
   ///   $0["age"] = 30 as Int?
   ///   $0["email"] = nil as String? // ignored because preserveNilValues == false
   ///
-  ///   // Override on a per-operation basis: preserve nil values
+  ///   // Override on a per-operation basis: preserve `nil` values
   ///   0["username", preserveNilValues: true] = nil as String?
   /// }
   ///
@@ -153,7 +153,7 @@ extension ErrorInfo {
   /// The provided options can be overridden at the individual operation level (e.g., using subscripts or functions)..
   ///
   /// Use this when you want all operations in the `modify` closure to share the same defaults for
-  /// duplicate handling, nil preservation and key prefixing.
+  /// duplicate handling, `nil` preservation and key prefixing.
   ///
   /// - Parameters:
   ///   - duplicatePolicy: How to handle equal values for the same key. Defaults to ``ValueDuplicatePolicy/defaultForAppending``.
@@ -165,11 +165,11 @@ extension ErrorInfo {
   /// # Example:
   /// ```swift
   /// let info = ErrorInfo.withOptions(preserveNilValues: false) {
-  ///   // Global option preserveNilValues = false, nil values are ignored
+  ///   // Global option preserveNilValues = false, `nil` values are ignored
   ///   $0["age"] = 30 as Int?
   ///   $0["email"] = nil as String? // ignored because preserveNilValues == false
   ///
-  ///   // Override on a per-operation basis: preserve nil values
+  ///   // Override on a per-operation basis: preserve `nil` values
   ///   0["username", preserveNilValues: true] = nil as String?
   /// }
   ///

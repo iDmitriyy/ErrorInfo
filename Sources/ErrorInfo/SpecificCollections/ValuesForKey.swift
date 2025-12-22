@@ -143,10 +143,10 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
     }
   }
     
-  /// Returns a new `ValuesForKey` instance containing only the non-nil results of applying the transformation closure.
+  /// Returns a new `ValuesForKey` instance containing only the `non-nil` results of applying the transformation closure.
   ///
   /// - Parameter transform: A closure that transforms each element into an optional value.
-  /// - Returns: A new `ValuesForKey` instance containing only the non-nil transformed
+  /// - Returns: A new `ValuesForKey` instance containing only the `non-nil` transformed
   /// elements, or `nil` if no valid elements are left.
   @inlinable
   internal func _compactMap<U>(_ transform: (Value) -> U?) -> ValuesForKey<U>? {

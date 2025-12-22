@@ -7,7 +7,8 @@
 
 public import protocol InternalCollectionsUtilities._UniqueCollection
 
-/// A protocol that defines the operations for managing key-value pairs in an `ErrorInfo`. Keeps documentation for common methods.
+/// A protocol that defines the operations for managing key-value pairs in `ErrorInfo` types that are able to preserve nil values.
+/// Keeps documentation for common methods.
 ///
 /// This protocol provides essential methods for adding, retrieving, and manipulating error-related information in a strongly-typed, flexible collection.
 /// It allows multiple values (both `nil` and non-`nil`) to be associated with individual keys.
@@ -31,36 +32,64 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
     
   // MARK: - Subscript
   
-  /// A restricted subscript used to warn against removing values by mistake.
+  // MARK: User Guidance Subscript
+  
+  /// A guidance-only subscript that prevents accidental removal by `nil` literal assignment.
   ///
-  /// - Note:
-  /// It is needed to warn users when they try to pass a nil literal, like `info["key"] = nil`
+  /// This subscript exists to catch patterns like `info["key"] = nil`, which can look like
+  /// “remove the value” in dictionaries. In `ErrorInfo`, removal is explicit and
+  /// `nil` can be recorded as a meaningful entry. Use dedicated removal APIs instead.
   ///
-  /// - Deprecated: This subscript is deprecated and will show a warning if used. To remove values, use `removeValue(forKey:)`.
-  /// - Unavailable: This subscript cannot be used for getting or setting values. Use `removeValue(forKey:)` to remove a value.
+  /// - Get: Unavailable.
+  /// - Set: Deprecated. Use ``removeAllRecords(forKey:)`` (or other explicit removal APIs) instead.
+  ///
+  /// Rationale: Keeping removal explicit avoids silent loss of earlier context and aligns with
+  /// `ErrorInfo`’s multi-record model.
   @_disfavoredOverload
-  subscript(_: StringLiteralKey) -> InternalRestrictionToken? {
-    @available(*, unavailable, message: "This is a stub subscript. To remove value use removeValue(forKey:) function")
+  subscript(unavailable _: StringLiteralKey) -> Never? {
+    @available(*, unavailable, message: "This is a set-only subscript for guidance.")
     get
     
-    @available(*, deprecated, message: "To remove value use removeValue(forKey:) function")
+    @available(*, deprecated, message: "To remove value use removeAllRecords(forKey:) function")
     set
   }
   
-  /// Returns the last value associated with the given literal key.
+  // MARK: Last Value for Key Subscript
+  
+  /// Returns the last non‑nil value associated with the given literal key.
   ///
-  /// - Returns: The last value associated with key, or `nil` if no value is found.
+  /// This subscript is the ergonomic read path and surfaces the latest meaningful value.
+  /// Explicit `nil` entries are preserved for auditing but are skipped here. Use
+  /// ``lastRecorded(forKey:)`` or ``fullInfo(forKey:)``  to inspect the last
+  /// recorded entry including `nil`, its ``KeyOrigin``, and ``CollisionSource``.
   ///
-  /// - Note:
-  /// Use `allValues(forKey:)` if you need to access all values for a key.
+  /// ## Rationale:
+  /// From a usability standpoint, the subscript is the ergonomic read path and should surface the last meaningful value by default.
+  /// ErrorInfo intentionally separates “removal” from “explicitly recorded `nil`” so you don’t accidentally lose a meaningful prior value.
+  /// Returning `nil` just because a later stage wrote a `nil` would reintroduce the classic “silent overwrite” pitfall ``ErrorInfo`` is trying to avoid.
+  /// - Subscript is returning the last non‑nil value.
+  ///   This matches how most callers read “the latest meaningful value” and prevents a trailing `nil`
+  ///   from blanking useful context.
+  /// - Iteration and the firstValue/lastValue APIs already operate on non‑nil values;
+  ///   the subscript should remain consistent with that model for predictability and ergonomics.
+  /// - Explicit `nil` is still preserved as a record for auditing and legacy‑style “removal” semantics.
+  ///   When you need to know that the last write was `nil`, use `fullInfo(forKey:)` or
+  ///   a convenience  `lastRecorded(forKey:)` to inspect the final record including `nil`
+  ///   and its provenance (``KeyOrigin``, ``CollisionSource``).
+  /// - This approach balances resilience (no silent loss of a good value due to a late `nil`)
+  ///   with precision (you can still detect and reason about `nil` writes when you care).
   ///
-  /// # Example:
+  /// - Parameter literalKey: The literal key to read.
+  /// - Returns: The last non‑nil value for the key, or `nil` if none exists.
+  ///
+  /// # Example
   /// ```swift
   /// var info = ErrorInfo()
   /// info[.id] = 5
   /// info[.id] = 6
+  /// info[.id] = nil as Int?
   ///
-  /// let id = errorInfo[.id] as? Int // returns 6
+  /// info[.id] // 6
   /// ```
   subscript(_ literalKey: StringLiteralKey) -> (ValueExistential)? { get }
   
@@ -93,7 +122,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
     
   // MARK: - All ForKey
   
-  /// Returns all non-nil values associated with a given key in the `ErrorInfo` storage.
+  /// Returns all `non-nil` values associated with a given key in the `ErrorInfo` storage.
   ///
   /// This method retrieves all values associated with the specified key, returning them as a sequence.
   ///
@@ -113,7 +142,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   /// ```
   func allValues(forKey literalKey: StringLiteralKey) -> ValuesForKey<ValueExistential>?
   
-  /// Returns all non-nil values associated with a given key in the `ErrorInfo` storage.
+  /// Returns all `non-nil` values associated with a given key in the `ErrorInfo` storage.
   ///
   /// This method retrieves all values associated with the specified key, returning them as a sequence.
   ///
@@ -140,7 +169,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   
   // MARK: Last For Key
   
-  /// Returns the last non-nil value associated with the given literal key.
+  /// Returns the last `non-nil` value associated with the given literal key.
   ///
   /// - Returns: The last value associated with key, or `nil` if no value is found.
   ///
@@ -160,11 +189,11 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   
   // MARK: First For Key
   
-  /// Returns the first non-nil value associated with the given key.
+  /// Returns the first `non-nil` value associated with the given key.
   ///
   /// - Parameter literalKey: The key to look up in the `ErrorInfo` storage.
   ///
-  /// - Returns: The first non-nil value associated with the key, or `nil` if no such value exists.
+  /// - Returns: The first `non-nil` value associated with the key, or `nil` if no such value exists.
   ///
   /// # Example:
   /// ```swift
@@ -184,11 +213,11 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   
   // MARK: - KeyValue Lookup
   
-  /// Checks whether the key is associated with at least one non-nil value.
+  /// Checks whether the key is associated with at least one `non-nil` value.
   ///
   /// - Parameter literalKey: The key to search for in the `ErrorInfo` storage.
   ///
-  /// - Returns: `true` if there is at least one non-nil value for the given key; otherwise, `false`.
+  /// - Returns: `true` if there is at least one `non-nil` value for the given key; otherwise, `false`.
   ///
   /// # Example:
   /// ```swift
@@ -202,11 +231,11 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   /// ```
   func hasValue(forKey literalKey: StringLiteralKey) -> Bool
   
-  /// Checks whether the key is associated with at least one non-nil value.
+  /// Checks whether the key is associated with at least one `non-nil` value.
   ///
   /// - Parameter key: The key to search for in the `ErrorInfo` storage.
   ///
-  /// - Returns: `true` if there is at least one non-nil value for the given key; otherwise, `false`.
+  /// - Returns: `true` if there is at least one `non-nil` value for the given key; otherwise, `false`.
   ///
   /// # Example:
   /// ```swift
@@ -223,7 +252,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   
   // MARK: Has Multiple Records For Key
   
-  /// Checks if the key is associated with multiple values (both non-nil and nil) in the `ErrorInfo` storage.
+  /// Checks if the key is associated with multiple values (both `non-nil` and `nil`) in the `ErrorInfo` storage.
   ///
   /// - Parameter literalKey: The key to search for in the `ErrorInfo` storage.
   ///
@@ -240,7 +269,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   /// ```
   func hasMultipleRecords(forKey literalKey: StringLiteralKey) -> Bool
   
-  /// Checks if the key is associated with multiple values (both non-nil and nil) in the `ErrorInfo` storage.
+  /// Checks if the key is associated with multiple values (both `non-nil` and `nil`) in the `ErrorInfo` storage.
   ///
   /// - Parameter key: The key to search for in the `ErrorInfo` storage.
   ///
@@ -293,7 +322,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   ///
   /// let result = errorInfo.keyValueLookupResult(forKey: .id)
   /// // Returns .multipleRecords(valuesCount: 1, nilCount: 1)
-  /// // because one value is non-nil and one is nil.
+  /// // because one value is `non-nil` and one is nil.
   /// ```
   func keyValueLookupResult(forKey literalKey: StringLiteralKey) -> KeyValueLookupResult
   
@@ -314,7 +343,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   ///
   /// let result = errorInfo.keyValueLookupResult(forKey: "id")
   /// // Returns .multipleRecords(valuesCount: 1, nilCount: 1)
-  /// // because one value is non-nil and one is nil.
+  /// // because one value is `non-nil` and one is nil.
   /// ```
   ///
   @_disfavoredOverload
@@ -336,7 +365,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   
   // MARK: - RemoveAll ForKey
   
-  /// Removes all records associated with the specified key and returns the removed non-nil values
+  /// Removes all records associated with the specified key and returns the removed `non-nil` values
   /// as a sequence.
   ///
   /// - Parameter literalKey: The key for which the records should be removed.
@@ -360,7 +389,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   @discardableResult
   mutating func removeAllRecords(forKey literalKey: StringLiteralKey) -> ValuesForKey<ValueExistential>?
   
-  /// Removes all records associated with the specified key and returns the removed non-nil values
+  /// Removes all records associated with the specified key and returns the removed `non-nil` values
   /// as a sequence.
   ///
   /// - Parameter dynamicKey: The key for which the records should be removed.
@@ -390,7 +419,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   // MARK: - ReplaceAll ForKey
   
   /// Removes all existing records associated with the specified key and replaces them with
-  /// a new value, returning the removed non-nil values as a sequence.
+  /// a new value, returning the removed `non-nil` values as a sequence.
   ///
   /// - Parameters:
   ///   - literalKey: The key for which the records should be replaced.
@@ -416,7 +445,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
                                   by newValue: ValueExistential) -> ValuesForKey<ValueExistential>?
   
   /// Removes all existing records associated with the specified key and replaces them with
-  /// a new value, returning the removed non-nil values as a sequence.
+  /// a new value, returning the removed `non-nil` values as a sequence.
   ///
   /// - Parameters:
   ///   - dynamicKey: The key for which the records should be replaced.
@@ -441,4 +470,27 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   @discardableResult
   mutating func replaceAllRecords(forKey dynamicKey: KeyType,
                                   by newValue: ValueExistential) -> ValuesForKey<ValueExistential>?
+}
+
+extension ErrorInfoOperationsProtocol {
+  /// A guidance-only subscript that prevents accidental removal by `nil` literal assignment.
+  ///
+  /// This subscript exists to catch patterns like `info["key"] = nil`, which can look like
+  /// “remove the value” in dictionaries. In `ErrorInfo`, removal is explicit and
+  /// `nil` can be recorded as a meaningful entry. Use dedicated removal APIs instead.
+  ///
+  /// - Get: Unavailable.
+  /// - Set: Deprecated. Use ``removeAllRecords(forKey:)`` (or other explicit removal APIs) instead.
+  ///
+  /// Rationale: Keeping removal explicit avoids silent loss of earlier context and aligns with
+  /// `ErrorInfo`’s multi-record model.
+  @_disfavoredOverload
+  public subscript(unavailable _: StringLiteralKey) -> Never? {
+    @available(*, unavailable,
+                message: "This is a set-only subscript for guidance.")
+    get { nil }
+    
+    @available(*, deprecated, message: "To remove value use removeAllRecords(forKey:) function.")
+    set {}
+  }
 }

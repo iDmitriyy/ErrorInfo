@@ -33,7 +33,7 @@ extension ErrorInfo {
 //    // proof of concept for now
 //    
 //    // TODO: - proper implementation
-//    // nil options
+//    // `nil` options
 //    // keyOrigin, collision, prefix
 //    
 //    let valueTransform: (CollisionTaggedValue<ErrorInfo.OptionalAnyValue, CollisionSource>) -> AnyEncodableSingleValue = { optionalValue in

@@ -48,7 +48,7 @@ struct isEqualAnyTests {
     // nil instances are useful for debugging and logging, to inspect is there collisions happen.
     // From this perspective nil instances of different types, and different optional nesting levels particulary, are different
     // things.
-    // From the other side, it is felt naturaly that nil instances are compared the same way optional non-nil values – not matter
+    // From the other side, it is felt naturaly that nil instances are compared the same way optional ``non-nil`` values – not matter
     // how many nsting levels there are, they are equal if their underlying wrapped values are equal. From this point of view
     // 2 nil instances are equal if the Wrapped Type is equal. Mentally it is the same as flattening to a single level of
     // optionality.

@@ -42,7 +42,7 @@
 ///
 /// **Typical pitfalls solved**:
 /// - Overwrite hides the root cause: keep a chain of records; read `.last` for the final state or `.first` for the earliest cause.
-/// - Nil wipes prior context: explicit `nil` is recorded (with wrapped type) without discarding earlier non‑nil entries.
+/// - `nil` wipes prior context: explicit `nil` is recorded (with wrapped type) without discarding earlier non‑nil entries.
 /// - No provenance during merges: collisions are annotated with ``CollisionSource`` so you can see where later writes came from.
 /// - Duplicate spam: reject equal values with ``ValueDuplicatePolicy/rejectEqual`` while still admitting meaningful changes.
 /// - Inconsistent key origins: ``KeyOrigin`` captures whether keys are literal, dynamic, keyPath, or transformed for clearer logs.

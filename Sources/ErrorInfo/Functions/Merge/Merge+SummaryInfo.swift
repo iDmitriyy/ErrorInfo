@@ -391,7 +391,7 @@ extension Merge._Summary {
     }
     
     // 4. Append components in one tight loop.
-    // In most cases all components are nil (as they are typically added when collision happen)
+    // In most cases all components are `nil` (as they are typically added when collision happen)
     var needsSeparator = false // no separator is needed before first component
     for currentComponentKind in exhaustiveOrder {
       let component: String? = switch currentComponentKind {
@@ -404,7 +404,7 @@ extension Merge._Summary {
         if needsSeparator {
           recipient.append(annotationsFormat.annotationsDelimiters.componentsSeparator)
         } else {
-          needsSeparator = true // when first non-nil component appears, toggle to true for next components
+          needsSeparator = true // when first `non-nil` component appears, toggle to true for next components
         }
         
         if let componentName = makeName(currentComponentKind) {

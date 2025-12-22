@@ -22,7 +22,7 @@ public struct TypeInfoOptions: OptionSet, Sendable { // add tests
   /// If chosen, any oher options are ignore.
   public static let never = TypeInfoOptions([])
   
-  /// Wrapped type of optional nil value.
+  /// Wrapped type of optional `nil` value.
   /// Imlicitly means `allTypes`, if more narrow category of types is not provided.
   public static let whenNil = TypeInfoOptions(rawValue: 1 << 0)
     

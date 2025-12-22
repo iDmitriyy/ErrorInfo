@@ -18,7 +18,7 @@ extension ErrorInfo: Sequence {
     @inlinable
     @inline(__always)
     public mutating func next() -> Element? {
-      // It works like `.compacted()`, skipping all nil values
+      // It works like `.compacted()`, skipping all `nil` values
       while let (key, annotated) = base.next() {
         let record = annotated.record
         if let value = record.someValue.getWrapped {

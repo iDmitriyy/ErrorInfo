@@ -10,7 +10,7 @@
 /// https://forums.swift.org/t/runtime-casts-of-sendable-type-to-another-sendable-type-not-possible/82070/2
 ///
 /// # WARNING
-/// The code below will return non nil value, and nonSendable is succesfuly casted.
+/// The code below will return `non-nil` value, and nonSendable is succesfuly casted.
 /// Use when value is known to be Sendable.
 /// ```swift
 /// let nonSendable = NonSendable()

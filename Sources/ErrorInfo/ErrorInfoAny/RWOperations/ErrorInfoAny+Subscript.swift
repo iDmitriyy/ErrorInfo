@@ -5,18 +5,7 @@
 //  Created by Dmitriy Ignatyev on 17/12/2025.
 //
 
-extension ErrorInfoAny {
-  // MARK: - User Guidance Subscript
-  
-  @_disfavoredOverload
-  public subscript(_: StringLiteralKey) -> InternalRestrictionToken? {
-    @available(*, unavailable, message: "To remove value use removeValue(forKey:) function")
-    get { nil }
-    
-    @available(*, deprecated, message: "To remove value use removeValue(forKey:) function")
-    set {}
-  }
-  
+extension ErrorInfoAny {  
   // MARK: - Read access Subscript
   
   public subscript(_ literalKey: StringLiteralKey) -> (ValueExistential)? {

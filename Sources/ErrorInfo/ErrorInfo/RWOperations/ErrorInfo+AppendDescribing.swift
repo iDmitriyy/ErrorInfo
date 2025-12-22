@@ -126,7 +126,7 @@ extension ErrorInfo {
       
     case .nilInstance(let typeOfWrapped):
       let nilDescription = "nil (\(typeOfWrapped))"
-      // TBD: idealy it is good to store explicit nil instance (case .nilInstance(typeOfWrapped:))
+      // TBD: idealy it is good to store explicit `nil` instance (case .nilInstance(typeOfWrapped:))
       // instead of nilDecription string.
       // However, this will require OptionalValue store `any Any.Type` instead of `any Sendable.Type` in case .nilInstance
       _add(key: key,
