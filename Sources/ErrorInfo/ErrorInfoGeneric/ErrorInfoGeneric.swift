@@ -103,7 +103,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepre
 
     _addWithCollisionResolution(record: Record(keyOrigin: keyOrigin, someValue: optional),
                                 forKey: key,
-                                insertIfEqual: duplicatePolicy.insertIfEqual,
+                                duplicatePolicy: duplicatePolicy,
                                 collisionSource: collisionSource())
   }
 }
@@ -118,7 +118,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
                               collisionSource: @autoclosure () -> CollisionSource) {
     _addWithCollisionResolution(record: Record(keyOrigin: keyOrigin, someValue: someValue),
                                 forKey: key,
-                                insertIfEqual: duplicatePolicy.insertIfEqual,
+                                duplicatePolicy: duplicatePolicy,
                                 collisionSource: collisionSource())
   }
 }
@@ -132,9 +132,9 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
   /// - Otherwise the record is always appended.
   internal mutating func _addWithCollisionResolution(record newRecord: Record,
                                                      forKey key: Key,
-                                                     insertIfEqual: Bool,
+                                                     duplicatePolicy: ValueDuplicatePolicy,
                                                      collisionSource: @autoclosure () -> CollisionSource) {
-    if insertIfEqual {
+    if duplicatePolicy.insertIfEqual {
       _storage.append(key: key, value: newRecord, collisionSource: collisionSource())
     } else {
       if let currentValues = _storage.allValues(forKey: key) {

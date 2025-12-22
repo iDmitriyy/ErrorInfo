@@ -154,7 +154,7 @@ extension ErrorInfo {
     
     _storage._addWithCollisionResolution(record: BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
                                          forKey: key,
-                                         insertIfEqual: duplicatePolicy.insertIfEqual,
+                                         duplicatePolicy: duplicatePolicy,
                                          collisionSource: collisionSource())
   }
   
@@ -182,7 +182,7 @@ extension ErrorInfo {
     
     _storage._addWithCollisionResolution(record: BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
                                          forKey: key,
-                                         insertIfEqual: duplicatePolicy.insertIfEqual,
+                                         duplicatePolicy: duplicatePolicy,
                                          collisionSource: collisionSource())
   }
 }

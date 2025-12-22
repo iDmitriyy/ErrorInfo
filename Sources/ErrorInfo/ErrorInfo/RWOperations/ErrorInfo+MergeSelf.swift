@@ -162,7 +162,7 @@ extension ErrorInfo {
         recipient._storage
           ._addWithCollisionResolution(record: annotatedRecord.record,
                                        forKey: key,
-                                       insertIfEqual: true,
+                                       duplicatePolicy: .allowEqual,
                                        collisionSource: annotatedRecord.collisionSource ?? .onMerge(origin: mergeOrigin))
         // Example: ["a": 1] merge with ["a": 1, "a": 1(collisionX)]
         //  result: ["a": 1, "a": 1(collisionZ), "a": 1(collisionX)]

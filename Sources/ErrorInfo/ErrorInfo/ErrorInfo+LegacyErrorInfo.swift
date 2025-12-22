@@ -10,12 +10,6 @@ import Foundation
 // MARK: - Init with [String: Any]
 
 extension ErrorInfo {
-  public init(legacyUserInfo: [String: Any],
-              file: StaticString = #fileID,
-              line: UInt = #line) {
-    self.init(legacyUserInfo: legacyUserInfo, collisionSource: .fileLine(file: file, line: line))
-  }
-  
   /// Initializes an `ErrorInfo` instance using a legacy `[String: Any]` user info dictionary.
   ///
   /// This initializer takes a `[String: Any]` dictionary, processes each key-value pair,
@@ -23,7 +17,7 @@ extension ErrorInfo {
   ///
   /// - Parameters:
   ///   - legacyUserInfo: A dictionary containing legacy key-value pairs where the values are of type `Any`.
-  ///   - origin: collision source, defaults to `.fileLine()`.
+  ///   - collisionOrigin: collision source, defaults to `.fileLine()`.
   ///
   /// - Note:
   ///   - Each value is casted or converted to a compatible `ErrorInfoValueType` using the `_castOrConvertToCompatible` method.
@@ -36,57 +30,70 @@ extension ErrorInfo {
   /// let errorInfo = ErrorInfo(legacyUserInfo: legacyData)
   /// ```
   public init(legacyUserInfo: [String: Any],
-              collisionSource origin: @autoclosure () -> CollisionSource.Origin) {
+              collisionSource collisionOrigin: @autoclosure () -> CollisionSource.Origin) {
     self.init(minimumCapacity: legacyUserInfo.count)
-    
-    legacyUserInfo.forEach { key, value in
-      let interpolatedValue = Self._castOrConvertToCompatible(legacyInfoValue: value)
-      let record = BackingStorage.Record(keyOrigin: .fromCollection, someValue: .value(interpolatedValue))
-      _storage._addWithCollisionResolution(record: record,
-                                           forKey: key,
-                                           insertIfEqual: true, // no effect here, Swift.Dictionary has unique keys
-                                           collisionSource: .onDictionaryConsumption(origin: origin()))
-      // May be it is good to split into two separated dictionaries. Static initializer will return something like tuple of
-      // (Self, nonSendableValues: [(key:, value:)])
-    }
+    _appendLegacyUserInfoImp(legacyUserInfo: legacyUserInfo, collisionSource: collisionOrigin())
+  }
+  
+  public mutating func append(legacyUserInfo: [String: Any],
+                              collisionSource collisionOrigin: @autoclosure () -> CollisionSource.Origin) {
+    _appendLegacyUserInfoImp(legacyUserInfo: legacyUserInfo, collisionSource: collisionOrigin())
   }
 }
 
 extension ErrorInfo {
-  internal static func _castOrConvertToCompatible(legacyInfoValue value: Any) -> ValueExistential {
-    // @inlining has no benefits for this func
-    
+  private mutating func _appendLegacyUserInfoImp(legacyUserInfo: [String: Any],
+                                                 collisionSource collisionOrigin: @autoclosure () -> CollisionSource.Origin) {
+    legacyUserInfo.forEach { key, value in
+      let compatibleValue = Self._castOrConvertToCompatible(legacyInfoValue: value)
+      let record = BackingStorage.Record(keyOrigin: .fromCollection, someValue: .value(compatibleValue))
+      _storage._addWithCollisionResolution(record: record,
+                                           forKey: key,
+                                           duplicatePolicy: .allowEqual, // no effect here, Swift.Dictionary has unique keys
+                                           collisionSource: .onDictionaryConsumption(origin: collisionOrigin()))
+      // TBD: May be it is good to split into two separated dictionaries. Static initializer will return something like tuple of
+      // (Self, nonSendableValues: [(key:, value:)])
+    }
+  }
+  
+  private static func _castOrConvertToCompatible(legacyInfoValue: Any) -> ValueExistential {
     // For typical NSError, String value is most often used for a key, in general. Then NSNumber, URL, [String], [Any],
     // [String: Any].
     // So sort the switch this way to minimize casting overhead.
     
-    switch value {
-    case let value as String: value
-    case let value as Bool: value
-    case let value as Int: value
-    case let value as UInt: value
-    case let value as Double: value
-    case let value as Float: value
-    #if canImport(Foundation)
-      case let value as URL: value
-    #endif
-    case let value as Int8: value
-    case let value as Int16: value
-    case let value as Int32: value
-    case let value as Int64: value
-    case let value as UInt8: value
-    case let value as UInt16: value
-    case let value as UInt32: value
-    case let value as UInt64: value
-    #if canImport(Foundation)
-      case let value as Date: value
-    #endif
-    case let value as [String]: value
-    case let value as [String: String]: value
-    // DEFERRED:
-    //  case let value as [Any]: value.map(_castOrConvertToCompatible(legacyInfoValue:))
-    //  case let value as [String: Any]: value.mapValues(_castOrConvertToCompatible(legacyInfoValue:))
-    default: String(describing: value)
+    let converted: ValueExistential = switch ErrorInfoFuncs.flattenOptional(any: legacyInfoValue) {
+    case .value(let unwrappedAnyValue):
+      switch unwrappedAnyValue {
+      case let castedValue as String: castedValue
+      case let castedValue as Bool: castedValue
+      case let castedValue as Int: castedValue
+      case let castedValue as UInt: castedValue
+      case let castedValue as Double: castedValue
+      case let castedValue as Float: castedValue
+      case let castedValue as [String]: castedValue
+      case let castedValue as [String: String]: castedValue
+      // DEFERRED:
+      //  case let value as [Any]: value.map(_castOrConvertToCompatible(legacyInfoValue:))
+      //  case let value as [String: Any]: value.mapValues(_castOrConvertToCompatible(legacyInfoValue:))
+      #if canImport(Foundation)
+        case let castedValue as URL: castedValue
+        case let castedValue as Date: castedValue
+      #endif
+      case let castedValue as Int64: castedValue
+      case let castedValue as Int32: castedValue
+      case let castedValue as Int16: castedValue
+      case let castedValue as Int8: castedValue
+      case let castedValue as UInt64: castedValue
+      case let castedValue as UInt32: castedValue
+      case let castedValue as UInt16: castedValue
+      case let castedValue as UInt8: castedValue
+      default: String(describing: unwrappedAnyValue)
+      }
+      
+    case .nilInstance(let typeOfWrapped):
+      ErrorInfoFuncs.nilString(typeOfWrapped: typeOfWrapped)
     }
-  }
+    
+    return converted
+  } // @inlining has no benefits for this func
 }

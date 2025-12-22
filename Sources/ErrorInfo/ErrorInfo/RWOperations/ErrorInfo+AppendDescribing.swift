@@ -5,43 +5,42 @@
 //  Created by Dmitriy Ignatyev on 21/12/2025.
 //
 
-
 // MARK: - Append describing
 
 extension ErrorInfo {
   /// Appends the string produced by `String(describing:)` for the given value.
-  public mutating func appendString<V: Sendable>(describing newValue: V?,
-                                                 forKey literalKey: StringLiteralKey) {
-    _appendStringOf(anySendableValue: newValue,
-                    key: literalKey.rawValue,
-                    keyOrigin: literalKey.keyOrigin,
-                    sringTransform: String.init(describing:))
+  public mutating func appendString(describing newValue: (some Sendable)?,
+                                    forKey literalKey: StringLiteralKey) {
+    _appendStringOfAnySendable(value: newValue,
+                               key: literalKey.rawValue,
+                               keyOrigin: literalKey.keyOrigin,
+                               sringTransform: String.init(describing:))
   }
   
   @_disfavoredOverload
-  public mutating func appendString<V: Sendable>(describing newValue: V?,
-                                                 forKey dynamicKey: String) {
-    _appendStringOf(anySendableValue: newValue,
-                    key: dynamicKey,
-                    keyOrigin: .dynamic,
-                    sringTransform: String.init(describing:))
+  public mutating func appendString(describing newValue: (some Sendable)?,
+                                    forKey dynamicKey: String) {
+    _appendStringOfAnySendable(value: newValue,
+                               key: dynamicKey,
+                               keyOrigin: .dynamic,
+                               sringTransform: String.init(describing:))
   }
   
   public mutating func appendString(describing newValue: (some Any)?,
                                     forKey literalKey: StringLiteralKey) {
-    _appendStringOf(anyValue: newValue,
-                    key: literalKey.rawValue,
-                    keyOrigin: literalKey.keyOrigin,
-                    sringTransform: String.init(describing:))
+    _appendStringOfAny(value: newValue,
+                       key: literalKey.rawValue,
+                       keyOrigin: literalKey.keyOrigin,
+                       sringTransform: String.init(describing:))
   }
   
   @_disfavoredOverload
   public mutating func appendString(describing newValue: (some Any)?,
                                     forKey dynamicKey: String) {
-    _appendStringOf(anyValue: newValue,
-                    key: dynamicKey,
-                    keyOrigin: .dynamic,
-                    sringTransform: String.init(describing:))
+    _appendStringOfAny(value: newValue,
+                       key: dynamicKey,
+                       keyOrigin: .dynamic,
+                       sringTransform: String.init(describing:))
   }
 }
 
@@ -51,29 +50,29 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   /// Appends the string produced by `String(reflecting:)` for the given value.
-  public mutating func appendString<V: Sendable>(reflecting newValue: V?,
-                                                 forKey literalKey: StringLiteralKey) {
-    _appendStringOf(anySendableValue: newValue,
-                    key: literalKey.rawValue,
-                    keyOrigin: literalKey.keyOrigin,
-                    sringTransform: String.init(reflecting:))
+  public mutating func appendString(reflecting newValue: (some Sendable)?,
+                                    forKey literalKey: StringLiteralKey) {
+    _appendStringOfAnySendable(value: newValue,
+                               key: literalKey.rawValue,
+                               keyOrigin: literalKey.keyOrigin,
+                               sringTransform: String.init(reflecting:))
   }
   
   @_disfavoredOverload
-  public mutating func appendString<V: Sendable>(reflecting newValue: V?,
-                                                 forKey dynamicKey: String) {
-    _appendStringOf(anySendableValue: newValue,
-                    key: dynamicKey,
-                    keyOrigin: .dynamic,
-                    sringTransform: String.init(reflecting:))
+  public mutating func appendString(reflecting newValue: (some Sendable)?,
+                                    forKey dynamicKey: String) {
+    _appendStringOfAnySendable(value: newValue,
+                               key: dynamicKey,
+                               keyOrigin: .dynamic,
+                               sringTransform: String.init(reflecting:))
   }
   
   public mutating func appendString(reflecting newValue: (some Any)?,
                                     forKey literalKey: StringLiteralKey) {
-    _appendStringOf(anyValue: newValue,
-                    key: literalKey.rawValue,
-                    keyOrigin: literalKey.keyOrigin,
-                    sringTransform: String.init(reflecting:))
+    _appendStringOfAny(value: newValue,
+                       key: literalKey.rawValue,
+                       keyOrigin: literalKey.keyOrigin,
+                       sringTransform: String.init(reflecting:))
   }
   
   /// Appends a value by storing its reflective string representation.
@@ -102,46 +101,38 @@ extension ErrorInfo {
   /// ```
   @_disfavoredOverload
   public mutating func appendString(reflecting newValue: (some Any)?, forKey dynamicKey: String) {
-    _appendStringOf(anyValue: newValue,
-                    key: dynamicKey,
-                    keyOrigin: .dynamic,
-                    sringTransform: String.init(reflecting:))
+    _appendStringOfAny(value: newValue,
+                       key: dynamicKey,
+                       keyOrigin: .dynamic,
+                       sringTransform: String.init(reflecting:))
   }
 }
 
 extension ErrorInfo {
-  private mutating func _appendStringOf<T>(anyValue newValue: T?,
-                                           key: String,
-                                           keyOrigin: KeyOrigin,
-                                           sringTransform: (Any) -> String) {
-    switch ErrorInfoFuncs.flattenOptional(any: newValue) {
-    case .value(let value):
-      let stringRepresentation = sringTransform(value)
-      _add(key: key,
-           keyOrigin: keyOrigin,
-           value: stringRepresentation,
-           preserveNilValues: true, // has no effect in this func
-           duplicatePolicy: .defaultForAppending,
-           collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
-      
-    case .nilInstance(let typeOfWrapped):
-      let nilDescription = "nil (\(typeOfWrapped))"
+  private mutating func _appendStringOfAny<T>(value newValue: T?,
+                                              key: String,
+                                              keyOrigin: KeyOrigin,
+                                              sringTransform: (Any) -> String) {
+    let stringRepresentation: String = switch ErrorInfoFuncs.flattenOptional(any: newValue) {
+    case .value(let value): sringTransform(value)
+    case .nilInstance(let typeOfWrapped): ErrorInfoFuncs.nilString(typeOfWrapped: typeOfWrapped)
       // TBD: idealy it is good to store explicit `nil` instance (case .nilInstance(typeOfWrapped:))
       // instead of nilDecription string.
       // However, this will require OptionalValue store `any Any.Type` instead of `any Sendable.Type` in case .nilInstance
-      _add(key: key,
-           keyOrigin: keyOrigin,
-           value: nilDescription,
-           preserveNilValues: true, // has no effect in this func
-           duplicatePolicy: .defaultForAppending,
-           collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
     }
+    
+    _add(key: key,
+         keyOrigin: keyOrigin,
+         value: stringRepresentation,
+         preserveNilValues: true, // has no effect in this func
+         duplicatePolicy: .defaultForAppending,
+         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
   }
   
-  private mutating func _appendStringOf<T: Sendable>(anySendableValue newValue: T?,
-                                                     key: String,
-                                                     keyOrigin: KeyOrigin,
-                                                     sringTransform: (any Sendable) -> String) {
+  private mutating func _appendStringOfAnySendable(value newValue: (some Sendable)?,
+                                                   key: String,
+                                                   keyOrigin: KeyOrigin,
+                                                   sringTransform: (any Sendable) -> String) {
     switch ErrorInfoFuncs.flattenOptional(anySendable: newValue) {
     case .left(let value):
       let stringRepresentation = sringTransform(value)

@@ -44,4 +44,8 @@ extension ErrorInfoFuncs {
   public static func fileLineString(file: StaticString, line: UInt) -> String { // inlining has no effect on perfomance
     String(file) + ":\(line)"
   }
+  
+  internal static func nilString(typeOfWrapped: any Any.Type) -> String {
+    "nil (\(typeOfWrapped))"
+  }
 }
