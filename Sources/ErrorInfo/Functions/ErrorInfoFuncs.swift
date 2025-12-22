@@ -42,7 +42,11 @@ extension ErrorInfoFuncs {
   /// Combines the file name and line number.
   /// - Returns: Example: `"File.swift:42"`
   public static func fileLineString(file: StaticString, line: UInt) -> String { // inlining has no effect on perfomance
-    String(file) + ":\(line)"
+    fileLineString(file: String(file), line: line)
+  }
+  
+  public static func fileLineString(file: String, line: UInt) -> String { // inlining has no effect on perfomance
+    file + ":\(line)"
   }
   
   internal static func nilString(typeOfWrapped: any Any.Type) -> String {

@@ -38,11 +38,11 @@
 /// let collision2 = CollisionSource.onMerge(origin: origin)
 /// collision2.defaultStringInterpolation() // "onMerge(file_line: Main.swift:42)"
 /// ```
-public struct CollisionSource: Sendable, CustomDebugStringConvertible {
+public struct CollisionSource: Sendable, CustomDebugStringConvertible, Equatable {
   // Stored backing enum
   private let backing: CollisionSourceBacking
   
-  private enum CollisionSourceBacking: Sendable { // CollisionSource
+  private enum CollisionSourceBacking: Sendable, Equatable { // CollisionSource
     case onSubscript(origin: Origin?)
     case onAppend(origin: Origin?)
     
@@ -159,15 +159,19 @@ public struct CollisionSource: Sendable, CustomDebugStringConvertible {
 extension CollisionSource {
   // FIXME: - add to documentataion that Origin can be created as String literal
   
-  public enum Origin: Sendable, ExpressibleByStringLiteral {
+  public enum Origin: Sendable, ExpressibleByStringLiteral, Equatable {
     public typealias StringLiteralType = StaticString
     
-    case fileLine(file: StaticString = #fileID, line: UInt = #line)
+    case fileLine(file: String = #fileID, line: UInt = #line)
     case function(function: String = #function)
     case custom(origin: String)
     
     public init(stringLiteral origin: StringLiteralType) {
       self = .custom(origin: String(origin))
+    }
+    
+    public static func fileLine(file: StaticString, line: UInt) -> Self {
+      .fileLine(file: String(file), line: line)
     }
     
     internal func _defaultStringInterpolation(collisionName: consuming String) -> String {

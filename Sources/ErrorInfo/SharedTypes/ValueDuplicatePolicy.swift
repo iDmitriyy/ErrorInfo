@@ -22,22 +22,31 @@
 /// ```
 public struct ValueDuplicatePolicy: Sendable {
   @usableFromInline
-  internal let insertIfEqual: Bool
+  internal let kind: Kind
   
-  private init(insertIfEqual: Bool) {
-    self.insertIfEqual = insertIfEqual
+  private init(kind: Kind) {
+    self.kind = kind
   }
   
-  public static let defaultForAppending = rejectEqual // => allowEqualWhenSourceDiffers
+  /// See ``ValueDuplicatePolicy.allowEqualWhenOriginDiffers``
+  public static let defaultForAppending = allowEqualWhenOriginDiffers
   
-  /// Skip equal values
-  public static let rejectEqual = Self(insertIfEqual: false)
+  /// - `.rejectEqual`:
+  /// - `.allowEqualWhenOriginDiffers`:
   
-  /// Store duplicates even when equal
-  public static let allowEqual = Self(insertIfEqual: true)
+  /// Skip insertion if any existing value for `key` has an equal `record.someValue`. Otherwise append.
+  public static let rejectEqual = Self(kind: .rejectEqual)
   
-  /// Keep duplicates only when keyOrigin or collisionSource differs
-  // static let allowEqualWhenSourceDiffers
+  /// Always append without comparing to existing values.
+  public static let allowEqual = Self(kind: .allowEqual)
+  
+  /// Skip insertion only when an existing value for `key` matches all of the following:
+  /// - the same `value`
+  /// - the same `keyOrigin`
+  /// - and, when present, the same `collisionSource`.
+  ///   If an existing record has no `collisionSource`, this dimension is ignored.
+  ///   Otherwise, the new record is appended.
+  public static let allowEqualWhenOriginDiffers = Self(kind: .allowEqualWhenOriginDiffers)
       
   /// Custom decision logic
   // static func custom((_ existing: Entry, _ new: Entry) -> Bool)
@@ -45,4 +54,10 @@ public struct ValueDuplicatePolicy: Sendable {
   // Already rejected options:
   // - DuplicatePolicy for nil values should be the same as for values and regulated by preserveNilValues
   // - updateCurrentByNew – effectively is a .replaceAllValues(forKey:, by:).
+  
+  @usableFromInline internal enum Kind: Sendable {
+    case rejectEqual
+    case allowEqual
+    case allowEqualWhenOriginDiffers
+  }
 }

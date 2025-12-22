@@ -124,33 +124,65 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
 }
 
 extension ErrorInfoGeneric where RecordValue: Equatable {
-  /// Core insertion routine that enforces duplicate policy and tags collisions.
-  /// - Availability: Only when `RecordValue` conforms to `Equatable`.
+  /// Appends `newRecord` for `key` according to `duplicatePolicy`, and annotates the record with `collisionSource`
+  /// when the same key is written more than once.
   ///
-  /// - If `insertIfEqual` is `false`, the new record is compared against existing values for the key using `RecordValue`'s `Equatable`.
-  ///   The insertion is skipped when an equal value already exists.
-  /// - Otherwise the record is always appended.
+  /// Behavior by policy:
+  /// - `.rejectEqual`: Skips insertion if any existing value for `key` has an equal `record.someValue`. Otherwise appends.
+  /// - `.allowEqualWhenOriginDiffers`: Skips insertion only when an existing value for `key` matches all of the following:
+  ///   the same `record.someValue`, the same `record.keyOrigin`, and — when present — the same `collisionSource`.
+  ///   If an existing record has no `collisionSource`, this dimension is ignored. Otherwise, the new record is appended.
+  /// - `.allowEqual`: Always appends without comparing to existing values.
+  ///
+  /// - Time complexity is O(n) in the number of existing values for `key`.
+  ///
+  /// - Parameters:
+  ///   - newRecord: The record to insert.
+  ///   - key: The key under which to store the record.
+  ///   - duplicatePolicy: Policy that defines when equal values are rejected or allowed.
+  ///   - collisionSource: Describes the origin of a collision; evaluated lazily.
   internal mutating func _addWithCollisionResolution(record newRecord: Record,
                                                      forKey key: Key,
                                                      duplicatePolicy: ValueDuplicatePolicy,
                                                      collisionSource: @autoclosure () -> CollisionSource) {
-    if duplicatePolicy.insertIfEqual {
-      _storage.append(key: key, value: newRecord, collisionSource: collisionSource())
-    } else {
-      if let currentValues = _storage.allValues(forKey: key) {
-        // TODO: perfomace Test: _storage.containsValues(forKey:, where:) might be faster than allValuesSlice(forKey:).contains
-        let isEqualToOneOfCurrent = currentValues.contains(where: { currentAnnotatedRecord in
-          newRecord.someValue == currentAnnotatedRecord.record.someValue
-        })
+    let comparator: (AnnotatedRecord) -> Bool
+    let currentValues: ValuesForKey<AnnotatedRecord>?
+    switch duplicatePolicy.kind {
+    case .rejectEqual:
+      currentValues = _storage.allValues(forKey: key)
+      comparator = { current in newRecord.someValue == current.record.someValue }
+    
+    case .allowEqualWhenOriginDiffers:
+      currentValues = _storage.allValues(forKey: key)
+      let collisionSource = collisionSource() // Improvement: collisionSource() called twice
+      comparator = { current in
+        let isEqualValue = newRecord.someValue == current.record.someValue
+        let isEqualKeyOrigin = { newRecord.keyOrigin == current.record.keyOrigin }
         
-        if isEqualToOneOfCurrent {
-          return
-        } else {
-          _storage.append(key: key, value: newRecord, collisionSource: collisionSource())
+        let isEqualCollisionSource = {
+          if let currentCollisionSource = current.collisionSource {
+            currentCollisionSource == collisionSource
+          } else { // if no collisionSource (typically for first value), nothing to compare, and can make no assumptions.
+            true // pass true to logically exclude from equality comparison
+          }
         }
+        return isEqualValue && isEqualKeyOrigin() && isEqualCollisionSource()
+      }
+      
+    case .allowEqual:
+      _storage.append(key: key, value: newRecord, collisionSource: collisionSource())
+      return // early exit
+    }
+    
+    if let currentValues {
+      // TODO: perfomace Test: _storage.containsValues(forKey:, where:) might be faster than allValuesSlice(forKey:).contains
+      if currentValues.contains(where: comparator) {
+        return
       } else {
         _storage.append(key: key, value: newRecord, collisionSource: collisionSource())
       }
+    } else {
+      _storage.append(key: key, value: newRecord, collisionSource: collisionSource())
     }
   }
 }
