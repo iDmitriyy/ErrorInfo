@@ -10,17 +10,28 @@
 /// `ErrorInfoAny` is intended for codebases and modules that can’t yet adopt the strongly‑typed, `Sendable`
 /// ``ErrorInfo``. It accepts heterogeneous values (`Any`) while mirroring many of ``ErrorInfo``’s capabilities:
 /// - Preserves insertion order
-/// - Supports multiple values per key
 /// - Tracks key origin and collision metadata (see ``KeyOrigin``)
 /// - Honors duplicate‑value policies (see ``ValueDuplicatePolicy``)
+/// - Supports multiple values per key
 ///
 /// Prefer ``ErrorInfo`` whenever you can use `Sendable` types. Use `ErrorInfoAny` to bridge existing APIs that
 /// exchange `[String: Any]` (e.g. legacy userInfo dictionaries) during incremental migration.
 ///
+/// ## Optional handling
+/// - Explicit `nil` entries are preserved together with a wrapped‑type of `Optional`.
+/// - Nested optionals are flattened for consistent semantics.
+///
+/// ## Equality and duplicate policy with `Any`
+/// Duplicate handling uses a best‑effort structural equality:
+/// - Values that conform to `Equatable` are compared by value when possible.
+/// - Non‑`Equatable` values are treated as non‑equal, so policies like ``ValueDuplicatePolicy/rejectEqual`` will keep
+///   both entries.
+/// - Nested optionals are flattened before comparison, so `Optional(Optional(x))` behaves like a single optional.
+///
 /// ## When to use
-/// - You integrate with third‑party or legacy APIs that require `[String: Any]` payloads.
 /// - Your module cannot adopt `Sendable` yet but you want the ordering, collision tracking, and duplicate‑handling
 ///   semantics provided by ``ErrorInfo``.
+/// - You integrate with third‑party or legacy APIs that require.
 ///
 /// ## Migration tips
 /// - Keep boundaries narrow: convert to/from `[String: Any]` only at API edges.
