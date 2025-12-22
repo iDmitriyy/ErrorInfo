@@ -8,6 +8,17 @@
 extension ErrorInfo {
   // MARK: - User Guidance Subscript
   
+  /// A guidance-only subscript that prevents accidental removal by `nil` assignment.
+  ///
+  /// This subscript exists to catch patterns like `info[.key] = nil`, which can look like
+  /// “remove the value” in legacy dictionaries. In ErrorInfo, removal is explicit and
+  /// `nil` can be recorded as a meaningful entry. Use dedicated removal APIs instead.
+  ///
+  /// - Get: Unavailable.
+  /// - Set: Deprecated. Use ``removeAllRecords(forKey:)`` (or other explicit removal APIs) instead.
+  ///
+  /// Rationale: Keeping removal explicit avoids silent loss of earlier context and aligns with
+  /// ErrorInfo’s multi-record model.
   @_disfavoredOverload
   public subscript(_: StringLiteralKey) -> InternalRestrictionToken? {
     @available(*, unavailable, message: "This is a stub subscript. To remove value use removeValue(forKey:) function")
@@ -19,8 +30,15 @@ extension ErrorInfo {
   
   // MARK: - Read access Subscript
   
-  /// From a usability standpoint, the subscript is the ergonomic read path and should surface the last meaningful value by default.
+  /// Returns the last non‑nil value associated with the given literal key.
   ///
+  /// This subscript is the ergonomic read path and surfaces the latest meaningful value.
+  /// Explicit `nil` entries are preserved for auditing but are skipped here. Use
+  /// ``fullInfo(forKey:)`` or `lastRecorded(forKey:)`to inspect the last
+  /// recorded entry including `nil`, its ``KeyOrigin``, and ``CollisionSource``.
+  ///
+  /// ## Rationale:
+  /// From a usability standpoint, the subscript is the ergonomic read path and should surface the last meaningful value by default.
   /// ErrorInfo intentionally separates “removal” from “explicitly recorded `nil`” so you don’t accidentally lose a meaningful prior value.
   /// Returning `nil` just because a later stage wrote a `nil` would reintroduce the classic “silent overwrite” pitfall ``ErrorInfo`` is trying to avoid.
   /// - Subscript is returning the last non‑nil value.
@@ -34,6 +52,19 @@ extension ErrorInfo {
   ///   and its provenance (``KeyOrigin``, ``CollisionSource``).
   /// - This approach balances resilience (no silent loss of a good value due to a late `nil`)
   ///   with precision (you can still detect and reason about `nil` writes when you care).
+  ///
+  /// - Parameter literalKey: The literal key to read.
+  /// - Returns: The last non‑nil value for the key, or `nil` if none exists.
+  ///
+  /// # Example
+  /// ```swift
+  /// var info = ErrorInfo()
+  /// info[.id] = 5
+  /// info[.id] = 6
+  /// info[.id] = nil as Int?
+  ///
+  /// info[.id] // 6
+  /// ```
   public subscript(_ literalKey: StringLiteralKey) -> (ValueExistential)? {
     lastValue(forKey: literalKey)
   }
@@ -85,3 +116,4 @@ extension ErrorInfo {
 // forced to be used.
 
 // TODO: check if there runtime issues with unavailable setter. If yes then make deprecated
+

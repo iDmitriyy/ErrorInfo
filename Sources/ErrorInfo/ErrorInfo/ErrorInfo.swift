@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 14.12.2024.
 //
 
-// TODO: !! views are non-nil
+// TODO: !! add to doc that views are non-nil
 
 /// An ordered key–value container for enriching errors with structured context.
 ///
@@ -29,16 +29,16 @@
 /// - Key origin metadata (where a key came from: literal, dynamic, keyPath, etc.)
 /// - Merge multiple `ErrorInfo` instances without losing provenance
 ///
-/// ## See Also:
-/// - ``ErrorInfoAny``: a non‑Sendable, type‑erased companion for bridging legacy `[String: Any]` APIs
-/// - ``KeyOrigin``: describes where a key came from (string literal, keyPath etc.)
-/// - ``CollisionSource``: identifies how and where a key collision occurred (append, merge, sequence consumption, etc.)
-///
 /// ## Why multiple records per key:
 /// Error context evolves across layers (networking, decoding, validation, retries, merges). Single‑slot key-value containers
 /// silently lose history on overwrite or nil writes.
 /// ErrorInfo keeps a time‑ordered trail under the same key so you can inspect how a value changed, choose the view
 /// you need (last/first/all), and control deduplication via ``ValueDuplicatePolicy``.
+///
+/// `ErrorInfo` intentionally separates “removal” from explicitly or implicitly recorded `nil` so you don’t accidentally
+/// lose a meaningful prior value.
+/// Returning `nil` just because a later stage wrote a `nil` would reintroduce the classic “silent overwrite”
+/// pitfall `ErrorInfo` is trying to avoid.
 ///
 /// **Typical pitfalls solved**:
 /// - Overwrite hides the root cause: keep a chain of records; read `.last` for the final state or `.first` for the earliest cause.
@@ -47,6 +47,11 @@
 /// - Duplicate spam: reject equal values with ``ValueDuplicatePolicy/rejectEqual`` while still admitting meaningful changes.
 /// - Inconsistent key origins: ``KeyOrigin`` captures whether keys are literal, dynamic, keyPath, or transformed for clearer logs.
 /// - Hard to debug ordering: iteration preserves insertion order for reproducible logs and testing.
+///
+/// ## See Also:
+/// - ``ErrorInfoAny``: a non‑Sendable, type‑erased companion for bridging legacy `[String: Any]` APIs
+/// - ``KeyOrigin``: describes where a key came from (string literal, keyPath etc.)
+/// - ``CollisionSource``: identifies how and where a key collision occurred (append, merge, sequence consumption, etc.)
 ///
 /// # Example: Building and inspecting context
 /// ```swift
