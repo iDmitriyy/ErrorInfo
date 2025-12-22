@@ -158,7 +158,7 @@ extension ErrorInfo {
   
   // SE-0375 Opening existential arguments to optional parameters
   
-  /// Appends an explicit `nil` for a value of existential type.
+  /// Appends an explicit `nil` record preserving wrapped type.
   ///
   /// Use when the concrete value is not available but you need to record the presence of a `nil` entry
   /// (subject to `preserveNilValues`). The entry participates in collision tracking and ordering.
@@ -166,7 +166,6 @@ extension ErrorInfo {
   /// - Parameters:
   ///   - key: The key to add.
   ///   - keyOrigin: The origin metadata for the key.
-  ///   - preserveNilValues: When `true`, the `nil` is stored; otherwise the call is a no‑op.
   ///   - duplicatePolicy: How to handle duplicates for subsequent non‑nil inserts.
   ///   - collisionSource: The collision origin for diagnostics.
   internal mutating func _addNil(key: String,

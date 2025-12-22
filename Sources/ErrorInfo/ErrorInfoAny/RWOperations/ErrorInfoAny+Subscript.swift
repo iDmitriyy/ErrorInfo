@@ -10,7 +10,7 @@ extension ErrorInfoAny {
   
   @_disfavoredOverload
   public subscript(_: StringLiteralKey) -> InternalRestrictionToken? {
-    @available(*, unavailable, message: "This is a stub subscript. To remove value use removeValue(forKey:) function")
+    @available(*, unavailable, message: "To remove value use removeValue(forKey:) function")
     get { nil }
     
     @available(*, deprecated, message: "To remove value use removeValue(forKey:) function")
@@ -26,9 +26,9 @@ extension ErrorInfoAny {
   // MARK: - Mutating subscript
   
   public subscript<V>(_ literalKey: StringLiteralKey) -> V? {
-    @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
+    @available(*, unavailable, message: "This is a set-only subscript")
     get {
-      allValues(forKey: literalKey.rawValue)?.first as? V
+      lastValue(forKey: literalKey) as? V
     }
     set {
       _add(key: literalKey.rawValue,

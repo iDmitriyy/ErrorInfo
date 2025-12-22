@@ -8,6 +8,19 @@
 // MARK: - Last For Key
 
 extension ErrorInfo {
+  /// extension ErrorInfo {
+  ///     /// Returns the last recorded entry including explicit nils.
+  ///     /// Use when you need legacy-like removal semantics.
+  ///     public func lastRecorded(forKey key: String) -> OptionalValue? {
+  ///         fullInfo(forKey: key)?.last?.value
+  ///     }
+  /// }
+  /// if let lastRecord = info.fullInfo(forKey: .url)?.last {
+  ///   switch lastRecord.value {
+  ///   case .value(let v): print("last value:", v)
+  ///   case .nilInstance: print("last write was a nil")
+  ///   }
+  /// }
   public func lastValue(forKey literalKey: StringLiteralKey) -> (ValueExistential)? {
     lastValue(forKey: literalKey.rawValue)
   }
