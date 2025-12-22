@@ -11,26 +11,26 @@ import Testing
 struct PrettyDescriptionTests {
   @Test func prettyDescriptionForString() {
     let input = "Hello World"
-    #expect(prettyDescriptionOfOptional(any: input) == input)
+    #expect(unwrappedDescription(of: input) == input)
   }
   
   @Test func prettyDescriptionForOptionalString() {
     let input: String? = "Hello World"
-    #expect(prettyDescriptionOfOptional(any: input) == "Hello World")
+    #expect(unwrappedDescription(of: input) == "Hello World")
   }
   
   @Test func prettyDescriptionForNonOptionalLiteral() {
-    #expect(prettyDescriptionOfOptional(any: 10) == "10")
+    #expect(unwrappedDescription(of: 10) == "10")
   }
   
   @Test func customStringConvertible() throws {
     let val1: Int = 1
     let expectedOutput = "1"
     
-    #expect(prettyDescriptionOfOptional(any: val1) == expectedOutput)
+    #expect(unwrappedDescription(of: val1) == expectedOutput)
     
     let val1Any: Any = val1 as Any
-    #expect(prettyDescriptionOfOptional(any: val1Any) == expectedOutput)
+    #expect(unwrappedDescription(of: val1Any) == expectedOutput)
   }
   
   @Test func customStringConvertibleOptionalWithNil() throws {
@@ -72,34 +72,34 @@ struct PrettyDescriptionTests {
                                                    doubleOptValExpectation: String,
                                                    tripleOptVal: Int???,
                                                    tripleOptValExpectation: String) {
-    #expect(prettyDescriptionOfOptional(any: singleOptVal) == singleOptValExpectation)
-    #expect(prettyDescriptionOfOptional(any: doubleOptVal) == doubleOptValExpectation)
-    #expect(prettyDescriptionOfOptional(any: tripleOptVal) == tripleOptValExpectation)
+    #expect(unwrappedDescription(of: singleOptVal) == singleOptValExpectation)
+    #expect(unwrappedDescription(of: doubleOptVal) == doubleOptValExpectation)
+    #expect(unwrappedDescription(of: tripleOptVal) == tripleOptValExpectation)
     
     do {
       let singleOptAny: Any = singleOptVal as Any
       let doubleOptAny: Any = doubleOptVal as Any
       let tripleOptAny: Any = tripleOptVal as Any
       
-      #expect(prettyDescriptionOfOptional(any: singleOptAny) == singleOptValExpectation)
-      #expect(prettyDescriptionOfOptional(any: doubleOptAny) == doubleOptValExpectation)
-      #expect(prettyDescriptionOfOptional(any: tripleOptAny) == tripleOptValExpectation)
+      #expect(unwrappedDescription(of: singleOptAny) == singleOptValExpectation)
+      #expect(unwrappedDescription(of: doubleOptAny) == doubleOptValExpectation)
+      #expect(unwrappedDescription(of: tripleOptAny) == tripleOptValExpectation)
       
       let singleOptAnyAny: Any = (Optional.some(singleOptAny) as Any)
       let doubleOptAnyAny: Any = (Optional.some(doubleOptAny) as Any)
       let tripleOptAnyAny: Any = (Optional.some(tripleOptAny) as Any)
       
-      #expect(prettyDescriptionOfOptional(any: singleOptAnyAny) == singleOptValExpectation)
-      #expect(prettyDescriptionOfOptional(any: doubleOptAnyAny) == doubleOptValExpectation)
-      #expect(prettyDescriptionOfOptional(any: tripleOptAnyAny) == tripleOptValExpectation)
+      #expect(unwrappedDescription(of: singleOptAnyAny) == singleOptValExpectation)
+      #expect(unwrappedDescription(of: doubleOptAnyAny) == doubleOptValExpectation)
+      #expect(unwrappedDescription(of: tripleOptAnyAny) == tripleOptValExpectation)
       
       let singleOptOptAnyAny: Any? = (Optional.some(singleOptAny) as Any)
       let doubleOptOptAnyAny: Any? = (Optional.some(doubleOptAny) as Any)
       let tripleOptOptAnyAny: Any? = (Optional.some(tripleOptAny) as Any)
       
-      #expect(prettyDescriptionOfOptional(any: singleOptOptAnyAny) == singleOptValExpectation)
-      #expect(prettyDescriptionOfOptional(any: doubleOptOptAnyAny) == doubleOptValExpectation)
-      #expect(prettyDescriptionOfOptional(any: tripleOptOptAnyAny) == tripleOptValExpectation)
+      #expect(unwrappedDescription(of: singleOptOptAnyAny) == singleOptValExpectation)
+      #expect(unwrappedDescription(of: doubleOptOptAnyAny) == doubleOptValExpectation)
+      #expect(unwrappedDescription(of: tripleOptOptAnyAny) == tripleOptValExpectation)
     }
   }
     
@@ -108,11 +108,11 @@ struct PrettyDescriptionTests {
     let nativeStringRepr = #"NotCustomStringConvertibleStruct(id: 1, name: Optional("Name"))"#
     
     #expect(String(describing: val1) == nativeStringRepr)
-    #expect(prettyDescriptionOfOptional(any: val1) == nativeStringRepr)
+    #expect(unwrappedDescription(of: val1) == nativeStringRepr)
     
     do {
       let singleOptAny: Any = val1 as Any
-      #expect(prettyDescriptionOfOptional(any: singleOptAny) == nativeStringRepr)
+      #expect(unwrappedDescription(of: singleOptAny) == nativeStringRepr)
     }
   }
   
@@ -130,15 +130,15 @@ struct PrettyDescriptionTests {
     // Therefore, we check a bit differently: instead of using XCTAssertEqual, we check that the string does not contain "Optional"
     // and does contain the structure's data
     do {
-      let singleOptValString = prettyDescriptionOfOptional(any: singleOptVal)
+      let singleOptValString = unwrappedDescription(of: singleOptVal)
       #expect(!singleOptValString.hasPrefix("Optional(") &&
         singleOptValString.hasSuffix(#"NotCustomStringConvertibleStruct(id: 1, name: Optional("Name"))"#))
       
-      let doubleOptValString = prettyDescriptionOfOptional(any: doubleOptVal)
+      let doubleOptValString = unwrappedDescription(of: doubleOptVal)
       #expect(!doubleOptValString.hasPrefix("Optional(") &&
         doubleOptValString.hasSuffix(#"NotCustomStringConvertibleStruct(id: 2, name: Optional("Name"))"#))
       
-      let tripleOptValString = prettyDescriptionOfOptional(any: tripleOptVal)
+      let tripleOptValString = unwrappedDescription(of: tripleOptVal)
       #expect(!tripleOptValString.hasPrefix("Optional(") &&
         tripleOptValString.hasSuffix(#"NotCustomStringConvertibleStruct(id: 3, name: Optional("Name"))"#))
     }
@@ -148,15 +148,15 @@ struct PrettyDescriptionTests {
       let doubleOptAny: Any = doubleOptVal as Any
       let tripleOptAny: Any = tripleOptVal as Any
 
-      let singleOptAnyString = prettyDescriptionOfOptional(any: singleOptAny)
+      let singleOptAnyString = unwrappedDescription(of: singleOptAny)
       #expect(!singleOptAnyString.hasPrefix("Optional(")
         && singleOptAnyString.hasSuffix(#"NotCustomStringConvertibleStruct(id: 1, name: Optional("Name"))"#))
       
-      let doubleOptAnyString = prettyDescriptionOfOptional(any: doubleOptAny)
+      let doubleOptAnyString = unwrappedDescription(of: doubleOptAny)
       #expect(!doubleOptAnyString.hasPrefix("Optional(")
         && doubleOptAnyString.hasSuffix(#"NotCustomStringConvertibleStruct(id: 2, name: Optional("Name"))"#))
       
-      let tripleOptAnyString = prettyDescriptionOfOptional(any: tripleOptAny)
+      let tripleOptAnyString = unwrappedDescription(of: tripleOptAny)
       #expect(!tripleOptAnyString.hasPrefix("Optional(")
         && tripleOptAnyString.hasSuffix(#"NotCustomStringConvertibleStruct(id: 3, name: Optional("Name"))"#))
     }
@@ -169,9 +169,9 @@ struct PrettyDescriptionTests {
     
     let expectedOutput = "nil"
     do {
-      #expect(prettyDescriptionOfOptional(any: singleOptVal) == expectedOutput)
-      #expect(prettyDescriptionOfOptional(any: doubleOptVal) == expectedOutput)
-      #expect(prettyDescriptionOfOptional(any: tripleOptVal) == expectedOutput)
+      #expect(unwrappedDescription(of: singleOptVal) == expectedOutput)
+      #expect(unwrappedDescription(of: doubleOptVal) == expectedOutput)
+      #expect(unwrappedDescription(of: tripleOptVal) == expectedOutput)
     }
 
     do {
@@ -179,17 +179,17 @@ struct PrettyDescriptionTests {
       let doubleOptAny: Any = doubleOptVal as Any
       let tripleOptAny: Any = tripleOptVal as Any
 
-      #expect(prettyDescriptionOfOptional(any: singleOptAny) == expectedOutput)
-      #expect(prettyDescriptionOfOptional(any: doubleOptAny) == expectedOutput)
-      #expect(prettyDescriptionOfOptional(any: tripleOptAny) == expectedOutput)
+      #expect(unwrappedDescription(of: singleOptAny) == expectedOutput)
+      #expect(unwrappedDescription(of: doubleOptAny) == expectedOutput)
+      #expect(unwrappedDescription(of: tripleOptAny) == expectedOutput)
       
       let singleOptAnyAny: Any = (Optional.some(singleOptAny) as Any)
       let doubleOptAnyAny: Any = (Optional.some(doubleOptAny) as Any)
       let tripleOptAnyAny: Any = (Optional.some(tripleOptAny) as Any)
       
-      #expect(prettyDescriptionOfOptional(any: singleOptAnyAny) == expectedOutput)
-      #expect(prettyDescriptionOfOptional(any: doubleOptAnyAny) == expectedOutput)
-      #expect(prettyDescriptionOfOptional(any: tripleOptAnyAny) == expectedOutput)
+      #expect(unwrappedDescription(of: singleOptAnyAny) == expectedOutput)
+      #expect(unwrappedDescription(of: doubleOptAnyAny) == expectedOutput)
+      #expect(unwrappedDescription(of: tripleOptAnyAny) == expectedOutput)
     }
   }
   
@@ -204,15 +204,15 @@ struct PrettyDescriptionTests {
     let tripleOptVal: CustomStringConvertibleStruct??? = val
     
     let expectedOutput = "Custom Description"
-    #expect(prettyDescriptionOfOptional(any: val) == expectedOutput)
-    #expect(prettyDescriptionOfOptional(any: singleOptVal) == expectedOutput)
-    #expect(prettyDescriptionOfOptional(any: doubleOptVal) == expectedOutput)
-    #expect(prettyDescriptionOfOptional(any: tripleOptVal) == expectedOutput)
+    #expect(unwrappedDescription(of: val) == expectedOutput)
+    #expect(unwrappedDescription(of: singleOptVal) == expectedOutput)
+    #expect(unwrappedDescription(of: doubleOptVal) == expectedOutput)
+    #expect(unwrappedDescription(of: tripleOptVal) == expectedOutput)
     
-    #expect(prettyDescriptionOfOptional(any: val as Any) == expectedOutput)
-    #expect(prettyDescriptionOfOptional(any: singleOptVal as Any) == expectedOutput)
-    #expect(prettyDescriptionOfOptional(any: doubleOptVal as Any) == expectedOutput)
-    #expect(prettyDescriptionOfOptional(any: tripleOptVal as Any) == expectedOutput)
+    #expect(unwrappedDescription(of: val as Any) == expectedOutput)
+    #expect(unwrappedDescription(of: singleOptVal as Any) == expectedOutput)
+    #expect(unwrappedDescription(of: doubleOptVal as Any) == expectedOutput)
+    #expect(unwrappedDescription(of: tripleOptVal as Any) == expectedOutput)
   }
 }
 

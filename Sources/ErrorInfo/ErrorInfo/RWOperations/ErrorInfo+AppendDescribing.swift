@@ -123,13 +123,13 @@ extension ErrorInfo {
            collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
       
     case .nilInstance(let typeOfWrapped):
-      let nilDecription = "nil (\(typeOfWrapped))"
+      let nilDescription = "nil (\(typeOfWrapped))"
       // TBD: idealy it is good to store explicit nil instance (case .nilInstance(typeOfWrapped:))
       // instead of nilDecription string.
       // However, this will require OptionalValue store `any Any.Type` instead of `any Sendable.Type` in case .nilInstance
       _add(key: key,
            keyOrigin: keyOrigin,
-           value: nilDecription,
+           value: nilDescription,
            preserveNilValues: true, // has no effect in this func
            duplicatePolicy: .defaultForAppending,
            collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size

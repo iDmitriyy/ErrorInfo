@@ -15,15 +15,15 @@
 ///
 /// # Example:
 /// ```swift
-/// prettyDescriptionOfOptional(any: Optional(Optional(42))) as Any        // "42"
-/// prettyDescriptionOfOptional(any: Optional<Optional<Int>>.none) as Any  // "nil"
-/// prettyDescriptionOfOptional(any: "Hello" as Any)                       // "Hello"
-/// prettyDescriptionOfOptional(any: Optional("World") as Any)             // "World"
+/// unwrappedDescription(of: Optional(Optional(42))) as Any        // "42"
+/// unwrappedDescription(of: Optional<Optional<Int>>.none) as Any  // "nil"
+/// unwrappedDescription(of: "Hello" as Any)                       // "Hello"
+/// unwrappedDescription(of: Optional("World") as Any)             // "World"
 /// ```
 ///
 /// - Parameter any: A value of any type, which may or may not be an optional.
 /// - Returns: A string representation of the unwrapped value, or `"nil"` if the value is `nil`.
-public func prettyDescriptionOfOptional(any: some Any) -> String {
+public func unwrappedDescription(of any: some Any) -> String {
   if let value = _specialize(any, for: String.self) { return value }
   if let value = _specialize(any, for: Int.self) { return String(value) }
   if let value = _specialize(any, for: Bool.self) { return String(value) }
@@ -53,20 +53,20 @@ public func prettyDescriptionOfOptional(any: some Any) -> String {
 ///
 /// # Example:
 /// ```swift
-/// prettyDescriptionOfOptional(any: Optional(42))         // "42"
-/// prettyDescriptionOfOptional(any: nil as Optional<Int>) // "nil"
-/// prettyDescriptionOfOptional(any: Optional("Hello"))    // "Hello"
+/// unwrappedDescription(of: Optional(42))         // "42"
+/// unwrappedDescription(of: nil as Optional<Int>) // "nil"
+/// unwrappedDescription(of: Optional("Hello"))    // "Hello"
 /// ```
 ///
 /// - Parameter any: An optional value of any type, which may or may not be `nil` or wrapped in multiple `Optional` layers.
 /// - Returns: A string representation of the unwrapped value, or `"nil"` if the value is `nil`.
-public func prettyDescriptionOfOptional<T>(any: T?) -> String {
-  switch any {
+public func unwrappedDescription<T>(of optionalAny: T?) -> String {
+  switch optionalAny {
   case .some(let value):
      // if let value = _specialize(any, for: String.self) { return value } – _specialize has no effect here.
      // However, there is significant perfomance gain when adding _specialize
-     // inside (some Any) overload of `prettyDescriptionOfOptional()` above.
-    return prettyDescriptionOfOptional(any: value)
+     // inside (some Any) overload of `unwrappedDescription()` above.
+    return unwrappedDescription(of: value)
     
   case .none:
     return "nil" // returning hardcoded "nil" is ~2x faster than String(describing: any)
