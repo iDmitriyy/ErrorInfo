@@ -20,20 +20,26 @@ extension ErrorInfo {
   }
   
   /// Merges the current `ErrorInfo` instance with one or more other `ErrorInfo` instances.
-  /// Duplicate values within each `ErrorInfo` are retained.
+  /// Merge preserve duplicates by design (duplicatePolicy `allowEqual` used internally).
   ///
   /// - Parameters:
   ///   - firstDonator: The first `ErrorInfo` instance to merge.
-  ///   - otherDonators: Additional `ErrorInfo` instances to merge.
+  ///   - otherDonators: Additional `ErrorInfo` instances to merge, optional parameter.
   ///   - origin: The source of the merge (defaults to `.fileLine()`).
   ///
   /// # Example:
   /// ```swift
-  /// var info1: ErrorInfo = [.errorCode: 404]
-  /// let info2: ErrorInfo = [.errorMessage: "Not Found"]
+  /// let info: ErrorInfo = [
+  ///   .maxItemsPerPage: 20,
+  ///   .itemsLoaded: 21
+  /// ]
   ///
-  /// info1.merge(with: info2)
-  /// // info1 now contains both errorCode and errorMessage.
+  /// let cacheState: ErrorInfo = [
+  ///   .cacheSizeLimit: 1000,
+  ///   .cacheSizeUsed: 1000,
+  /// ]
+  ///
+  /// info.merge(with: cacheState)
   /// ```
   public mutating func merge(with firstDonator: Self,
                              _ otherDonators: Self...,
@@ -53,20 +59,26 @@ extension ErrorInfo {
   }
   
   /// Returns a new `ErrorInfo` instance by merging the current instance with one or more others.
-  /// Duplicate values within each `ErrorInfo` are retained.
+  /// Merge preserve duplicates by design (duplicatePolicy `allowEqual` used internally).
   ///
   /// - Parameters:
   ///   - firstDonator: The first `ErrorInfo` instance to merge.
-  ///   - otherDonators: Additional `ErrorInfo` instances to merge.
+  ///   - otherDonators: Additional `ErrorInfo` instances to merge, optional parameter.
   ///   - origin: The source of the merge (defaults to `.fileLine()`).
   ///
   /// # Example:
   /// ```swift
-  /// let info1: ErrorInfo = [.errorCode: 404]
-  /// let info2: ErrorInfo = [.errorMessage: "Not Found"]
+  /// let info: ErrorInfo = [
+  ///   .maxItemsPerPage: 20,
+  ///   .itemsLoaded: 21
+  /// ]
   ///
-  /// let mergedInfo = info1.merged(with: info2)
-  /// // mergedInfo now contains both errorCode and errorMessage.
+  /// let cacheState: ErrorInfo = [
+  ///   .cacheSizeLimit: 1000,
+  ///   .cacheSizeUsed: 1000,
+  /// ]
+  ///
+  /// let mergedInfo = info.merged(with: cacheState)
   /// ```
   public consuming func merged(with firstDonator: Self,
                                _ otherDonators: Self...,
@@ -83,23 +95,29 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   /// Merges a recipient `ErrorInfo` with one or more `ErrorInfo` donators and returns a new instance.
-  /// Duplicate values within each `ErrorInfo` are retained.
+  /// Merge preserve duplicates by design (duplicatePolicy `allowEqual` used internally).
   ///
   /// - Parameters:
   ///   - recipient: The recipient `ErrorInfo` instance to merge into.
-  ///   - firstDonator: The first `ErrorInfo` donator to merge.
-  ///   - otherDonators: Additional `ErrorInfo` donators to merge.
+  ///   - firstDonator: The first `ErrorInfo`instance to merge.
+  ///   - otherDonators: Additional `ErrorInfo` instances to merge, optional parameter.
   ///   - mergeOrigin: The source of the merge (defaults to `.fileLine()`).
   ///
   /// - Returns: A new `ErrorInfo` instance containing the merged data.
   ///
   /// # Example:
   /// ```swift
-  /// let info1: ErrorInfo = [.errorCode: 404]
-  /// let info2: ErrorInfo = [.errorMessage: "Not Found"]
+  /// let info: ErrorInfo = [
+  ///   .maxItemsPerPage: 20,
+  ///   .itemsLoaded: 21
+  /// ]
   ///
-  /// let mergedInfo: ErrorInfo = .merged(info1, info2)
-  /// // mergedInfo now contains both errorCode and errorMessage.
+  /// let cacheState: ErrorInfo = [
+  ///   .cacheSizeLimit: 1000,
+  ///   .cacheSizeUsed: 1000,
+  /// ]
+  ///
+  /// let error = AppError(info: .merged(info, cacheState))
   /// ```
   public static func merged(_ recipient: Self,
                             _ firstDonator: Self,
@@ -112,19 +130,27 @@ extension ErrorInfo {
   }
   
   /// Merges multiple `ErrorInfo` instances from an array and returns the resulting merged instance.
+  /// Merge preserve duplicates by design (duplicatePolicy `allowEqual` used internally).
   ///
   /// - Parameters:
   ///   - errorInfosArray: An array of `ErrorInfo` instances to merge.
-  ///   - origin: The source of the merge (defaults to `.fileLine()`).
+  ///   - origin: The source of the merge.
   ///
   /// - Returns: A new `ErrorInfo` instance containing the merged data.
   ///
   /// # Example:
   /// ```swift
-  /// let info1: ErrorInfo = [.errorCode: 404]
-  /// let info2: ErrorInfo = [.errorMessage: "Not Found"]
-  /// let mergedInfo = ErrorInfo.merged(errorInfosArray: [info1, info2])
-  /// // mergedInfo contains both errorCode and errorMessage.
+  /// let info: ErrorInfo = [
+  ///   .maxItemsPerPage: 20,
+  ///   .itemsLoaded: 21
+  /// ]
+  ///
+  /// let cacheState: ErrorInfo = [
+  ///   .cacheSizeLimit: 1000,
+  ///   .cacheSizeUsed: 1000,
+  /// ]
+  ///
+  /// let mergedInfo = ErrorInfo.merged(errorInfosArray: [info, cacheState])
   /// ```
   public static func merged(errorInfosArray: consuming [Self],
                             origin: WriteProvenance.Origin) -> Self {
@@ -164,8 +190,6 @@ extension ErrorInfo {
                                        forKey: key,
                                        duplicatePolicy: .allowEqual,
                                        writeProvenanceForCollision: annotatedRecord.collisionSource ?? .onMerge(origin: origin))
-        // Example: ["a": 1] merge with ["a": 1, "a": 1(collisionX)]
-        //  result: ["a": 1, "a": 1(collisionZ), "a": 1(collisionX)]
       }
     }
     return recipient

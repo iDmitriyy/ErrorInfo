@@ -152,7 +152,7 @@ extension ErrorInfo {
  // Annotate the merge origin for diagnostics:
  let merged = base.merged(with: extra, origin "merge:network+cache")
  
- Even though duplicates are preserved, the collision metadata will reflect "merge:network+cache" for provenance.
+
   
  
  .allowEqualWhenOriginDiffers:
