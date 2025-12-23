@@ -16,7 +16,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
          keyOrigin: keyOrigin,
          someValue: newValue,
          duplicatePolicy: .defaultForAppending,
-         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
+         writeProvenance: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
   }
 }
 
@@ -32,7 +32,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepre
          typeOfWrapped: typeOfWrapped,
          preserveNilValues: preserveNilValues,
          duplicatePolicy: .defaultForAppending,
-         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
+         writeProvenance: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
   }
 }
 
@@ -51,7 +51,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
          keyOrigin: keyOrigin,
          someValue: someValue,
          duplicatePolicy: duplicatePolicy,
-         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
+         writeProvenance: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
   }
 }
 
@@ -69,7 +69,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepre
          typeOfWrapped: typeOfWrapped,
          preserveNilValues: true, // has no effect in this func, unwrapped above
          duplicatePolicy: duplicatePolicy,
-         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
+         writeProvenance: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
   }
 }
 
@@ -81,13 +81,13 @@ extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepre
 //  // TODO: - RecordValue & RecordValue.Wrapped are really existentials, need make pissoble to append generic values, not existentials
 //  mutating func append(contentsOf sequence: some Sequence<(Key, RecordValue)>,
 //                       duplicatePolicy: ValueDuplicatePolicy,
-//                       collisionSource collisionOrigin: CollisionSource.Origin) {
+//                       origin: CollisionSource.Origin) {
 //    for (key, someValue) in sequence {
 //      _add(key: key,
 //           keyOrigin: .dynamic,
 //           someValue: someValue,
 //           duplicatePolicy: duplicatePolicy,
-//           collisionSource: .onSequenceConsumption(origin: collisionOrigin))
+//           writeProvenance: .onSequenceConsumption(origin: origin))
 //    }
 //  }
 //}
@@ -96,8 +96,8 @@ extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepre
 //  mutating func append(contentsOf sequence: some Sequence<(Key, RecordValue.Wrapped)>,
 //                       typeOfWrapped: RecordValue.TypeOfWrapped,
 //                       duplicatePolicy: ValueDuplicatePolicy,
-//                       collisionSource collisionOrigin: CollisionSource.Origin) {
-//    
+//                       origin: CollisionSource.Origin) {
+//
 //    for (key, nonNilValue) in sequence {
 //      _add(key: key,
 //           keyOrigin: .dynamic,
@@ -105,7 +105,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepre
 //           typeOfWrapped: typeOfWrapped, // TODO: - typeOfWrapped | one for all elements?
 //           preserveNilValues: true, // has no effect in this func
 //           duplicatePolicy: duplicatePolicy,
-//           collisionSource: .onSequenceConsumption(origin: collisionOrigin))
+//           writeProvenance: .onSequenceConsumption(origin: collisionOrigin))
 //    }
 //  }
 //}

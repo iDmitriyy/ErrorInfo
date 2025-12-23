@@ -23,7 +23,7 @@ extension ErrorInfo {
   ///   `nil` value (preserving Wrapped-type information from original optional value).
   /// - Duplicate values for the same key are handled according to
   ///   `ValueDuplicatePolicy.defaultForAppending`.
-  /// - Collisions created during assignment are attributed to `CollisionSource.onSubscript`.
+  /// - Collisions created during assignment are attributed to `WriteProvenance.onSubscript`.
   ///
   /// # Example:
   /// ```swift
@@ -44,7 +44,7 @@ extension ErrorInfo {
            value: newValue,
            preserveNilValues: true,
            duplicatePolicy: .defaultForAppending,
-           collisionSource: .onSubscript(origin: nil)) // providing origin for a single key-value is an overhead for binary size
+           writeProvenance: .onSubscript(origin: nil)) // providing origin for a single key-value is an overhead for binary size
     }
   }
 }

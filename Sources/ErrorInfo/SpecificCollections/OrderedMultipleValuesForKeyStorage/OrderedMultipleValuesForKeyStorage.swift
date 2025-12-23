@@ -41,7 +41,7 @@
   }
 }
 
-extension OrderedMultipleValuesForKeyStorage: Sendable where Key: Sendable, Value: Sendable, CollisionSource: Sendable {}
+extension OrderedMultipleValuesForKeyStorage: Sendable where Key: Sendable, Value: Sendable, WriteProvenance: Sendable {}
 
 // MARK: All Values For Key
 
@@ -114,12 +114,12 @@ extension OrderedMultipleValuesForKeyStorage {
 extension OrderedMultipleValuesForKeyStorage {
   internal mutating func append(key: Key,
                                 value: Value,
-                                collisionSource: @autoclosure () -> CollisionSource) {
-    _muatbleVariant.append(key: key, value: value, collisionSource: collisionSource())
+                                writeProvenance: @autoclosure () -> WriteProvenance) {
+    _muatbleVariant.append(key: key, value: value, writeProvenance: writeProvenance())
   }
   
-  internal mutating func append(_ newElement: (Key, Value), collisionSource: @autoclosure () -> CollisionSource) {
-    append(key: newElement.0, value: newElement.1, collisionSource: collisionSource())
+  internal mutating func append(_ newElement: (Key, Value), writeProvenance: @autoclosure () -> WriteProvenance) {
+    append(key: newElement.0, value: newElement.1, writeProvenance: writeProvenance())
   }
 }
 

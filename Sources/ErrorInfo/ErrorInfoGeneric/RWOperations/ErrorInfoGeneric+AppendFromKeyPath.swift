@@ -21,7 +21,7 @@ extension ErrorInfoGeneric where Key == String, RecordValue: Equatable & ErrorIn
                                       keysPrefix: KeyPathPrefixOption?,
                                       typeOfWrapped: RecordValue.TypeOfWrapped,
                                       converToExistential: (V) -> RecordValue.Wrapped,
-                                      ollisionSource collisionOrigin: @autoclosure () -> CollisionSource.Origin) {
+                                      ollisionSource collisionOrigin: @autoclosure () -> WriteProvenance.Origin) {
     let keyPathString: String = switch keysPrefix {
     case .typeName: ErrorInfoFuncs.asErrorInfoKeyString(keyPath: keyPath, withTypePrefix: true)
     case .custom(let name): name + "." + ErrorInfoFuncs.asErrorInfoKeyString(keyPath: keyPath, withTypePrefix: false)
@@ -37,6 +37,6 @@ extension ErrorInfoGeneric where Key == String, RecordValue: Equatable & ErrorIn
          typeOfWrapped: typeOfWrapped,
          preserveNilValues: true,
          duplicatePolicy: .defaultForAppending,
-         collisionSource: .onAppend(origin: collisionOrigin()))
+         writeProvenance: .onAppend(origin: collisionOrigin()))
   }
 }

@@ -7,7 +7,7 @@
 
 extension ErrorInfo {
   // collapseNilInstances: Bool = false
-  public func asStringDict(collisionSourceInterpolation: (CollisionSource) -> String = { $0.defaultStringInterpolation() })
+  public func asStringDict(collisionSourceInterpolation: (WriteProvenance) -> String = { $0.defaultStringInterpolation() })
     -> [String: String] { // TODO: should be a protocol default imp
     var dict = [String: String](minimumCapacity: _storage.count)
     _storage.forEach { key, wrappedValue in // TODO: use builtin initializer of OrderedDict instead of foreach
@@ -36,7 +36,7 @@ extension ErrorInfo {
 //    // `nil` options
 //    // keyOrigin, collision, prefix
 //    
-//    let valueTransform: (CollisionTaggedValue<ErrorInfo.OptionalAnyValue, CollisionSource>) -> AnyEncodableSingleValue = { optionalValue in
+//    let valueTransform: (CollisionTaggedValue<ErrorInfo.OptionalAnyValue, WriteProvenance>) -> AnyEncodableSingleValue = { optionalValue in
 //      switch optionalValue {
 //      case .value(let sendableValueExistential):
 //        if let anyEncodableSendable = __conditionalCast(sendableValueExistential, to: (any Encodable & Sendable).self) {

@@ -24,7 +24,7 @@ extension ErrorInfo {
   /// - Parameters:
   ///   - instance: The object whose properties will be appended to `ErrorInfo`.
   ///   - keysPrefix: An optional prefix for the key path string. Default is `.typeName`.
-  ///   - collisionSource: A source of potential collisions during the append operation. Default is `.fileLine()`.
+  ///   - origin: A source of potential collisions during the append operation. 
   ///   - keys: A closure that returns the key paths of the instance's properties to be appended.
   ///
   /// # Example:
@@ -56,7 +56,7 @@ extension ErrorInfo {
   public mutating func appendProperties<R, each V: ValueProtocol>(
     of instance: R,
     keysPrefix: KeyPathPrefixOption? = .typeName,
-    collisionSource collisionOrigin: CollisionSource.Origin,
+    origin: WriteProvenance.Origin,
     @ErrorInfoKeyPathsBuilder keys: () -> (repeat KeyPath<R, each V>),
   ) {
     let keyPaths = keys() // R.self
@@ -75,7 +75,7 @@ extension ErrorInfo {
            value: value,
            preserveNilValues: true,
            duplicatePolicy: .defaultForAppending,
-           collisionSource: .onAppend(origin: collisionOrigin))
+           writeProvenance: .onAppend(origin: origin))
     }
   }
   
@@ -86,7 +86,7 @@ extension ErrorInfo {
     line: UInt = #line,
     @ErrorInfoKeyPathsBuilder keys: () -> (repeat KeyPath<R, each V>),
   ) {
-    appendProperties(of: instance, keysPrefix: keysPrefix, collisionSource: .fileLine(file: file, line: line), keys: keys)
+    appendProperties(of: instance, keysPrefix: keysPrefix, origin: .fileLine(file: file, line: line), keys: keys)
   }
   
   // DEFERRED: - slow on release builds. 5 properties takes ~0.0004s.

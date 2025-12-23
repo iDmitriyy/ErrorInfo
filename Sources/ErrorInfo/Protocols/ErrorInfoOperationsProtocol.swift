@@ -61,7 +61,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   /// This subscript is the ergonomic read path and surfaces the latest meaningful value.
   /// Explicit `nil` entries are preserved for auditing but are skipped here. Use
   /// ``lastRecorded(forKey:)`` or ``fullInfo(forKey:)``  to inspect the last
-  /// recorded entry including `nil`, its ``KeyOrigin``, and ``CollisionSource``.
+  /// recorded entry including `nil`, its ``KeyOrigin``, and ``WriteProvenance``.
   ///
   /// ## Rationale:
   /// From a usability standpoint, the subscript is the ergonomic read path and should surface the last meaningful value by default.

@@ -25,7 +25,7 @@ extension ErrorInfoAny {
            value: newValue,
            preserveNilValues: true,
            duplicatePolicy: .defaultForAppending,
-           collisionSource: .onSubscript(origin: nil)) // providing origin for a single key-value is an overhead for binary size
+           writeProvenance: .onSubscript(origin: nil)) // providing origin for a single key-value is an overhead for binary size
     }
   }
 }

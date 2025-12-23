@@ -43,7 +43,7 @@
 /// **Typical pitfalls solved**:
 /// - Overwrite hides the root cause: keep a chain of records; read `.last` for the final state or `.first` for the earliest cause.
 /// - `nil` wipes prior context: explicit `nil` is recorded (with wrapped type) without discarding earlier non‑nil entries.
-/// - No provenance during merges: collisions are annotated with ``CollisionSource`` so you can see where later writes came from.
+/// - No provenance during merges: collisions are annotated with ``WriteProvenance`` so you can see where later writes came from.
 /// - Duplicate spam: reject equal values with ``ValueDuplicatePolicy/rejectEqual`` while still admitting meaningful changes.
 /// - Inconsistent key origins: ``KeyOrigin`` captures whether keys are literal, dynamic, keyPath, or transformed for clearer logs.
 /// - Hard to debug ordering: iteration preserves insertion order for reproducible logs and testing.
@@ -51,7 +51,7 @@
 /// ## See Also:
 /// - ``ErrorInfoAny``: a non‑Sendable, type‑erased companion for bridging legacy `[String: Any]` APIs
 /// - ``KeyOrigin``: describes where a key came from (string literal, keyPath etc.)
-/// - ``CollisionSource``: identifies how and where a key collision occurred (append, merge, sequence consumption, etc.)
+/// - ``WriteProvenance``: identifies how and where a key collision occurred (append, merge, sequence consumption, etc.)
 ///
 /// # Example: Building and inspecting context
 /// ```swift
@@ -142,7 +142,7 @@ extension ErrorInfo {
                                                 value newValue: V?,
                                                 preserveNilValues: Bool,
                                                 duplicatePolicy: ValueDuplicatePolicy,
-                                                collisionSource: @autoclosure () -> CollisionSource) {
+                                                writeProvenance: @autoclosure () -> WriteProvenance) {
     let optional: EquatableOptionalValue
     if let newValue {
       optional = .value(newValue)
@@ -155,7 +155,7 @@ extension ErrorInfo {
     _storage._addWithCollisionResolution(record: BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
                                          forKey: key,
                                          duplicatePolicy: duplicatePolicy,
-                                         collisionSource: collisionSource())
+                                         writeProvenanceForCollision: writeProvenance())
   }
   
   // SE-0352 Implicitly Opened Existentials
@@ -172,18 +172,18 @@ extension ErrorInfo {
   ///   - key: The key to add.
   ///   - keyOrigin: The origin metadata for the key.
   ///   - duplicatePolicy: How to handle duplicates for subsequent non‑nil inserts.
-  ///   - collisionSource: The collision origin for diagnostics.
+  ///   - writeProvenance: The collision origin for diagnostics.
   internal mutating func _addNil(key: String,
                                  keyOrigin: KeyOrigin,
                                  typeOfWrapped: any Sendable.Type,
                                  duplicatePolicy: ValueDuplicatePolicy,
-                                 collisionSource: @autoclosure () -> CollisionSource) {
+                                 writeProvenance: @autoclosure () -> WriteProvenance) {
     let optional: EquatableOptionalValue = .nilInstance(typeOfWrapped: typeOfWrapped)
     
     _storage._addWithCollisionResolution(record: BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
                                          forKey: key,
                                          duplicatePolicy: duplicatePolicy,
-                                         collisionSource: collisionSource())
+                                         writeProvenanceForCollision: writeProvenance())
   }
 }
 

@@ -12,7 +12,7 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
   public typealias Value = ValueExistential? // allows to initialize by dictionary literal with optional values
     
   /// Allows initializing an `ErrorInfo` instance directly from a dictionary literal.
-  /// Collisions during the merge are tracked with the `CollisionSource.onCreateWithDictionaryLiteral` source.
+  /// Collisions during the merge are tracked with the `WriteProvenance.onCreateWithDictionaryLiteral` source.
   ///
   /// - Parameter elements: The key-value pairs to initialize the `ErrorInfo` with.
   ///
@@ -31,7 +31,7 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
   /// ```
   public init(dictionaryLiteral elements: (Key, Value)...) {
     self.init(minimumCapacity: elements.count)
-    _appendKeyValuesImp(_dictionaryLiteral: elements, collisionSource: .onCreateWithDictionaryLiteral)
+    _appendKeyValuesImp(_dictionaryLiteral: elements, writeProvenance: .onCreateWithDictionaryLiteral)
   }
 }
 

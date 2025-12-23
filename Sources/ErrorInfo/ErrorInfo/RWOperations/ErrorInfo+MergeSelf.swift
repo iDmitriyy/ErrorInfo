@@ -16,7 +16,7 @@ extension ErrorInfo {
                              line: UInt = #line) {
     self = Self._mergedImp(recipient: self,
                            donators: [firstDonator] + otherDonators,
-                           collisionSource: .fileLine(file: file, line: line))
+                           origin: .fileLine(file: file, line: line))
   }
   
   /// Merges the current `ErrorInfo` instance with one or more other `ErrorInfo` instances.
@@ -25,7 +25,7 @@ extension ErrorInfo {
   /// - Parameters:
   ///   - firstDonator: The first `ErrorInfo` instance to merge.
   ///   - otherDonators: Additional `ErrorInfo` instances to merge.
-  ///   - mergeOrigin: The source of the merge (defaults to `.fileLine()`).
+  ///   - origin: The source of the merge (defaults to `.fileLine()`).
   ///
   /// # Example:
   /// ```swift
@@ -37,10 +37,10 @@ extension ErrorInfo {
   /// ```
   public mutating func merge(with firstDonator: Self,
                              _ otherDonators: Self...,
-                             collisionSource mergeOrigin: CollisionSource.Origin) {
+                             origin: WriteProvenance.Origin) {
     self = Self._mergedImp(recipient: self,
                            donators: [firstDonator] + otherDonators,
-                           collisionSource: mergeOrigin)
+                           origin: origin)
   }
   
   public consuming func merged(with firstDonator: Self,
@@ -49,7 +49,7 @@ extension ErrorInfo {
                                line: UInt = #line) -> Self {
     Self._mergedImp(recipient: self,
                     donators: [firstDonator] + otherDonators,
-                    collisionSource: .fileLine(file: file, line: line))
+                    origin: .fileLine(file: file, line: line))
   }
   
   /// Returns a new `ErrorInfo` instance by merging the current instance with one or more others.
@@ -58,7 +58,7 @@ extension ErrorInfo {
   /// - Parameters:
   ///   - firstDonator: The first `ErrorInfo` instance to merge.
   ///   - otherDonators: Additional `ErrorInfo` instances to merge.
-  ///   - mergeOrigin: The source of the merge (defaults to `.fileLine()`).
+  ///   - origin: The source of the merge (defaults to `.fileLine()`).
   ///
   /// # Example:
   /// ```swift
@@ -70,10 +70,10 @@ extension ErrorInfo {
   /// ```
   public consuming func merged(with firstDonator: Self,
                                _ otherDonators: Self...,
-                               collisionSource mergeOrigin: CollisionSource.Origin) -> Self {
+                               origin: WriteProvenance.Origin) -> Self {
     Self._mergedImp(recipient: self,
                     donators: [firstDonator] + otherDonators,
-                    collisionSource: mergeOrigin)
+                    origin: origin)
   }
 }
 
@@ -108,14 +108,14 @@ extension ErrorInfo {
                             line: UInt = #line) -> Self {
     _mergedImp(recipient: recipient,
                donators: [firstDonator] + otherDonators,
-               collisionSource: .fileLine(file: file, line: line))
+               origin: .fileLine(file: file, line: line))
   }
   
   /// Merges multiple `ErrorInfo` instances from an array and returns the resulting merged instance.
   ///
   /// - Parameters:
   ///   - errorInfosArray: An array of `ErrorInfo` instances to merge.
-  ///   - mergeOrigin: The source of the merge (defaults to `.fileLine()`).
+  ///   - origin: The source of the merge (defaults to `.fileLine()`).
   ///
   /// - Returns: A new `ErrorInfo` instance containing the merged data.
   ///
@@ -127,11 +127,11 @@ extension ErrorInfo {
   /// // mergedInfo contains both errorCode and errorMessage.
   /// ```
   public static func merged(errorInfosArray: consuming [Self],
-                            collisionSource mergeOrigin: CollisionSource.Origin) -> Self {
+                            origin: WriteProvenance.Origin) -> Self {
     switch errorInfosArray.count {
     case 0: return .empty
     case 1: return errorInfosArray[0]
-    default: return _mergedImp(recipient: errorInfosArray[0], donators: errorInfosArray[1...], collisionSource: mergeOrigin)
+    default: return _mergedImp(recipient: errorInfosArray[0], donators: errorInfosArray[1...], origin: origin)
     }
   }
   
@@ -155,7 +155,7 @@ extension ErrorInfo {
   /// This internal generic method performs the merging operation by iterating over the donators.
   internal static func _mergedImp(recipient: consuming Self,
                                   donators: some RandomAccessCollection<Self>,
-                                  collisionSource mergeOrigin: CollisionSource.Origin) -> Self {
+                                  origin: WriteProvenance.Origin) -> Self {
     // Improvement: reserve capacity
     for donator in donators {
       for (key, annotatedRecord) in donator._storage {
@@ -163,7 +163,7 @@ extension ErrorInfo {
           ._addWithCollisionResolution(record: annotatedRecord.record,
                                        forKey: key,
                                        duplicatePolicy: .allowEqual,
-                                       collisionSource: annotatedRecord.collisionSource ?? .onMerge(origin: mergeOrigin))
+                                       writeProvenanceForCollision: annotatedRecord.collisionSource ?? .onMerge(origin: origin))
         // Example: ["a": 1] merge with ["a": 1, "a": 1(collisionX)]
         //  result: ["a": 1, "a": 1(collisionZ), "a": 1(collisionX)]
       }

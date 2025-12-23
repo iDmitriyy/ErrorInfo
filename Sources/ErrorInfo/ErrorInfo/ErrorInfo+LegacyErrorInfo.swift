@@ -17,7 +17,7 @@ extension ErrorInfo {
   ///
   /// - Parameters:
   ///   - legacyUserInfo: A dictionary containing legacy key-value pairs where the values are of type `Any`.
-  ///   - collisionOrigin: collision source, defaults to `.fileLine()`.
+  ///   - origin: origin for collisions, defaults to `.fileLine()`.
   ///
   /// - Note:
   ///   - Each value is casted or converted to a compatible `ErrorInfoValueType` using the `_castOrConvertToCompatible` method.
@@ -30,27 +30,27 @@ extension ErrorInfo {
   /// let errorInfo = ErrorInfo(legacyUserInfo: legacyData)
   /// ```
   public init(legacyUserInfo: [String: Any],
-              collisionSource collisionOrigin: @autoclosure () -> CollisionSource.Origin) {
+              origin collisionOrigin: @autoclosure () -> WriteProvenance.Origin) {
     self.init(minimumCapacity: legacyUserInfo.count)
-    _appendLegacyUserInfoImp(legacyUserInfo: legacyUserInfo, collisionSource: collisionOrigin())
+    _appendLegacyUserInfoImp(legacyUserInfo: legacyUserInfo, origin: collisionOrigin())
   }
   
   public mutating func append(legacyUserInfo: [String: Any],
-                              collisionSource collisionOrigin: @autoclosure () -> CollisionSource.Origin) {
-    _appendLegacyUserInfoImp(legacyUserInfo: legacyUserInfo, collisionSource: collisionOrigin())
+                              origin: @autoclosure () -> WriteProvenance.Origin) {
+    _appendLegacyUserInfoImp(legacyUserInfo: legacyUserInfo, origin: origin())
   }
 }
 
 extension ErrorInfo {
   private mutating func _appendLegacyUserInfoImp(legacyUserInfo: [String: Any],
-                                                 collisionSource collisionOrigin: @autoclosure () -> CollisionSource.Origin) {
+                                                 origin: @autoclosure () -> WriteProvenance.Origin) {
     legacyUserInfo.forEach { key, value in
       let compatibleValue = Self._castOrConvertToCompatible(legacyInfoValue: value)
       let record = BackingStorage.Record(keyOrigin: .fromCollection, someValue: .value(compatibleValue))
       _storage._addWithCollisionResolution(record: record,
                                            forKey: key,
                                            duplicatePolicy: .allowEqual, // no effect here, Swift.Dictionary has unique keys
-                                           collisionSource: .onDictionaryConsumption(origin: collisionOrigin()))
+                                           writeProvenanceForCollision: .onDictionaryConsumption(origin: origin()))
       // TBD: May be it is good to split into two separated dictionaries. Static initializer will return something like tuple of
       // (Self, nonSendableValues: [(key:, value:)])
     }

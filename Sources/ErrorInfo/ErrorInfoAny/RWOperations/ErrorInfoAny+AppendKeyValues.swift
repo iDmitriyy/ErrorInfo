@@ -11,12 +11,12 @@ extension ErrorInfoAny {
   public mutating func appendKeyValues(_ literal: KeyValuePairs<Key, Value>,
                                        file: StaticString = #fileID,
                                        line: UInt = #line) {
-    appendKeyValues(literal, collisionSource: .fileLine(file: file, line: line))
+    appendKeyValues(literal, origin: .fileLine(file: file, line: line))
   }
   
   public mutating func appendKeyValues(_ literal: KeyValuePairs<Key, Value>,
-                                       collisionSource origin: @autoclosure () -> CollisionSource.Origin) {
-    _appendKeyValuesImp(_dictionaryLiteral: literal, collisionSource: .onDictionaryConsumption(origin: origin()))
+                                       origin: @autoclosure () -> WriteProvenance.Origin) {
+    _appendKeyValuesImp(_dictionaryLiteral: literal, writeProvenance: .onDictionaryConsumption(origin: origin()))
   }
 }
 
@@ -26,7 +26,7 @@ extension ErrorInfoAny {
 
 extension ErrorInfoAny {
   internal mutating func _appendKeyValuesImp(_dictionaryLiteral elements: some Collection<(key: Key, value: Value)>,
-                                             collisionSource: @autoclosure () -> CollisionSource) {
+                                             writeProvenance: @autoclosure () -> WriteProvenance) {
     // Improvement: try reserve capacity. perfomance tests
     for (literalKey, value) in elements {
       _add(key: literalKey.rawValue,
@@ -34,7 +34,7 @@ extension ErrorInfoAny {
            value: value,
            preserveNilValues: true,
            duplicatePolicy: .allowEqual,
-           collisionSource: collisionSource())
+           writeProvenance: writeProvenance())
     }
   }
 }

@@ -10,7 +10,7 @@ import Testing
 
 struct CollisionSourceLayoutTests {
   @Test func `size limits`() {
-    let memoryLayout = MemoryLayout<CollisionSource>.self
+    let memoryLayout = MemoryLayout<WriteProvenance>.self
     
     let tuple = VariadicTuple(memoryLayout.size, memoryLayout.stride)
     

@@ -80,9 +80,9 @@ struct `Merge+SummaryInfoTests` {
   // MARK: - _determineCollisionSource
     
   @Test func determineCollisionSource_availableCollisionSource() {
-    let record = (key: "value", value: .onCreateWithDictionaryLiteral as CollisionSource?)
+    let record = (key: "value", value: .onCreateWithDictionaryLiteral as WriteProvenance?)
     
-    let collisionAvailability: Merge.CollisionAvailability<(key: String, value: CollisionSource?)> =
+    let collisionAvailability: Merge.CollisionAvailability<(key: String, value: WriteProvenance?)> =
       .available(keyPath: \.value, interpolation: { $0.defaultStringInterpolation() })
       
     let collisionSource = Merge._Summary._determineCollisionSource(collisionAvailability: collisionAvailability,
@@ -92,9 +92,9 @@ struct `Merge+SummaryInfoTests` {
   }
   
   @Test func determineCollisionSource_NilCollisionSource() {
-    let record = (key: "value", value: nil as CollisionSource?)
+    let record = (key: "value", value: nil as WriteProvenance?)
     
-    let collisionAvailability: Merge.CollisionAvailability<(key: String, value: CollisionSource?)> =
+    let collisionAvailability: Merge.CollisionAvailability<(key: String, value: WriteProvenance?)> =
       .available(keyPath: \.value, interpolation: { $0.defaultStringInterpolation() })
       
     let collisionSource = Merge._Summary._determineCollisionSource(collisionAvailability: collisionAvailability,

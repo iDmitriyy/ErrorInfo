@@ -84,14 +84,14 @@ extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepre
   ///
   /// - If `newValue` is `nil` and `preserveNilValues == true`, an explicit `nil` record is stored for `typeOfWrapped`.
   /// - If `duplicatePolicy == .rejectEqual`, equal values for the same key are skipped.
-  /// - Collisions are annotated using the provided `collisionSource`.
+  /// - Collisions are annotated using the provided `writeProvenance`.
   internal mutating func _add(key: Key,
                               keyOrigin: KeyOrigin,
                               optionalValue newValue: RecordValue.Wrapped?,
                               typeOfWrapped: RecordValue.TypeOfWrapped,
                               preserveNilValues: Bool,
                               duplicatePolicy: ValueDuplicatePolicy,
-                              collisionSource: @autoclosure () -> CollisionSource) {
+                              writeProvenance: @autoclosure () -> WriteProvenance) {
     let optional: RecordValue
     if let newValue {
       optional = .value(newValue)
@@ -104,7 +104,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepre
     _addWithCollisionResolution(record: Record(keyOrigin: keyOrigin, someValue: optional),
                                 forKey: key,
                                 duplicatePolicy: duplicatePolicy,
-                                collisionSource: collisionSource())
+                                writeProvenanceForCollision: writeProvenance())
   }
 }
 
@@ -115,16 +115,16 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
                               keyOrigin: KeyOrigin,
                               someValue: RecordValue,
                               duplicatePolicy: ValueDuplicatePolicy,
-                              collisionSource: @autoclosure () -> CollisionSource) {
+                              writeProvenance: @autoclosure () -> WriteProvenance) {
     _addWithCollisionResolution(record: Record(keyOrigin: keyOrigin, someValue: someValue),
                                 forKey: key,
                                 duplicatePolicy: duplicatePolicy,
-                                collisionSource: collisionSource())
+                                writeProvenanceForCollision: writeProvenance())
   }
 }
 
 extension ErrorInfoGeneric where RecordValue: Equatable {
-  /// Appends `newRecord` for `key` according to `duplicatePolicy`, and annotates the record with `collisionSource`
+  /// Appends `newRecord` for `key` according to `duplicatePolicy`, and annotates the record with `writeProvenanceForCollision`
   /// when the same key is written more than once.
   ///
   /// Behavior by policy:
@@ -140,21 +140,22 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
   ///   - newRecord: The record to insert.
   ///   - key: The key under which to store the record.
   ///   - duplicatePolicy: Policy that defines when equal values are rejected or allowed.
-  ///   - collisionSource: Describes the origin of a collision; evaluated lazily.
+  ///   - writeProvenance: Describes the origin of a collision; evaluated lazily.
   internal mutating func _addWithCollisionResolution(record newRecord: Record,
                                                      forKey key: Key,
                                                      duplicatePolicy: ValueDuplicatePolicy,
-                                                     collisionSource: @autoclosure () -> CollisionSource) {
+                                                     writeProvenanceForCollision: @autoclosure () -> WriteProvenance) {
     let comparator: (AnnotatedRecord) -> Bool
     let currentValues: ValuesForKey<AnnotatedRecord>?
     switch duplicatePolicy.kind {
     case .rejectEqualValue:
       currentValues = _storage.allValues(forKey: key)
       comparator = { current in newRecord.someValue == current.record.someValue }
-      // FIXME: - .rejectEqual is x3 more fast than other on append
+
+    // FIXME: - .rejectEqual is x3 more fast than other on append
     case .rejectEqualValueWhenEqualOrigin:
       currentValues = _storage.allValues(forKey: key)
-      let collisionSource = collisionSource() // Improvement: collisionSource() called twice
+      let collisionSource = writeProvenanceForCollision() // Improvement: writeProvenance() called twice
       comparator = { current in
         let isEqualValue = newRecord.someValue == current.record.someValue
         let isEqualKeyOrigin = { newRecord.keyOrigin == current.record.keyOrigin }
@@ -170,7 +171,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
       }
       
     case .allowEqual:
-      _storage.append(key: key, value: newRecord, collisionSource: collisionSource())
+      _storage.append(key: key, value: newRecord, writeProvenance: writeProvenanceForCollision())
       return // early exit
     }
     
@@ -179,10 +180,10 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
       if currentValues.contains(where: comparator) {
         return
       } else {
-        _storage.append(key: key, value: newRecord, collisionSource: collisionSource())
+        _storage.append(key: key, value: newRecord, writeProvenance: writeProvenanceForCollision())
       }
     } else {
-      _storage.append(key: key, value: newRecord, collisionSource: collisionSource())
+      _storage.append(key: key, value: newRecord, writeProvenance: writeProvenanceForCollision())
     }
   }
 }

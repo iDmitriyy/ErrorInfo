@@ -86,7 +86,7 @@ extension ErrorInfoAny {
                                  value newValue: V?,
                                  preserveNilValues: Bool,
                                  duplicatePolicy: ValueDuplicatePolicy,
-                                 collisionSource: @autoclosure () -> CollisionSource) {
+                                 writeProvenance: @autoclosure () -> WriteProvenance) {
     // FIXME: - unwrap / remove nesting of value / type
     // e.g. append(contentsOf sequence:)
     _storage._add(key: key,
@@ -95,6 +95,6 @@ extension ErrorInfoAny {
                   typeOfWrapped: V.self,
                   preserveNilValues: preserveNilValues,
                   duplicatePolicy: duplicatePolicy,
-                  collisionSource: collisionSource())
+                  writeProvenance: writeProvenance())
   }
 }

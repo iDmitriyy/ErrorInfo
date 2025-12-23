@@ -75,7 +75,7 @@ extension OrderedMultipleValuesForKeyStorage {
     @inlinable @inline(__always)
     internal mutating func append(key newKey: Key,
                                   value newValue: Value,
-                                  collisionSource: @autoclosure () -> CollisionSource) {
+                                  writeProvenance: @autoclosure () -> WriteProvenance) {
       // --- copy-paste from `mutateUnderlying`
       var singleValueForKeyDict: SingleValueForKeyDict!
       var multiValueForKeyDict: MultiValueForKeyDict!
@@ -97,7 +97,7 @@ extension OrderedMultipleValuesForKeyStorage {
           for (currentKey, currentValue) in singleValueForKeyDict {
             multiValueForKeyDict.append(key: currentKey, value: TaggedValue.value(currentValue))
           }
-          let newValueWrapped = TaggedValue.collidedValue(newValue, collisionSource: collisionSource())
+          let newValueWrapped = TaggedValue.collidedValue(newValue, collisionSource: writeProvenance())
           multiValueForKeyDict.append(key: newKey, value: newValueWrapped)
           _variant = .right(multiValueForKeyDict)
         } else {
@@ -106,7 +106,7 @@ extension OrderedMultipleValuesForKeyStorage {
         }
       } else if multiValueForKeyDict != nil {
         let newValueWrapped: TaggedValue = if multiValueForKeyDict.hasValue(forKey: newKey) {
-          .collidedValue(newValue, collisionSource: collisionSource())
+          .collidedValue(newValue, collisionSource: writeProvenance())
         } else {
           .value(newValue)
         }
@@ -117,4 +117,4 @@ extension OrderedMultipleValuesForKeyStorage {
   }
 }
 
-extension OrderedMultipleValuesForKeyStorage._Variant: Sendable where Key: Sendable, Value: Sendable, CollisionSource: Sendable {}
+extension OrderedMultipleValuesForKeyStorage._Variant: Sendable where Key: Sendable, Value: Sendable, WriteProvenance: Sendable {}

@@ -15,7 +15,7 @@ extension ErrorInfoAny {
          value: newValue,
          preserveNilValues: true,
          duplicatePolicy: .defaultForAppending,
-         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
+         writeProvenance: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
   }
   
   @available(*, deprecated, message: "for literal keys use subscript instead, append() is intended for dynamic keys)")
@@ -26,7 +26,7 @@ extension ErrorInfoAny {
          value: newValue,
          preserveNilValues: true,
          duplicatePolicy: .defaultForAppending,
-         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
+         writeProvenance: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
   }
 }
 
@@ -44,7 +44,7 @@ extension ErrorInfoAny {
          value: value,
          preserveNilValues: true, // has no effect in this func
          duplicatePolicy: duplicatePolicy,
-         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
+         writeProvenance: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
   }
   
   @_disfavoredOverload
@@ -57,6 +57,6 @@ extension ErrorInfoAny {
          value: value,
          preserveNilValues: true, // has no effect in this func
          duplicatePolicy: duplicatePolicy,
-         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
+         writeProvenance: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
   }
 }

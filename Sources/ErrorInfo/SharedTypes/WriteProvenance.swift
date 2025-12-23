@@ -1,5 +1,5 @@
 //
-//  CollisionSource.swift
+//  WriteProvenance.swift
 //  ErrorInfo
 //
 //  Created by Dmitriy Ignatyev on 03/10/2025.
@@ -7,7 +7,7 @@
 
 /// Represents different sources of key collisions in the context of error information.
 ///
-/// `CollisionSource` is used to track where and how a key collision occurs. This helps in identifying the context
+/// `WriteProvenance` is used to track where and how a key collision occurs. This helps in identifying the context
 /// in which the collision happens, whether it's due to a specific operation like subscript access, appending,
 /// merging, or due to specific transformations like adding prefixes or suffixes.
 ///
@@ -28,21 +28,11 @@
 ///
 /// ## Methods:
 /// - `defaultStringInterpolation()`: Returns a string representation of the collision source, including any relevant context.
-///
-/// ## Example:
-/// ```swift
-/// let collision = CollisionSource.onAddPrefix(prefix: "prefix_")
-/// collision.defaultStringInterpolation() // "onAddPrefix(`prefix_`)"
-///
-/// let origin = CollisionSource.Origin.fileLine(file: #fileID, line: #line)
-/// let collision2 = CollisionSource.onMerge(origin: origin)
-/// collision2.defaultStringInterpolation() // "onMerge(file_line: Main.swift:42)"
-/// ```
-public struct CollisionSource: Sendable, CustomDebugStringConvertible, Equatable {
+public struct WriteProvenance: Sendable, CustomDebugStringConvertible, Equatable {
   // Stored backing enum
-  private let backing: CollisionSourceBacking
+  private let backing: Backing
   
-  private enum CollisionSourceBacking: Sendable, Equatable { // CollisionSource
+  private enum Backing: Sendable, Equatable {
     case onSubscript(origin: Origin?)
     case onAppend(origin: Origin?)
     
@@ -61,53 +51,53 @@ public struct CollisionSource: Sendable, CustomDebugStringConvertible, Equatable
   
   // MARK: - Public Static Initializers
 
-  /// Creates a `CollisionSource` for a key collision triggered by subscript access.
-  public static func onSubscript(origin: Origin?) -> Self {
+  /// Creates a `WriteProvenance` for a key collision triggered by subscript access.
+  internal static func onSubscript(origin: Origin?) -> Self {
     Self(backing: .onSubscript(origin: origin))
   }
       
-  /// Creates a `CollisionSource` for a key collision triggered by appending.
-  public static func onAppend(origin: Origin?) -> Self {
+  /// Creates a `WriteProvenance` for a key collision triggered by appending.
+  internal static func onAppend(origin: Origin?) -> Self {
     Self(backing: .onAppend(origin: origin))
   }
 
-  /// Creates a `CollisionSource` for a key collision triggered by merging.
-  public static func onMerge(origin: Origin) -> Self {
+  /// Creates a `WriteProvenance` for a key collision triggered by merging.
+  internal static func onMerge(origin: Origin) -> Self {
     Self(backing: .onMerge(origin: origin))
   }
 
-  /// Creates a `CollisionSource` for a key collision triggered by adding a prefix.
-  public static func onAddPrefix(prefix: String) -> Self {
+  /// Creates a `WriteProvenance` for a key collision triggered by adding a prefix.
+  internal static func onAddPrefix(prefix: String) -> Self {
     Self(backing: .onAddPrefix(prefix: prefix))
   }
 
-  /// Creates a `CollisionSource` for a key collision triggered by adding a suffix.
-  public static func onAddSuffix(suffix: String) -> Self {
+  /// Creates a `WriteProvenance` for a key collision triggered by adding a suffix.
+  internal static func onAddSuffix(suffix: String) -> Self {
     Self(backing: .onAddSuffix(suffix: suffix))
   }
 
-  /// Creates a `CollisionSource` for a key collision triggered by a keys mapping operation.
-  public static func onKeysMapping(original: String, mapped: String) -> Self {
+  /// Creates a `WriteProvenance` for a key collision triggered by a keys mapping operation.
+  internal static func onKeysMapping(original: String, mapped: String) -> Self {
     Self(backing: .onKeysMapping(original: original, mapped: mapped))
   }
 
-  /// Creates a `CollisionSource` for a key collision triggered by a dictionary literal creation.
-  public static var onCreateWithDictionaryLiteral: Self {
+  /// Creates a `WriteProvenance` for a key collision triggered by a dictionary literal creation.
+  internal static var onCreateWithDictionaryLiteral: Self {
     Self(backing: .onCreateWithDictionaryLiteral)
   }
 
-  /// Creates a `CollisionSource` for a key collision triggered by dictionary consumption.
-  public static func onDictionaryConsumption(origin: Origin) -> Self {
+  /// Creates a `WriteProvenance` for a key collision triggered by dictionary consumption.
+  internal static func onDictionaryConsumption(origin: Origin) -> Self {
     Self(backing: .onDictionaryConsumption(origin: origin))
   }
 
-  /// Creates a `CollisionSource` for a key collision triggered by a sequence creation.
-  public static func onCreateWithSequence(origin: Origin) -> Self {
+  /// Creates a `WriteProvenance` for a key collision triggered by a sequence creation.
+  internal static func onCreateWithSequence(origin: Origin) -> Self {
     Self(backing: .onCreateWithSequence(origin: origin))
   }
 
-  /// Creates a `CollisionSource` for a key collision triggered by sequence consumption.
-  public static func onSequenceConsumption(origin: Origin) -> Self {
+  /// Creates a `WriteProvenance` for a key collision triggered by sequence consumption.
+  internal static func onSequenceConsumption(origin: Origin) -> Self {
     Self(backing: .onSequenceConsumption(origin: origin))
   }
   
@@ -156,15 +146,15 @@ public struct CollisionSource: Sendable, CustomDebugStringConvertible, Equatable
   // collision short indicator variants: `   @#@    >X<    !*!  >collision*   `
 }
 
-extension CollisionSource {
+extension WriteProvenance {
   // FIXME: - add to documentataion that Origin can be created as String literal
   
   public enum Origin: Sendable, ExpressibleByStringLiteral, Equatable {
     public typealias StringLiteralType = StaticString
     
     case fileLine(file: String = #fileID, line: UInt = #line)
-    case function(function: String = #function)
     case custom(origin: String)
+    case function(function: String = #function)
     
     public init(stringLiteral origin: StringLiteralType) {
       self = .custom(origin: String(origin))
@@ -174,7 +164,7 @@ extension CollisionSource {
       .fileLine(file: String(file), line: line)
     }
     
-    internal func _defaultStringInterpolation(collisionName: consuming String) -> String {
+    fileprivate func _defaultStringInterpolation(collisionName: consuming String) -> String {
       switch self {
       case let .fileLine(file, line):
         String.concat(collisionName,
@@ -191,3 +181,5 @@ extension CollisionSource {
     }
   }
 }
+
+// TODO: - change doc fo writeProvenance / origin arg names

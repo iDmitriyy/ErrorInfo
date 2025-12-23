@@ -21,7 +21,7 @@ extension ErrorInfo {
   ///
   /// - Complexity: O(n) where n is the number of pairs in `sequence`.
   ///
-  /// - SeeAlso: ``append(contentsOf:duplicatePolicy:collisionSource:)``
+  /// - SeeAlso: ``append(contentsOf:duplicatePolicy:origin)``
   ///
   /// # Example
   /// ```swift
@@ -35,7 +35,7 @@ extension ErrorInfo {
                                                 duplicatePolicy: ValueDuplicatePolicy,
                                                 file: StaticString = #fileID,
                                                 line: UInt = #line)  {
-    append(contentsOf: sequence, duplicatePolicy: duplicatePolicy, collisionSource: .fileLine(file: file, line: line))
+    append(contentsOf: sequence, duplicatePolicy: duplicatePolicy, origin: .fileLine(file: file, line: line))
   }
   
   /// Appends a sequence of key–value pairs.
@@ -43,7 +43,7 @@ extension ErrorInfo {
   /// - Parameters:
   ///   - sequence: A sequence of pairs where the first element is a dynamic key (`String`) and the second is a non‑optional value.
   ///   - duplicatePolicy: How to handle equal values for the same key. Use `.rejectEqual` to skip duplicates or `.allowEqual` to store all.
-  ///   - collisionSource: Marks the origin used when collisions occur while consuming the sequence (for diagnostics).
+  ///   - origin Marks the origin used when collisions occur while consuming the sequence (for diagnostics).
   ///
   /// - Complexity: O(n) where n is the number of pairs in `sequence`.
   ///
@@ -57,14 +57,14 @@ extension ErrorInfo {
   /// ```
   public mutating func append<V: ValueProtocol>(contentsOf sequence: some Sequence<(String, V)>,
                                                 duplicatePolicy: ValueDuplicatePolicy,
-                                                collisionSource collisionOrigin: CollisionSource.Origin) {
+                                                origin: WriteProvenance.Origin) {
     for (dynamicKey, value) in sequence {
       _add(key: dynamicKey,
            keyOrigin: .fromCollection,
            value: value,
            preserveNilValues: true, // has no effect here
            duplicatePolicy: duplicatePolicy,
-           collisionSource: .onSequenceConsumption(origin: collisionOrigin))
+           writeProvenance: .onSequenceConsumption(origin: origin))
     }
   }
 }
@@ -78,12 +78,12 @@ extension ErrorInfo {
  // Dedupe within each sequence, allow equal across sequences:
  info.append(contentsOf: headers,
              duplicatePolicy: .allowEqualWhenOriginDiffers,
-             collisionSource: .custom(origin: "headers"))
+             origin .custom(origin: "headers"))
 
  1) Single-batch ingestion: skip duplicates vs keep all
  info.append(contentsOf: query,
              duplicatePolicy: .allowEqualWhenOriginDiffers,
-             collisionSource: .custom(origin: "query"))
+             origin .custom(origin: "query"))
  
  
  let pairs: [(String, String)] = [("id", "1"), ("id", "1"), ("name", "A")]
@@ -91,13 +91,13 @@ extension ErrorInfo {
  // Default: dedupe inside the batch, regardless of duplicatePolicy
  info.append(contentsOf: pairs,
              duplicatePolicy: .allowEqual,               // cross-batch: keep all
-             collisionSource: "user-import-batch",
+             origin "user-import-batch",
              dedupeWithinSequence: true)                 // intra-batch: skip equal duplicates
 
  // If you want to preserve raw multiplicity within the same sequence:
  info.append(contentsOf: pairs,
              duplicatePolicy: .allowEqual,               // cross-batch: keep all
-             collisionSource: "user-import-batch-2",
+             origin "user-import-batch-2",
              dedupeWithinSequence: false)                // intra-batch: keep duplicates
  
  2) Multiple sequences from different contexts: dedupe within each, allow equal across sequences
@@ -108,12 +108,12 @@ extension ErrorInfo {
  // Dedupe within each sequence, allow equal across sequences:
  info.append(contentsOf: headers,
              duplicatePolicy: .allowEqualWhenOriginDiffers,
-             collisionSource: "headers",
+             origin "headers",
              dedupeWithinSequence: true)
 
  info.append(contentsOf: query,
              duplicatePolicy: .allowEqualWhenOriginDiffers,
-             collisionSource: "query",
+             origin "query",
              dedupeWithinSequence: true)
  - Inside headers, the duplicate is skipped (same origin "headers").
  - The query entry is appended, because its origin "query" differs even though the value is equal.
@@ -122,8 +122,8 @@ extension ErrorInfo {
  // Both calls capture the same file/line origin
  
  func foo() {
-   info.append(contentsOf: query, duplicatePolicy: .allowEqualWhenOriginDiffers, collisionSource: "request")
-   info.append(contentsOf: params,   duplicatePolicy: .allowEqualWhenOriginDiffers, collisionSource: "request")
+   info.append(contentsOf: query, duplicatePolicy: .allowEqualWhenOriginDiffers, origin "request")
+   info.append(contentsOf: params,   duplicatePolicy: .allowEqualWhenOriginDiffers, origin "request")
  }
  // Equal values may be rejected across calls unintentionally.
 
@@ -131,7 +131,7 @@ extension ErrorInfo {
  Scopes often represent meaningful loci (e.g., “initial flow” vs “retry flow”).
  Use string origins to allow the same values to coexist when they come from different scopes.
  let info = ErrorInfo.withOptions(duplicatePolicy: .allowEqualWhenOriginDiffers,
-                                  collisionSource: "initial-flow") { view in
+                                  origin "initial-flow") { view in
    view[.message] = "Timeout"   // recorded with origin "initial-flow"
    view[.message] = "Timeout"   // skipped (same scope, same value)
  }
@@ -139,7 +139,7 @@ extension ErrorInfo {
  // Later, another scope with a different origin:
  var info2 = info
  info2.appendWith(duplicatePolicy: .allowEqualWhenOriginDiffers,
-                  collisionSource: "retry-flow") { view in
+                  origin "retry-flow") { view in
    view[.message] = "Timeout"   // allowed (different origin), coexists with the first
  }
  • Within the same scope "initial-flow", equal values are rejected.
@@ -150,7 +150,7 @@ extension ErrorInfo {
  var base: ErrorInfo = [.message: "Timeout"]
  let extra: ErrorInfo = [.message: "Timeout"]
  // Annotate the merge origin for diagnostics:
- let merged = base.merged(with: extra, collisionSource: "merge:network+cache")
+ let merged = base.merged(with: extra, origin "merge:network+cache")
  
  Even though duplicates are preserved, the collision metadata will reflect "merge:network+cache" for provenance.
  
@@ -159,7 +159,7 @@ extension ErrorInfo {
  info.appendKeyValues([
    .id: 42,
    .id: 42
- ], collisionSource: "headers") // collisions annotated as coming from “headers”
+ ], origin "headers") // collisions annotated as coming from “headers”
  
  
  .allowEqualWhenOriginDiffers:
@@ -182,8 +182,9 @@ extension ErrorInfo {
  - “dedupeWithinSequence: When true, equal (key, value) pairs inside this call are skipped before applying duplicatePolicy.”
  public mutating func append<V: ValueProtocol>(contentsOf sequence: some Sequence<(String, V)>,
                                                duplicatePolicy: ValueDuplicatePolicy,
-                                               collisionSource collisionOrigin: CollisionSource.Origin,
-                                               dedupeWithinSequence: Bool = true) {
+                                               dedupeWithinSequence: Bool = true
+                                               origin: WriteProvenance.Origin,
+                                               ) {
    // When `dedupeWithinSequence` is enabled, skip equal (key, value) duplicates inside this batch,
    // while leaving cross-batch behavior to the chosen `duplicatePolicy` and `collisionOrigin`.
    if dedupeWithinSequence {
@@ -198,7 +199,7 @@ extension ErrorInfo {
             value: value,
             preserveNilValues: true, // has no effect here
             duplicatePolicy: duplicatePolicy,
-            collisionSource: .onSequenceConsumption(origin: collisionOrigin))
+            writeProvenance: .onSequenceConsumption(origin: origin))
      }
    } else {
      for (dynamicKey, value) in sequence {
@@ -207,7 +208,7 @@ extension ErrorInfo {
             value: value,
             preserveNilValues: true, // has no effect here
             duplicatePolicy: duplicatePolicy,
-            collisionSource: .onSequenceConsumption(origin: collisionOrigin))
+            writeProvenance: .onSequenceConsumption(origin: origin))
      }
    }
  }

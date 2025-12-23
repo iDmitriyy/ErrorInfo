@@ -38,11 +38,11 @@ private import struct OrderedCollections.OrderedSet
 
 extension Merge {
   /// Representing the availability of collision metadata for an element.
-  /// When CollisionSource is available, the `available` case is used with the corresponding key path to access the metadata.
-  /// When CollisionSource is not available, the `notAvailable` case is used to indicate the absence of collision information.
+  /// When WriteProvenance is available, the `available` case is used with the corresponding key path to access the metadata.
+  /// When WriteProvenance is not available, the `notAvailable` case is used to indicate the absence of collision information.
   public enum CollisionAvailability<Element> {
-    case available(keyPath: KeyPath<Element, CollisionSource?>,
-                   interpolation: (CollisionSource) -> String = { $0.defaultStringInterpolation() })
+    case available(keyPath: KeyPath<Element, WriteProvenance?>,
+                   interpolation: (WriteProvenance) -> String = { $0.defaultStringInterpolation() })
     case notAvailable
   }
   
@@ -90,7 +90,7 @@ extension Merge {
   ///   In case some of the sources have identical signatures (rare in practice), an index is appended to source signatures to distinguish them.
   ///
   /// - **Collision Handling Within Sources:** If a key appears multiple times within a single error info source, it is annotated with a
-  ///   collision source (such as `onSubscript`).
+  ///   collision source (such as `onSubscript`, `onMerge`).
   ///
   /// - **Customizable Key Prefixing:** Allows you to specify custom key prefixes for each error info source or omit prefixes entirely.
   ///   This is controlled by the `keysPrefixOption` parameter.
@@ -330,7 +330,7 @@ extension Merge._Summary {
                                                        element: (key: K, value: V)) -> String? {
     switch collisionAvailability {
     case let .available(keyPath, interpolation):
-      let collision: CollisionSource? = element[keyPath: keyPath]
+      let collision: WriteProvenance? = element[keyPath: keyPath]
       return collision.map(interpolation)
     case .notAvailable:
       return nil
@@ -345,7 +345,7 @@ extension Merge._Summary {
   /// ```swift
   /// var key = "id"
   /// _appendSuffixAnnotations(keyOrigin: "literal",
-  ///                          collisionSource: "onSubscript",
+  ///                          collisionSource: "onSubscript(file_line:Main.swift:31)",
   ///                          errorInfoSignature: nil,
   ///                          annotationsFormat: .default,
   ///                          to: &key)

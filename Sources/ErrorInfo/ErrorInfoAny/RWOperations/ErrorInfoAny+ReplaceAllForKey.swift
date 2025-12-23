@@ -29,7 +29,7 @@ extension ErrorInfoAny {
          value: newValue,
          preserveNilValues: true, // has no effect in this func
          duplicatePolicy: .allowEqual, // has no effect in this func
-         collisionSource: .onAppend(origin: nil)) // collisions must never happen using this func
+         writeProvenance: .onAppend(origin: nil)) // collisions must never happen using this func
     return oldValues
   }
 }

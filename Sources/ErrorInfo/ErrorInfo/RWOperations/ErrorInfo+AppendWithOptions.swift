@@ -31,7 +31,7 @@ extension ErrorInfo {
   ///
   /// - Returns: A new `ErrorInfo` containing the applied changes.
   ///
-  /// - SeeAlso: ``withOptions(duplicatePolicy:preserveNilValues:prefixForKeys:collisionSource:modify:)``
+  /// - SeeAlso: ``withOptions(duplicatePolicy:preserveNilValues:prefixForKeys:origin:modify:)``
   ///
   /// # Example:
   /// ```swift
@@ -55,7 +55,7 @@ extension ErrorInfo {
     withOptions(duplicatePolicy: duplicatePolicy,
                 preserveNilValues: preserveNilValues,
                 prefixForKeys: prefixForKeys,
-                collisionSource: .fileLine(file: file, line: line),
+                origin: .fileLine(file: file, line: line),
                 modify: modify)
   }
   
@@ -70,7 +70,7 @@ extension ErrorInfo {
   ///   - duplicatePolicy: How to handle equal values for the same key. Defaults to ``ValueDuplicatePolicy/defaultForAppending``.
   ///   - preserveNilValues: Whether `nil` assignments (typically emplicit) should be recorded as explicit `nil` entries. Defaults to `true`.
   ///   - prefixForKeys: A literal prefix to prepend to all keys added within the scope. Defaults to `nil`.
-  ///   - collisionSource: The origin used for collision diagnostics for operations in the scope.
+  ///   - origin: The origin used for collision diagnostics for operations in the scope.
   ///   - modify: A closure that receives a ``ErrorInfo/CustomOptionsView`` to perform mutations.
   ///
   /// - Returns: A new `ErrorInfo` containing the applied changes.
@@ -91,13 +91,13 @@ extension ErrorInfo {
   public static func withOptions(duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending,
                                  preserveNilValues: Bool = true,
                                  prefixForKeys: StringLiteralKey? = nil,
-                                 collisionSource: CollisionSource.Origin,
+                                 origin: WriteProvenance.Origin,
                                  modify: (consuming CustomOptionsView) -> Void) -> Self {
     var info = Self()
     info.appendWith(duplicatePolicy: duplicatePolicy,
                     preserveNilValues: preserveNilValues,
                     prefixForKeys: prefixForKeys,
-                    collisionSource: collisionSource,
+                    origin: origin,
                     modify: modify)
     return info
   }
@@ -121,7 +121,7 @@ extension ErrorInfo {
   ///   - line: Line number used as collision origin (defaults to `#line`).
   ///   - modify: A closure that receives a ``ErrorInfo/CustomOptionsView`` to perform mutations.
   ///
-  /// - SeeAlso: ``appendWith(duplicatePolicy:preserveNilValues:prefixForKeys:collisionSource:modify:)``
+  /// - SeeAlso: ``appendWith(duplicatePolicy:preserveNilValues:prefixForKeys:origin:modify:)``
   ///
   /// # Example:
   /// ```swift
@@ -145,7 +145,7 @@ extension ErrorInfo {
     appendWith(duplicatePolicy: duplicatePolicy,
                preserveNilValues: preserveNilValues,
                prefixForKeys: prefixForKeys,
-               collisionSource: .fileLine(file: file, line: line),
+               origin: .fileLine(file: file, line: line),
                modify: modify)
   }
   
@@ -159,7 +159,7 @@ extension ErrorInfo {
   ///   - duplicatePolicy: How to handle equal values for the same key. Defaults to ``ValueDuplicatePolicy/defaultForAppending``.
   ///   - preserveNilValues: Whether `nil` assignments (typically emplicit) should be recorded as explicit `nil` entries. Defaults to `true`.
   ///   - prefixForKeys: A literal prefix to prepend to all keys added within the scope. Defaults to `nil`.
-  ///   - collisionSource: The origin used for collision diagnostics for operations in the scope.
+  ///   - origin: The origin used for collision diagnostics for operations in the scope.
   ///   - modify: A closure that receives a ``ErrorInfo/CustomOptionsView`` to perform mutations.
   ///
   /// # Example:
@@ -178,14 +178,14 @@ extension ErrorInfo {
   public mutating func appendWith(duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending,
                                   preserveNilValues: Bool = true,
                                   prefixForKeys: StringLiteralKey? = nil,
-                                  collisionSource: CollisionSource.Origin,
+                                  origin: WriteProvenance.Origin,
                                   modify: (consuming CustomOptionsView) -> Void) {
     withUnsafeMutablePointer(to: &self) { pointer in
       let view = CustomOptionsView(pointer: pointer,
                                    duplicatePolicy: duplicatePolicy,
                                    preserveNilValues: preserveNilValues,
                                    prefixForKeys: prefixForKeys,
-                                   collisionOrigin: collisionSource)
+                                   origin: origin)
       modify(view)
     }
   }
@@ -227,7 +227,7 @@ extension ErrorInfo.CustomOptionsView {
                            value: newValue,
                            preserveNilValues: preserveNilValues ?? self.preserveNilValues,
                            duplicatePolicy: duplicatePolicy ?? self.duplicatePolicy,
-                           collisionSource: .onSubscript(origin: collisionOrigin))
+                           writeProvenance: .onSubscript(origin: origin))
     }
   }
   
@@ -255,8 +255,8 @@ extension ErrorInfo {
   /// A lightweight, non‑escaping view that applies scoped options to mutations.
   ///
   /// Instances of `CustomOptionsView` are created by
-  /// - ``ErrorInfo/withOptions(duplicatePolicy:preserveNilValues:prefixForKeys:collisionSource:modify:)``
-  /// - ``ErrorInfo/appendWith(duplicatePolicy:preserveNilValues:prefixForKeys:collisionSource:modify:)``
+  /// - ``ErrorInfo/withOptions(duplicatePolicy:preserveNilValues:prefixForKeys:origin:modify:)``
+  /// - ``ErrorInfo/appendWith(duplicatePolicy:preserveNilValues:prefixForKeys:origin:modify:)``
   ///
   /// and are valid only within the lifetime of the `modify` closure.
   ///
@@ -266,19 +266,19 @@ extension ErrorInfo {
     private let duplicatePolicy: ValueDuplicatePolicy
     private let preserveNilValues: Bool
     private let prefixForKeys: StringLiteralKey?
-    private let collisionOrigin: CollisionSource.Origin
+    private let origin: WriteProvenance.Origin
     
     @_lifetime(borrow pointer)
     fileprivate init(pointer: UnsafeMutablePointer<ErrorInfo>,
                      duplicatePolicy: ValueDuplicatePolicy,
                      preserveNilValues: Bool,
                      prefixForKeys: StringLiteralKey?,
-                     collisionOrigin: CollisionSource.Origin) {
+                     origin: WriteProvenance.Origin) {
       self.pointer = pointer
       self.duplicatePolicy = duplicatePolicy
       self.preserveNilValues = preserveNilValues
       self.prefixForKeys = prefixForKeys
-      self.collisionOrigin = collisionOrigin
+      self.origin = origin
     }
   }
 }

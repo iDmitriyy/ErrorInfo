@@ -126,7 +126,7 @@ extension ErrorInfo {
          value: stringRepresentation,
          preserveNilValues: true, // has no effect in this func
          duplicatePolicy: .defaultForAppending,
-         collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
+         writeProvenance: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
   }
   
   private mutating func _appendStringOfAnySendable(value newValue: (some Sendable)?,
@@ -141,14 +141,14 @@ extension ErrorInfo {
            value: stringRepresentation,
            preserveNilValues: true, // has no effect in this func
            duplicatePolicy: .defaultForAppending,
-           collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
+           writeProvenance: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
       
     case .right(let typeOfWrapped):
       _addNil(key: key,
               keyOrigin: keyOrigin,
               typeOfWrapped: typeOfWrapped,
               duplicatePolicy: .defaultForAppending,
-              collisionSource: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
+              writeProvenance: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
     }
   }
 }

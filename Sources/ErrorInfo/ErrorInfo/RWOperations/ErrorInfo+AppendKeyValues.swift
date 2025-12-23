@@ -10,7 +10,7 @@
 extension ErrorInfo {
   /// Allows to append key-values from Dictionary literal into the existing `ErrorInfo` instance.
   ///
-  /// Collisions during appending are tracked with the `CollisionSource.onDictionaryConsumption` source.
+  /// Collisions during appending are tracked with the `WriteProvenance.onDictionaryConsumption` source.
   /// This convenience overload records the call site (`#fileID`, `#line`) as the collision origin for operations
   /// executed within the scope.
   ///
@@ -34,12 +34,12 @@ extension ErrorInfo {
   public mutating func appendKeyValues(_ dictionaryLiteral: KeyValuePairs<Key, Value>,
                                        file: StaticString = #fileID,
                                        line: UInt = #line) {
-    appendKeyValues(dictionaryLiteral, collisionSource: .fileLine(file: file, line: line))
+    appendKeyValues(dictionaryLiteral, origin: .fileLine(file: file, line: line))
   }
   
   /// Allows to append key-values from Dictionary literal into the existing `ErrorInfo` instance.
   ///
-  /// Collisions during appending are tracked with the `CollisionSource.onDictionaryConsumption` source.
+  /// Collisions during appending are tracked with the `WriteProvenance.onDictionaryConsumption` source.
   ///
   /// - Parameters:
   ///   - dictionaryLiteral: The key-value pairs to append into the errorInfo.
@@ -58,8 +58,8 @@ extension ErrorInfo {
   /// ])
   /// ```
   public mutating func appendKeyValues(_ dictionaryLiteral: KeyValuePairs<Key, Value>,
-                                       collisionSource origin: @autoclosure () -> CollisionSource.Origin) {
-    _appendKeyValuesImp(_dictionaryLiteral: dictionaryLiteral, collisionSource: .onDictionaryConsumption(origin: origin()))
+                                       origin: @autoclosure () -> WriteProvenance.Origin) {
+    _appendKeyValuesImp(_dictionaryLiteral: dictionaryLiteral, writeProvenance: .onDictionaryConsumption(origin: origin()))
   }
 }
 
@@ -69,8 +69,7 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   internal mutating func _appendKeyValuesImp(_dictionaryLiteral elements: some Collection<(key: StringLiteralKey, value: Value)>,
-                                             collisionSource: @autoclosure () -> CollisionSource) {
-    
+                                             writeProvenance: @autoclosure () -> WriteProvenance) {
     
     let duplicatePolicy: ValueDuplicatePolicy = .defaultForAppendingDictionaryLiteral
     
@@ -82,13 +81,13 @@ extension ErrorInfo {
              value: value,
              preserveNilValues: true,
              duplicatePolicy: duplicatePolicy,
-             collisionSource: collisionSource())
+             writeProvenance: writeProvenance())
       } else {
         _addNil(key: literalKey.rawValue,
                 keyOrigin: literalKey.keyOrigin,
                 typeOfWrapped: ValueExistential.self,
                 duplicatePolicy: duplicatePolicy,
-                collisionSource: collisionSource())
+                writeProvenance: writeProvenance())
       }
     }
   }

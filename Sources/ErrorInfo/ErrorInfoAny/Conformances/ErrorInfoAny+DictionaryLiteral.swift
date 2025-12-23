@@ -13,6 +13,6 @@ extension ErrorInfoAny: ExpressibleByDictionaryLiteral {
   
   public init(dictionaryLiteral elements: (Key, Value)...) {
     self.init(minimumCapacity: elements.count)
-    _appendKeyValuesImp(_dictionaryLiteral: elements, collisionSource: .onCreateWithDictionaryLiteral)
+    _appendKeyValuesImp(_dictionaryLiteral: elements, writeProvenance: .onCreateWithDictionaryLiteral)
   }
 }

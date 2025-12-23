@@ -24,7 +24,7 @@ extension ErrorInfo {
 // MARK: - Full Info View
 
 extension ErrorInfo {
-  public typealias FullInfoRecord = (value: OptionalValue, keyOrigin: KeyOrigin, collisionSource: CollisionSource?)
+  public typealias FullInfoRecord = (value: OptionalValue, keyOrigin: KeyOrigin, collisionSource: WriteProvenance?)
   public typealias FullInfoElement = (key: String, record: FullInfoRecord)
   
   // MARK: FullInfo All

@@ -12,10 +12,10 @@
 ///
 /// ## Type Parameters:
 /// - `Value`: The type of the value being stored.
-/// - `CollisionSource`: The type of the source where the collision occurred, if any.
+/// - `WriteProvenance`: The type of the source where the collision occurred, if any.
 ///
 /// ## Memory Optimization:
-/// To minimize memory overhead, the `CollisionSource` is stored using a `HeapBox`, which ensures
+/// To minimize memory overhead, the `WriteProvenance` is stored using a `HeapBox`, which ensures
 /// that the source is only allocated when needed. If the collision source is `nil`, the storage
 /// is more efficient (only 8 bytes for the `HeapBox` pointer).
 ///
@@ -30,19 +30,19 @@
 @frozen
 public struct CollisionAnnotatedRecord<Record>: CustomDebugStringConvertible {
   public let record: Record
-  @usableFromInline internal let _collisionSource: HeapBox<CollisionSource>?
+  @usableFromInline internal let _collisionSource: HeapBox<WriteProvenance>?
   
   @inlinable
   @inline(__always)
-  public var collisionSource: CollisionSource? { _collisionSource?.wrapped }
+  public var collisionSource: WriteProvenance? { _collisionSource?.wrapped }
   
-  /// CollisionSource memory footprint is quite large. memoryLayout size == 33, stride == 40 at the moment of writing.
+  /// WriteProvenance memory footprint is quite large. memoryLayout size == 33, stride == 40 at the moment of writing.
   /// Consuming additional 40 bytes for each value, where in fact collisionSource mostly often is nil, is ineffective.
   /// Thats why store optional HeapBox, which takes only 8 bytes (64-bit pointer)
   
   @inlinable
   @inline(__always)
-  internal init(value: Record, collisionSource: CollisionSource?) {
+  internal init(value: Record, collisionSource: WriteProvenance?) {
     record = value
     _collisionSource = collisionSource.map(HeapBox.init) // TODO: check prefomnace when using if-let
   }
@@ -53,7 +53,7 @@ public struct CollisionAnnotatedRecord<Record>: CustomDebugStringConvertible {
   
   @inlinable
   @inline(__always) // 6x speedup
-  internal static func collidedValue(_ value: Record, collisionSource: CollisionSource) -> Self {
+  internal static func collidedValue(_ value: Record, collisionSource: WriteProvenance) -> Self {
     Self(value: value, collisionSource: collisionSource)
   }
   
