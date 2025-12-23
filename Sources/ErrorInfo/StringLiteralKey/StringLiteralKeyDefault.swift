@@ -76,9 +76,10 @@ extension StringLiteralKey {
 extension StringLiteralKey {
   // MARK: - Commonly used keys
   
+  public static let timestamp: StringLiteralKey = "timestamp"
   public static let date: StringLiteralKey = "date"
   public static let duration: StringLiteralKey = "duration"
-  public static let timestamp: StringLiteralKey = "timestamp"
+  public static let durationInSeconds: StringLiteralKey = "duration_in_seconds"
   
   public static let status: StringLiteralKey = "status"
   public static let statusID: StringLiteralKey = "status_id"
@@ -113,6 +114,7 @@ extension StringLiteralKey {
   public static let debugDescription: StringLiteralKey = "debug_description"
   
   public static let name: StringLiteralKey = "name"
+  public static let task: StringLiteralKey = "task"
   public static let resource: StringLiteralKey = "resource"
   
   public static let donator: StringLiteralKey = "donator"
@@ -138,6 +140,8 @@ extension StringLiteralKey {
   public static let uuid: StringLiteralKey = "uuid"
   public static let instanceID: StringLiteralKey = "instance_id"
   public static let objectID: StringLiteralKey = "object_id"
+  public static let taskID: StringLiteralKey = "task_id"
+  public static let sessionID: StringLiteralKey = "session_id"
   public static let operationID: StringLiteralKey = "operation_id"
   public static let transactionID: StringLiteralKey = "transaction_id"
   

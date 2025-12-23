@@ -25,21 +25,25 @@ extension ErrorInfo {
   ///
   /// # Example:
   /// ```swift
+  /// // Appending multiple key-value pairs from a dictionary literal
   /// errorInfo.appendKeyValues([
-  ///   .id: 0,
-  ///   .count: 2,
-  ///   .request + .id = 3
+  ///   .sessionID: 1234,
+  ///   .requestID: 42,
+  ///   .lastLogin: "2023-12-20T10:00:00Z"
   /// ])
   /// ```
   public mutating func appendKeyValues(_ dictionaryLiteral: KeyValuePairs<Key, Value>,
+                                       preserveNilValues: Bool = true,
                                        file: StaticString = #fileID,
                                        line: UInt = #line) {
-    appendKeyValues(dictionaryLiteral, origin: .fileLine(file: file, line: line))
+    appendKeyValues(dictionaryLiteral,
+                    preserveNilValues: preserveNilValues,
+                    origin: .fileLine(file: file, line: line))
   }
   
   /// Allows to append key-values from Dictionary literal into the existing `ErrorInfo` instance.
   ///
-  /// Collisions during appending are tracked with the `WriteProvenance.onDictionaryConsumption` source.
+  /// Collisions during appending are tracked with the `WriteProvenance.onDictionaryLiteralConsumption` source.
   ///
   /// - Parameters:
   ///   - dictionaryLiteral: The key-value pairs to append into the errorInfo.
@@ -49,17 +53,22 @@ extension ErrorInfo {
   ///   - If `nil` values are provided, they are explicitly stored.
   ///   - Duplicate values for the same key are appended, as the method allows duplicates by default.
   ///
+  /// When consuming dictionary-literal style pairs, you can tag the batch with a human-friendly origin.
+  ///
   /// # Example:
   /// ```swift
+  /// // Custom origin for the appended key-value pairs
   /// errorInfo.appendKeyValues([
-  ///   .id: 0,
-  ///   .count: 2,
-  ///   .request + .id = 3
-  /// ])
+  ///   .transactionID: "TXN123456",
+  ///   .amount: 99.99
+  /// ], origin: "TransactionProcessor")
   /// ```
   public mutating func appendKeyValues(_ dictionaryLiteral: KeyValuePairs<Key, Value>,
+                                       preserveNilValues: Bool = true,
                                        origin: @autoclosure () -> WriteProvenance.Origin) {
-    _appendKeyValuesImp(_dictionaryLiteral: dictionaryLiteral, writeProvenance: .onDictionaryConsumption(origin: origin()))
+    _appendKeyValuesImp(_dictionaryLiteral: dictionaryLiteral,
+                        preserveNilValues: preserveNilValues,
+                        writeProvenance: .onDictionaryLiteralConsumption(origin: origin()))
   }
 }
 
@@ -69,8 +78,8 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   internal mutating func _appendKeyValuesImp(_dictionaryLiteral elements: some Collection<(key: StringLiteralKey, value: Value)>,
+                                             preserveNilValues: Bool,
                                              writeProvenance: @autoclosure () -> WriteProvenance) {
-    
     let duplicatePolicy: ValueDuplicatePolicy = .defaultForAppendingDictionaryLiteral
     
     for (literalKey, value) in elements {
@@ -82,7 +91,7 @@ extension ErrorInfo {
              preserveNilValues: true,
              duplicatePolicy: duplicatePolicy,
              writeProvenance: writeProvenance())
-      } else {
+      } else if preserveNilValues {
         _addNil(key: literalKey.rawValue,
                 keyOrigin: literalKey.keyOrigin,
                 typeOfWrapped: ValueExistential.self,

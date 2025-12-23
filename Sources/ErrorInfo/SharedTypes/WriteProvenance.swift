@@ -43,6 +43,7 @@ public struct WriteProvenance: Sendable, CustomDebugStringConvertible, Equatable
     case onKeysMapping(original: String, mapped: String)
     
     case onCreateWithDictionaryLiteral
+    case onDictionaryLiteralConsumption(origin: Origin)
     case onDictionaryConsumption(origin: Origin)
     
     case onCreateWithSequence(origin: Origin)
@@ -85,7 +86,11 @@ public struct WriteProvenance: Sendable, CustomDebugStringConvertible, Equatable
   internal static var onCreateWithDictionaryLiteral: Self {
     Self(backing: .onCreateWithDictionaryLiteral)
   }
-
+  
+  internal static func onDictionaryLiteralConsumption(origin: Origin) -> Self {
+    Self(backing: .onDictionaryLiteralConsumption(origin: origin))
+  }
+  
   /// Creates a `WriteProvenance` for a key collision triggered by dictionary consumption.
   internal static func onDictionaryConsumption(origin: Origin) -> Self {
     Self(backing: .onDictionaryConsumption(origin: origin))
@@ -125,11 +130,14 @@ public struct WriteProvenance: Sendable, CustomDebugStringConvertible, Equatable
     case let .onKeysMapping(original, mapped):
       return String.concat("onKeyMapping(original: `", original, "`, mapped: `", mapped, "`)")
       
-    case let .onDictionaryConsumption(origin):
-      return origin._defaultStringInterpolation(collisionName: "onDictionaryConsumption")
-      
     case .onCreateWithDictionaryLiteral:
       return "onCreateWithDictionaryLiteral"
+      
+    case let .onDictionaryLiteralConsumption(origin):
+      return origin._defaultStringInterpolation(collisionName: "onDictionaryLiteralConsumption")
+    
+    case let .onDictionaryConsumption(origin):
+      return origin._defaultStringInterpolation(collisionName: "onDictionaryConsumption")
       
     case let .onCreateWithSequence(origin):
       return origin._defaultStringInterpolation(collisionName: "onCreateWithSequence")

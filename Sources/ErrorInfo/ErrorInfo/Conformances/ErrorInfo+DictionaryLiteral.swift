@@ -21,17 +21,28 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
   ///   - Duplicate values for the same key are appended, as the method allows duplicates by default.
   ///
   /// # Example:
+  /// ```
+  /// let info: ErrorInfo = [
+  ///   .taskID: "com.example.app.backgroundSync",
+  ///   .taskStatus: "Failure",
+  ///   .durationInSeconds: 1800,
+  /// ]
+  /// ```
+  ///
+  /// # Example:
   /// ```swift
   /// let errorInfo: ErrorInfo = [
-  ///   .errorCode: 404,
-  ///   .errorMessage: "Not Found",
-  ///   .errorCode: 404,
+  ///   .fileName: "userSettings.json",
+  ///   .operation: "Save",
+  ///   .status: "Failure",
+  ///   .operation: "Save", // duplicate skipped
   /// ]
-  /// // contains key-value ("error_code": 404) twice
   /// ```
   public init(dictionaryLiteral elements: (Key, Value)...) {
     self.init(minimumCapacity: elements.count)
-    _appendKeyValuesImp(_dictionaryLiteral: elements, writeProvenance: .onCreateWithDictionaryLiteral)
+    _appendKeyValuesImp(_dictionaryLiteral: elements,
+                        preserveNilValues: true,
+                        writeProvenance: .onCreateWithDictionaryLiteral)
   }
 }
 

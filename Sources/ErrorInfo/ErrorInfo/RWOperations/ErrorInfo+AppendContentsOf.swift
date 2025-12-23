@@ -153,14 +153,7 @@ extension ErrorInfo {
  let merged = base.merged(with: extra, origin "merge:network+cache")
  
  Even though duplicates are preserved, the collision metadata will reflect "merge:network+cache" for provenance.
- 
- 7) Appending key-values with an explicit origin
- When consuming dictionary-literal style pairs, you can tag the batch with a human-friendly origin:
- info.appendKeyValues([
-   .id: 42,
-   .id: 42
- ], origin "headers") // collisions annotated as coming from “headers”
- 
+  
  
  .allowEqualWhenOriginDiffers:
  “Use this when you are appending multiple sequences and want to dedupe within each sequence
