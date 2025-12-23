@@ -85,7 +85,7 @@ extension ErrorInfo {
   /// string is appended under the given key, allowing arbitrary values to be
   /// recorded without additional conformances.
   ///
-  /// If `newValue` is `nil`, a `"nil (Type)"` entry is appended.
+  /// If `newValue` is `nil`, a  string`"nil (Type)"` entry is appended.
   ///
   /// - Parameters:
   ///   - dynamicKey: The key under which to store the reflected value.
@@ -107,6 +107,8 @@ extension ErrorInfo {
                        sringTransform: String.init(reflecting:))
   }
 }
+
+// MARK: - appendStringOf(Any)(Sendable) Imp
 
 extension ErrorInfo {
   private mutating func _appendStringOfAny<T>(value newValue: T?,

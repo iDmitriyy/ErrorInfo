@@ -10,18 +10,20 @@
 extension ErrorInfo {
   /// Allows to append key-values from Dictionary literal into the existing `ErrorInfo` instance.
   ///
-  /// Collisions during appending are tracked with the `WriteProvenance.onDictionaryConsumption` source.
+  /// Collisions during appending are tracked with the `WriteProvenance.onDictionaryLiteralConsumption` source.
+  /// When consuming dictionary-literal style pairs, you can tag the batch with a human-friendly origin.
+  ///
   /// This convenience overload records the call site (`#fileID`, `#line`) as the collision origin for operations
   /// executed within the scope.
   ///
   /// - Parameters:
   ///   - dictionaryLiteral: The key-value pairs to append into the errorInfo.
+  ///   - preserveNilValues: Whether `nil` values should be recorded as explicit `nil` entries. Defaults to `true`.
   ///   - file: File identifier used as collision origin (defaults to `#fileID`).
   ///   - line: Line number used as collision origin (defaults to `#line`).
   ///
   /// - Note:
-  ///   - If `nil` values are provided, they are explicitly stored.
-  ///   - Duplicate values for the same key are appended, as the method allows duplicates by default.
+  ///   - Duplicate values for the same key are appended, as the method allows duplicates by design.
   ///
   /// # Example:
   /// ```swift
@@ -44,16 +46,15 @@ extension ErrorInfo {
   /// Allows to append key-values from Dictionary literal into the existing `ErrorInfo` instance.
   ///
   /// Collisions during appending are tracked with the `WriteProvenance.onDictionaryLiteralConsumption` source.
+  /// When consuming dictionary-literal style pairs, you can tag the batch with a human-friendly origin.
   ///
   /// - Parameters:
   ///   - dictionaryLiteral: The key-value pairs to append into the errorInfo.
+  ///   - preserveNilValues: Whether `nil` values should be recorded as explicit `nil` entries. Defaults to `true`.
   ///   - origin: The source of the collision
   ///
   /// - Note:
-  ///   - If `nil` values are provided, they are explicitly stored.
-  ///   - Duplicate values for the same key are appended, as the method allows duplicates by default.
-  ///
-  /// When consuming dictionary-literal style pairs, you can tag the batch with a human-friendly origin.
+  ///   - Duplicate values for the same key are appended, as the method allows duplicates by design.
   ///
   /// # Example:
   /// ```swift

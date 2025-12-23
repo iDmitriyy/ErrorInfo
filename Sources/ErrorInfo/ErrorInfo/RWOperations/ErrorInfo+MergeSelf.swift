@@ -78,7 +78,7 @@ extension ErrorInfo {
   ///   .cacheSizeUsed: 1000,
   /// ]
   ///
-  /// let mergedInfo = info.merged(with: cacheState)
+  /// let error = AppError(info: info.merged(with: cacheState))
   /// ```
   public consuming func merged(with firstDonator: Self,
                                _ otherDonators: Self...,

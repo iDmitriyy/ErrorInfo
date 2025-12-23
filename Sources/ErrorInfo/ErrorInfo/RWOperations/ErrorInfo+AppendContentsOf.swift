@@ -15,7 +15,9 @@ extension ErrorInfo {
   ///
   /// - Parameters:
   ///   - sequence: A sequence of pairs where the first element is a dynamic key (`String`) and the second is a non‑optional value.
-  ///   - duplicatePolicy: How to handle equal values for the same key. Use `.rejectEqual` to skip duplicates or `.allowEqual` to store all.
+  ///   - duplicatePolicy: Defines how the incoming value is compared against values already stored for the
+  ///     same key (across previous operations or batches).
+  ///   - dedupeWithinSequence: When true, equal `(key, value)` pairs inside this call are skipped before applying `duplicatePolicy`.
   ///   - file: The file identifier to record as the origin (defaults to `#fileID`).
   ///   - line: The line number to record as the origin (defaults to `#line`).
   ///
@@ -31,10 +33,11 @@ extension ErrorInfo {
   /// // Skips the second `1` for key "id"
   /// info.append(contentsOf: pairs, duplicatePolicy: .rejectEqual)
   /// ```
-  public mutating func append<V: ValueProtocol>(contentsOf sequence: some Sequence<(String, V)>,
-                                                duplicatePolicy: ValueDuplicatePolicy,
-                                                file: StaticString = #fileID,
-                                                line: UInt = #line)  {
+  public mutating func append(contentsOf sequence: some Sequence<(String, some ValueProtocol)>,
+                              duplicatePolicy: ValueDuplicatePolicy = .allowEqualWhenOriginDiffers,
+                              dedupeWithinSequence: Bool = true,
+                              file: StaticString = #fileID,
+                              line: UInt = #line) {
     append(contentsOf: sequence, duplicatePolicy: duplicatePolicy, origin: .fileLine(file: file, line: line))
   }
   
@@ -42,8 +45,10 @@ extension ErrorInfo {
   ///
   /// - Parameters:
   ///   - sequence: A sequence of pairs where the first element is a dynamic key (`String`) and the second is a non‑optional value.
-  ///   - duplicatePolicy: How to handle equal values for the same key. Use `.rejectEqual` to skip duplicates or `.allowEqual` to store all.
-  ///   - origin Marks the origin used when collisions occur while consuming the sequence (for diagnostics).
+  ///   - duplicatePolicy: Defines how the incoming value is compared against values already stored for the
+  ///     same key (across previous operations or batches).
+  ///   - dedupeWithinSequence: When true, equal `(key, value)` pairs inside this call are skipped before applying `duplicatePolicy`.
+  ///   - origin: Marks the origin used when collisions occur while consuming the sequence (for diagnostics).
   ///
   /// - Complexity: O(n) where n is the number of pairs in `sequence`.
   ///
@@ -56,7 +61,8 @@ extension ErrorInfo {
   /// info.append(contentsOf: pairs, duplicatePolicy: .rejectEqual)
   /// ```
   public mutating func append<V: ValueProtocol>(contentsOf sequence: some Sequence<(String, V)>,
-                                                duplicatePolicy: ValueDuplicatePolicy,
+                                                duplicatePolicy: ValueDuplicatePolicy = .allowEqualWhenOriginDiffers,
+                                                dedupeWithinSequence: Bool = true,
                                                 origin: WriteProvenance.Origin) {
     for (dynamicKey, value) in sequence {
       _add(key: dynamicKey,
@@ -65,6 +71,35 @@ extension ErrorInfo {
            preserveNilValues: true, // has no effect here
            duplicatePolicy: duplicatePolicy,
            writeProvenance: .onSequenceConsumption(origin: origin))
+    }
+    
+    let keyOrigin: KeyOrigin = .fromCollection
+    let preserveNilValues: Bool = true
+    
+    // When `dedupeWithinSequence` is enabled, skip equal (key, value) duplicates inside this batch,
+    // while leaving cross-batch behavior to the chosen `duplicatePolicy` and `origin`.
+    if dedupeWithinSequence {
+      var seen: [String: [V]] = [:]
+      for (dynamicKey, value) in sequence {
+        if let values = seen[dynamicKey], values.contains(value) { continue }
+        
+        seen[dynamicKey, default: []].append(value)
+        _add(key: dynamicKey,
+             keyOrigin: keyOrigin,
+             value: value,
+             preserveNilValues: preserveNilValues, // has no effect here
+             duplicatePolicy: duplicatePolicy,
+             writeProvenance: .onSequenceConsumption(origin: origin))
+      }
+    } else {
+      for (dynamicKey, value) in sequence {
+        _add(key: dynamicKey,
+             keyOrigin: keyOrigin,
+             value: value,
+             preserveNilValues: preserveNilValues, // has no effect here
+             duplicatePolicy: duplicatePolicy,
+             writeProvenance: .onSequenceConsumption(origin: origin))
+      }
     }
   }
 }
@@ -84,7 +119,6 @@ extension ErrorInfo {
  info.append(contentsOf: query,
              duplicatePolicy: .allowEqualWhenOriginDiffers,
              origin .custom(origin: "query"))
- 
  
  let pairs: [(String, String)] = [("id", "1"), ("id", "1"), ("name", "A")]
 
@@ -127,27 +161,6 @@ extension ErrorInfo {
  }
  // Equal values may be rejected across calls unintentionally.
 
- 4) Scoped writes with withOptions and string-literal origins
- Scopes often represent distinct meaningful contexts (e.g., “initial flow” vs “retry flow”).
- Use string origins to allow the same values to coexist when they come from different scopes.
- let info = ErrorInfo.withOptions(duplicatePolicy: .allowEqualWhenOriginDiffers,
-                                  origin "initial-flow") { view in
-   view[.message] = "Timeout"   // recorded with origin "initial-flow"
-   view[.message] = "Timeout"   // skipped (same scope, same value)
- }
-
- // Later, another scope with a different origin:
- var info2 = info
- info2.appendWith(duplicatePolicy: .allowEqualWhenOriginDiffers,
-                  origin "retry-flow") { view in
-   view[.message] = "Timeout"   // allowed (different origin), coexists with the first
- }
- • Within the same scope "initial-flow", equal values are rejected.
- • From a different scope "retry-flow", equal values are allowed (different origin).
- 
-
-  
- 
  .allowEqualWhenOriginDiffers:
  “Use this when you are appending multiple sequences and want to dedupe within each sequence
  but allow equal values across sequences. Pass a distinct, meaningful collisionOrigin for each sequence.”
@@ -163,39 +176,4 @@ extension ErrorInfo {
  
  dedupeWithinSequence: Bool = true
  
- 
- - “duplicatePolicy: Defines how the incoming value is compared against values already stored for the same key (across previous operations or batches).”
- - “dedupeWithinSequence: When true, equal (key, value) pairs inside this call are skipped before applying duplicatePolicy.”
- public mutating func append<V: ValueProtocol>(contentsOf sequence: some Sequence<(String, V)>,
-                                               duplicatePolicy: ValueDuplicatePolicy,
-                                               dedupeWithinSequence: Bool = true
-                                               origin: WriteProvenance.Origin,
-                                               ) {
-   // When `dedupeWithinSequence` is enabled, skip equal (key, value) duplicates inside this batch,
-   // while leaving cross-batch behavior to the chosen `duplicatePolicy` and `collisionOrigin`.
-   if dedupeWithinSequence {
-     var seen: [String: [V]] = [:]
-     for (dynamicKey, value) in sequence {
-       if let values = seen[dynamicKey], values.contains(value) {
-         continue
-       }
-       seen[dynamicKey, default: []].append(value)
-       _add(key: dynamicKey,
-            keyOrigin: .fromCollection,
-            value: value,
-            preserveNilValues: true, // has no effect here
-            duplicatePolicy: duplicatePolicy,
-            writeProvenance: .onSequenceConsumption(origin: origin))
-     }
-   } else {
-     for (dynamicKey, value) in sequence {
-       _add(key: dynamicKey,
-            keyOrigin: .fromCollection,
-            value: value,
-            preserveNilValues: true, // has no effect here
-            duplicatePolicy: duplicatePolicy,
-            writeProvenance: .onSequenceConsumption(origin: origin))
-     }
-   }
- }
  */

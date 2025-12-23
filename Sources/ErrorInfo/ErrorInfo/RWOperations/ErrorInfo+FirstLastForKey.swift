@@ -78,8 +78,9 @@ extension ErrorInfo {
   /// if let last = info.lastRecorded(forKey: .id) {
   ///   switch last {
   ///   case .value(let v): print("last value:", v)
-  ///   case .nilInstance: print("last write was an explicit nil")
+  ///   case .nilInstance(let t): print("last write was a nil of type \(t)")
   ///   }
+  ///   // print: "last write was a nil of type Int"
   /// }
   /// ```
   public func lastRecorded(forKey literalKey: StringLiteralKey) -> OptionalValue? {
@@ -106,9 +107,9 @@ extension ErrorInfo {
   /// if let last = info.lastRecorded(forKey: key) {
   ///   switch last {
   ///   case .value(let v): print("last value:", v)
-  ///   case .nilInstance: print("last write was an explicit nil")
+  ///   case .nilInstance(let t): print("last write was a nil of type \(t)")
   ///   }
-  /// }
+  ///   // print: "last write was a nil of type Int"
   /// ```
   public func lastRecorded(forKey dynamicKey: String) -> OptionalValue? {
     _storage.lastSomeValue(forKey: dynamicKey)?.maybeValue

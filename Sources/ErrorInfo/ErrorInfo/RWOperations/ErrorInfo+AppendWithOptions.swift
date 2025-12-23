@@ -5,13 +5,9 @@
 //  Created by Dmitriy Ignatyev on 07/10/2025.
 //
 
-// Improvement: add keyPrefix arg to withOptions func
-
-// MARK: - Modify With Custom Options
+// MARK: - Static initializer with options
 
 extension ErrorInfo {
-  // MARK: - Static initializer
-  
   /// Creates a new `ErrorInfo` in a scoped options context and performs mutations inside.
   /// The provided options can be overridden at the individual operation level (e.g., using subscripts or functions)..
   ///
@@ -81,7 +77,7 @@ extension ErrorInfo {
   ///
   /// # Example:
   /// ```swift
-  /// var info = ErrorInfo.withOptions(preserveNilValues: false) {
+  /// var info = ErrorInfo.withOptions(preserveNilValues: false, origin: "adminOverride") {
   ///   // Global option preserveNilValues = false, `nil` values are ignored
   ///   $0["age"] = 30 as Int?
   ///   $0["email"] = nil as String? // ignored because preserveNilValues == false
@@ -105,9 +101,13 @@ extension ErrorInfo {
                     modify: modify)
     return info
   }
-  
-  // MARK: - Mutating methods
-  
+}
+
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// MARK: - Mutating methods
+
+extension ErrorInfo {
   /// Mutates `self` in a scoped options context  by performing the given operations.
   /// The provided options can be overridden at the individual operation level (e.g., using subscripts or functions)..
   ///
@@ -143,7 +143,7 @@ extension ErrorInfo {
   /// }
   /// // info now contains: ["age": 30, "username": nil]
   ///
-  /// info.appendWith(prefixForKeys: "transaction", origin: "purchase") {
+  /// info.appendWith(prefixForKeys: "transaction") {
   ///   $0[.errorMessage] = "Card declined"
   ///   $0[.transactionID] = "ae953b20-bc6e-4f90-961f-2364ae6d497b"
   /// }
