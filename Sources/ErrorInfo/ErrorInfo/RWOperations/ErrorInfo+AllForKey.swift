@@ -16,6 +16,6 @@ extension ErrorInfo {
   }
   
   public func allValues(forKey dynamicKey: String) -> ValuesForKey<ValueExistential>? {
-    _storage.allNonNilValues(forKey: dynamicKey)
+    _storage.allNonNilValues(forKey: dynamicKey) // TODO: - optimize, 0.02ms
   }
 }

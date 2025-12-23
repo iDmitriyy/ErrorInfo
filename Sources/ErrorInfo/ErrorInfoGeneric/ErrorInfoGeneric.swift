@@ -151,7 +151,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
     case .rejectEqualValue:
       currentValues = _storage.allValues(forKey: key)
       comparator = { current in newRecord.someValue == current.record.someValue }
-    
+      // FIXME: - .rejectEqual is x3 more fast than other on append
     case .rejectEqualValueWhenEqualOrigin:
       currentValues = _storage.allValues(forKey: key)
       let collisionSource = collisionSource() // Improvement: collisionSource() called twice

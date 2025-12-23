@@ -15,7 +15,7 @@ struct PlaygroundTests {
         
     var infos: [ErrorInfo] = []
     for index in 1...1000 {
-      infos.append(["20": nil as String?]) // "": 10, "20": "AAAA"
+      infos.append([:]) // "": 10, "20": "AAAA"
     }
     infos.shuffle()
     
@@ -23,10 +23,21 @@ struct PlaygroundTests {
 //      var info = ErrorInfo()
       for index in 1...1_000 {
         for infoIndex in infos.indices {
-          blackHole(infos[infoIndex].lastRecorded(forKey: "20"))
+          infos[infoIndex].appendWith(duplicatePolicy: .rejectEqual) {
+            $0[.index] = infoIndex
+          }
+//          infos[infoIndex]["infoIndex"] = infoIndex
+//          blackHole(infos[infoIndex].lastRecorded(forKey: "20"))
         }
       }
     }
+    print("__playground: ", output.duration.asString(fractionDigits: 5)) // it takes ~25ms for 10 million of calls of empty blackHole(())
+    
+    let outputGet = performMeasuredAction(count: 1) {
+      blackHole(infos[0].allValues(forKey: .index))
+//      debugPrint(infos[0].fullInfo(forKey: .index)?.count)
+    }
+    print("__outputGet: ", outputGet.duration.asString(fractionDigits: 5))
     
     // lastRecorded(forKey:) 1 value
     // __playground:  1351.15592 imp fullInfo(forKey:
@@ -121,7 +132,5 @@ struct PlaygroundTests {
 //    print(AnyHashable(Optional<Optional<Int>>.none) == AnyHashable(Optional<Int>.none))
 //    print(AnyHashable(Optional(Optional(0))) == AnyHashable(""))
 //    print(AnyHashable(Optional<Int>.none) == AnyHashable(Optional<String>.none))
-    
-    print("__playground: ", output.duration.asString(fractionDigits: 5)) // it takes ~25ms for 10 million of calls of empty blackHole(())
   } // test func end
 }
