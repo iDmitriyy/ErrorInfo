@@ -69,3 +69,146 @@ extension ErrorInfo {
   }
 }
 
+/*
+ var info = ErrorInfo()
+
+ let headers: [(String, String)] = [("request_id", "abc"), ("request_id", "abc")]
+ let query:   [(String, String)] = [("request_id", "abc")] // same value, different context
+
+ // Dedupe within each sequence, allow equal across sequences:
+ info.append(contentsOf: headers,
+             duplicatePolicy: .allowEqualWhenOriginDiffers,
+             collisionSource: .custom(origin: "headers"))
+
+ 1) Single-batch ingestion: skip duplicates vs keep all
+ info.append(contentsOf: query,
+             duplicatePolicy: .allowEqualWhenOriginDiffers,
+             collisionSource: .custom(origin: "query"))
+ 
+ 
+ let pairs: [(String, String)] = [("id", "1"), ("id", "1"), ("name", "A")]
+
+ // Default: dedupe inside the batch, regardless of duplicatePolicy
+ info.append(contentsOf: pairs,
+             duplicatePolicy: .allowEqual,               // cross-batch: keep all
+             collisionSource: "user-import-batch",
+             dedupeWithinSequence: true)                 // intra-batch: skip equal duplicates
+
+ // If you want to preserve raw multiplicity within the same sequence:
+ info.append(contentsOf: pairs,
+             duplicatePolicy: .allowEqual,               // cross-batch: keep all
+             collisionSource: "user-import-batch-2",
+             dedupeWithinSequence: false)                // intra-batch: keep duplicates
+ 
+ 2) Multiple sequences from different contexts: dedupe within each, allow equal across sequences
+ This is the sweet spot for .allowEqualWhenOriginDiffers. Give each sequence a distinct, meaningful origin string.
+ let headers: [(String, String)] = [("request_id", "abc"), ("request_id", "abc")]
+ let query:   [(String, String)] = [("request_id", "abc")] // same value, different context
+
+ // Dedupe within each sequence, allow equal across sequences:
+ info.append(contentsOf: headers,
+             duplicatePolicy: .allowEqualWhenOriginDiffers,
+             collisionSource: "headers",
+             dedupeWithinSequence: true)
+
+ info.append(contentsOf: query,
+             duplicatePolicy: .allowEqualWhenOriginDiffers,
+             collisionSource: "query",
+             dedupeWithinSequence: true)
+ - Inside headers, the duplicate is skipped (same origin "headers").
+ - The query entry is appended, because its origin "query" differs even though the value is equal.
+ 
+ 3) Pitfall
+ // Both calls capture the same file/line origin
+ 
+ func foo() {
+   info.append(contentsOf: query, duplicatePolicy: .allowEqualWhenOriginDiffers, collisionSource: "request")
+   info.append(contentsOf: params,   duplicatePolicy: .allowEqualWhenOriginDiffers, collisionSource: "request")
+ }
+ // Equal values may be rejected across calls unintentionally.
+
+ 4) Scoped writes with withOptions and string-literal origins
+ Scopes often represent meaningful loci (e.g., “initial flow” vs “retry flow”).
+ Use string origins to allow the same values to coexist when they come from different scopes.
+ let info = ErrorInfo.withOptions(duplicatePolicy: .allowEqualWhenOriginDiffers,
+                                  collisionSource: "initial-flow") { view in
+   view[.message] = "Timeout"   // recorded with origin "initial-flow"
+   view[.message] = "Timeout"   // skipped (same scope, same value)
+ }
+
+ // Later, another scope with a different origin:
+ var info2 = info
+ info2.appendWith(duplicatePolicy: .allowEqualWhenOriginDiffers,
+                  collisionSource: "retry-flow") { view in
+   view[.message] = "Timeout"   // allowed (different origin), coexists with the first
+ }
+ • Within the same scope "initial-flow", equal values are rejected.
+ • From a different scope "retry-flow", equal values are allowed (different origin).
+ 
+ 5) Merging with a string-literal origin
+ Merges preserve duplicates by design (.allowEqual internally). You can still annotate the merge’s origin with a string literal:
+ var base: ErrorInfo = [.message: "Timeout"]
+ let extra: ErrorInfo = [.message: "Timeout"]
+ // Annotate the merge origin for diagnostics:
+ let merged = base.merged(with: extra, collisionSource: "merge:network+cache")
+ 
+ Even though duplicates are preserved, the collision metadata will reflect "merge:network+cache" for provenance.
+ 
+ 7) Appending key-values with an explicit origin
+ When consuming dictionary-literal style pairs, you can tag the batch with a human-friendly origin:
+ info.appendKeyValues([
+   .id: 42,
+   .id: 42
+ ], collisionSource: "headers") // collisions annotated as coming from “headers”
+ 
+ 
+ .allowEqualWhenOriginDiffers:
+ “Use this when you are appending multiple sequences and want to dedupe within each sequence
+ but allow equal values across sequences. Pass a distinct, meaningful collisionOrigin for each sequence.”
+
+ • Single batch ingestion (headers from a response, a mapped array of pairs, a DB row): duplicates within that batch are usually an accident or noise. Two options suffice:
+    • .rejectEqual to keep the batch clean
+    • .allowEqual if you want to preserve raw
+ multiplicity
+ • Multiple sequences from distinct contexts (e.g., “request headers” then “response headers”, or “query params” then “resolved params”):
+    - Equal values can be meaningful across contexts.
+    - You often want “dedupe inside each sequence, but allow equal across sequences.”
+    - That’s exactly what .allowEqualWhenOriginDiffers offer, if each sequence uses a distinct collisionOrigin.
+ 
+ dedupeWithinSequence: Bool = true
+ 
+ 
+ - “duplicatePolicy: Defines how the incoming value is compared against values already stored for the same key (across previous operations or batches).”
+ - “dedupeWithinSequence: When true, equal (key, value) pairs inside this call are skipped before applying duplicatePolicy.”
+ public mutating func append<V: ValueProtocol>(contentsOf sequence: some Sequence<(String, V)>,
+                                               duplicatePolicy: ValueDuplicatePolicy,
+                                               collisionSource collisionOrigin: CollisionSource.Origin,
+                                               dedupeWithinSequence: Bool = true) {
+   // When `dedupeWithinSequence` is enabled, skip equal (key, value) duplicates inside this batch,
+   // while leaving cross-batch behavior to the chosen `duplicatePolicy` and `collisionOrigin`.
+   if dedupeWithinSequence {
+     var seen: [String: [V]] = [:]
+     for (dynamicKey, value) in sequence {
+       if let values = seen[dynamicKey], values.contains(value) {
+         continue
+       }
+       seen[dynamicKey, default: []].append(value)
+       _add(key: dynamicKey,
+            keyOrigin: .fromCollection,
+            value: value,
+            preserveNilValues: true, // has no effect here
+            duplicatePolicy: duplicatePolicy,
+            collisionSource: .onSequenceConsumption(origin: collisionOrigin))
+     }
+   } else {
+     for (dynamicKey, value) in sequence {
+       _add(key: dynamicKey,
+            keyOrigin: .fromCollection,
+            value: value,
+            preserveNilValues: true, // has no effect here
+            duplicatePolicy: duplicatePolicy,
+            collisionSource: .onSequenceConsumption(origin: collisionOrigin))
+     }
+   }
+ }
+ */

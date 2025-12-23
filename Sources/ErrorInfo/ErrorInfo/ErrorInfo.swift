@@ -27,7 +27,7 @@
 /// - Collision tracking, when the same key is written more than once (e.g. `onSubscript`, `onAppend`, `onMerge` ...)
 /// - Append values to literal or dynamically formed keys
 /// - Key origin metadata (where a key came from: literal, dynamic, keyPath, etc.)
-/// - Merge multiple `ErrorInfo` instances without losing provenance
+/// - Merge multiple `ErrorInfo` instances without losing data and its provenance
 ///
 /// ## Why multiple records per key:
 /// Error context evolves across layers (networking, decoding, validation, retries, merges). Single‑slot key-value containers

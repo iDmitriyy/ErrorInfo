@@ -17,7 +17,7 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
   /// - Parameter elements: The key-value pairs to initialize the `ErrorInfo` with.
   ///
   /// - Note:
-  ///   - If the value is `nil`, it is explicitly stored as a `nil` value.
+  ///   - If the value is `nil`, it is explicitly stored as a `nil` instance with `Wrapped` type.
   ///   - Duplicate values for the same key are appended, as the method allows duplicates by default.
   ///
   /// # Example:
@@ -34,3 +34,4 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
     _appendKeyValuesImp(_dictionaryLiteral: elements, collisionSource: .onCreateWithDictionaryLiteral)
   }
 }
+

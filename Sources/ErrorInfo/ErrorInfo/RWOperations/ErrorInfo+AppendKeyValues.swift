@@ -70,8 +70,10 @@ extension ErrorInfo {
 extension ErrorInfo {
   internal mutating func _appendKeyValuesImp(_dictionaryLiteral elements: some Collection<(key: StringLiteralKey, value: Value)>,
                                              collisionSource: @autoclosure () -> CollisionSource) {
-    // Improvement: try reserve capacity. perfomance tests
-    let duplicatePolicy: ValueDuplicatePolicy = .allowEqual
+    
+    
+    let duplicatePolicy: ValueDuplicatePolicy = .defaultForAppendingDictionaryLiteral
+    
     for (literalKey, value) in elements {
       if let value {
         // TBD: _add() with optional value is used

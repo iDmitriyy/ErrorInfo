@@ -31,6 +31,11 @@ public struct ValueDuplicatePolicy: Sendable {
   /// See ``ValueDuplicatePolicy.allowEqualWhenOriginDiffers``
   public static let defaultForAppending = allowEqualWhenOriginDiffers
   
+  /// If the same value appended for th same key, it is typically a noise.
+  /// KeyOrigin may ne differrent when creating from Dictionary Literal, so duplicate
+  /// CollisionOrigin 
+  public static let defaultForAppendingDictionaryLiteral = allowEqualWhenOriginDiffers
+  
   /// - `.rejectEqual`:
   /// - `.allowEqualWhenOriginDiffers`:
   
