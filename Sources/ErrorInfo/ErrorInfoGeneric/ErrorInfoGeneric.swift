@@ -148,11 +148,11 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
     let comparator: (AnnotatedRecord) -> Bool
     let currentValues: ValuesForKey<AnnotatedRecord>?
     switch duplicatePolicy.kind {
-    case .rejectEqual:
+    case .rejectEqualValue:
       currentValues = _storage.allValues(forKey: key)
       comparator = { current in newRecord.someValue == current.record.someValue }
     
-    case .allowEqualWhenOriginDiffers:
+    case .rejectEqualValueWhenEqualOrigin:
       currentValues = _storage.allValues(forKey: key)
       let collisionSource = collisionSource() // Improvement: collisionSource() called twice
       comparator = { current in

@@ -35,7 +35,7 @@ public struct ValueDuplicatePolicy: Sendable {
   /// - `.allowEqualWhenOriginDiffers`:
   
   /// Skip insertion if any existing value for `key` has an equal `record.someValue`. Otherwise append.
-  public static let rejectEqual = Self(kind: .rejectEqual)
+  public static let rejectEqual = Self(kind: .rejectEqualValue)
   
   /// Always append without comparing to existing values.
   public static let allowEqual = Self(kind: .allowEqual)
@@ -43,21 +43,21 @@ public struct ValueDuplicatePolicy: Sendable {
   /// Skip insertion only when an existing value for `key` matches all of the following:
   /// - the same `value`
   /// - the same `keyOrigin`
-  /// - and, when present, the same `collisionSource`.
-  ///   If an existing record has no `collisionSource`, this dimension is ignored.
+  /// - and, when present, the same `collisionSource`. If an existing record
+  ///   has no `collisionSource`, this dimension is ignored.
   ///   Otherwise, the new record is appended.
-  public static let allowEqualWhenOriginDiffers = Self(kind: .allowEqualWhenOriginDiffers)
+  public static let allowEqualWhenOriginDiffers = Self(kind: .rejectEqualValueWhenEqualOrigin)
       
   /// Custom decision logic
-  // static func custom((_ existing: Entry, _ new: Entry) -> Bool)
+  // static func custom((_ existing: FullInfoRecord, _ new: FullInfoRecord) -> Bool)
   
   // Already rejected options:
   // - DuplicatePolicy for nil values should be the same as for values and regulated by preserveNilValues
   // - updateCurrentByNew – effectively is a .replaceAllValues(forKey:, by:).
   
   @usableFromInline internal enum Kind: Sendable {
-    case rejectEqual
+    case rejectEqualValue
+    case rejectEqualValueWhenEqualOrigin
     case allowEqual
-    case allowEqualWhenOriginDiffers
   }
 }

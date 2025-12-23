@@ -71,6 +71,7 @@ extension ErrorInfo {
   internal mutating func _appendKeyValuesImp(_dictionaryLiteral elements: some Collection<(key: StringLiteralKey, value: Value)>,
                                              collisionSource: @autoclosure () -> CollisionSource) {
     // Improvement: try reserve capacity. perfomance tests
+    let duplicatePolicy: ValueDuplicatePolicy = .allowEqual
     for (literalKey, value) in elements {
       if let value {
         // TBD: _add() with optional value is used
@@ -78,13 +79,13 @@ extension ErrorInfo {
              keyOrigin: literalKey.keyOrigin,
              value: value,
              preserveNilValues: true,
-             duplicatePolicy: .allowEqual,
+             duplicatePolicy: duplicatePolicy,
              collisionSource: collisionSource())
       } else {
         _addNil(key: literalKey.rawValue,
                 keyOrigin: literalKey.keyOrigin,
                 typeOfWrapped: ValueExistential.self,
-                duplicatePolicy: .allowEqual,
+                duplicatePolicy: duplicatePolicy,
                 collisionSource: collisionSource())
       }
     }

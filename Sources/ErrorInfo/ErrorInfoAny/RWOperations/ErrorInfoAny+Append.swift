@@ -37,7 +37,7 @@ extension ErrorInfoAny {
 extension ErrorInfoAny {
   public mutating func appendIfNotNil<T>(_ value: T?,
                                          forKey literalKey: StringLiteralKey,
-                                         duplicatePolicy: ValueDuplicatePolicy = .rejectEqual) {
+                                         duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending) {
     guard let value else { return }
     _add(key: literalKey.rawValue,
          keyOrigin: literalKey.keyOrigin,
@@ -50,7 +50,7 @@ extension ErrorInfoAny {
   @_disfavoredOverload
   public mutating func appendIfNotNil<T>(_ value: T?,
                                          forKey dynamicKey: String,
-                                         duplicatePolicy: ValueDuplicatePolicy = .rejectEqual) {
+                                         duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending) {
     guard let value else { return }
     _add(key: dynamicKey,
          keyOrigin: .dynamic,
