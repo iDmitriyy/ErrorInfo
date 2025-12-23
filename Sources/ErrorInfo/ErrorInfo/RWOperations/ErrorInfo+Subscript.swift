@@ -49,7 +49,7 @@ extension ErrorInfo {
   }
 }
 
-// ErronInfoLiteralKey with @_disfavoredOverload String-base subscript allows to differemtiate between when it was a
+// StringLiteralKey with @_disfavoredOverload String-base subscript allows to differemtiate between when it was a
 // literal-key subscript and when it was defenitely some string value passed dynamically / at runtime.
 // So this cleary separate the subscript access to 2 kinds:
 // 1. a literal that can be found in source code or a predefined key which can be also found in sources

@@ -1,5 +1,5 @@
 //
-//  ErronInfoLiteralKey.swift
+//  StringLiteralKey.swift
 //  swifty-kit
 //
 //  Created by Dmitriy Ignatyev on 16.04.2025.
@@ -17,7 +17,7 @@
 ///
 /// ## Benefits & Goals:
 /// - **Name safety:** prevents typos and inconsistent key names
-/// - **Autocomplete:** easy to find using autocomplete with  no pollution of String namespace.
+/// - **Autocomplete:** easy to find using autocomplete with  no pollution of `String` namespace.
 /// - **Predefined Keys:**
 ///   - common keys for typical error contexts, network, state information, and more.
 ///   - reduced hardcoding and string duplication.
@@ -25,7 +25,7 @@
 /// - **Improved Refactoring:** renaming user-defined keys is easy and automatically reflected throughout the codebase.
 ///
 /// ## Predefined Keys:
-/// StringLiteralKey includes a number of predefined keys and prefixes that cover common use cases:
+/// Predefined keys and prefixes cover common use cases:
 /// - Commonly used prefixes (e.g. `.invalid`, `.unexpected`)
 /// - Error Contexts
 /// - Network
@@ -36,9 +36,31 @@
 /// ```swift
 /// var info = ErrorInfo()
 ///
-/// errorInfo[.httpStatusCode] = 404
-/// errorInfo[.response + .message] = "Page Not Found"
+/// info[.httpStatusCode] = 404
+/// info[.response + .message] = "Page Not Found"
 /// ```
+///
+/// - Note:
+/// By default names are given with `snake_case`, which can be transformed to `camelCase`,
+/// `kebab-case `or `PascalCase` formats when logging.
+///
+/// ## See Also:
+/// ``ErrorInfoFuncs.fromAnyStyleToCamelCased(string:)``
+/// ``ErrorInfoFuncs.fromAnyStyleToPascalCased(string:)``
+/// ``ErrorInfoFuncs.fromAnyStyleToKebabCased(string:)``
+/// ``ErrorInfoFuncs.fromAnyStyleToSnakeCased(string:)``
+///
+/// The following categories of keys are intentionally not added:
+/// - memory_usage, cpu_usage, free_disk_space, frame_rate, is_debugger_attached ...
+/// - device_orientation, screen_brightness, has_camera ...
+/// - locale, language, timezone ...
+/// - platform, device_type, is_simulator, cpu_architecture ...
+///
+/// Such params are:
+/// - Provided out of the box by common services like Sentry, or Firebase.
+/// - Typically not added to common errors created by programmers of a team. They are narrowly used in specific contexts.
+///
+/// If someone need project or domain-specific default keys, they are free to add their own in an extension to `StringLiteralKey`.
 public struct StringLiteralKey: Hashable, Sendable, CustomStringConvertible, CustomDebugStringConvertible {
   /// A new instance initialized with `rawValue` will be equivalent to this instance.
   @usableFromInline

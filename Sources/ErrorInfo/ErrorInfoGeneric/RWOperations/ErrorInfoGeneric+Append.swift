@@ -10,7 +10,7 @@ extension ErrorInfoGeneric {}
 // MARK: - Append
 
 extension ErrorInfoGeneric where RecordValue: Equatable {
-  /// Instead of subscript overload with `String` key to prevent pollution of autocomplete for `ErronInfoLiteralKey` by tons of String methods.
+  /// Instead of subscript overload with `String` key to prevent pollution of autocomplete for `StringLiteralKey` by tons of String methods.
   mutating func append(key: Key, keyOrigin: KeyOrigin, someValue newValue: RecordValue) {
     _add(key: key,
          keyOrigin: keyOrigin,

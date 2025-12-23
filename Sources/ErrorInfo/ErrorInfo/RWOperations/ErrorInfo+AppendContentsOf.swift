@@ -128,7 +128,7 @@ extension ErrorInfo {
  // Equal values may be rejected across calls unintentionally.
 
  4) Scoped writes with withOptions and string-literal origins
- Scopes often represent meaningful loci (e.g., “initial flow” vs “retry flow”).
+ Scopes often represent distinct meaningful contexts (e.g., “initial flow” vs “retry flow”).
  Use string origins to allow the same values to coexist when they come from different scopes.
  let info = ErrorInfo.withOptions(duplicatePolicy: .allowEqualWhenOriginDiffers,
                                   origin "initial-flow") { view in
@@ -144,13 +144,6 @@ extension ErrorInfo {
  }
  • Within the same scope "initial-flow", equal values are rejected.
  • From a different scope "retry-flow", equal values are allowed (different origin).
- 
- 5) Merging with a string-literal origin
- Merges preserve duplicates by design (.allowEqual internally). You can still annotate the merge’s origin with a string literal:
- var base: ErrorInfo = [.message: "Timeout"]
- let extra: ErrorInfo = [.message: "Timeout"]
- // Annotate the merge origin for diagnostics:
- let merged = base.merged(with: extra, origin "merge:network+cache")
  
 
   

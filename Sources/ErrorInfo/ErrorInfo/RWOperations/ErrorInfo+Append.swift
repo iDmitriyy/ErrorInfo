@@ -8,7 +8,7 @@
 // MARK: - Append
 
 extension ErrorInfo {
-  /// Instead of subscript overload with `String` key to prevent pollution of autocomplete for `ErronInfoLiteralKey` by tons of String methods.
+  /// Instead of subscript overload with `String` key to prevent pollution of autocomplete for `StringLiteralKey` by tons of String methods.
   @_disfavoredOverload
   public mutating func appendValue(_ newValue: (some ValueProtocol)?, forKey dynamicKey: String) {
     _add(key: dynamicKey,

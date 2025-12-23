@@ -1,5 +1,5 @@
 //
-//  ErrorInfo+ConvenienceSubscript.swift
+//  ErrorInfo+AppendWithOptions.swift
 //  ErrorInfo
 //
 //  Created by Dmitriy Ignatyev on 07/10/2025.
@@ -15,9 +15,11 @@ extension ErrorInfo {
   /// Creates a new `ErrorInfo` in a scoped options context and performs mutations inside.
   /// The provided options can be overridden at the individual operation level (e.g., using subscripts or functions)..
   ///
-  /// Use this when you want all operations in the `modify` closure to share the same defaults for
+  /// Scopes often represent distinct meaningful contexts (e.g., “initial flow” vs “retry flow”).
+  /// Use this when you want all operations in the `modify` closure to share the same prams for
   /// duplicate handling, `nil` preservation and key prefixing.
   ///
+  /// You can define custom string origin for a scope.
   /// This convenience overload records the call site (`#fileID`, `#line`) as the collision origin for operations
   /// executed within the scope.
   ///
@@ -60,11 +62,13 @@ extension ErrorInfo {
   }
   
   /// Creates a new `ErrorInfo` in a scoped options context and performs mutations inside.
-  ///
   /// The provided options can be overridden at the individual operation level (e.g., using subscripts or functions)..
   ///
-  /// Use this when you want all operations in the `modify` closure to share the same defaults for
+  /// Scopes often represent distinct meaningful contexts (e.g., “initial flow” vs “retry flow”).
+  /// Use this when you want all operations in the `modify` closure to share the same prams for
   /// duplicate handling, `nil` preservation and key prefixing.
+  ///
+  /// You can define custom string origin for a scope.
   ///
   /// - Parameters:
   ///   - duplicatePolicy: How to handle equal values for the same key. Defaults to ``ValueDuplicatePolicy/defaultForAppending``.
@@ -77,7 +81,7 @@ extension ErrorInfo {
   ///
   /// # Example:
   /// ```swift
-  /// let info = ErrorInfo.withOptions(preserveNilValues: false) {
+  /// var info = ErrorInfo.withOptions(preserveNilValues: false) {
   ///   // Global option preserveNilValues = false, `nil` values are ignored
   ///   $0["age"] = 30 as Int?
   ///   $0["email"] = nil as String? // ignored because preserveNilValues == false
@@ -107,9 +111,11 @@ extension ErrorInfo {
   /// Mutates `self` in a scoped options context  by performing the given operations.
   /// The provided options can be overridden at the individual operation level (e.g., using subscripts or functions)..
   ///
-  /// Use this when you want all operations in the `modify` closure to share the same defaults for
+  /// Scopes often represent distinct meaningful contexts (e.g., “initial flow” vs “retry flow”).
+  /// Use this when you want all operations in the `modify` closure to share the same prams for
   /// duplicate handling, `nil` preservation and key prefixing.
   ///
+  /// You can define custom string origin for a scope.
   /// This convenience overload records the call site (`#fileID`, `#line`) as the collision origin for operations
   /// executed within the scope.
   ///
@@ -125,7 +131,9 @@ extension ErrorInfo {
   ///
   /// # Example:
   /// ```swift
-  /// let info = ErrorInfo.withOptions(preserveNilValues: false) {
+  /// var info = ErrorInfo()
+  ///
+  /// info.appendWith(preserveNilValues: false) {
   ///   // Global option preserveNilValues = false, `nil` values are ignored
   ///   $0["age"] = 30 as Int?
   ///   $0["email"] = nil as String? // ignored because preserveNilValues == false
@@ -133,8 +141,12 @@ extension ErrorInfo {
   ///   // Override on a per-operation basis: preserve `nil` values
   ///   0["username", preserveNilValues: true] = nil as String?
   /// }
-  ///
   /// // info now contains: ["age": 30, "username": nil]
+  ///
+  /// info.appendWith(prefixForKeys: "transaction", origin: "purchase") {
+  ///   $0[.errorMessage] = "Card declined"
+  ///   $0[.transactionID] = "ae953b20-bc6e-4f90-961f-2364ae6d497b"
+  /// }
   /// ```
   public mutating func appendWith(duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending,
                                   preserveNilValues: Bool = true,
@@ -152,8 +164,11 @@ extension ErrorInfo {
   /// Mutates `self` in a scoped options context  by performing the given operations.
   /// The provided options can be overridden at the individual operation level (e.g., using subscripts or functions)..
   ///
-  /// Use this when you want all operations in the `modify` closure to share the same defaults for
+  /// Scopes often represent distinct meaningful contexts (e.g., “initial flow” vs “retry flow”).
+  /// Use this when you want all operations in the `modify` closure to share the same prams for
   /// duplicate handling, `nil` preservation and key prefixing.
+  ///
+  /// You can define custom string origin for a scope.
   ///
   /// - Parameters:
   ///   - duplicatePolicy: How to handle equal values for the same key. Defaults to ``ValueDuplicatePolicy/defaultForAppending``.
@@ -164,7 +179,9 @@ extension ErrorInfo {
   ///
   /// # Example:
   /// ```swift
-  /// let info = ErrorInfo.withOptions(preserveNilValues: false) {
+  /// var info = ErrorInfo()
+  ///
+  /// info.appendWith(preserveNilValues: false) {
   ///   // Global option preserveNilValues = false, `nil` values are ignored
   ///   $0["age"] = 30 as Int?
   ///   $0["email"] = nil as String? // ignored because preserveNilValues == false
@@ -172,8 +189,12 @@ extension ErrorInfo {
   ///   // Override on a per-operation basis: preserve `nil` values
   ///   0["username", preserveNilValues: true] = nil as String?
   /// }
-  ///
   /// // info now contains: ["age": 30, "username": nil]
+  ///
+  /// info.appendWith(prefixForKeys: "transaction", origin: "purchase") {
+  ///   $0[.errorMessage] = "Card declined"
+  ///   $0[.transactionID] = "ae953b20-bc6e-4f90-961f-2364ae6d497b"
+  /// }
   /// ```
   public mutating func appendWith(duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending,
                                   preserveNilValues: Bool = true,
@@ -209,9 +230,10 @@ extension ErrorInfo.CustomOptionsView {
   ///
   /// # Example
   /// ```swift
-  /// ErrorInfo.withOptions(prefixForKeys: .debug) { view in
-  ///   view[.message] = "Timeout" // stored under "debug_message"
+  /// ErrorInfo.withOptions(prefixForKeys: .debug) {
+  ///   $0[.message] = "Timeout" // stored under "debug_message"
   /// }
+  /// // results in: ["debug_message": "Timeout"]
   /// ```
   public subscript<V: ErrorInfo.ValueProtocol>(
     _ literalKey: StringLiteralKey,
@@ -249,10 +271,10 @@ extension ErrorInfo.CustomOptionsView {
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
-// MARK: - CustomOptions View
+// MARK: - CustomOptions View Imp
 
 extension ErrorInfo {
-  /// A lightweight, non‑escaping view that applies scoped options to mutations.
+  /// A view that applies scoped options to mutations.
   ///
   /// Instances of `CustomOptionsView` are created by
   /// - ``ErrorInfo/withOptions(duplicatePolicy:preserveNilValues:prefixForKeys:origin:modify:)``

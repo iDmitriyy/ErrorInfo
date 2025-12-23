@@ -5,24 +5,6 @@
 //  Created by Dmitriy Ignatyev on 26/07/2025.
 //
 
-/*
- The following categories of keys are intentionally not added:
- - memoryUsage, cpuUsage, freeDiskSpace, frame_rate, isDebuggerAttached ...
- - deviceOrientation, screenBrightness, hasCamera ...
- - locale, language, timezone ...
- - platform, deviceType, isSimulator, cpuArchitecture ...
- 
- Such params are:
- - Typically not added to common errors created by programmers of a team. They are narrowly used in specific contexts.
- - Provided out of the box by common services like Sentry, or Firebase.
- 
- Default key literals are added for most often used params.
- Of someone need project or domain-specific default keys, they are free to add their own in an extension to `ErronInfoLiteralKey`.
- */
-
-// By default names are given with snake_case, which can ba transformed to camelCase, kebab-case or PascalCase
-// formats when logging.
-
 // Improvement: use compile-time values instead of static.
 // Currently all these strings consume ~168Kb of binary size. replacing static lets by compile-time values might
 // reduce memory consumption
@@ -116,6 +98,7 @@ extension StringLiteralKey {
   public static let name: StringLiteralKey = "name"
   public static let task: StringLiteralKey = "task"
   public static let resource: StringLiteralKey = "resource"
+  public static let reason: StringLiteralKey = "reason"
   
   public static let donator: StringLiteralKey = "donator"
   public static let recipient: StringLiteralKey = "recipient"
@@ -153,6 +136,7 @@ extension StringLiteralKey {
 extension StringLiteralKey {
   // MARK: - Error Context
   
+  public static let error: StringLiteralKey = "error"
   public static let errorCode: StringLiteralKey = "error_code"
   public static let errorDomain: StringLiteralKey = "error_domain"
   public static let errorDescription: StringLiteralKey = "error_description"
