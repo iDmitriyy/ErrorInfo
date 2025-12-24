@@ -19,6 +19,7 @@
 /// - `onAddSuffix`: Indicates a collision when a suffix is added to the key. The suffix is provided as a string.
 /// - `onKeysMapping`: Indicates a collision due to a key mapping operation. It includes both the original and mapped keys.
 /// - `onCreateWithDictionaryLiteral`: Indicates a collision that occurred when creating an `ErrorInfo` from a dictionary literal.
+/// - `onDictionaryLiteralConsumption`: Indicates a collision that occurred during the consumption of a dictionary literal by `ErrorInfo`.
 /// - `onDictionaryConsumption`: Indicates a collision that occurred during the consumption of a dictionary by `ErrorInfo`.
 ///    The associated `Origin` can provide context.
 /// - `onCreateWithSequence`: Indicates a collision that occurred when creating an `ErrorInfo` from a sequence.
@@ -28,7 +29,7 @@
 ///
 /// ## Methods:
 /// - `defaultStringInterpolation()`: Returns a string representation of the collision source, including any relevant context.
-public struct WriteProvenance: Sendable, CustomDebugStringConvertible, Equatable {
+public struct WriteProvenance: Sendable, Equatable, CustomStringConvertible, CustomDebugStringConvertible {
   // Stored backing enum
   private let backing: Backing
   
@@ -145,6 +146,10 @@ public struct WriteProvenance: Sendable, CustomDebugStringConvertible, Equatable
     case let .onSequenceConsumption(origin):
       return origin._defaultStringInterpolation(collisionName: "onSequenceConsumption")
     }
+  }
+  
+  public var description: String {
+    defaultStringInterpolation()
   }
   
   public var debugDescription: String {

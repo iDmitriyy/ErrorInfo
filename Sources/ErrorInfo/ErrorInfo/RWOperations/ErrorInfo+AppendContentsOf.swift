@@ -15,15 +15,15 @@ extension ErrorInfo {
   ///
   /// - Parameters:
   ///   - sequence: A sequence of pairs where the first element is a dynamic key (`String`) and the second is a non‑optional value.
-  ///   - duplicatePolicy: Defines how the incoming value is compared against values already stored for the
-  ///     same key (across previous operations or batches).
+  ///   - duplicatePolicy: Defines how the incoming value is compared against values already stored  in `ErrorInfo` for the
+  ///     same key.
   ///   - dedupeWithinSequence: When true, equal `(key, value)` pairs inside this call are skipped before applying `duplicatePolicy`.
   ///   - file: The file identifier to record as the origin (defaults to `#fileID`).
   ///   - line: The line number to record as the origin (defaults to `#line`).
   ///
   /// - Complexity: O(n) where n is the number of pairs in `sequence`.
   ///
-  /// - SeeAlso: ``append(contentsOf:duplicatePolicy:origin)``
+  /// - SeeAlso: ``append(contentsOf:duplicatePolicy:dedupeWithinSequence:origin)``
   ///
   /// # Example
   /// ```swift
@@ -45,20 +45,34 @@ extension ErrorInfo {
   ///
   /// - Parameters:
   ///   - sequence: A sequence of pairs where the first element is a dynamic key (`String`) and the second is a non‑optional value.
-  ///   - duplicatePolicy: Defines how the incoming value is compared against values already stored for the
-  ///     same key (across previous operations or batches).
+  ///   - duplicatePolicy: Defines how the incoming value is compared against values already stored  in `ErrorInfo` for the
+  ///     same key.
   ///   - dedupeWithinSequence: When true, equal `(key, value)` pairs inside this call are skipped before applying `duplicatePolicy`.
   ///   - origin: Marks the origin used when collisions occur while consuming the sequence (for diagnostics).
   ///
   /// - Complexity: O(n) where n is the number of pairs in `sequence`.
   ///
-  /// # Example
-  /// ```swift
-  /// var info = ErrorInfo()
-  /// let pairs: [(String, Int)] = [("id", 1), ("id", 1), ("name", 7)]
+  /// - Note:
+  ///   - **Multiplicity**:
+  ///     Multiple sequences from distinct contexts (e.g., “request headers” or “query params”)
+  ///     - Equal values can be meaningful across contexts.
+  ///     - You often want “dedupe inside each sequence, but allow equal across sequences.”
+  ///     - That’s exactly what default values for `duplicatePolicy` and `dedupeWithinSequence` params offer,
+  ///       if each sequence uses a distinct `origin`.
+  ///   - **Single batch ingestion**:
+  ///       Duplicates within that batch are usually an accident or noise. Two options suffice:
+  ///     - `dedupeWithinSequence = true` to keep the batch clean
+  ///     - `dedupeWithinSequence = false` if you want to preserve raw
   ///
-  /// // Skips the second `1` for key "id"
-  /// info.append(contentsOf: pairs, duplicatePolicy: .rejectEqual)
+  /// # Example (pitfall)
+  /// ```
+  /// // Both calls capture the same file/line origin
+  /// func foo() {
+  ///   info.append(contentsOf: query, origin: "request")
+  ///   info.append(contentsOf: params, origin: "request")
+  /// }
+  /// // As `origin` is the same, equal `key-value` pairs across `query` and `params`
+  /// // will be rejected, which may be unexpected.
   /// ```
   public mutating func append<V: ValueProtocol>(contentsOf sequence: some Sequence<(String, V)>,
                                                 duplicatePolicy: ValueDuplicatePolicy = .allowEqualWhenOriginDiffers,
@@ -104,7 +118,20 @@ extension ErrorInfo {
   }
 }
 
+
+
 /*
+ /// # Example
+ /// ```swift
+ /// var info = ErrorInfo()
+ /// let pairs: [(String, Int)] = [("id", 1), ("id", 1), ("name", 7)]
+ ///
+ /// // Skips the second `1` for key "id"
+ /// info.append(contentsOf: pairs, duplicatePolicy: .rejectEqual)
+ /// ```
+ 
+ 
+ 
  var info = ErrorInfo()
 
  let headers: [(String, String)] = [("request_id", "abc"), ("request_id", "abc")]
@@ -115,7 +142,7 @@ extension ErrorInfo {
              duplicatePolicy: .allowEqualWhenOriginDiffers,
              origin .custom(origin: "headers"))
 
- 1) Single-batch ingestion: skip duplicates vs keep all
+ 1) Single-batch appending: skip duplicates vs keep all
  info.append(contentsOf: query,
              duplicatePolicy: .allowEqualWhenOriginDiffers,
              origin .custom(origin: "query"))
@@ -152,28 +179,24 @@ extension ErrorInfo {
  - Inside headers, the duplicate is skipped (same origin "headers").
  - The query entry is appended, because its origin "query" differs even though the value is equal.
  
- 3) Pitfall
- // Both calls capture the same file/line origin
  
- func foo() {
-   info.append(contentsOf: query, duplicatePolicy: .allowEqualWhenOriginDiffers, origin "request")
-   info.append(contentsOf: params,   duplicatePolicy: .allowEqualWhenOriginDiffers, origin "request")
- }
- // Equal values may be rejected across calls unintentionally.
-
  .allowEqualWhenOriginDiffers:
  “Use this when you are appending multiple sequences and want to dedupe within each sequence
  but allow equal values across sequences. Pass a distinct, meaningful collisionOrigin for each sequence.”
 
- • Single batch ingestion (headers from a response, a mapped array of pairs, a DB row): duplicates within that batch are usually an accident or noise. Two options suffice:
-    • .rejectEqual to keep the batch clean
-    • .allowEqual if you want to preserve raw
- multiplicity
- • Multiple sequences from distinct contexts (e.g., “request headers” then “response headers”, or “query params” then “resolved params”):
-    - Equal values can be meaningful across contexts.
-    - You often want “dedupe inside each sequence, but allow equal across sequences.”
-    - That’s exactly what .allowEqualWhenOriginDiffers offer, if each sequence uses a distinct collisionOrigin.
+ intial state: no such value in info yet
+  Duplicates within sequence:
+  - first value will be appended
+  - second will be skipped (as value equal, keyOrigin alwayas equal for all elements, and writeOrigin the same for whole sequence)
  
- dedupeWithinSequence: Bool = true
+  Append another sequence with 2 values that duplicate inside this sequence and across previous sequence:
+  - first value will be appended (❌ not true now, as existing value has no collisionSourece)
+  - second will be skipped (yes, but it is because of improper imp)
+
+ 
+ 
+ 
+ // write originless:
+ // 
  
  */

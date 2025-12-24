@@ -21,7 +21,7 @@ extension ErrorInfo {
   ///
   /// - Parameters:
   ///   - duplicatePolicy: How to handle equal values for the same key. Defaults to ``ValueDuplicatePolicy/defaultForAppending``.
-  ///   - preserveNilValues: Whether `nil` assignments (typically emplicit) should be recorded as explicit `nil` entries. Defaults to `true`.
+  ///   - nilPreservation: Whether `nil` assignments (typically emplicit) should be recorded as explicit `nil` entries. Defaults to `true`.
   ///   - prefixForKeys: A literal prefix to prepend to all keys added within the scope. Defaults to `nil`.
   ///   - file: File identifier used as collision origin (defaults to `#fileID`).
   ///   - line: Line number used as collision origin (defaults to `#line`).
@@ -29,29 +29,29 @@ extension ErrorInfo {
   ///
   /// - Returns: A new `ErrorInfo` containing the applied changes.
   ///
-  /// - SeeAlso: ``withOptions(duplicatePolicy:preserveNilValues:prefixForKeys:origin:modify:)``
+  /// - SeeAlso: ``withOptions(duplicatePolicy:nilPreservation:prefixForKeys:origin:modify:)``
   ///
   /// # Example:
   /// ```swift
-  /// let info = ErrorInfo.withOptions(preserveNilValues: false) {
-  ///   // Global option preserveNilValues = false, `nil` values are ignored
+  /// let info = ErrorInfo.withOptions(nilPreservation: false) {
+  ///   // Global option nilPreservation = false, `nil` values are ignored
   ///   $0["age"] = 30 as Int?
-  ///   $0["email"] = `nil` as String? // ignored because preserveNilValues == false
+  ///   $0["email"] = `nil` as String? // ignored because nilPreservation == false
   ///
   ///   // Override on a per-operation basis: preserve `nil` values
-  ///   0["username", preserveNilValues: true] = `nil` as String?
+  ///   0["username", nilPreservation: true] = `nil` as String?
   /// }
   ///
   /// // info now contains: ["age": 30, "username": nil]
   /// ```
   public static func withOptions(duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending,
-                                 preserveNilValues: Bool = true,
+                                 nilPreservation: Bool = true,
                                  prefixForKeys: StringLiteralKey? = nil,
                                  file: StaticString = #fileID,
                                  line: UInt = #line,
                                  modify: (consuming CustomOptionsView) -> Void) -> Self {
     withOptions(duplicatePolicy: duplicatePolicy,
-                preserveNilValues: preserveNilValues,
+                nilPreservation: nilPreservation,
                 prefixForKeys: prefixForKeys,
                 origin: .fileLine(file: file, line: line),
                 modify: modify)
@@ -68,7 +68,7 @@ extension ErrorInfo {
   ///
   /// - Parameters:
   ///   - duplicatePolicy: How to handle equal values for the same key. Defaults to ``ValueDuplicatePolicy/defaultForAppending``.
-  ///   - preserveNilValues: Whether `nil` assignments (typically emplicit) should be recorded as explicit `nil` entries. Defaults to `true`.
+  ///   - nilPreservation: Whether `nil` assignments (typically emplicit) should be recorded as explicit `nil` entries. Defaults to `true`.
   ///   - prefixForKeys: A literal prefix to prepend to all keys added within the scope. Defaults to `nil`.
   ///   - origin: The origin used for collision diagnostics for operations in the scope.
   ///   - modify: A closure that receives a ``ErrorInfo/CustomOptionsView`` to perform mutations.
@@ -77,25 +77,25 @@ extension ErrorInfo {
   ///
   /// # Example:
   /// ```swift
-  /// var info = ErrorInfo.withOptions(preserveNilValues: false, origin: "adminOverride") {
-  ///   // Global option preserveNilValues = false, `nil` values are ignored
+  /// var info = ErrorInfo.withOptions(nilPreservation: false, origin: "adminOverride") {
+  ///   // Global option nilPreservation = false, `nil` values are ignored
   ///   $0["age"] = 30 as Int?
-  ///   $0["email"] = nil as String? // ignored because preserveNilValues == false
+  ///   $0["email"] = nil as String? // ignored because nilPreservation == false
   ///
   ///   // Override on a per-operation basis: preserve `nil` values
-  ///   0["username", preserveNilValues: true] = nil as String?
+  ///   0["username", nilPreservation: true] = nil as String?
   /// }
   ///
   /// // info now contains: ["age": 30, "username": nil]
   /// ```
   public static func withOptions(duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending,
-                                 preserveNilValues: Bool = true,
+                                 nilPreservation: Bool = true,
                                  prefixForKeys: StringLiteralKey? = nil,
                                  origin: WriteProvenance.Origin,
                                  modify: (consuming CustomOptionsView) -> Void) -> Self {
     var info = Self()
     info.appendWith(duplicatePolicy: duplicatePolicy,
-                    preserveNilValues: preserveNilValues,
+                    nilPreservation: nilPreservation,
                     prefixForKeys: prefixForKeys,
                     origin: origin,
                     modify: modify)
@@ -121,25 +121,25 @@ extension ErrorInfo {
   ///
   /// - Parameters:
   ///   - duplicatePolicy: How to handle equal values for the same key. Defaults to ``ValueDuplicatePolicy/defaultForAppending``.
-  ///   - preserveNilValues: Whether `nil` assignments (typically emplicit) should be recorded as explicit `nil` entries. Defaults to `true`.
+  ///   - nilPreservation: Whether `nil` assignments (typically emplicit) should be recorded as explicit `nil` entries. Defaults to `true`.
   ///   - prefixForKeys: A literal prefix to prepend to all keys added within the scope. Defaults to `nil`.
   ///   - file: File identifier used as collision origin (defaults to `#fileID`).
   ///   - line: Line number used as collision origin (defaults to `#line`).
   ///   - modify: A closure that receives a ``ErrorInfo/CustomOptionsView`` to perform mutations.
   ///
-  /// - SeeAlso: ``appendWith(duplicatePolicy:preserveNilValues:prefixForKeys:origin:modify:)``
+  /// - SeeAlso: ``appendWith(duplicatePolicy:nilPreservation:prefixForKeys:origin:modify:)``
   ///
   /// # Example:
   /// ```swift
   /// var info = ErrorInfo()
   ///
-  /// info.appendWith(preserveNilValues: false) {
-  ///   // Global option preserveNilValues = false, `nil` values are ignored
+  /// info.appendWith(nilPreservation: false) {
+  ///   // Global option nilPreservation = false, `nil` values are ignored
   ///   $0["age"] = 30 as Int?
-  ///   $0["email"] = nil as String? // ignored because preserveNilValues == false
+  ///   $0["email"] = nil as String? // ignored because nilPreservation == false
   ///
   ///   // Override on a per-operation basis: preserve `nil` values
-  ///   0["username", preserveNilValues: true] = nil as String?
+  ///   0["username", nilPreservation: true] = nil as String?
   /// }
   /// // info now contains: ["age": 30, "username": nil]
   ///
@@ -149,13 +149,13 @@ extension ErrorInfo {
   /// }
   /// ```
   public mutating func appendWith(duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending,
-                                  preserveNilValues: Bool = true,
+                                  nilPreservation: Bool = true,
                                   prefixForKeys: StringLiteralKey? = nil,
                                   file: StaticString = #fileID,
                                   line: UInt = #line,
                                   modify: (consuming CustomOptionsView) -> Void) {
     appendWith(duplicatePolicy: duplicatePolicy,
-               preserveNilValues: preserveNilValues,
+               nilPreservation: nilPreservation,
                prefixForKeys: prefixForKeys,
                origin: .fileLine(file: file, line: line),
                modify: modify)
@@ -172,7 +172,7 @@ extension ErrorInfo {
   ///
   /// - Parameters:
   ///   - duplicatePolicy: How to handle equal values for the same key. Defaults to ``ValueDuplicatePolicy/defaultForAppending``.
-  ///   - preserveNilValues: Whether `nil` assignments (typically emplicit) should be recorded as explicit `nil` entries. Defaults to `true`.
+  ///   - nilPreservation: Whether `nil` assignments (typically emplicit) should be recorded as explicit `nil` entries. Defaults to `true`.
   ///   - prefixForKeys: A literal prefix to prepend to all keys added within the scope. Defaults to `nil`.
   ///   - origin: The origin used for collision diagnostics for operations in the scope.
   ///   - modify: A closure that receives a ``ErrorInfo/CustomOptionsView`` to perform mutations.
@@ -181,13 +181,13 @@ extension ErrorInfo {
   /// ```swift
   /// var info = ErrorInfo()
   ///
-  /// info.appendWith(preserveNilValues: false) {
-  ///   // Global option preserveNilValues = false, `nil` values are ignored
+  /// info.appendWith(nilPreservation: false) {
+  ///   // Global option nilPreservation = false, `nil` values are ignored
   ///   $0["age"] = 30 as Int?
-  ///   $0["email"] = nil as String? // ignored because preserveNilValues == false
+  ///   $0["email"] = nil as String? // ignored because nilPreservation == false
   ///
   ///   // Override on a per-operation basis: preserve `nil` values
-  ///   0["username", preserveNilValues: true] = nil as String?
+  ///   0["username", nilPreservation: true] = nil as String?
   /// }
   /// // info now contains: ["age": 30, "username": nil]
   ///
@@ -197,14 +197,14 @@ extension ErrorInfo {
   /// }
   /// ```
   public mutating func appendWith(duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending,
-                                  preserveNilValues: Bool = true,
+                                  nilPreservation: Bool = true,
                                   prefixForKeys: StringLiteralKey? = nil,
                                   origin: WriteProvenance.Origin,
                                   modify: (consuming CustomOptionsView) -> Void) {
     withUnsafeMutablePointer(to: &self) { pointer in
       let view = CustomOptionsView(pointer: pointer,
                                    duplicatePolicy: duplicatePolicy,
-                                   preserveNilValues: preserveNilValues,
+                                   nilPreservation: nilPreservation,
                                    prefixForKeys: prefixForKeys,
                                    origin: origin)
       modify(view)
@@ -223,7 +223,7 @@ extension ErrorInfo.CustomOptionsView {
   ///
   /// - Parameters:
   ///   - literalKey: The literal key to set.
-  ///   - preserveNilValues: Overrides the context’s `preserveNilValues` for this operation when provided.
+  ///   - nilPreservation: Overrides the context’s `nilPreservation` for this operation when provided.
   ///   - duplicatePolicy: Overrides the context’s `duplicatePolicy` for this operation when provided.
   ///
   /// - Note: The effective key may be prefixed if the context was created with `prefixForKeys`.
@@ -237,7 +237,7 @@ extension ErrorInfo.CustomOptionsView {
   /// ```
   public subscript<V: ErrorInfo.ValueProtocol>(
     _ literalKey: StringLiteralKey,
-    preserveNilValues: Bool? = nil,
+    nilPreservation: Bool? = nil,
     duplicatePolicy: ValueDuplicatePolicy? = nil,
   ) -> V? {
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
@@ -247,7 +247,7 @@ extension ErrorInfo.CustomOptionsView {
       pointer.pointee._add(key: resolvedKey.rawValue,
                            keyOrigin: resolvedKey.keyOrigin,
                            value: newValue,
-                           preserveNilValues: preserveNilValues ?? self.preserveNilValues,
+                           preserveNilValues: nilPreservation ?? self.nilPreservation,
                            duplicatePolicy: duplicatePolicy ?? self.duplicatePolicy,
                            writeProvenance: .onSubscript(origin: origin))
     }
@@ -277,8 +277,8 @@ extension ErrorInfo {
   /// A view that applies scoped options to mutations.
   ///
   /// Instances of `CustomOptionsView` are created by
-  /// - ``ErrorInfo/withOptions(duplicatePolicy:preserveNilValues:prefixForKeys:origin:modify:)``
-  /// - ``ErrorInfo/appendWith(duplicatePolicy:preserveNilValues:prefixForKeys:origin:modify:)``
+  /// - ``ErrorInfo/withOptions(duplicatePolicy:nilPreservation:prefixForKeys:origin:modify:)``
+  /// - ``ErrorInfo/appendWith(duplicatePolicy:nilPreservation:prefixForKeys:origin:modify:)``
   ///
   /// and are valid only within the lifetime of the `modify` closure.
   ///
@@ -286,19 +286,19 @@ extension ErrorInfo {
   public struct CustomOptionsView: ~Copyable, ~Escapable {
     private let pointer: UnsafeMutablePointer<ErrorInfo> // TODO: check CoW not triggered | inplace mutation
     private let duplicatePolicy: ValueDuplicatePolicy
-    private let preserveNilValues: Bool
+    private let nilPreservation: Bool
     private let prefixForKeys: StringLiteralKey?
     private let origin: WriteProvenance.Origin
     
     @_lifetime(borrow pointer)
     fileprivate init(pointer: UnsafeMutablePointer<ErrorInfo>,
                      duplicatePolicy: ValueDuplicatePolicy,
-                     preserveNilValues: Bool,
+                     nilPreservation: Bool,
                      prefixForKeys: StringLiteralKey?,
                      origin: WriteProvenance.Origin) {
       self.pointer = pointer
       self.duplicatePolicy = duplicatePolicy
-      self.preserveNilValues = preserveNilValues
+      self.nilPreservation = nilPreservation
       self.prefixForKeys = prefixForKeys
       self.origin = origin
     }

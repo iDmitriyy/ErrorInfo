@@ -20,7 +20,8 @@ extension ErrorInfo {
   }
   
   /// Merges the current `ErrorInfo` instance with one or more other `ErrorInfo` instances.
-  /// Merge preserve duplicates by design (duplicatePolicy `allowEqual` used internally).
+  /// Merge preserve all information by design (duplicatePolicy `allowEqual` used internally).
+  /// Duplicate and `nil` values are preserved, collision source annotations are added as is.
   ///
   /// - Parameters:
   ///   - firstDonator: The first `ErrorInfo` instance to merge.

@@ -89,7 +89,7 @@ extension ErrorInfo {
         _add(key: literalKey.rawValue,
              keyOrigin: literalKey.keyOrigin,
              value: value,
-             preserveNilValues: true,
+             preserveNilValues: true, // has no effect here
              duplicatePolicy: duplicatePolicy,
              writeProvenance: writeProvenance())
       } else if preserveNilValues {
