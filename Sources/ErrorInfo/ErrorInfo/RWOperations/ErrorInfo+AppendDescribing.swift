@@ -150,11 +150,13 @@ extension ErrorInfo {
       ) // providing origin for a single key-value is an overhead for binary size
       
     case .right(let typeOfWrapped):
-      _addNil(key: key,
-              keyOrigin: keyOrigin,
-              typeOfWrapped: typeOfWrapped,
-              duplicatePolicy: .defaultForAppending,
-              writeProvenance: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
+      _addNil(
+        typeOfWrapped: typeOfWrapped,
+        duplicatePolicy: .defaultForAppending,
+        forKey: key,
+        keyOrigin: keyOrigin,
+        writeProvenance: .onAppend(origin: nil),
+      ) // providing origin for a single key-value is an overhead for binary size
     }
   }
 }

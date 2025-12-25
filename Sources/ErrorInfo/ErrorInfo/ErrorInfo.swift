@@ -175,10 +175,10 @@ extension ErrorInfo {
   ///   - keyOrigin: The origin metadata for the key.
   ///   - duplicatePolicy: How to handle duplicates for subsequent non‑nil inserts.
   ///   - writeProvenance: The collision origin for diagnostics.
-  internal mutating func _addNil(key: String,
-                                 keyOrigin: KeyOrigin,
-                                 typeOfWrapped: any Sendable.Type,
+  internal mutating func _addNil(typeOfWrapped: any Sendable.Type,
                                  duplicatePolicy: ValueDuplicatePolicy,
+                                 forKey key: String,
+                                 keyOrigin: KeyOrigin,
                                  writeProvenance: @autoclosure () -> WriteProvenance) {
     let optional: EquatableOptionalValue = .nilInstance(typeOfWrapped: typeOfWrapped)
     

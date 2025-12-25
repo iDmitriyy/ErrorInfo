@@ -95,11 +95,13 @@ extension ErrorInfo {
           writeProvenance: writeProvenance(),
         )
       } else if preserveNilValues {
-        _addNil(key: literalKey.rawValue,
-                keyOrigin: literalKey.keyOrigin,
-                typeOfWrapped: ValueExistential.self,
-                duplicatePolicy: duplicatePolicy,
-                writeProvenance: writeProvenance())
+        _addNil(
+          typeOfWrapped: ValueExistential.self,
+          duplicatePolicy: duplicatePolicy,
+          forKey: literalKey.rawValue,
+          keyOrigin: literalKey.keyOrigin,
+          writeProvenance: writeProvenance(),
+        )
       }
     }
   }
