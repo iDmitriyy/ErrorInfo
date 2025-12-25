@@ -12,57 +12,6 @@ public import protocol InternalCollectionsUtilities._UniqueCollection
 ///
 /// This protocol provides essential methods for adding, retrieving, and manipulating error-related information in a strongly-typed, flexible collection.
 /// It allows multiple values (both `nil` and `non-nil`) to be associated with individual keys.
-///
-/// - Note:
-/// Duplication policy (for write operations) and specifics
-///   - single key-value append family functions, including subscript
-///     - `keyOrigin` can vary, and `WriteProvenance.Origin` is the same for operation type,
-///     e.g. all writes via `subscript[]` will have the same `WriteProvenance.Origin`.
-///
-///     **duplicates saved only if keyOrigin differs**.
-///
-///     First value has no collision source, so insertion of equal `key-value` pair (e.g. via subscript)
-///     is effectively done when `keyOrigin` differs.
-///
-///       **Rationale:**
-///       - when there is a first value and another one (equal) is added, different `keyOrigin` typically
-///         means they are from different sources of data.
-///         Example: already stored `keyOrigin` is `literal`, and new one is `dynamic`, so keep them both.
-///       - when a third and all next (equal) values is added (extremely rare in practice), econd value already
-///         have `collisionSource`, but it is the same as `WriteProvenance.Origin`
-///         of redudant subscript.
-///         So it is added if `keyOrigin` differs.
-///         **! current imp, handle case when and keyOrigin literal & commbinedLiteral are treated the same**
-///
-///   - init from dictionaryLiteral
-///     - keyOrigin and writePrvenance constants
-///
-///       As it is init, there are no values already stored in errorInfo, so collisions/duplicated values occur within
-///       the literal itself.
-///       **duplicates saved**
-///
-///       **Rationale:**
-///
-///       init from literal is made by explicitly defined keys. If duplications happens this is a
-///       mistake (in a cocntrolled code) that should be visible and resolved, if happens. Extremly rare in practice.
-///       **! current imp can be used, need to explictly pass .allowEqual**
-///
-///
-///    - append key-values from dictionaryLiteral
-///      - KeyOrigin is constant, WriteProvenance.Origin is specified.
-///      > duplicates
-/// defaultForAppending(`allowEqualWhenOriginDiffers`)
-///
-///    - appendProperties from keyPaths
-///
-///    - append with options scope
-///
-///    - append contents of sequence
-///
-///    - merge
-///      - Merge preserve all information by design (duplicatePolicy `allowEqual` used internally).
-///        Duplicate and `nil` values are preserved, collision source annotations are added as is.
-///
 public protocol ErrorInfoOperationsProtocol where KeyType == String {
   associatedtype KeyType: Hashable
   associatedtype ValueExistential

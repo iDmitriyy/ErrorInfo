@@ -14,12 +14,77 @@
 /// - You need to track how often a specific value appears, or count occurrences of specific codes.
 /// - Different origins (such as database and network) should be tracked even if the values are the same.
 ///
+/// # Example
 /// ```swift
 /// info.appendWith(duplicatePolicy: .allowEqual) {
-///   $0["message"] = "Timeout" // from database
-///   $0["message"] = "Timeout" // from network
+///   $0[.message] = nitification.message
+///   // key == "message"
+///
+///   $0[dynamicKey: response.key] = payload.description
+///   // key == "message"
 /// }
 /// ```
+///
+/// # DuplicatePolicy overview
+///
+/// - ## Single Key-Value append family functions, including subscript
+///   `keyOrigin` can vary, and `WriteProvenance.Origin` is the same for operation type,
+///   e.g. all writes via `subscript[]` will have the same `WriteProvenance.Origin`.
+///
+///   **duplicates saved only if keyOrigin differs**.
+///
+///   First value has no collision source, so insertion of equal `key-value` pair (e.g. via subscript)
+///   is effectively done when `keyOrigin` differs.
+///
+///   > **Rationale:**
+///   > - when there is a first value and another one (equal) is added, different `keyOrigin` typically
+///     means they are from different sources of data.
+///     Example: already stored `keyOrigin` is `literal`, and new one is `dynamic`, so keep them both.
+///   > - when a third and all next (equal) values is added (extremely rare in practice), econd value already
+///     have `collisionSource`, but it is the same as `WriteProvenance.Origin`
+///     of redudant subscript.
+///     So it is added if `keyOrigin` differs.
+///     **! current imp, handle case when and keyOrigin literal & commbinedLiteral are treated the same**
+///
+/// - ## DictionaryLiteral init
+///   keyOrigin and writePrvenance constants
+///
+///   As it is init, there are no values already stored in errorInfo, so collisions/duplicated values occur within the literal itself.
+///
+///   **duplicates saved**
+///   > **Rationale:**
+///   init from literal is made by explicitly defined keys. If duplications happens this is a
+///   mistake (in a cocntrolled code) that should be visible and resolved, if happens. Extremly rare in practice.
+///   **! current imp can be used, need to explictly pass .allowEqual**
+///
+/// - ## Append Key-Values from dictionaryLiteral
+///     KeyOrigin is constant, and `WriteProvenance.Origin` is the same for all operations in scope.
+///      > duplicates
+/// defaultForAppending(`allowEqualWhenOriginDiffers`)
+///
+/// - ## Append with options scope
+///     `keyOrigin` can vary, and `WriteProvenance.Origin` is the same for all operations in scope.
+///     Duplicate policy specified for all write opertions in scope, and
+///     can be defined individually for concrete operation.
+///
+/// - ## AppendProperties from keyPaths
+///     KeyOrigin is constant, and `WriteProvenance.Origin` is the same for all operations in scope.
+///
+///   All key-values are added from the same object, so collisions are a mistake / niose, created by repetitive add
+///   from the same keyPath.
+///
+/// - ## Append contents of sequence
+///
+/// - ## Merge
+///   Merge preserve all information by design (duplicatePolicy `allowEqual` used internally).
+///   Duplicate and `nil` values are preserved, collision source annotations are added as is.
+///
+///   > **Rationale:**
+///   Merge operation is intentionally designed for merging several error info instances without data loss.
+///   All content innside instances is treated important and was already processed by another write operations.
+///   Despite collisions occurs only sometimes, it is imprtant to know when they actually happen, so any
+///   kind of filtering inside `merge(Self...)` operations family is as loss of data and would be harmful for
+///   further inspection.
 public struct ValueDuplicatePolicy: Sendable {
   @usableFromInline
   internal let kind: Kind

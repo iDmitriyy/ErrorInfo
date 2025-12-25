@@ -186,11 +186,12 @@ extension ErrorInfo {
     // Improvement: reserve capacity
     for donator in donators {
       for (key, annotatedRecord) in donator._storage {
-        recipient._storage
-          ._addWithCollisionResolution(record: annotatedRecord.record,
-                                       forKey: key,
-                                       duplicatePolicy: .allowEqual,
-                                       writeProvenanceForCollision: annotatedRecord.collisionSource ?? .onMerge(origin: origin))
+        recipient._storage._addRecordWithCollisionAndDuplicateResolution(
+          annotatedRecord.record,
+          forKey: key,
+          duplicatePolicy: .allowEqual,
+          writeProvenance: annotatedRecord.collisionSource ?? .onMerge(origin: origin),
+        )
       }
     }
     return recipient

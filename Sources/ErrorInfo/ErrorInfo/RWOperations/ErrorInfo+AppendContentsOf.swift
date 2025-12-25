@@ -35,7 +35,7 @@ extension ErrorInfo {
   /// ```
   public mutating func append(contentsOf sequence: some Sequence<(String, some ValueProtocol)>,
                               duplicatePolicy: ValueDuplicatePolicy = .allowEqualWhenOriginDiffers,
-                              dedupeWithinSequence: Bool = true,
+                              dedupeWithinSequence _: Bool = true,
                               file: StaticString = #fileID,
                               line: UInt = #line) {
     append(contentsOf: sequence, duplicatePolicy: duplicatePolicy, origin: .fileLine(file: file, line: line))
@@ -79,12 +79,12 @@ extension ErrorInfo {
                                                 dedupeWithinSequence: Bool = true,
                                                 origin: WriteProvenance.Origin) {
     for (dynamicKey, value) in sequence {
-      _add(key: dynamicKey,
-           keyOrigin: .fromCollection,
-           value: value,
-           preserveNilValues: true, // has no effect here
-           duplicatePolicy: duplicatePolicy,
-           writeProvenance: .onSequenceConsumption(origin: origin))
+      _addDetachedValue(key: dynamicKey,
+                        keyOrigin: .fromCollection,
+                        value: value,
+                        shouldPreserveNilValues: true, // has no effect here
+                        duplicatePolicy: duplicatePolicy,
+                        writeProvenance: .onSequenceConsumption(origin: origin))
     }
     
     let keyOrigin: KeyOrigin = .fromCollection
@@ -98,27 +98,25 @@ extension ErrorInfo {
         if let values = seen[dynamicKey], values.contains(value) { continue }
         
         seen[dynamicKey, default: []].append(value)
-        _add(key: dynamicKey,
-             keyOrigin: keyOrigin,
-             value: value,
-             preserveNilValues: preserveNilValues, // has no effect here
-             duplicatePolicy: duplicatePolicy,
-             writeProvenance: .onSequenceConsumption(origin: origin))
+        _addDetachedValue(key: dynamicKey,
+                          keyOrigin: keyOrigin,
+                          value: value,
+                          shouldPreserveNilValues: preserveNilValues, // has no effect here
+                          duplicatePolicy: duplicatePolicy,
+                          writeProvenance: .onSequenceConsumption(origin: origin))
       }
     } else {
       for (dynamicKey, value) in sequence {
-        _add(key: dynamicKey,
-             keyOrigin: keyOrigin,
-             value: value,
-             preserveNilValues: preserveNilValues, // has no effect here
-             duplicatePolicy: duplicatePolicy,
-             writeProvenance: .onSequenceConsumption(origin: origin))
+        _addDetachedValue(key: dynamicKey,
+                          keyOrigin: keyOrigin,
+                          value: value,
+                          shouldPreserveNilValues: preserveNilValues, // has no effect here
+                          duplicatePolicy: duplicatePolicy,
+                          writeProvenance: .onSequenceConsumption(origin: origin))
       }
     }
   }
 }
-
-
 
 /*
  /// # Example
@@ -129,8 +127,6 @@ extension ErrorInfo {
  /// // Skips the second `1` for key "id"
  /// info.append(contentsOf: pairs, duplicatePolicy: .rejectEqual)
  /// ```
- 
- 
  
  var info = ErrorInfo()
 
@@ -179,7 +175,6 @@ extension ErrorInfo {
  - Inside headers, the duplicate is skipped (same origin "headers").
  - The query entry is appended, because its origin "query" differs even though the value is equal.
  
- 
  .allowEqualWhenOriginDiffers:
  “Use this when you are appending multiple sequences and want to dedupe within each sequence
  but allow equal values across sequences. Pass a distinct, meaningful collisionOrigin for each sequence.”
@@ -193,10 +188,7 @@ extension ErrorInfo {
   - first value will be appended (❌ not true now, as existing value has no collisionSourece)
   - second will be skipped (yes, but it is because of improper imp)
 
- 
- 
- 
  // write originless:
- // 
+ //
  
  */

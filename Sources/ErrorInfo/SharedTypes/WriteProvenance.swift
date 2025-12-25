@@ -163,14 +163,14 @@ extension WriteProvenance {
   // FIXME: - add to documentataion that Origin can be created as String literal
   
   public enum Origin: Sendable, ExpressibleByStringLiteral, Equatable {
-    public typealias StringLiteralType = StaticString
+    public typealias StringLiteralType = String
     
     case fileLine(file: String = #fileID, line: UInt = #line)
     case custom(origin: String)
     case function(function: String = #function)
     
-    public init(stringLiteral origin: StringLiteralType) {
-      self = .custom(origin: String(origin))
+    public init(stringLiteral origin: String) {
+      self = .custom(origin: origin)
     }
     
     public static func fileLine(file: StaticString, line: UInt) -> Self {

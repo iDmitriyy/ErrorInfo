@@ -13,7 +13,7 @@ extension ErrorInfo {
   /// Enables safe, predictable equality comparisons for ``ErrorInfo.OptionalValue`` ensuring
   /// type-safe equality, avoiding issues like type mismatches or undefined behavior.
   ///
-  /// - Note: No flattening is needed (in comparison to ``ErrorInfoOptionalAny``).
+  /// - Note: Flattening is not needed for `Optional` values here (in comparison to ``ErrorInfoOptionalAny``).
   /// `Swift.Optional` doesn't conform to `CustomStringConvertible` protocol,
   /// which is required by ``ErrorInfo.ValueProtocol``.
   /// Thats why optional value can not be casted as `any ValueProtocol`.

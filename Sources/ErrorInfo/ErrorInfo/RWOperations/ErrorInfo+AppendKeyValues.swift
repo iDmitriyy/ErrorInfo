@@ -86,12 +86,12 @@ extension ErrorInfo {
     for (literalKey, value) in elements {
       if let value {
         // TBD: _add() with optional value is used
-        _add(key: literalKey.rawValue,
-             keyOrigin: literalKey.keyOrigin,
-             value: value,
-             preserveNilValues: true, // has no effect here
-             duplicatePolicy: duplicatePolicy,
-             writeProvenance: writeProvenance())
+        _addDetachedValue(key: literalKey.rawValue,
+                          keyOrigin: literalKey.keyOrigin,
+                          value: value,
+                          shouldPreserveNilValues: true, // has no effect here
+                          duplicatePolicy: duplicatePolicy,
+                          writeProvenance: writeProvenance())
       } else if preserveNilValues {
         _addNil(key: literalKey.rawValue,
                 keyOrigin: literalKey.keyOrigin,

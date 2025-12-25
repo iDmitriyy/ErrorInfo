@@ -119,10 +119,10 @@ extension ErrorInfo {
   /// `Sendable & Equatable & CustomStringConvertible`
   ///
   /// This approach addresses several important concerns:
-  /// - **Thread Safety**: The Sendable requirement is essential to prevent data races and ensure safe concurrent access.
-  /// - **String Representation**: Requiring CustomStringConvertible forces developers to provide values with meaningful string representations for stored values,
+  /// - **Thread Safety**: The `Sendable` requirement is essential to prevent data races and ensure safe concurrent access.
+  /// - **String Representation**: Requiring `CustomStringConvertible` forces developers to provide values with meaningful string representations for stored values,
   ///   which is invaluable for debugging and logging. It also prevents unexpected results when converting values to strings.
-  /// - **Collision Resolution**: The Equatable requirement allows to detect and potentially resolve collisions if different values are associated with the same key.
+  /// - **Collision Resolution**: The `Equatable` requirement allows to detect and potentially resolve collisions if different values are associated with the same key.
   ///   This adds a layer of robustness.
   public typealias ValueProtocol = Sendable & Equatable & CustomStringConvertible
   
@@ -137,25 +137,27 @@ extension ErrorInfo {
 extension ErrorInfo {
   /// The root appending function for public API imps. The term "_add" is chosen to visually / syntatically differentiate from family of public `append()`functions.
   @usableFromInline
-  internal mutating func _add<V: ValueProtocol>(key: String,
-                                                keyOrigin: KeyOrigin,
-                                                value newValue: V?,
-                                                preserveNilValues: Bool,
-                                                duplicatePolicy: ValueDuplicatePolicy,
-                                                writeProvenance: @autoclosure () -> WriteProvenance) {
+  internal mutating func _addDetachedValue<V: ValueProtocol>(key: String,
+                                                             keyOrigin: KeyOrigin,
+                                                             value newValue: V?,
+                                                             shouldPreserveNilValues: Bool,
+                                                             duplicatePolicy: ValueDuplicatePolicy,
+                                                             writeProvenance: @autoclosure () -> WriteProvenance) {
     let optional: EquatableOptionalValue
     if let newValue {
       optional = .value(newValue)
-    } else if preserveNilValues {
+    } else if shouldPreserveNilValues {
       optional = .nilInstance(typeOfWrapped: V.self)
     } else {
       return
     }
     
-    _storage._addWithCollisionResolution(record: BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
-                                         forKey: key,
-                                         duplicatePolicy: duplicatePolicy,
-                                         writeProvenanceForCollision: writeProvenance())
+    _storage._addRecordWithCollisionAndDuplicateResolution(
+      BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
+      forKey: key,
+      duplicatePolicy: duplicatePolicy,
+      writeProvenance: writeProvenance(),
+    )
   }
   
   // SE-0352 Implicitly Opened Existentials
@@ -180,10 +182,12 @@ extension ErrorInfo {
                                  writeProvenance: @autoclosure () -> WriteProvenance) {
     let optional: EquatableOptionalValue = .nilInstance(typeOfWrapped: typeOfWrapped)
     
-    _storage._addWithCollisionResolution(record: BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
-                                         forKey: key,
-                                         duplicatePolicy: duplicatePolicy,
-                                         writeProvenanceForCollision: writeProvenance())
+    _storage._addRecordWithCollisionAndDuplicateResolution(
+      BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
+      forKey: key,
+      duplicatePolicy: duplicatePolicy,
+      writeProvenance: writeProvenance(),
+    )
   }
 }
 

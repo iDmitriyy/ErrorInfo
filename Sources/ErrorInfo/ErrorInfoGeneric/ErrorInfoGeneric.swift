@@ -101,10 +101,10 @@ extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepre
       return
     }
 
-    _addWithCollisionResolution(record: Record(keyOrigin: keyOrigin, someValue: optional),
-                                forKey: key,
-                                duplicatePolicy: duplicatePolicy,
-                                writeProvenanceForCollision: writeProvenance())
+    _addRecordWithCollisionAndDuplicateResolution(Record(keyOrigin: keyOrigin, someValue: optional),
+                                                  forKey: key,
+                                                  duplicatePolicy: duplicatePolicy,
+                                                  writeProvenance: writeProvenance())
   }
 }
 
@@ -116,10 +116,10 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
                               someValue: RecordValue,
                               duplicatePolicy: ValueDuplicatePolicy,
                               writeProvenance: @autoclosure () -> WriteProvenance) {
-    _addWithCollisionResolution(record: Record(keyOrigin: keyOrigin, someValue: someValue),
-                                forKey: key,
-                                duplicatePolicy: duplicatePolicy,
-                                writeProvenanceForCollision: writeProvenance())
+    _addRecordWithCollisionAndDuplicateResolution(Record(keyOrigin: keyOrigin, someValue: someValue),
+                                                  forKey: key,
+                                                  duplicatePolicy: duplicatePolicy,
+                                                  writeProvenance: writeProvenance())
   }
 }
 
@@ -141,10 +141,12 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
   ///   - key: The key under which to store the record.
   ///   - duplicatePolicy: Policy that defines when equal values are rejected or allowed.
   ///   - writeProvenance: Describes the origin of a collision; evaluated lazily.
-  internal mutating func _addWithCollisionResolution(record newRecord: Record,
-                                                     forKey key: Key,
-                                                     duplicatePolicy: ValueDuplicatePolicy,
-                                                     writeProvenanceForCollision: @autoclosure () -> WriteProvenance) {
+  internal mutating func _addRecordWithCollisionAndDuplicateResolution(
+    _ newRecord: Record,
+    forKey key: Key,
+    duplicatePolicy: ValueDuplicatePolicy,
+    writeProvenance: @autoclosure () -> WriteProvenance,
+  ) {
     let comparator: (AnnotatedRecord) -> Bool
     let currentValues: ValuesForKey<AnnotatedRecord>?
     switch duplicatePolicy.kind {
@@ -155,7 +157,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
     // FIXME: - .rejectEqual is x3 more fast than other on append
     case .rejectEqualValueWhenEqualOrigin:
       currentValues = _storage.allValues(forKey: key)
-      let collisionSource = writeProvenanceForCollision() // Improvement: writeProvenance() called twice
+      let collisionSource = writeProvenance() // Improvement: writeProvenance() called twice
       comparator = { current in
         let isEqualValue = newRecord.someValue == current.record.someValue
         let isEqualKeyOrigin = { newRecord.keyOrigin == current.record.keyOrigin }
@@ -171,7 +173,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
       }
       
     case .allowEqual:
-      _storage.append(key: key, value: newRecord, writeProvenance: writeProvenanceForCollision())
+      _storage.append(key: key, value: newRecord, writeProvenance: writeProvenance())
       return // early exit
     }
     
@@ -180,10 +182,10 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
       if currentValues.contains(where: comparator) {
         return
       } else {
-        _storage.append(key: key, value: newRecord, writeProvenance: writeProvenanceForCollision())
+        _storage.append(key: key, value: newRecord, writeProvenance: writeProvenance())
       }
     } else {
-      _storage.append(key: key, value: newRecord, writeProvenance: writeProvenanceForCollision())
+      _storage.append(key: key, value: newRecord, writeProvenance: writeProvenance())
     }
   }
 }

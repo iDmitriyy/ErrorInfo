@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 24/11/2025.
 //
 
-extension ErrorInfo {  
+extension ErrorInfo {
   // MARK: - Read access Subscript
   
   public subscript(_ literalKey: StringLiteralKey) -> (ValueExistential)? {
@@ -39,12 +39,12 @@ extension ErrorInfo {
       lastValue(forKey: literalKey) as? V
     }
     set {
-      _add(key: literalKey.rawValue,
-           keyOrigin: literalKey.keyOrigin,
-           value: newValue,
-           preserveNilValues: true,
-           duplicatePolicy: .defaultForAppending,
-           writeProvenance: .onSubscript(origin: nil)) // providing origin for a single key-value is an overhead for binary size
+      _addDetachedValue(key: literalKey.rawValue,
+                        keyOrigin: literalKey.keyOrigin,
+                        value: newValue,
+                        shouldPreserveNilValues: true,
+                        duplicatePolicy: .defaultForAppending,
+                        writeProvenance: .onSubscript(origin: nil)) // providing origin for a single key-value is an overhead for binary size
     }
   }
 }
@@ -59,4 +59,3 @@ extension ErrorInfo {
 // forced to be used.
 
 // TODO: check if there runtime issues with unavailable setter. If yes then make deprecated
-

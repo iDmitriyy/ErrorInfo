@@ -48,7 +48,7 @@ public enum KeyOrigin: Sendable, Equatable, CustomDebugStringConvertible {
   indirect case modified(original: Self)
   
   indirect case unverifiedMapped(original: Self)
-  
+    
   /// Returns a default string representation for the key origin.
   ///
   /// # Example:

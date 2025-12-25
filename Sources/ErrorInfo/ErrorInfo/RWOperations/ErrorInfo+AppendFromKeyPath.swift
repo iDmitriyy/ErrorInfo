@@ -24,7 +24,7 @@ extension ErrorInfo {
   /// - Parameters:
   ///   - instance: The object whose properties will be appended to `ErrorInfo`.
   ///   - keysPrefix: An optional prefix for the key path string. Default is `.typeName`.
-  ///   - origin: A source of potential collisions during the append operation. 
+  ///   - origin: A source of potential collisions during the append operation.
   ///   - keys: A closure that returns the key paths of the instance's properties to be appended.
   ///
   /// # Example:
@@ -70,12 +70,12 @@ extension ErrorInfo {
       
       let value = instance[keyPath: keyPath]
       
-      _add(key: keyPathString,
-           keyOrigin: .keyPath,
-           value: value,
-           preserveNilValues: true,
-           duplicatePolicy: .defaultForAppending,
-           writeProvenance: .onAppend(origin: origin))
+      _addDetachedValue(key: keyPathString,
+                        keyOrigin: .keyPath,
+                        value: value,
+                        shouldPreserveNilValues: true,
+                        duplicatePolicy: .defaultForAppending,
+                        writeProvenance: .onAppend(origin: origin))
     }
   }
   

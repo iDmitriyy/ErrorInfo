@@ -123,12 +123,12 @@ extension ErrorInfo {
       // However, this will require OptionalValue store `any Any.Type` instead of `any Sendable.Type` in case .nilInstance
     }
     
-    _add(key: key,
-         keyOrigin: keyOrigin,
-         value: stringRepresentation,
-         preserveNilValues: true, // has no effect in this func
-         duplicatePolicy: .defaultForAppending,
-         writeProvenance: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
+    _addDetachedValue(key: key,
+                      keyOrigin: keyOrigin,
+                      value: stringRepresentation,
+                      shouldPreserveNilValues: true, // has no effect in this func
+                      duplicatePolicy: .defaultForAppending,
+                      writeProvenance: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
   }
   
   private mutating func _appendStringOfAnySendable(value newValue: (some Sendable)?,
@@ -138,12 +138,12 @@ extension ErrorInfo {
     switch ErrorInfoFuncs.flattenOptional(anySendable: newValue) {
     case .left(let value):
       let stringRepresentation = sringTransform(value)
-      _add(key: key,
-           keyOrigin: keyOrigin,
-           value: stringRepresentation,
-           preserveNilValues: true, // has no effect in this func
-           duplicatePolicy: .defaultForAppending,
-           writeProvenance: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
+      _addDetachedValue(key: key,
+                        keyOrigin: keyOrigin,
+                        value: stringRepresentation,
+                        shouldPreserveNilValues: true, // has no effect in this func
+                        duplicatePolicy: .defaultForAppending,
+                        writeProvenance: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
       
     case .right(let typeOfWrapped):
       _addNil(key: key,
