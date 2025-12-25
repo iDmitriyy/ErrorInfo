@@ -70,12 +70,14 @@ extension ErrorInfo {
       
       let value = instance[keyPath: keyPath]
       
-      _addDetachedValue(key: keyPathString,
-                        keyOrigin: .keyPath,
-                        value: value,
-                        shouldPreserveNilValues: true,
-                        duplicatePolicy: .defaultForAppending,
-                        writeProvenance: .onAppend(origin: origin))
+      _addDetachedValue(
+        value,
+        shouldPreserveNilValues: true,
+        duplicatePolicy: .defaultForAppending,
+        forKey: keyPathString,
+        keyOrigin: .keyPath,
+        writeProvenance: .onAppend(origin: origin),
+      )
     }
   }
   

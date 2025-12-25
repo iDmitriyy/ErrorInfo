@@ -79,12 +79,14 @@ extension ErrorInfo {
                                                 dedupeWithinSequence: Bool = true,
                                                 origin: WriteProvenance.Origin) {
     for (dynamicKey, value) in sequence {
-      _addDetachedValue(key: dynamicKey,
-                        keyOrigin: .fromCollection,
-                        value: value,
-                        shouldPreserveNilValues: true, // has no effect here
-                        duplicatePolicy: duplicatePolicy,
-                        writeProvenance: .onSequenceConsumption(origin: origin))
+      _addDetachedValue(
+        value,
+        shouldPreserveNilValues: true, // has no effect here
+        duplicatePolicy: duplicatePolicy,
+        forKey: dynamicKey,
+        keyOrigin: .fromCollection,
+        writeProvenance: .onSequenceConsumption(origin: origin),
+      )
     }
     
     let keyOrigin: KeyOrigin = .fromCollection
@@ -98,21 +100,25 @@ extension ErrorInfo {
         if let values = seen[dynamicKey], values.contains(value) { continue }
         
         seen[dynamicKey, default: []].append(value)
-        _addDetachedValue(key: dynamicKey,
-                          keyOrigin: keyOrigin,
-                          value: value,
-                          shouldPreserveNilValues: preserveNilValues, // has no effect here
-                          duplicatePolicy: duplicatePolicy,
-                          writeProvenance: .onSequenceConsumption(origin: origin))
+        _addDetachedValue(
+          value,
+          shouldPreserveNilValues: preserveNilValues, // has no effect here
+          duplicatePolicy: duplicatePolicy,
+          forKey: dynamicKey,
+          keyOrigin: keyOrigin,
+          writeProvenance: .onSequenceConsumption(origin: origin),
+        )
       }
     } else {
       for (dynamicKey, value) in sequence {
-        _addDetachedValue(key: dynamicKey,
-                          keyOrigin: keyOrigin,
-                          value: value,
-                          shouldPreserveNilValues: preserveNilValues, // has no effect here
-                          duplicatePolicy: duplicatePolicy,
-                          writeProvenance: .onSequenceConsumption(origin: origin))
+        _addDetachedValue(
+          value,
+          shouldPreserveNilValues: preserveNilValues, // has no effect here
+          duplicatePolicy: duplicatePolicy,
+          forKey: dynamicKey,
+          keyOrigin: keyOrigin,
+          writeProvenance: .onSequenceConsumption(origin: origin),
+        )
       }
     }
   }

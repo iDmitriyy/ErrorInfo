@@ -137,11 +137,11 @@ extension ErrorInfo {
 extension ErrorInfo {
   /// The root appending function for public API imps. The term "_add" is chosen to visually / syntatically differentiate from family of public `append()`functions.
   @usableFromInline
-  internal mutating func _addDetachedValue<V: ValueProtocol>(key: String,
-                                                             keyOrigin: KeyOrigin,
-                                                             value newValue: V?,
+  internal mutating func _addDetachedValue<V: ValueProtocol>(_ newValue: V?,
                                                              shouldPreserveNilValues: Bool,
                                                              duplicatePolicy: ValueDuplicatePolicy,
+                                                             forKey key: String,
+                                                             keyOrigin: KeyOrigin,
                                                              writeProvenance: @autoclosure () -> WriteProvenance) {
     let optional: EquatableOptionalValue
     if let newValue {

@@ -244,12 +244,14 @@ extension ErrorInfo.CustomOptionsView {
     get { pointer.pointee.lastValue(forKey: literalKey) as? V }
     nonmutating set {
       let resolvedKey = Self.resolveKey(literalKey: literalKey, prefixForKeys: prefixForKeys)
-      pointer.pointee._addDetachedValue(key: resolvedKey.rawValue,
+      pointer.pointee._addDetachedValue(
+        newValue,
+        shouldPreserveNilValues: nilPreservation ?? self.nilPreservation,
+        duplicatePolicy: duplicatePolicy ?? self.duplicatePolicy,
+        forKey: resolvedKey.rawValue,
                                         keyOrigin: resolvedKey.keyOrigin,
-                                        value: newValue,
-                                        shouldPreserveNilValues: nilPreservation ?? self.nilPreservation,
-                                        duplicatePolicy: duplicatePolicy ?? self.duplicatePolicy,
-                                        writeProvenance: .onSubscript(origin: origin))
+                                        writeProvenance: .onSubscript(origin: origin)
+      )
     }
   }
   

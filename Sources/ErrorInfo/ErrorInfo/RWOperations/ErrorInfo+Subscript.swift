@@ -39,12 +39,14 @@ extension ErrorInfo {
       lastValue(forKey: literalKey) as? V
     }
     set {
-      _addDetachedValue(key: literalKey.rawValue,
-                        keyOrigin: literalKey.keyOrigin,
-                        value: newValue,
-                        shouldPreserveNilValues: true,
-                        duplicatePolicy: .defaultForAppending,
-                        writeProvenance: .onSubscript(origin: nil)) // providing origin for a single key-value is an overhead for binary size
+      _addDetachedValue(
+        newValue,
+        shouldPreserveNilValues: true,
+        duplicatePolicy: .defaultForAppending,
+        forKey: literalKey.rawValue,
+        keyOrigin: literalKey.keyOrigin,
+        writeProvenance: .onSubscript(origin: nil),
+      ) // providing origin for a single key-value is an overhead for binary size
     }
   }
 }

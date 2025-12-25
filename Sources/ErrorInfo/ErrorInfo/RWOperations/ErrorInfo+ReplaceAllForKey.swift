@@ -25,12 +25,14 @@ extension ErrorInfo {
                                                by newValue: ValueExistential,
                                                keyOrigin: KeyOrigin) -> ValuesForKey<ValueExistential>? {
     let oldValues = removeAllRecords(forKey: key)
-    _addDetachedValue(key: key,
-                      keyOrigin: keyOrigin,
-                      value: newValue,
-                      shouldPreserveNilValues: true, // has no effect in this func
-                      duplicatePolicy: .allowEqual, // has no effect in this func
-                      writeProvenance: .onAppend(origin: nil)) // collisions must never happen using this func
+    _addDetachedValue(
+      newValue,
+      shouldPreserveNilValues: true, // has no effect in this func
+      duplicatePolicy: .allowEqual, // has no effect in this func
+      forKey: key,
+      keyOrigin: keyOrigin,
+      writeProvenance: .onAppend(origin: nil),
+    ) // collisions must never happen using this func
     return oldValues
   }
 }

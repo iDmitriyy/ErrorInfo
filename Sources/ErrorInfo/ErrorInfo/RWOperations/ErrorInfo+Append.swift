@@ -11,23 +11,27 @@ extension ErrorInfo {
   /// Instead of subscript overload with `String` key to prevent pollution of autocomplete for `StringLiteralKey` by tons of String methods.
   @_disfavoredOverload
   public mutating func appendValue(_ newValue: (some ValueProtocol)?, forKey dynamicKey: String) {
-    _addDetachedValue(key: dynamicKey,
-                      keyOrigin: .dynamic,
-                      value: newValue,
-                      shouldPreserveNilValues: true,
-                      duplicatePolicy: .defaultForAppending,
-                      writeProvenance: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
+    _addDetachedValue(
+      newValue,
+      shouldPreserveNilValues: true,
+      duplicatePolicy: .defaultForAppending,
+      forKey: dynamicKey,
+      keyOrigin: .dynamic,
+      writeProvenance: .onAppend(origin: nil),
+    ) // providing origin for a single key-value is an overhead for binary size
   }
   
   @available(*, deprecated, message: "for literal keys use subscript instead, append() is intended for dynamic keys)")
   public mutating func appendValue(_ newValue: (some ValueProtocol)?, forKey literalKey: StringLiteralKey) {
     // deprecattion is used to guide users
-    _addDetachedValue(key: literalKey.rawValue,
-                      keyOrigin: literalKey.keyOrigin,
-                      value: newValue,
-                      shouldPreserveNilValues: true,
-                      duplicatePolicy: .defaultForAppending,
-                      writeProvenance: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
+    _addDetachedValue(
+      newValue,
+      shouldPreserveNilValues: true,
+      duplicatePolicy: .defaultForAppending,
+      forKey: literalKey.rawValue,
+      keyOrigin: literalKey.keyOrigin,
+      writeProvenance: .onAppend(origin: nil),
+    ) // providing origin for a single key-value is an overhead for binary size
   }
 }
 
@@ -62,11 +66,13 @@ extension ErrorInfo {
   internal mutating func _singleKeyValuePairAppend(key: String,
                                                    keyOrigin: KeyOrigin,
                                                    value: some ValueProtocol) {
-    _addDetachedValue(key: key,
-                      keyOrigin: keyOrigin,
-                      value: value,
-                      shouldPreserveNilValues: true, // has no effect in this func
-                      duplicatePolicy: .defaultForAppending,
-                      writeProvenance: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
+    _addDetachedValue(
+      value,
+      shouldPreserveNilValues: true, // has no effect in this func
+      duplicatePolicy: .defaultForAppending,
+      forKey: key,
+      keyOrigin: keyOrigin,
+      writeProvenance: .onAppend(origin: nil),
+    ) // providing origin for a single key-value is an overhead for binary size
   }
 }
