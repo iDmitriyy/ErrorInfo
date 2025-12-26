@@ -102,6 +102,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepre
     }
 
     _addRecordWithCollisionAndDuplicateResolution(Record(keyOrigin: keyOrigin, someValue: optional),
+                                                  fromAppendingScope: .detached,
                                                   forKey: key,
                                                   duplicatePolicy: duplicatePolicy,
                                                   writeProvenance: writeProvenance())
@@ -117,6 +118,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
                               duplicatePolicy: ValueDuplicatePolicy,
                               writeProvenance: @autoclosure () -> WriteProvenance) {
     _addRecordWithCollisionAndDuplicateResolution(Record(keyOrigin: keyOrigin, someValue: someValue),
+                                                  fromAppendingScope: .detached,
                                                   forKey: key,
                                                   duplicatePolicy: duplicatePolicy,
                                                   writeProvenance: writeProvenance())
@@ -143,6 +145,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
   ///   - writeProvenance: Describes the origin of a collision; evaluated lazily.
   internal mutating func _addRecordWithCollisionAndDuplicateResolution(
     _ newRecord: Record,
+    fromAppendingScope appendingScope: ValueAppendingScope,
     forKey key: Key,
     duplicatePolicy: ValueDuplicatePolicy,
     writeProvenance: @autoclosure () -> WriteProvenance,
@@ -188,6 +191,27 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
       _storage.append(key: key, value: newRecord, writeProvenance: writeProvenance())
     }
   }
+  
+  internal static func compareByValue(_ a: Record, b: Record) -> Bool {
+    a.someValue == b.someValue
+  }
+  
+  internal static func compareByValueAndKeyOrigin(_ a: Record, b: Record) -> Bool {
+    a.someValue == b.someValue
+  }
+  
+  internal static func compareByValueKeyOriginAndCollisionSource_A(_ a: Record, b: Record) -> Bool {
+    a.someValue == b.someValue
+  }
+  
+  internal static func compareByValueKeyOriginAndCollisionSource_B(_ a: Record, b: Record) -> Bool {
+    a.someValue == b.someValue
+  }
 }
 
 // Improvement: ErrorInfoGeneric @_specialize(where Self == ...)
+
+public enum ValueAppendingScope {
+  case scoped(keyAlreadyExists: Bool)
+  case detached
+}

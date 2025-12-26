@@ -188,6 +188,7 @@ extension ErrorInfo {
       for (key, annotatedRecord) in donator._storage {
         recipient._storage._addRecordWithCollisionAndDuplicateResolution(
           annotatedRecord.record,
+          fromAppendingScope: .detached,
           forKey: key,
           duplicatePolicy: .allowEqual,
           writeProvenance: annotatedRecord.collisionSource ?? .onMerge(origin: origin),

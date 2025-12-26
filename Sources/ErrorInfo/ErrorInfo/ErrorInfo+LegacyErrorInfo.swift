@@ -42,6 +42,7 @@ extension ErrorInfo {
 }
 
 extension ErrorInfo {
+  // TODO: - add convenience Error consuming API
   private mutating func _appendLegacyUserInfoImp(legacyUserInfo: [String: Any],
                                                  origin: @autoclosure () -> WriteProvenance.Origin) {
     legacyUserInfo.forEach { key, value in
@@ -49,6 +50,7 @@ extension ErrorInfo {
       let record = BackingStorage.Record(keyOrigin: .fromCollection, someValue: .value(compatibleValue))
       _storage._addRecordWithCollisionAndDuplicateResolution(
         record,
+        fromAppendingScope: .detached,
         forKey: key,
         duplicatePolicy: .allowEqual, // no effect here, Swift.Dictionary has unique keys
         writeProvenance: .onDictionaryConsumption(origin: origin()),

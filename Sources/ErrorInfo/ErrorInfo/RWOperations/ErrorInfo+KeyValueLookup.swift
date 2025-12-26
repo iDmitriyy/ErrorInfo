@@ -15,6 +15,14 @@ extension ErrorInfo {
   public func hasValue(forKey key: String) -> Bool {
     _storage.hasNonNilValue(forKey: key)
   }
+  
+  public func hasRecord(forKey literalKey: StringLiteralKey) -> Bool {
+    hasRecord(forKey: literalKey.rawValue)
+  }
+  
+  public func hasRecord(forKey key: String) -> Bool {
+    _storage.hasSomeValue(forKey: key)
+  }
 }
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
