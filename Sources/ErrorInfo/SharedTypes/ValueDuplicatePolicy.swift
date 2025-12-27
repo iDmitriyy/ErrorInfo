@@ -85,7 +85,7 @@
 ///   Despite collisions occurs only sometimes, it is imprtant to know when they actually happen, so any
 ///   kind of filtering inside `merge(Self...)` operations family is as loss of data and would be harmful for
 ///   further inspection.
-public struct ValueDuplicatePolicy: Sendable {
+public struct ValueDuplicatePolicy: Sendable, CustomDebugStringConvertible {
   @usableFromInline
   internal let kind: Kind
   
@@ -93,11 +93,19 @@ public struct ValueDuplicatePolicy: Sendable {
     self.kind = kind
   }
   
+  public var debugDescription: String {
+    switch kind {
+    case .rejectEqualValue: "rejectEqual"
+    case .rejectEqualValueWhenEqualOrigin: "rejectEqualWithSameOrigin"
+    case .allowEqual: "allowEqual"
+    }
+  }
+  
   /// See ``ValueDuplicatePolicy.allowEqualWhenOriginDiffers``
   public static let defaultForAppending = allowEqualWhenOriginDiffers
   
   /// If the same value appended for th same key, it is typically a noise.
-  /// KeyOrigin may ne differrent when creating from Dictionary Literal, so duplicate
+  /// KeyOrigin may be different when creating from Dictionary Literal, so duplicate
   /// CollisionOrigin 
   public static let defaultForAppendingDictionaryLiteral = allowEqualWhenOriginDiffers
   

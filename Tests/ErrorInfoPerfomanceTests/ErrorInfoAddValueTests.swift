@@ -7,16 +7,65 @@
 
 import ErrorInfo
 import NonEmpty
+import Synchronization
 import Testing
 
 struct ErrorInfoAddValueTests {
-  private let countBase: Int = 10000
-  private let printPrefix = "____addValue: "
+  private let countBase: Int = 3000
+  private let printPrefix = "____addValue:"
   
+  private let idKey = "id"
+  private let errorCodeKey = "error_code"
+  private let indexKey = "index"
+    
+  /// ## Purpose
+  /// The test is a **parameterized micro-benchmark** for `ErrorInfo`’s append logic.
+  /// It focuses on measuring the **incremental cost of adding values**, not correctness.
+  ///
+  /// ## Systematic Coverage
+  /// The test exercises:
+  /// - Adding **1, 2, or 3 values**
+  /// - **Same key vs different keys** to cover collision and non-collision paths
+  /// - Multiple **`ValueDuplicatePolicy`** variants to expose policy-dependent costs
+  ///
+  /// ## Stress on Storage Transitions
+  /// The test intentionally forces transitions from:
+  /// - empty → single-value storage
+  /// - single-value → multi-value storage
+  ///
+  /// ## Controlled Execution Model
+  /// - Uses `@Test(.serialized)` to avoid interference from parallel execution.
+  /// - Operates on batches of freshly created `ErrorInfo` instances to avoid state carryover.
+  ///
+  /// ## Two-Phase Measurement Strategy
+  /// The benchmark is split into two phases:
+  /// - **Baseline phase (`switchDuration`)** measures loop structure, branching, and switch
+  ///   overhead using empty functions.
+  /// - **Measured phase (`output`)** performs the actual `mutating funcs` calls.
+  ///
+  /// The reported time is the **balanced duration** (`output − switchDuration`),
+  /// isolating the cost of the append logic.
+  ///
+  /// ## Why `measurementsCount = countBase / addedValuesCount`
+  /// This normalization:
+  /// - Keeps the **total number of appended values constant** across test cases.
+  /// - Ensures fair comparison between:
+  ///   - adding many single values, and
+  ///   - adding fewer batches of multiple values.
+  /// - Prevents scenarios where “add 3 values” tests would otherwise perform three times
+  ///   more work than “add 1 value” tests, which would skew results.
+  ///
+  /// This ensures both hot paths and rare paths are exercised.
+  ///
+  /// ## Overall Intent
+  /// Produce **stable, apples-to-apples performance numbers** that reflect real storage
+  /// behavior rather than test harness overhead.
   @Test(.serialized,
-        arguments: [(1, true), (2, true), (2, false), (3, true), (3, false)]) // , valueDuplicatePolicy: ValueDuplicatePolicy
+        arguments: [(1, true), (2, true), (2, false), (3, true), (3, false)],
+        [ValueDuplicatePolicy.allowEqual, .rejectEqual, .rejectEqualWithSameOrigin])
   @_transparent
-  func `add value`(params: (addedValuesCount: Int, addForDifferentKeys: Bool)) {
+  mutating func `add value`(params: (addedValuesCount: Int, addForDifferentKeys: Bool),
+                            duplicatePolicy: ValueDuplicatePolicy) {
     let (addedValuesCount, addForDifferentKeys) = params
     
     if #available(macOS 26.0, *) {
@@ -52,41 +101,85 @@ struct ErrorInfoAddValueTests {
         for index in infos.indices {
           switch addedValuesCount {
           case 1:
-            infos[index][.id] = index
+            infos[index]._addValue_Test(index, duplicatePolicy: duplicatePolicy, forKey: idKey)
+            
           case 2:
+            let (key1, key2): (String, String)
             if addForDifferentKeys {
-              infos[index][.id] = index
-              infos[index][.errorCode] = index
+              (key1, key2) = (idKey, errorCodeKey)
             } else {
-              infos[index][.errorCode] = index
-              infos[index][.errorCode] = index
+              (key1, key2) = (errorCodeKey, errorCodeKey)
             }
+            infos[index]._addValue_Test(index, duplicatePolicy: duplicatePolicy, forKey: key1)
+            infos[index]._addValue_Test(index, duplicatePolicy: duplicatePolicy, forKey: key2)
+            
           case 3:
+            let (key1, key2, key3): (String, String, String)
             if addForDifferentKeys {
-              infos[index][.id] = index
-              infos[index][.errorCode] = index
-              infos[index][.dataString] = index
+              (key1, key2, key3) = (idKey, errorCodeKey, indexKey)
             } else {
-              infos[index][.errorCode] = index
-              infos[index][.errorCode] = index
-              infos[index][.errorCode] = index
+              (key1, key2, key3) = (errorCodeKey, errorCodeKey, errorCodeKey)
             }
+            infos[index]._addValue_Test(index, duplicatePolicy: duplicatePolicy, forKey: key1)
+            infos[index]._addValue_Test(index, duplicatePolicy: duplicatePolicy, forKey: key2)
+            infos[index]._addValue_Test(index, duplicatePolicy: duplicatePolicy, forKey: key3)
+            
           default: Issue.record("Unexpected key-value pairs count \(addedValuesCount)")
           }
         }
       })
       
-      // 21.32940  10.29380  6.86570
-      if addedValuesCount == 1 {
-        print(printPrefix, "1000 empty total ", output.preparationsDuration.asString(fractionDigits: 5))
-      }
+      /* new imp
+       518.0    add 1 value for different keys, policy: allowEqual
+       569.7    add 1 value for different keys, policy: rejectEqual
+       572.0    add 1 value for different keys, policy: rejectEqualWithSameOrigin
+       613.5    add 2 values for different keys, policy: allowEqual
+       656.7    add 2 values for different keys, policy: rejectEqual
+       656.3    add 2 values for different keys, policy: rejectEqualWithSameOrigin
+       2133.8   add 2 values for same key, policy: allowEqual
+       519.7    add 2 values for same key, policy: rejectEqual
+       527.4    add 2 values for same key, policy: rejectEqualWithSameOrigin
+       647.4    add 3 values for different keys, policy: allowEqual
+       691.2    add 3 values for different keys, policy: rejectEqual
+       683.1    add 3 values for different keys, policy: rejectEqualWithSameOrigin
+       1700.4   add 3 values for same key, policy: allowEqual
+       496.4    add 3 values for same key, policy: rejectEqual
+       502.0    add 3 values for same key, policy: rejectEqualWithSameOrigin
+       */
       
-      let pluralValue = addedValuesCount == 1 ? "value" : "values"
-      print(printPrefix,
-            "add \(addedValuesCount) \(pluralValue) for \(addForDifferentKeys ? "different keys" : "same key")",
-            (output.duration - switchDuration).asString(fractionDigits: 5))
+      /* old imp
+       527.0    add 1 value for different keys, policy: allowEqual
+       805.3    add 1 value for different keys, policy: rejectEqual
+       807.2    add 1 value for different keys, policy: rejectEqualWithSameOrigin
+       
+       608.5    add 2 values for different keys, policy: allowEqual
+       891.5    add 2 values for different keys, policy: rejectEqual
+       896.8    add 2 values for different keys, policy: rejectEqualWithSameOrigin
+       
+       2128.7   add 2 values for same key, policy: allowEqual
+       911.8    add 2 values for same key, policy: rejectEqual
+       916.5    add 2 values for same key, policy: rejectEqualWithSameOrigin
+       
+       637.6    add 3 values for different keys, policy: allowEqual
+       936.9    add 3 values for different keys, policy: rejectEqual
+       938.9    add 3 values for different keys, policy: rejectEqualWithSameOrigin
+       
+       1698.9   add 3 values for same key, policy: allowEqual
+       914.9    add 3 values for same key, policy: rejectEqual
+       928.1    add 3 values for same key, policy: rejectEqualWithSameOrigin
+       */
       
-      // print(printPrefix, "\(addedValuesCount) switchDuration ", switchDuration.asString(fractionDigits: 5))
+      // if addedValuesCount == 1 {
+      //   print(printPrefix, "1000 empty total ", output.preparationsDuration.asString(fractionDigits: 5))
+      // }
+      
+      let addedValues = "add \(addedValuesCount) " + (addedValuesCount == 1 ? "value" : "values")
+      let whichKeys = "\(addForDifferentKeys ? "different keys" : "same key")"
+      let policy = ", policy: \(duplicatePolicy)"
+      
+      let balancedDuration = (output.duration - switchDuration).asString(fractionDigits: 1)
+      
+      print(printPrefix, balancedDuration, addedValues + " for " + whichKeys + policy, separator: "\t\t")
     }
   }
   

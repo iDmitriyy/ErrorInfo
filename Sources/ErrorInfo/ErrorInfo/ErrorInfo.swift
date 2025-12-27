@@ -136,13 +136,14 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   /// The root appending function for public API imps. The term "_add" is chosen to visually / syntatically differentiate from family of public `append()`functions.
-  @usableFromInline
-  internal mutating func _addDetachedValue<V: ValueProtocol>(_ newValue: V?,
-                                                             shouldPreserveNilValues: Bool,
-                                                             duplicatePolicy: ValueDuplicatePolicy,
-                                                             forKey key: String,
-                                                             keyOrigin: KeyOrigin,
-                                                             writeProvenance: @autoclosure () -> WriteProvenance) {
+//  @usableFromInline
+//  internal
+  public mutating func _addDetachedValue<V: ValueProtocol>(_ newValue: V?,
+                                                           shouldPreserveNilValues: Bool,
+                                                           duplicatePolicy: ValueDuplicatePolicy,
+                                                           forKey key: String,
+                                                           keyOrigin: KeyOrigin,
+                                                           writeProvenance: @autoclosure () -> WriteProvenance) {
     let optional: EquatableOptionalValue
     if let newValue {
       optional = .value(newValue)
@@ -157,6 +158,35 @@ extension ErrorInfo {
       forKey: key,
       duplicatePolicy: duplicatePolicy,
       writeProvenance: writeProvenance(),
+    )
+  }
+  
+  public mutating func _addValue_Test<V: ValueProtocol>(_ newValue: V?,
+                                                        shouldPreserveNilValues: Bool = true,
+                                                        duplicatePolicy: ValueDuplicatePolicy,
+                                                        forKey key: String,
+                                                        keyOrigin: KeyOrigin = .dynamic) {
+    let optional: EquatableOptionalValue
+    if let newValue {
+      optional = .value(newValue)
+    } else if shouldPreserveNilValues {
+      optional = .nilInstance(typeOfWrapped: V.self)
+    } else {
+      return
+    }
+    
+//    _storage._addRecordWithCollisionAndDuplicateResolution(
+//      BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
+//      forKey: key,
+//      duplicatePolicy: duplicatePolicy,
+//      writeProvenance: .onSubscript(origin: nil),
+//    )
+    
+    _storage._addRecordWithCollisionAndDuplicateResolution_2(
+      BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
+      forKey: key,
+      duplicatePolicy: duplicatePolicy,
+      writeProvenance: .onSubscript(origin: nil),
     )
   }
   
