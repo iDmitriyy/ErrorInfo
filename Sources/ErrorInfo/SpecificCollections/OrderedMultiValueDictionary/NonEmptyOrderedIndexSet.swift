@@ -32,7 +32,7 @@ public struct NonEmptyOrderedIndexSet: Sendable, RandomAccessCollection {
   @usableFromInline internal var _variant: Either<Int, NonEmptyOrderedSet<Int>>
     
   /// Creates a non-empty set containing a single index stored inline.
-  @_spi(PerfomanceTesting)
+//  @_spi(PerfomanceTesting)
   public static func single(index: Int) -> Self {
     Self(_variant: .left(index))
   } // no speedup with inlining
@@ -76,7 +76,7 @@ public struct NonEmptyOrderedIndexSet: Sendable, RandomAccessCollection {
   
   /// Inserts `newIndex`, preserving order of insertion.
   /// Switches to heap-backed storage on the first insertion beyond one element.
-  @_spi(PerfomanceTesting)
+//  @_spi(PerfomanceTesting)
   public mutating func insert(_ newIndex: Int) {
     switch _variant {
     case .left(let currentIndex):
@@ -85,7 +85,7 @@ public struct NonEmptyOrderedIndexSet: Sendable, RandomAccessCollection {
       _variant = .right(NonEmptyOrderedSet<Int>(elements: currentIndex, newIndex))
       
     case .right(var elements):
-      // On relese builds, compiler optimizes CoW here, like it is inout switch / in-place mutation
+      // On release builds, compiler optimizes CoW here, like it is inout switch / in-place mutation
       elements.append(newIndex)
       _variant = .right(elements)
     }

@@ -152,6 +152,7 @@ extension OrderedMultipleValuesForKeyStorage {
           for (key, value) in singleValueForKeyDict {
             multiValueForKeyDict.append(key: key, value: .value(value))
           }
+          
           multiValueForKeyDict.append(key: newKey,
                                       value: .collidedValue(newValue, collisionSource: writeProvenance()))
           _variant = .right(multiValueForKeyDict)
@@ -206,10 +207,13 @@ extension OrderedMultipleValuesForKeyStorage {
 
       if singleValueForKeyDict != nil {
         if singleValueForKeyDict.hasValue(forKey: newKey) {
-          var multiValueForKeyDict = MultiValueForKeyDict()
-          for (key, value) in singleValueForKeyDict {
+          
+          var multiValueForKeyDict = MultiValueForKeyDict(minimumCapacity: singleValueForKeyDict.count + 1)
+          for index in singleValueForKeyDict.indices {
+            let (key, value) = singleValueForKeyDict[index]
             multiValueForKeyDict.append(key: key, value: .value(value))
           }
+          
           multiValueForKeyDict.append(key: newKey,
                                       value: .collidedValue(newValue, collisionSource: writeProvenance()))
           _variant = .right(multiValueForKeyDict)

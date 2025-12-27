@@ -129,19 +129,89 @@ struct ErrorInfoAddValueTests {
         }
       })
       
+      /* new imp (optimized copy to multi storage)
+       538.8    add 1 value for different keys, policy: allowEqual
+       588.4    add 1 value for different keys, policy: rejectEqual
+       588.1    add 1 value for different keys, policy: rejectEqualWithSameOrigin
+       
+       631.8    add 2 values for different keys, policy: allowEqual
+       676.0    add 2 values for different keys, policy: rejectEqual
+       674.3    add 2 values for different keys, policy: rejectEqualWithSameOrigin
+       
+       2106.9   add 2 values for same key, policy: allowEqual
+       535.4    add 2 values for same key, policy: rejectEqual
+       541.4    add 2 values for same key, policy: rejectEqualWithSameOrigin
+       
+       665.6    add 3 values for different keys, policy: allowEqual
+       705.7    add 3 values for different keys, policy: rejectEqual
+       708.0    add 3 values for different keys, policy: rejectEqualWithSameOrigin
+       
+       1690.8   add 3 values for same key, policy: allowEqual
+       510.9    add 3 values for same key, policy: rejectEqual
+       517.3    add 3 values for same key, policy: rejectEqualWithSameOrigin
+       */
+      
+      /* new imp
+       532.9    add 1 value for different keys, policy: allowEqual
+       575.0    add 1 value for different keys, policy: rejectEqual
+       575.9    add 1 value for different keys, policy: rejectEqualWithSameOrigin
+       
+       624.7    add 2 values for different keys, policy: allowEqual
+       669.5    add 2 values for different keys, policy: rejectEqual
+       670.0    add 2 values for different keys, policy: rejectEqualWithSameOrigin
+       
+       2170.3   add 2 values for same key, policy: allowEqual
+       527.8    add 2 values for same key, policy: rejectEqual
+       534.1    add 2 values for same key, policy: rejectEqualWithSameOrigin
+       
+       656.7    add 3 values for different keys, policy: allowEqual
+       697.8    add 3 values for different keys, policy: rejectEqual
+       700.3    add 3 values for different keys, policy: rejectEqualWithSameOrigin
+       
+       1722.2   add 3 values for same key, policy: allowEqual
+       502.2    add 3 values for same key, policy: rejectEqual
+       511.0    add 3 values for same key, policy: rejectEqualWithSameOrigin
+       */
+      
+      /* new imp (after restart)
+       538.8    add 1 value for different keys, policy: allowEqual
+       576.2    add 1 value for different keys, policy: rejectEqual
+       579.7    add 1 value for different keys, policy: rejectEqualWithSameOrigin
+       
+       632.0    add 2 values for different keys, policy: allowEqual
+       678.0    add 2 values for different keys, policy: rejectEqual
+       680.3    add 2 values for different keys, policy: rejectEqualWithSameOrigin
+       
+       2167.4   add 2 values for same key, policy: allowEqual
+       538.7    add 2 values for same key, policy: rejectEqual
+       544.4    add 2 values for same key, policy: rejectEqualWithSameOrigin
+       
+       661.5    add 3 values for different keys, policy: allowEqual
+       708.0    add 3 values for different keys, policy: rejectEqual
+       702.6    add 3 values for different keys, policy: rejectEqualWithSameOrigin
+       
+       1738.0   add 3 values for same key, policy: allowEqual
+       506.1    add 3 values for same key, policy: rejectEqual
+       512.5    add 3 values for same key, policy: rejectEqualWithSameOrigin
+       */
+      
       /* new imp
        518.0    add 1 value for different keys, policy: allowEqual
        569.7    add 1 value for different keys, policy: rejectEqual
        572.0    add 1 value for different keys, policy: rejectEqualWithSameOrigin
+       
        613.5    add 2 values for different keys, policy: allowEqual
        656.7    add 2 values for different keys, policy: rejectEqual
        656.3    add 2 values for different keys, policy: rejectEqualWithSameOrigin
+       
        2133.8   add 2 values for same key, policy: allowEqual
        519.7    add 2 values for same key, policy: rejectEqual
        527.4    add 2 values for same key, policy: rejectEqualWithSameOrigin
+       
        647.4    add 3 values for different keys, policy: allowEqual
        691.2    add 3 values for different keys, policy: rejectEqual
        683.1    add 3 values for different keys, policy: rejectEqualWithSameOrigin
+       
        1700.4   add 3 values for same key, policy: allowEqual
        496.4    add 3 values for same key, policy: rejectEqual
        502.0    add 3 values for same key, policy: rejectEqualWithSameOrigin
@@ -188,4 +258,6 @@ struct ErrorInfoAddValueTests {
   internal func make1000EmptyInstances() -> InlineArray<1000, ErrorInfo> {
     InlineArray<1000, ErrorInfo>({ _ in ErrorInfo() })
   }
+  
+  
 }

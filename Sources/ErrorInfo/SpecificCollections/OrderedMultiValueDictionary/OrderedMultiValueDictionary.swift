@@ -33,8 +33,9 @@ import SwiftCollectionsNonEmpty
 /// dict.removeAllValues(forKey: "id") // removes both values for "id"
 /// ```
 @usableFromInline
-internal struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
-  public typealias Element = (key: Key, value: Value)
+internal
+struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
+  @usableFromInline typealias Element = (key: Key, value: Value)
   
   @usableFromInline internal var _entries: [Element]
   
@@ -46,6 +47,16 @@ internal struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
     _keyToEntryIndices = [:]
   }
   
+  @usableFromInline
+  internal init(elements: some Collection<(key: Key, value: Value)>) {
+    let capacity = elements.count + 1
+    _keyToEntryIndices = Dictionary(minimumCapacity: capacity)
+    _entries = Array<Element>(elements)
+//    _entries.append(contentsOf: elements)
+    _rebuildKeyToEntryIndices()
+  }
+  
+  @usableFromInline
   internal init(minimumCapacity: Int) {
     _entries = Array(minimumCapacity: minimumCapacity)
     _keyToEntryIndices = Dictionary(minimumCapacity: minimumCapacity)
@@ -55,7 +66,8 @@ internal struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
 extension OrderedMultiValueDictionary: Sendable where Key: Sendable, Value: Sendable {}
 
 extension OrderedMultiValueDictionary {
-  public func hasValue(forKey key: Key) -> Bool {
+  @usableFromInline
+  func hasValue(forKey key: Key) -> Bool {
     _keyToEntryIndices.hasValue(forKey: key)
   }
   
@@ -91,7 +103,9 @@ extension OrderedMultiValueDictionary {
       iteration(_entries[index].value)
        
     case .right(let indices):
-      for index in indices { iteration(_entries[index].value) }
+      for index in indices {
+        iteration(_entries[index].value)
+      }
     }
   }
   
@@ -130,12 +144,15 @@ extension OrderedMultiValueDictionary {
   }
   
   private mutating func _rebuildKeyToEntryIndices() {
-    _keyToEntryIndices = [:] // Improvement: Dictionary(minimumCapacity: _keyToEntryIndices.count - 1) | removeAll(keepingCapacity: true)
+    _keyToEntryIndices.removeAll(keepingCapacity: true)
     for index in _entries.indices {
-      let entry = _entries[index]
-      _insert(entryIndex: index, forKey: entry.key)
+      _insert(entryIndex: index, forKey: _entries[index].key)
     }
   }
+  
+  // internal static func addIndices(ofEntries entries: [Element], to ) {
+  //
+  // }
   
   internal mutating func removeAll(where predicate: (_ key: Key, _ value: Value) -> Bool) {
     self = filter { key, value in !predicate(key, value) }
@@ -153,13 +170,14 @@ extension OrderedMultiValueDictionary {
 // MARK: Append KeyValue
 
 extension OrderedMultiValueDictionary {
-  public mutating func append(key: Key, value: Value) {
+  @usableFromInline
+  mutating func append(key: Key, value: Value) {
     let newEntryIndex = _entries.endIndex
     _insert(entryIndex: newEntryIndex, forKey: key)
     _entries.append((key, value))
   }
   
-  private mutating func _insert(entryIndex: Int, forKey key: Key) {
+  public mutating func _insert(entryIndex: Int, forKey key: Key) {
     if let bucketIndex = _keyToEntryIndices.index(forKey: key) {
       _keyToEntryIndices.values[bucketIndex].insert(entryIndex)
     } else {
