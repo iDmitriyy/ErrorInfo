@@ -84,6 +84,7 @@ public struct WriteProvenance: Sendable, Equatable, CustomStringConvertible, Cus
   }
 
   /// Creates a `WriteProvenance` for a key collision triggered by a dictionary literal creation.
+  @usableFromInline
   internal static var onCreateWithDictionaryLiteral: Self {
     Self(backing: .onCreateWithDictionaryLiteral)
   }

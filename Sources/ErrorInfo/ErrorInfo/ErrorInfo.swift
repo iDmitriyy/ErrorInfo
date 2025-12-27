@@ -97,7 +97,7 @@ public struct ErrorInfo: Sendable, ErrorInfoOperationsProtocol {
   
   public init() {
     self.init(storage: BackingStorage())
-  }
+  } // inlining worsens performance
   
   public init(minimumCapacity: Int) {
     self.init(storage: BackingStorage(minimumCapacity: minimumCapacity))

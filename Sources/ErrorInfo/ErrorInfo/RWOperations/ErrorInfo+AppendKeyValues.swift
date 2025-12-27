@@ -78,6 +78,7 @@ extension ErrorInfo {
 // MARK: - Imp
 
 extension ErrorInfo {
+  @usableFromInline
   internal mutating func _appendKeyValuesImp(_dictionaryLiteral elements: some Collection<(key: StringLiteralKey, value: Value)>,
                                              preserveNilValues: Bool,
                                              writeProvenance: @autoclosure () -> WriteProvenance) {
