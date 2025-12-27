@@ -39,6 +39,10 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
   /// ]
   /// ```
   public init(dictionaryLiteral elements: (Key, Value)...) {
+    guard !elements.isEmpty else {
+      self.init()
+      return
+    }
     self.init(minimumCapacity: elements.count)
     _appendKeyValuesImp(_dictionaryLiteral: elements,
                         preserveNilValues: true,

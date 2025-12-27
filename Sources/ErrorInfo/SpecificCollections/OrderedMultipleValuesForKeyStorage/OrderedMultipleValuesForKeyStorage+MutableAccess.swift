@@ -137,6 +137,7 @@ extension OrderedMultipleValuesForKeyStorage {
       // - hasValue(forKey:) – which faster
       // - multiValueForKeyDict.append(contentsOf: singleValueForKeyDict)
       // - inlining
+      // - optimize writeProvenance()
       
       _variant = nil
 

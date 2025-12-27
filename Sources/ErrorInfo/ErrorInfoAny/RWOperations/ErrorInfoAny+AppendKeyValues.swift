@@ -2,7 +2,7 @@
 //  ErrorInfoAny+AppendKeyValues.swift
 //  ErrorInfo
 //
-//  Created by tmp on 20/12/2025.
+//  Created by Dmitriy Ignatyev on 20/12/2025.
 //
 
 // MARK: - Append KeyValues literal
