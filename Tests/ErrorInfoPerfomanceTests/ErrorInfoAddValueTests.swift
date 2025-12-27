@@ -13,24 +13,80 @@ struct ErrorInfoAddValueTests {
   private let countBase: Int = 10000
   private let printPrefix = "____addValue: "
   
-  
-  @Test(.serialized, arguments: [1, 2, 3])
-  func `add value`(denominator: Int) {
+  @Test(.serialized,
+        arguments: [(1, true), (2, true), (2, false), (3, true), (3, false)]) // , valueDuplicatePolicy: ValueDuplicatePolicy
+  @_transparent
+  func `add value`(params: (addedValuesCount: Int, addForDifferentKeys: Bool)) {
+    let (addedValuesCount, addForDifferentKeys) = params
+    
     if #available(macOS 26.0, *) {
-      let output = performMeasuredAction(count: countBase / denominator) {
+      let measurementsCount = countBase / addedValuesCount
+      
+      let switchDuration = performMeasuredAction(count: measurementsCount, prepare: {
         make1000EmptyInstances()
-      } measure: { infos in
-        for index in infos.indices {
-          blackHole(index)
+      }, measure: { infos in
+        for _ in infos.indices {
+          switch addedValuesCount {
+          case 1:
+            emptyFunc0()
+          case 2:
+            if addForDifferentKeys {
+              emptyFunc0()
+            } else {
+              emptyFunc1()
+            }
+          case 3:
+            if addForDifferentKeys {
+              emptyFunc0()
+            } else {
+              emptyFunc1()
+            }
+          default: Issue.record("Unexpected key-value pairs count \(addedValuesCount)")
+          }
         }
+      }).duration
+      
+      let output = performMeasuredAction(count: measurementsCount, prepare: {
+        make1000EmptyInstances()
+      }, measure: { infos in
+        for index in infos.indices {
+          switch addedValuesCount {
+          case 1:
+            infos[index][.id] = index
+          case 2:
+            if addForDifferentKeys {
+              infos[index][.id] = index
+              infos[index][.errorCode] = index
+            } else {
+              infos[index][.errorCode] = index
+              infos[index][.errorCode] = index
+            }
+          case 3:
+            if addForDifferentKeys {
+              infos[index][.id] = index
+              infos[index][.errorCode] = index
+              infos[index][.dataString] = index
+            } else {
+              infos[index][.errorCode] = index
+              infos[index][.errorCode] = index
+              infos[index][.errorCode] = index
+            }
+          default: Issue.record("Unexpected key-value pairs count \(addedValuesCount)")
+          }
+        }
+      })
+      
+      // 21.32940  10.29380  6.86570
+      if addedValuesCount == 1 {
+        print(printPrefix, "1000 empty total ", output.preparationsDuration.asString(fractionDigits: 5))
       }
       
-      if denominator == 1 {
-        print(printPrefix, "1000 empty total ", output.preparationsDuration.asString(fractionDigits: 5))
-      } // 1000 empty total  31.05566
-      // 694.95659-696  6432 6441 6388  .
-      let pluralValue = denominator == 1 ? "value" : "values"
-      print(printPrefix, "add \(denominator) \(pluralValue) ", output.duration.asString(fractionDigits: 5))
+      let pluralValue = addedValuesCount == 1 ? "value" : "values"
+      print(printPrefix,
+            "add \(addedValuesCount) \(pluralValue) for \(addForDifferentKeys ? "different keys" : "same key")",
+            (output.duration - switchDuration).asString(fractionDigits: 5))
+      
+      // print(printPrefix, "\(addedValuesCount) switchDuration ", switchDuration.asString(fractionDigits: 5))
     }
   }
   

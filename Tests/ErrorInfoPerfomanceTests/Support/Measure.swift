@@ -49,7 +49,7 @@ internal func performMeasuredAction<T>(count: Int, _ actions: () -> T) -> (resul
 @discardableResult
 internal func performMeasuredAction<P, T>(count: Int,
                                           prepare: () -> P,
-                                          measure actions: (consuming P) -> T)
+                                          measure actions: (inout P) -> T)
 -> (results: [T], duration: Double, preparationsDuration: Double) {
   let clock = ContinuousClock()
     
@@ -59,11 +59,11 @@ internal func performMeasuredAction<P, T>(count: Int,
   var totalMeasuredDuration = Duration.zero
   for _ in 0..<count {
     let timeBeforePreparation = clock.now
-    let preparedData = prepare()
+    var preparedData = prepare()
     let timeAfterPreparation = clock.now
     
     let timeBeforeMeasurement = clock.now
-    let result = actions(preparedData)
+    let result = actions(&preparedData)
     let timeAfterMeasurement = clock.now
     
     let preparationTimeDifference = timeAfterPreparation - timeBeforePreparation
@@ -97,6 +97,12 @@ struct VariadicTuple<each T> {
 public func blackHole<T>(_ thing: T) {
   _ = thing
 }
+
+@inline(never) @_optimize(none)
+public func emptyFunc1() {}
+
+@inline(never) @_optimize(none)
+public func emptyFunc0() {}
 
 extension Double {
   public func asString(fractionDigits: UInt8) -> String {
