@@ -64,6 +64,8 @@ extension ErrorInfoGeneric {
   }
 }
 
+// Improvement: ErrorInfoGeneric @_specialize(where Self == ...)
+
 extension ErrorInfoGeneric: Sendable where Key: Sendable, RecordValue: Sendable {}
 
 extension ErrorInfoGeneric.Record: Sendable where RecordValue: Sendable {}
@@ -102,7 +104,6 @@ extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepre
     }
 
     _addRecordWithCollisionAndDuplicateResolution(Record(keyOrigin: keyOrigin, someValue: optional),
-                                                  fromAppendingScope: .detached,
                                                   forKey: key,
                                                   duplicatePolicy: duplicatePolicy,
                                                   writeProvenance: writeProvenance())
@@ -118,7 +119,6 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
                               duplicatePolicy: ValueDuplicatePolicy,
                               writeProvenance: @autoclosure () -> WriteProvenance) {
     _addRecordWithCollisionAndDuplicateResolution(Record(keyOrigin: keyOrigin, someValue: someValue),
-                                                  fromAppendingScope: .detached,
                                                   forKey: key,
                                                   duplicatePolicy: duplicatePolicy,
                                                   writeProvenance: writeProvenance())
@@ -145,7 +145,6 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
   ///   - writeProvenance: Describes the origin of a collision; evaluated lazily.
   internal mutating func _addRecordWithCollisionAndDuplicateResolution(
     _ newRecord: Record,
-    fromAppendingScope appendingScope: ValueAppendingScope,
     forKey key: Key,
     duplicatePolicy: ValueDuplicatePolicy,
     writeProvenance: @autoclosure () -> WriteProvenance,
@@ -155,24 +154,17 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
     switch duplicatePolicy.kind {
     case .rejectEqualValue:
       currentValues = _storage.allValues(forKey: key)
-      comparator = { current in newRecord.someValue == current.record.someValue }
+      comparator = { current in Self.isEqualValue(newRecord: newRecord, current: current.record) }
 
     // FIXME: - .rejectEqual is x3 more fast than other on append
     case .rejectEqualValueWhenEqualOrigin:
       currentValues = _storage.allValues(forKey: key)
-      let collisionSource = writeProvenance() // Improvement: writeProvenance() called twice
+      // TODO: writeProvenance() called twice
+      let writeProvenance = writeProvenance()
       comparator = { current in
-        let isEqualValue = newRecord.someValue == current.record.someValue
-        let isEqualKeyOrigin = { newRecord.keyOrigin == current.record.keyOrigin }
-        
-        let isEqualCollisionSource = {
-          if let currentCollisionSource = current.collisionSource {
-            currentCollisionSource == collisionSource
-          } else { // if no collisionSource (typically for first value), nothing to compare, and can make no assumptions.
-            true // pass true to logically exclude from equality comparison
-          }
-        }
-        return isEqualValue && isEqualKeyOrigin() && isEqualCollisionSource()
+        Self.isEqualValueKeyOriginAndCollisionSource_B(newRecord: newRecord,
+                                                       writeProvenance: writeProvenance,
+                                                       current: current)
       }
       
     case .allowEqual:
@@ -192,24 +184,111 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
     }
   }
   
-  internal static func compareByValue(_ a: Record, b: Record) -> Bool {
-    a.someValue == b.someValue
+  @inlinable @inline(__always)
+  internal static func isEqualValue(newRecord: Record, current: Record) -> Bool {
+    newRecord.someValue == current.someValue
   }
   
-  internal static func compareByValueAndKeyOrigin(_ a: Record, b: Record) -> Bool {
-    a.someValue == b.someValue
+  @inlinable @inline(__always)
+  internal static func isEqualValueKeyOriginAndCollisionSource_A(newRecord: Record,
+                                                                 writeProvenance: @autoclosure () -> WriteProvenance,
+                                                                 current: AnnotatedRecord) -> Bool {
+    newRecord.someValue == current.record.someValue
+      && newRecord.keyOrigin == current.record.keyOrigin
+      && {
+        if let currentCollisionSource = current.collisionSource {
+          currentCollisionSource == writeProvenance()
+        } else {
+          false
+        }
+      }()
   }
   
-  internal static func compareByValueKeyOriginAndCollisionSource_A(_ a: Record, b: Record) -> Bool {
-    a.someValue == b.someValue
-  }
-  
-  internal static func compareByValueKeyOriginAndCollisionSource_B(_ a: Record, b: Record) -> Bool {
-    a.someValue == b.someValue
+  @inlinable @inline(__always)
+  internal static func isEqualValueKeyOriginAndCollisionSource_B(newRecord: Record,
+                                                                 writeProvenance: @autoclosure () -> WriteProvenance,
+                                                                 current: AnnotatedRecord) -> Bool {
+    newRecord.someValue == current.record.someValue
+      && newRecord.keyOrigin == current.record.keyOrigin
+      && {
+        if let currentCollisionSource = current.collisionSource {
+          currentCollisionSource == writeProvenance()
+        } else { // if no collisionSource (typically for first value), nothing to compare, and can make no assumptions.
+          true // pass true to logically exclude from equality comparison
+        }
+      }()
   }
 }
 
-// Improvement: ErrorInfoGeneric @_specialize(where Self == ...)
+extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepresentable {
+  mutating func append(contentsOf sequence: some Sequence<(Key, RecordValue.Wrapped)>,
+                       duplicatePolicy: ValueDuplicatePolicy,
+                       origin: WriteProvenance.Origin) {
+    for (dynamicKey, value) in sequence {
+      _addValue_2(
+        value,
+        shouldPreserveNilValues: true, // has no effect here
+        duplicatePolicy: duplicatePolicy,
+        forKey: dynamicKey,
+        keyOrigin: .fromCollection,
+        writeProvenance: .onSequenceConsumption(origin: origin),
+      )
+    }
+  }
+
+  internal mutating func _addValue_2(_ newValue: RecordValue.Wrapped?,
+                                     shouldPreserveNilValues: Bool,
+                                     duplicatePolicy: ValueDuplicatePolicy,
+                                     forKey key: Key,
+                                     keyOrigin: KeyOrigin,
+                                     writeProvenance: @autoclosure () -> WriteProvenance) {
+    let optional: RecordValue
+    if let newValue {
+      optional = .value(newValue)
+    } else if shouldPreserveNilValues {
+      optional = .nilInstance(typeOfWrapped: RecordValue.TypeOfWrapped.self as! RecordValue.TypeOfWrapped)
+    } else {
+      return
+    }
+
+    _addRecordWithCollisionAndDuplicateResolution(
+      Record(keyOrigin: keyOrigin, someValue: optional),
+      forKey: key,
+      duplicatePolicy: duplicatePolicy,
+      writeProvenance: writeProvenance(),
+    )
+  }
+}
+
+extension ErrorInfoGeneric where RecordValue: Equatable {
+  internal mutating func _addRecordWithCollisionAndDuplicateResolution_2(
+    _ newRecord: Record,
+    forKey key: Key,
+    duplicatePolicy: ValueDuplicatePolicy,
+    writeProvenance: @autoclosure () -> WriteProvenance,
+  ) {
+    switch duplicatePolicy.kind {
+    case .rejectEqualValue:
+      _storage.appendIfNotPresent(key: key,
+                                  value: newRecord,
+                                  writeProvenance: writeProvenance(),
+                                  rejectWhenExistingMatches: { current in
+                                    Self.isEqualValue(newRecord: newRecord, current: current.record)
+                                  })
+    case .rejectEqualValueWhenEqualOrigin:
+      _storage.appendIfNotPresent(key: key,
+                                  value: newRecord,
+                                  writeProvenance: writeProvenance(),
+                                  rejectWhenExistingMatches: { current in
+                                    Self.isEqualValueKeyOriginAndCollisionSource_B(newRecord: newRecord,
+                                                                                   writeProvenance: writeProvenance(),
+                                                                                   current: current)
+                                  })
+    case .allowEqual:
+      _storage.appendUnconditionally(key: key, value: newRecord, writeProvenance: writeProvenance())
+    }
+  }
+}
 
 public enum ValueAppendingScope {
   case scoped(keyAlreadyExists: Bool)

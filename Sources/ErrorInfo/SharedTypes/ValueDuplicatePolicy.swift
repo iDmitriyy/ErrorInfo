@@ -117,6 +117,7 @@ public struct ValueDuplicatePolicy: Sendable {
   ///   has no `collisionSource`, this dimension is ignored.
   ///   Otherwise, the new record is appended.
   public static let allowEqualWhenOriginDiffers = Self(kind: .rejectEqualValueWhenEqualOrigin)
+  public static let rejectEqualWithSameOrigin = Self(kind: .rejectEqualValueWhenEqualOrigin)
       
   /// Custom decision logic
   // static func custom((_ existing: FullInfoRecord, _ new: FullInfoRecord) -> Bool)

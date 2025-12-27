@@ -50,7 +50,6 @@ extension ErrorInfo {
       let record = BackingStorage.Record(keyOrigin: .fromCollection, someValue: .value(compatibleValue))
       _storage._addRecordWithCollisionAndDuplicateResolution(
         record,
-        fromAppendingScope: .detached,
         forKey: key,
         duplicatePolicy: .allowEqual, // no effect here, Swift.Dictionary has unique keys
         writeProvenance: .onDictionaryConsumption(origin: origin()),

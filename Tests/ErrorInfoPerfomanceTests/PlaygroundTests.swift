@@ -23,9 +23,10 @@ struct PlaygroundTests {
 //      var info = ErrorInfo()
       for index in 1...1_000 {
         for infoIndex in infos.indices {
-          infos[infoIndex].appendWith(duplicatePolicy: .rejectEqual) {
-            $0[.index] = infoIndex
-          }
+          blackHole(index)
+//          infos[infoIndex].appendWith(duplicatePolicy: .rejectEqual) {
+//            $0[.index] = infoIndex
+//          }
 //          infos[infoIndex]["infoIndex"] = infoIndex
 //          blackHole(infos[infoIndex].lastRecorded(forKey: "20"))
         }
@@ -33,8 +34,9 @@ struct PlaygroundTests {
     }
     print("__playground: ", output.duration.asString(fractionDigits: 5)) // it takes ~25ms for 10 million of calls of empty blackHole(())
     
-    let outputGet = performMeasuredAction(count: 1) {
-      blackHole(infos[0].allValues(forKey: .index))
+    let outputGet = performMeasuredAction(count: 100) {
+      blackHole(infos[0].lastRecorded(forKey: .index))
+//      blackHole(infos[0].allValues(forKey: .index))
 //      debugPrint(infos[0].fullInfo(forKey: .index)?.count)
     }
     print("__outputGet: ", outputGet.duration.asString(fractionDigits: 5))

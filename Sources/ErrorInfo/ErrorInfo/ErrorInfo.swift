@@ -154,7 +154,6 @@ extension ErrorInfo {
     
     _storage._addRecordWithCollisionAndDuplicateResolution(
       BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
-      fromAppendingScope: .detached,
       forKey: key,
       duplicatePolicy: duplicatePolicy,
       writeProvenance: writeProvenance(),
@@ -185,7 +184,6 @@ extension ErrorInfo {
     
     _storage._addRecordWithCollisionAndDuplicateResolution(
       BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
-      fromAppendingScope: .detached,
       forKey: key,
       duplicatePolicy: duplicatePolicy,
       writeProvenance: writeProvenance(),

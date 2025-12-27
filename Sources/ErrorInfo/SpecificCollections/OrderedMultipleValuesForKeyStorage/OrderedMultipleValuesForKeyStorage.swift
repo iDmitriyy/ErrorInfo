@@ -37,7 +37,7 @@
   }
   
   private init(_variant: _Variant) {
-    self._muatbleVariant = _variant
+    _muatbleVariant = _variant
   }
 }
 
@@ -116,6 +116,22 @@ extension OrderedMultipleValuesForKeyStorage {
                                 value: Value,
                                 writeProvenance: @autoclosure () -> WriteProvenance) {
     _muatbleVariant.append(key: key, value: value, writeProvenance: writeProvenance())
+  }
+  
+  internal mutating func appendIfNotPresent(key newKey: Key,
+                                            value newValue: Value,
+                                            writeProvenance: @autoclosure () -> WriteProvenance,
+                                            rejectWhenExistingMatches decideToReject: (_ existing: TaggedValue) -> Bool) {
+    _muatbleVariant.appendIfNotPresent(key: newKey,
+                                       value: newValue,
+                                       writeProvenance: writeProvenance(),
+                                       rejectWhenExistingMatches: decideToReject)
+  }
+  
+  internal mutating func appendUnconditionally(key newKey: Key,
+                                               value newValue: Value,
+                                               writeProvenance: @autoclosure () -> WriteProvenance) {
+    _muatbleVariant.appendUnconditionally(key: newKey, value: newValue, writeProvenance: writeProvenance())
   }
   
   internal mutating func append(_ newElement: (Key, Value), writeProvenance: @autoclosure () -> WriteProvenance) {
