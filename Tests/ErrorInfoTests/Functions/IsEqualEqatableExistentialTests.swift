@@ -11,29 +11,29 @@ import Testing
 struct IsEqualEqatableExistentialTests {
   @Test func basic() throws {
     // Equal values
-    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1), b: Int(1)))
+    #expect(ErrorInfoFuncs.isEqualEquatableExistential(a: Int(1), b: Int(1)))
     
-    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1),
+    #expect(ErrorInfoFuncs.isEqualEquatableExistential(a: Int(1),
                                                       b: Int(1) as any BinaryInteger & Sendable))
-    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1) as any BinaryInteger & Sendable,
+    #expect(ErrorInfoFuncs.isEqualEquatableExistential(a: Int(1) as any BinaryInteger & Sendable,
                                                       b: Int(1)))
     
-    #expect(ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1) as any BinaryInteger & Sendable,
+    #expect(ErrorInfoFuncs.isEqualEquatableExistential(a: Int(1) as any BinaryInteger & Sendable,
                                                       b: Int(1) as any BinaryInteger & Sendable))
     
     // Not Equal types
     
-    #expect(!ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1),
+    #expect(!ErrorInfoFuncs.isEqualEquatableExistential(a: Int(1),
                                                        b: UInt(1)))
-    #expect(!ErrorInfoFuncs.isEqualEqatableExistential(a: UInt(1),
+    #expect(!ErrorInfoFuncs.isEqualEquatableExistential(a: UInt(1),
                                                        b: Int(1)))
     
-    #expect(!ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1) as any BinaryInteger & Sendable,
+    #expect(!ErrorInfoFuncs.isEqualEquatableExistential(a: Int(1) as any BinaryInteger & Sendable,
                                                        b: UInt(1)))
-    #expect(!ErrorInfoFuncs.isEqualEqatableExistential(a: UInt(1) as any BinaryInteger & Sendable,
+    #expect(!ErrorInfoFuncs.isEqualEquatableExistential(a: UInt(1) as any BinaryInteger & Sendable,
                                                        b: Int(1)))
     
-    #expect(!ErrorInfoFuncs.isEqualEqatableExistential(a: Int(1) as any BinaryInteger & Sendable,
+    #expect(!ErrorInfoFuncs.isEqualEquatableExistential(a: Int(1) as any BinaryInteger & Sendable,
                                                        b: UInt(1) as any BinaryInteger & Sendable))
     
     // TODO: classes

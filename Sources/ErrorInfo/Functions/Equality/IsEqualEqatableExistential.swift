@@ -9,7 +9,7 @@ extension ErrorInfoFuncs {
   /// Optional values can not be passed as args.
   /// Pevented by compiler as Optional doesn't conform to CustomStringConvertible, so `any ErrorInfo.ValueProtocol` is guaranteed to be non-optional,
   @inlinable @inline(__always) // 2.5%-5.5% speedup.
-  internal static func isEqualEqatableExistential(a: any ErrorInfo.ValueProtocol, b: any ErrorInfo.ValueProtocol) -> Bool {
+  internal static func isEqualEquatableExistential(a: any ErrorInfo.ValueProtocol, b: any ErrorInfo.ValueProtocol) -> Bool {
     // Unpack existentials for type casting and comparing
     __PrivateImps._isEqualExistentialEquatableWithUnboxing(a: a, b: b)
   }

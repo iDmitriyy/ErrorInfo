@@ -55,17 +55,17 @@ extension ErrorInfo {
     @usableFromInline
     static func == (lhs: Self, rhs: Self) -> Bool {
       switch (lhs.maybeValue, rhs.maybeValue) {
+      case let (.value(lhsInstance), .value(rhsInstance)):
+        ErrorInfoFuncs.isEqualEquatableExistential(a: lhsInstance, b: rhsInstance)
+        
       case (.value, .nilInstance),
            (.nilInstance, .value):
         false
         
-      case let (.value(lhsInstance), .value(rhsInstance)):
-        ErrorInfoFuncs.isEqualEqatableExistential(a: lhsInstance, b: rhsInstance)
-        
       case let (.nilInstance(lhsType), .nilInstance(rhsType)):
         lhsType == rhsType
       }
-    } // inlining has 5% perfomance gain. Will not be called often in practice
+    } // inlining has no performance gain.
   }
 }
 
