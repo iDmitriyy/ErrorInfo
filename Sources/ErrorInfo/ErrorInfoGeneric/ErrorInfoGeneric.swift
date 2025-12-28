@@ -275,6 +275,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
                                   rejectWhenExistingMatches: { current in
                                     Self.isEqualValue(newRecord: newRecord, current: current.record)
                                   })
+      
     case .rejectEqualValueWhenEqualOrigin:
       _storage.appendIfNotPresent(key: key,
                                   value: newRecord,
@@ -284,6 +285,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
                                                                                    writeProvenance: writeProvenance(),
                                                                                    current: current)
                                   })
+      
     case .allowEqual:
       _storage.appendUnconditionally(key: key, value: newRecord, writeProvenance: writeProvenance())
     }
