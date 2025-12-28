@@ -45,9 +45,9 @@ extension ErrorInfo {
     }
     
     @usableFromInline
-    var getWrapped: ValueExistential? { maybeValue.getWrapped } // inlining has no effect on perfomance
+    var getWrapped: ValueExistential? { maybeValue.getWrapped } // inlining has no effect on performance
     
-    var isValue: Bool { maybeValue.isValue } // inlining has no effect on perfomance
+    var isValue: Bool { maybeValue.isValue } // inlining has no effect on performance
     
     @usableFromInline
     var debugDescription: String { maybeValue.debugDescription }
@@ -99,21 +99,21 @@ extension ErrorInfo {
       case .value(let value): value
       case .nilInstance: nil
       }
-    } // inlining has no effect on perfomance
+    } // inlining has no effect on performance
     
     public var isValue: Bool {
       switch self {
       case .value: true
       case .nilInstance: false
       }
-    } // inlining has no effect on perfomance
+    } // inlining has no effect on performance
     
     public var isNil: Bool {
       switch self {
       case .value: false
       case .nilInstance: true
       }
-    } // inlining has no effect on perfomance
+    } // inlining has no effect on performance
     
     public var debugDescription: String {
       switch self {

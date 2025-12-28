@@ -37,15 +37,15 @@ extension ErrorInfoFuncs {
       return String(keyPathString[nextAfterDotIndex...])
     }
     /// https://github.com/apple/swift-evolution/blob/main/proposals/0369-add-customdebugdescription-conformance-to-anykeypath.md
-  } // inlining has no effect on perfomance
+  } // inlining has no effect on performance
   
   /// Combines the file name and line number.
   /// - Returns: Example: `"File.swift:42"`
-  public static func fileLineString(file: StaticString, line: UInt) -> String { // inlining has no effect on perfomance
+  public static func fileLineString(file: StaticString, line: UInt) -> String { // inlining has no effect on performance
     fileLineString(file: String(file), line: line)
   }
   
-  public static func fileLineString(file: String, line: UInt) -> String { // inlining has no effect on perfomance
+  public static func fileLineString(file: String, line: UInt) -> String { // inlining has no effect on performance
     file + ":\(line)"
   }
   

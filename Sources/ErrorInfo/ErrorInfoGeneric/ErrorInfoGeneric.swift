@@ -125,6 +125,11 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
   }
 }
 
+public enum ValueAppendingScope {
+  case scoped(keyAlreadyExists: Bool)
+  case detached
+}
+
 extension ErrorInfoGeneric where RecordValue: Equatable {
   /// Appends `newRecord` for `key` according to `duplicatePolicy`, and annotates the record with `writeProvenanceForCollision`
   /// when the same key is written more than once.
@@ -149,38 +154,27 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
     duplicatePolicy: ValueDuplicatePolicy,
     writeProvenance: @autoclosure () -> WriteProvenance,
   ) {
-    let comparator: (AnnotatedRecord) -> Bool
-    let currentValues: ValuesForKey<AnnotatedRecord>?
     switch duplicatePolicy.kind {
     case .rejectEqualValue:
-      currentValues = _storage.allValues(forKey: key)
-      comparator = { current in Self.isEqualValue(newRecord: newRecord, current: current.record) }
-
-    // FIXME: - .rejectEqual is x3 more fast than other on append
+      _storage.appendIfNotPresent(key: key,
+                                  value: newRecord,
+                                  writeProvenance: writeProvenance(),
+                                  andRejectWhenExistingMatches: { current in
+                                    Self.isEqualValue(newRecord: newRecord, current: current.record)
+                                  })
+      
     case .rejectEqualValueWhenEqualOrigin:
-      currentValues = _storage.allValues(forKey: key)
-      // TODO: writeProvenance() called twice
-      let writeProvenance = writeProvenance()
-      comparator = { current in
-        Self.isEqualValueKeyOriginAndCollisionSource_B(newRecord: newRecord,
-                                                       writeProvenance: writeProvenance,
-                                                       current: current)
-      }
+      _storage.appendIfNotPresent(key: key,
+                                  value: newRecord,
+                                  writeProvenance: writeProvenance(),
+                                  andRejectWhenExistingMatches: { current in
+                                    Self.isEqualValueKeyOriginAndCollisionSource_B(newRecord: newRecord,
+                                                                                   writeProvenance: writeProvenance(),
+                                                                                   current: current)
+                                  })
       
     case .allowEqual:
-      _storage.append(key: key, value: newRecord, writeProvenance: writeProvenance())
-      return // early exit
-    }
-    
-    if let currentValues {
-      // TODO: perfomace Test: _storage.containsValues(forKey:, where:) might be faster than allValuesSlice(forKey:).contains
-      if currentValues.contains(where: comparator) {
-        return
-      } else {
-        _storage.append(key: key, value: newRecord, writeProvenance: writeProvenance())
-      }
-    } else {
-      _storage.append(key: key, value: newRecord, writeProvenance: writeProvenance())
+      _storage.appendUnconditionally(key: key, value: newRecord, writeProvenance: writeProvenance())
     }
   }
   
@@ -258,41 +252,4 @@ extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepre
       writeProvenance: writeProvenance(),
     )
   }
-}
-
-extension ErrorInfoGeneric where RecordValue: Equatable {
-  internal mutating func _addRecordWithCollisionAndDuplicateResolution_2(
-    _ newRecord: Record,
-    forKey key: Key,
-    duplicatePolicy: ValueDuplicatePolicy,
-    writeProvenance: @autoclosure () -> WriteProvenance,
-  ) {
-    switch duplicatePolicy.kind {
-    case .rejectEqualValue:
-      _storage.appendIfNotPresent(key: key,
-                                  value: newRecord,
-                                  writeProvenance: writeProvenance(),
-                                  andRejectWhenExistingMatches: { current in
-                                    Self.isEqualValue(newRecord: newRecord, current: current.record)
-                                  })
-      
-    case .rejectEqualValueWhenEqualOrigin:
-      _storage.appendIfNotPresent(key: key,
-                                  value: newRecord,
-                                  writeProvenance: writeProvenance(),
-                                  andRejectWhenExistingMatches: { current in
-                                    Self.isEqualValueKeyOriginAndCollisionSource_B(newRecord: newRecord,
-                                                                                   writeProvenance: writeProvenance(),
-                                                                                   current: current)
-                                  })
-      
-    case .allowEqual:
-      _storage.appendUnconditionally(key: key, value: newRecord, writeProvenance: writeProvenance())
-    }
-  }
-}
-
-public enum ValueAppendingScope {
-  case scoped(keyAlreadyExists: Bool)
-  case detached
 }

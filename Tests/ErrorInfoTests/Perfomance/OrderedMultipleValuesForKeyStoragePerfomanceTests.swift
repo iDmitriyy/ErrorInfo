@@ -1,5 +1,5 @@
 //
-//  OrderedMultipleValuesForKeyStoragePerfomanceTests.swift
+//  OrderedMultipleValuesForKeyStoragePerformanceTests.swift
 //  ErrorInfo
 //
 //  Created by Dmitriy Ignatyev on 06/10/2025.
@@ -10,7 +10,7 @@ import OrderedCollections
 import Testing
 
 // !rewrite
-struct OrderedMultipleValuesForKeyStoragePerfomanceTests {
+struct OrderedMultipleValuesForKeyStoragePerformanceTests {
   private let elements = 1...50000
   
   @Test func addUniqueKeysWithSingleValue() {
@@ -83,7 +83,7 @@ struct OrderedMultipleValuesForKeyStoragePerfomanceTests {
   }
   
   // test creation of empty collections vs their backing data structures
-  // subscript perfomance test
+  // subscript performance test
 }
 
 extension ObjectIdentifier {

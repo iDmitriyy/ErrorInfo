@@ -7,7 +7,7 @@
 
 /// `StringLiteralKey` is designed to be used primarily for subscripting and appending values to `error-info` instances.
 /// It can be constructed from static string literals known at compile-time.
-/// In context of using ErrorInfo, such design helps do differentiate between copile-time knowm literals and dynamically created String keys.
+/// In context of using ErrorInfo, such design helps do differentiate between compile-time known literals and dynamically created String keys.
 ///
 /// ## Combining Keys:
 /// StringLiteralKey supports the `+` operator to combine multiple keys, allowing creation of composite keys.
@@ -99,10 +99,10 @@ extension StringLiteralKey: ExpressibleByStringLiteral { // Improvement: try to 
   public init(stringLiteral value: StaticString) {
     rawValue = String(value)
     keyOrigin = .literalConstant
-  } // inlining has no effect on perfomance
+  } // inlining has no effect on performance
   
-  // StaticString completely closes the hole when ErronInfoKey can be initialized with dynamically formed string or interpolation.
-  // Improvement: use @const instead of static let (check binary size(reduce swift_once) and perfomance on first access)
+  // StaticString completely closes the hole when ErrorInfoKey can be initialized with dynamically formed string or interpolation.
+  // Improvement: use @const instead of static let (check binary size(reduce swift_once) and performance on first access)
 }
 
 extension StringLiteralKey {
@@ -113,5 +113,5 @@ extension StringLiteralKey {
     
   public static func + (lhs: Self, rhs: Self) -> Self {
     Self(_combinedLiteralsString: lhs.rawValue + "_" + rhs.rawValue)
-  } // inlining has no effect on perfomance
+  } // inlining has no effect on performance
 }

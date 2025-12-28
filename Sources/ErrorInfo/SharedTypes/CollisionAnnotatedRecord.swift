@@ -79,7 +79,7 @@ internal final class HeapBox<T> {
   @usableFromInline
   internal init(_ wrapped: T) {
     self.wrapped = wrapped
-  } // inlining has no effect on perfomance
+  } // inlining has no effect on performance
 }
 
 extension HeapBox: Sendable where T: Sendable {}

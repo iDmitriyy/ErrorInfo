@@ -168,11 +168,11 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
 }
 
 extension ValuesForKey {
-  @_spi(PerfomanceTesting)
+  @_spi(PerformanceTesting)
   @inlinable @_transparent
   public init(__element: Value) { self.init(element: __element) }
   
-  @_spi(PerfomanceTesting)
+  @_spi(PerformanceTesting)
   @inlinable @_transparent
   public init(__array: NonEmptyArray<Element>) { self.init(array: __array) }
 }

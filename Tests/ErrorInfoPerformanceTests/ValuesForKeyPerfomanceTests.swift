@@ -1,16 +1,16 @@
 //
-//  ValuesForKeyPerfomanceTests.swift
+//  ValuesForKeyPerformanceTests.swift
 //  ErrorInfo
 //
 //  Created by Dmitriy Ignatyev on 06/10/2025.
 //
 
-@_spi(PerfomanceTesting) import ErrorInfo
+@_spi(PerformanceTesting) import ErrorInfo
 import NonEmpty
 import Testing
 
 // !rewrite
-struct ValuesForKeyPerfomanceTests {
+struct ValuesForKeyPerformanceTests {
   /// Typically ErrorInfo has 1 value for key
   @Test func initWithSingleValue() {
     let count = 50

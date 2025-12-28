@@ -77,7 +77,7 @@ extension ErrorInfoFuncs.__PrivateImps {
   ///         If `a` and `b` are of different types, the function will immediately return `false`.
   @inlinable @inline(__always)
   internal static func _isEqualFlattenedExistentialAnyWithUnboxing<A, B>(a: A, b: B) -> Bool {
-    guard A.self == B.self else { return false } // TODO: check perfomance
+    guard A.self == B.self else { return false } // TODO: check performance
     
     guard let a = a as? any Equatable, let b = b as? any Equatable else { return false }
     // TODO: optimize – cast here only `a`

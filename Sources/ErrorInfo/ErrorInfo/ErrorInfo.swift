@@ -174,15 +174,8 @@ extension ErrorInfo {
     } else {
       return
     }
-    
-//    _storage._addRecordWithCollisionAndDuplicateResolution(
-//      BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
-//      forKey: key,
-//      duplicatePolicy: duplicatePolicy,
-//      writeProvenance: .onSubscript(origin: nil),
-//    )
-    
-    _storage._addRecordWithCollisionAndDuplicateResolution_2(
+        
+    _storage._addRecordWithCollisionAndDuplicateResolution(
       BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
       forKey: key,
       duplicatePolicy: duplicatePolicy,

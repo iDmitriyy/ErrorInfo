@@ -26,7 +26,7 @@ protocol ErrorInfoOptionalRepresentable {
   var getWrapped: Wrapped? { get }
   
   /// Returns `true` if this instance contains a value; `false` if it is a typed `nil`.
-  var isValue: Bool { get } // TODO: - check perfomance with inlining
+  var isValue: Bool { get } // TODO: - check performance with inlining
 }
 
 extension ErrorInfoOptionalRepresentable {

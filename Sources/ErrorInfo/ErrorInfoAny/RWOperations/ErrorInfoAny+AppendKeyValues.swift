@@ -27,7 +27,7 @@ extension ErrorInfoAny {
 extension ErrorInfoAny {
   internal mutating func _appendKeyValuesImp(_dictionaryLiteral elements: some Collection<(key: Key, value: Value)>,
                                              writeProvenance: @autoclosure () -> WriteProvenance) {
-    // Improvement: try reserve capacity. perfomance tests
+    // Improvement: try reserve capacity. performance tests
     for (literalKey, value) in elements {
       _add(key: literalKey.rawValue,
            keyOrigin: literalKey.keyOrigin,

@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 27/10/2025.
 //
 
-@testable @_spi(PerfomanceTesting) import ErrorInfo
+@testable @_spi(PerformanceTesting) import ErrorInfo
 import Testing
 
 // MARK: 3. Internal NonEmptyOrderedIndexSet Tests

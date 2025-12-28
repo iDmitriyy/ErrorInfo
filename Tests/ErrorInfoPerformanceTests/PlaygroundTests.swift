@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 07/10/2025.
 //
 
-@_spi(PerfomanceTesting) import ErrorInfo
+@_spi(PerformanceTesting) import ErrorInfo
 import Foundation
 import OrderedCollections
 import Testing

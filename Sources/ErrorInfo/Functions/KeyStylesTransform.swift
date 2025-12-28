@@ -107,7 +107,7 @@ extension ErrorInfoFuncs {
 
 extension ErrorInfoFuncs {
   private static func _toPascalOrCamelImp(string: String, firstCharTransform: (Character) -> String) -> String {
-    var result = "" // result.reserveCapacity - has slightly negative impact on perfomance
+    var result = "" // result.reserveCapacity - has slightly negative impact on performance
     
     var hasSeenNormalCharEarlier = false
     var previousWasSeprator = false
@@ -138,7 +138,7 @@ extension ErrorInfoFuncs {
       case separator
     }
     
-    var result = "" // result.reserveCapacity - has slightly negative impact on perfomance
+    var result = "" // result.reserveCapacity - has slightly negative impact on performance
     
     var previousKind: PreviousCharKind?
     for character in string {

@@ -28,7 +28,7 @@ extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
 
 // MARK: - Remove All Records For Key
 
-// FIXME: - @discardableResult remove operations – check perfomance
+// FIXME: - @discardableResult remove operations – check performance
 // may it is better to make 2 overloads – pure remove and remove with result
 
 extension ErrorInfoGeneric {
@@ -80,5 +80,5 @@ extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepre
   }
 }
 
-// DEFERRED: check perfomance for args when they have no semantical effect, e.g. preserveNilValues: true or duplicatePolicy: .allowEqual
+// DEFERRED: check performance for args when they have no semantical effect, e.g. preserveNilValues: true or duplicatePolicy: .allowEqual
 // Constant values / if branches should be optimized by compiler. Check it

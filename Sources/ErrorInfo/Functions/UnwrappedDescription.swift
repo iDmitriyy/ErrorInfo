@@ -43,7 +43,7 @@ public func unwrappedDescription(of any: some Any) -> String {
   }
 
   return isModified ? String(intermediate) : description
-} // inlining has no effect on perfomance
+} // inlining has no effect on performance
 
 /// Returns a string representation of an optional value removing redundant `Optional( )` wrappers from result string.
 ///
@@ -65,11 +65,11 @@ public func unwrappedDescription<T>(of optionalAny: T?) -> String {
   switch optionalAny {
   case .some(let value):
      // if let value = _specialize(any, for: String.self) { return value } – _specialize has no effect here.
-     // However, there is significant perfomance gain when adding _specialize
+     // However, there is significant performance gain when adding _specialize
      // inside (some Any) overload of `unwrappedDescription(of:)` above.
     return unwrappedDescription(of: value)
     
   case .none:
     return "nil" // returning hardcoded "nil" is ~2x faster than String(describing: any)
   }
-} // inlining has no effect on perfomance
+} // inlining has no effect on performance

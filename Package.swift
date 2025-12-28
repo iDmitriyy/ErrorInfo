@@ -21,7 +21,7 @@ let package = Package(
       .product(name: "GeneralizedCollections", package: "swiftCollections-nonEmpty"),
     ]),
     .testTarget(name: "ErrorInfoTests", dependencies: [.target(name: "ErrorInfo")]),
-    .testTarget(name: "ErrorInfoPerfomanceTests", dependencies: [.target(name: "ErrorInfo")]),
+    .testTarget(name: "ErrorInfoPerformanceTests", dependencies: [.target(name: "ErrorInfo")]),
     .executableTarget(name: "ErrorInfoTestExecutable", dependencies: [.target(name: "ErrorInfo")])
   ],
   swiftLanguageModes: [.v6],

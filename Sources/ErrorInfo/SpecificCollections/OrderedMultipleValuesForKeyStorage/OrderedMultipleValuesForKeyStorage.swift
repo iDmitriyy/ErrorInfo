@@ -46,7 +46,7 @@ extension OrderedMultipleValuesForKeyStorage: Sendable where Key: Sendable, Valu
 // MARK: All Values For Key
 
 extension OrderedMultipleValuesForKeyStorage {
-  // TODO: perfomance test allValues vs allValuesSlice
+  // TODO: performance test allValues vs allValuesSlice
 //  internal func allValuesSlice(forKey key: Key) -> (some Sequence<TaggedValue>)? { // & ~Escapable
 //    ValuesForKeySlice(_variant: _variant, key: key)
 //  }
