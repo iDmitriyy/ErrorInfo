@@ -122,13 +122,13 @@ extension OrderedMultipleValuesForKeyStorage {
       writeProvenance: @autoclosure () -> WriteProvenance,
       rejectWhenExistingMatches decideToReject: (_ existing: TaggedValue) -> Bool,
     ) {
-      var singleValueForKeyDict: SingleValueForKeyDict!
-      var multiValueForKeyDict: MultiValueForKeyDict!
-
-      switch _variant! {
-      case .left(let instance): singleValueForKeyDict = instance
-      case .right(let instance): multiValueForKeyDict = instance
-      }
+//      var singleValueForKeyDict: SingleValueForKeyDict!
+//      var multiValueForKeyDict: MultiValueForKeyDict!
+//
+//      switch _variant! {
+//      case .left(let instance): singleValueForKeyDict = instance
+//      case .right(let instance): multiValueForKeyDict = instance
+//      }
 
       // Improvement:
       // - remove implicitly unwrapped optionals (might be optimized by compiler)
@@ -139,12 +139,13 @@ extension OrderedMultipleValuesForKeyStorage {
       // - inlining
       // - optimize writeProvenance()
       
-      _variant = nil
+//      _variant = nil
 
-      if singleValueForKeyDict != nil {
+     
+      switch _variant! {
+      case .left(var singleValueForKeyDict):
         if let existing = singleValueForKeyDict[newKey] {
           if decideToReject(.value(existing)) {
-            _variant = .left(singleValueForKeyDict)
             return
           }
                     
@@ -154,40 +155,36 @@ extension OrderedMultipleValuesForKeyStorage {
             multiValueForKeyDict.append(key: key, value: .value(value))
           }
           
-          multiValueForKeyDict.append(key: newKey,
-                                      value: .collidedValue(newValue, collisionSource: writeProvenance()))
+          multiValueForKeyDict.append(key: newKey, value: .collidedValue(newValue, collisionSource: writeProvenance()))
           _variant = .right(multiValueForKeyDict)
         } else {
           singleValueForKeyDict[newKey] = newValue
           _variant = .left(singleValueForKeyDict)
         }
-        return
-      }
-
-      if let indexSet = multiValueForKeyDict._keyToEntryIndices[newKey] {
-        switch indexSet._variant {
-        case .left(let index):
-          if decideToReject(multiValueForKeyDict._entries[index].value) {
-            _variant = .right(multiValueForKeyDict)
-            return
-          }
-
-        case .right(let indices):
-          for index in indices {
+        
+      case .right(var multiValueForKeyDict):
+        if let indexSet = multiValueForKeyDict._keyToEntryIndices[newKey] {
+          switch indexSet._variant {
+          case .left(let index):
             if decideToReject(multiValueForKeyDict._entries[index].value) {
-              _variant = .right(multiValueForKeyDict)
               return
             }
+
+          case .right(let indices):
+            for index in indices {
+              if decideToReject(multiValueForKeyDict._entries[index].value) {
+                return
+              }
+            }
           }
+
+          multiValueForKeyDict.append(key: newKey, value: .collidedValue(newValue, collisionSource: writeProvenance()))
+        } else {
+          multiValueForKeyDict.append(key: newKey, value: .value(newValue))
         }
 
-        multiValueForKeyDict.append(key: newKey,
-                                    value: .collidedValue(newValue, collisionSource: writeProvenance()))
-      } else {
-        multiValueForKeyDict.append(key: newKey, value: .value(newValue))
+        _variant = .right(multiValueForKeyDict)
       }
-
-      _variant = .right(multiValueForKeyDict)
     }
     
     @inlinable @inline(__always)
@@ -196,42 +193,30 @@ extension OrderedMultipleValuesForKeyStorage {
       value newValue: Value,
       writeProvenance: @autoclosure () -> WriteProvenance,
     ) {
-      var singleValueForKeyDict: SingleValueForKeyDict!
-      var multiValueForKeyDict: MultiValueForKeyDict!
-
       switch _variant! {
-      case .left(let instance): singleValueForKeyDict = instance
-      case .right(let instance): multiValueForKeyDict = instance
-      }
-      
-      _variant = nil
-
-      if singleValueForKeyDict != nil {
+      case .left(var singleValueForKeyDict):
         if singleValueForKeyDict.hasValue(forKey: newKey) {
-          
           var multiValueForKeyDict = MultiValueForKeyDict(minimumCapacity: singleValueForKeyDict.count + 1)
           for index in singleValueForKeyDict.indices {
             let (key, value) = singleValueForKeyDict[index]
             multiValueForKeyDict.append(key: key, value: .value(value))
           }
           
-          multiValueForKeyDict.append(key: newKey,
-                                      value: .collidedValue(newValue, collisionSource: writeProvenance()))
+          multiValueForKeyDict.append(key: newKey, value: .collidedValue(newValue, collisionSource: writeProvenance()))
           _variant = .right(multiValueForKeyDict)
         } else {
           singleValueForKeyDict[newKey] = newValue
           _variant = .left(singleValueForKeyDict)
         }
-        return
+      case .right(var multiValueForKeyDict):
+        let annotated: TaggedValue = if multiValueForKeyDict.hasValue(forKey: newKey) {
+          .collidedValue(newValue, collisionSource: writeProvenance())
+        } else {
+          .value(newValue)
+        }
+        multiValueForKeyDict.append(key: newKey, value: annotated)
+        _variant = .right(multiValueForKeyDict)
       }
-
-      let annotated: TaggedValue = if multiValueForKeyDict.hasValue(forKey: newKey) {
-        .collidedValue(newValue, collisionSource: writeProvenance())
-      } else {
-        .value(newValue)
-      }
-      multiValueForKeyDict.append(key: newKey, value: annotated)
-      _variant = .right(multiValueForKeyDict)
     }
   }
 }
