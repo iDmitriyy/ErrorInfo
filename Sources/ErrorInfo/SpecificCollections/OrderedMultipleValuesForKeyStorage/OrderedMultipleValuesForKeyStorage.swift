@@ -23,21 +23,21 @@
 @usableFromInline internal struct OrderedMultipleValuesForKeyStorage<Key: Hashable, Value> {
   @inlinable
   @inline(__always)
-  internal var _variant: Variant { _muatbleVariant._variant }
+  internal var _variant: Variant { _mutableVariant._variant }
   
   // FIXME: private set
-  @usableFromInline internal var _muatbleVariant: _Variant
+  @usableFromInline internal var _mutableVariant: _Variant
   
   internal init() {
-    _muatbleVariant = _Variant(.left(OrderedDictionary()))
+    _mutableVariant = _Variant(.left(OrderedDictionary()))
   }
   
   internal init(minimumCapacity: Int) {
-    _muatbleVariant = _Variant(.left(OrderedDictionary(minimumCapacity: minimumCapacity)))
+    _mutableVariant = _Variant(.left(OrderedDictionary(minimumCapacity: minimumCapacity)))
   }
   
   private init(_variant: _Variant) {
-    _muatbleVariant = _variant
+    _mutableVariant = _variant
   }
 }
 
@@ -51,22 +51,22 @@ extension OrderedMultipleValuesForKeyStorage {
 //    ValuesForKeySlice(_variant: _variant, key: key)
 //  }
   
-  internal func iterateAllValues(forKey key: Key, _ iteration: (TaggedValue) -> Void) {
+  internal func iterateAllValues(forKey key: Key, _ iteration: (AnnotatedValue) -> Void) {
     switch _variant {
     case .left(let singleValueForKeyDict):
       if let valueForKey = singleValueForKeyDict[key] {
-        iteration(TaggedValue.value(valueForKey))
+        iteration(AnnotatedValue.value(valueForKey))
       }
     case .right(let multiValueForKeyDict):
       multiValueForKeyDict.iterateAllValues(forKey: key, iteration)
     }
   }
   
-  internal func allValues(forKey key: Key) -> ValuesForKey<TaggedValue>? {
+  internal func allValues(forKey key: Key) -> ValuesForKey<AnnotatedValue>? {
     switch _variant {
     case .left(let singleValueForKeyDict):
       if let valueForKey = singleValueForKeyDict[key] {
-        ValuesForKey(element: TaggedValue.value(valueForKey))
+        ValuesForKey(element: AnnotatedValue.value(valueForKey))
       } else {
         nil
       }
@@ -76,10 +76,10 @@ extension OrderedMultipleValuesForKeyStorage {
   }
   
   @discardableResult
-  internal mutating func removeAllValues(forKey key: Key) -> ValuesForKey<TaggedValue>? {
-    _muatbleVariant.withResultMutateUnderlying(singleValueForKey: { singleValueForKeyDict in
+  internal mutating func removeAllValues(forKey key: Key) -> ValuesForKey<AnnotatedValue>? {
+    _mutableVariant.withResultMutateUnderlying(singleValueForKey: { singleValueForKeyDict in
       if let oldValue = singleValueForKeyDict.removeValue(forKey: key) {
-        ValuesForKey(element: TaggedValue.value(oldValue))
+        ValuesForKey(element: AnnotatedValue.value(oldValue))
       } else {
         nil
       }
@@ -88,18 +88,18 @@ extension OrderedMultipleValuesForKeyStorage {
     })
   }
   
-  internal mutating func removeAllWhere(_ predicate: (_ key: Key, _ taggedValue: TaggedValue) -> Bool) {
-    _muatbleVariant.mutateUnderlying(singleValueForKey: { singleValueForKeyDict in
-      singleValueForKeyDict.removeAll(where: { predicate($0.key, TaggedValue.value($0.value)) })
+  internal mutating func removeAllWhere(_ predicate: (_ key: Key, _ taggedValue: AnnotatedValue) -> Bool) {
+    _mutableVariant.mutateUnderlying(singleValueForKey: { singleValueForKeyDict in
+      singleValueForKeyDict.removeAll(where: { predicate($0.key, AnnotatedValue.value($0.value)) })
     }, multiValueForKey: { multiValueForKeyDict in
       multiValueForKeyDict.removeAll(where: predicate)
     })
   }
   
-  internal mutating func filter(_ isIncluded: (_ key: Key, _ taggedValue: TaggedValue) -> Bool) -> Self {
+  internal mutating func filter(_ isIncluded: (_ key: Key, _ taggedValue: AnnotatedValue) -> Bool) -> Self {
     switch _variant {
     case .left(let singleValueForKeyDict):
-      let filtered = singleValueForKeyDict.filter { isIncluded($0.key, TaggedValue.value($0.value)) }
+      let filtered = singleValueForKeyDict.filter { isIncluded($0.key, AnnotatedValue.value($0.value)) }
       return Self(_variant: _Variant(.left(filtered)))
 
     case .right(let multiValueForKeyDict):
@@ -115,14 +115,14 @@ extension OrderedMultipleValuesForKeyStorage {
   internal mutating func append(key: Key,
                                 value: Value,
                                 writeProvenance: @autoclosure () -> WriteProvenance) {
-    _muatbleVariant.append(key: key, value: value, writeProvenance: writeProvenance())
+    _mutableVariant.append(key: key, value: value, writeProvenance: writeProvenance())
   }
   
   internal mutating func appendIfNotPresent(key newKey: Key,
                                             value newValue: Value,
                                             writeProvenance: @autoclosure () -> WriteProvenance,
-                                            rejectWhenExistingMatches decideToReject: (_ existing: TaggedValue) -> Bool) {
-    _muatbleVariant.appendIfNotPresent(key: newKey,
+                                            andRejectWhenExistingMatches decideToReject: (_ existing: AnnotatedValue) -> Bool) {
+    _mutableVariant.appendIfNotPresent(key: newKey,
                                        value: newValue,
                                        writeProvenance: writeProvenance(),
                                        rejectWhenExistingMatches: decideToReject)
@@ -131,7 +131,7 @@ extension OrderedMultipleValuesForKeyStorage {
   internal mutating func appendUnconditionally(key newKey: Key,
                                                value newValue: Value,
                                                writeProvenance: @autoclosure () -> WriteProvenance) {
-    _muatbleVariant.appendUnconditionally(key: newKey, value: newValue, writeProvenance: writeProvenance())
+    _mutableVariant.appendUnconditionally(key: newKey, value: newValue, writeProvenance: writeProvenance())
   }
   
   internal mutating func append(_ newElement: (Key, Value), writeProvenance: @autoclosure () -> WriteProvenance) {
@@ -141,7 +141,7 @@ extension OrderedMultipleValuesForKeyStorage {
 
 extension OrderedMultipleValuesForKeyStorage {
   internal mutating func removeAll(keepingCapacity keepCapacity: Bool) {
-    _muatbleVariant.mutateUnderlying(singleValueForKey: { singleValueForKeyDict in
+    _mutableVariant.mutateUnderlying(singleValueForKey: { singleValueForKeyDict in
       singleValueForKeyDict.removeAll(keepingCapacity: keepCapacity)
     }, multiValueForKey: { multiValueForKeyDict in
       multiValueForKeyDict.removeAll(keepingCapacity: keepCapacity)

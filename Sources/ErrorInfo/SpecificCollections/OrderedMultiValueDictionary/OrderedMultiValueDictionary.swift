@@ -46,11 +46,26 @@ struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
     _entries = []
     _keyToEntryIndices = [:]
   }
-    
+  
   @usableFromInline
   internal init(minimumCapacity: Int) {
     _entries = Array(minimumCapacity: minimumCapacity)
     _keyToEntryIndices = Dictionary(minimumCapacity: minimumCapacity)
+  }
+  
+  @inlinable
+  @inline(__always)
+  internal static func migratedFrom(singleValueForKeyDictionary source: OrderedDictionary<Key, Value>)
+  -> OrderedMultiValueDictionary<Key, CollisionAnnotatedRecord<Value>> {
+    let capacity = source.count + 1
+    var output = OrderedMultiValueDictionary<Key, CollisionAnnotatedRecord<Value>>(minimumCapacity: capacity)
+    
+    for index in source.indices {
+      let (key, value) = source[index]
+      output._keyToEntryIndices[key] = .single(index: index)
+      output._entries.append((key, CollisionAnnotatedRecord.value(value)))
+    }
+    return output
   }
 }
 
@@ -141,10 +156,6 @@ extension OrderedMultiValueDictionary {
     }
   }
   
-  // internal static func addIndices(ofEntries entries: [Element], to ) {
-  //
-  // }
-  
   internal mutating func removeAll(where predicate: (_ key: Key, _ value: Value) -> Bool) {
     self = filter { key, value in !predicate(key, value) }
   }
@@ -162,7 +173,7 @@ extension OrderedMultiValueDictionary {
 
 extension OrderedMultiValueDictionary {
   @usableFromInline
-  mutating func append(key: Key, value: Value) {
+  mutating func append(key: Key, value: Value) { // TODO: measure : inlining showed significant gain in related tests
     let newEntryIndex = _entries.endIndex
     _entries.append((key, value))
     _insert(entryIndex: newEntryIndex, forKey: key)

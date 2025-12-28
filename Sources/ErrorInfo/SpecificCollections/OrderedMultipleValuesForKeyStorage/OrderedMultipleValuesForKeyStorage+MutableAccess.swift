@@ -13,7 +13,6 @@ extension OrderedMultipleValuesForKeyStorage {
   //   Future directions: inout pattern matches
   // - https://forums.swift.org/t/in-place-mutation-of-an-enum-associated-value/11747/5
   @usableFromInline internal struct _Variant {
-    // FIXME: private set
     @usableFromInline internal var _variant: Variant!
     
     @inlinable @inline(__always)
@@ -55,8 +54,9 @@ extension OrderedMultipleValuesForKeyStorage {
       case .right(let instance): multiValueForKeyDict = instance
       }
       _variant = nil // destroy _variant enum wrapper with strong references to underlying dict
-      // end copy-paste
-      
+      // --- end copy-paste
+      // Improvement: remove implicitly unwrapped optional when switch with inout access to associated vaalues
+      // will be introduced.
       if singleValueForKeyDict != nil {
         let result = mutateLeft(&singleValueForKeyDict)
         _variant = .left(singleValueForKeyDict)
@@ -82,7 +82,7 @@ extension OrderedMultipleValuesForKeyStorage {
       case .right(let instance): multiValueForKeyDict = instance
       }
       _variant = nil // destroy _variant enum wrapper with strong references to underlying dict
-      // end copy-paste
+      // --- end copy-paste
       
       if singleValueForKeyDict != nil {
         // TODO: instead of checking `hasValue(forKey:)` use `update()` and check if result != nil
@@ -90,9 +90,9 @@ extension OrderedMultipleValuesForKeyStorage {
         if singleValueForKeyDict.hasValue(forKey: newKey) {
           var multiValueForKeyDict = MultiValueForKeyDict()
           for (currentKey, currentValue) in singleValueForKeyDict {
-            multiValueForKeyDict.append(key: currentKey, value: TaggedValue.value(currentValue))
+            multiValueForKeyDict.append(key: currentKey, value: AnnotatedValue.value(currentValue))
           }
-          let newValueWrapped = TaggedValue.collidedValue(newValue, collisionSource: writeProvenance())
+          let newValueWrapped = AnnotatedValue.collidedValue(newValue, collisionSource: writeProvenance())
           multiValueForKeyDict.append(key: newKey, value: newValueWrapped)
           _variant = .right(multiValueForKeyDict)
         } else {
@@ -100,7 +100,7 @@ extension OrderedMultipleValuesForKeyStorage {
           _variant = .left(singleValueForKeyDict)
         }
       } else if multiValueForKeyDict != nil {
-        let newValueWrapped: TaggedValue = if multiValueForKeyDict.hasValue(forKey: newKey) {
+        let newValueWrapped: AnnotatedValue = if multiValueForKeyDict.hasValue(forKey: newKey) {
           .collidedValue(newValue, collisionSource: writeProvenance())
         } else {
           .value(newValue)
@@ -115,15 +115,11 @@ extension OrderedMultipleValuesForKeyStorage {
       key newKey: Key,
       value newValue: Value,
       writeProvenance: @autoclosure () -> WriteProvenance,
-      rejectWhenExistingMatches decideToReject: (_ existing: TaggedValue) -> Bool,
+      rejectWhenExistingMatches decideToReject: (_ existing: AnnotatedValue) -> Bool,
     ) {
       // Improvement:
-      // - remove implicitly unwrapped optionals (might be optimized by compiler)
-      // - separate closoure for first collision
-      // - pass borrowing value
       // - hasValue(forKey:) – which faster
       // + multiValueForKeyDict.append(contentsOf: singleValueForKeyDict)
-      // - inlining
       // - optimize writeProvenance()
       
       // --- copy-paste from `mutateUnderlying`
@@ -135,7 +131,7 @@ extension OrderedMultipleValuesForKeyStorage {
       case .right(let instance): multiValueForKeyDict = instance
       }
       _variant = nil // destroy _variant enum wrapper with strong references to underlying dict
-      // end copy-paste
+      // --- end copy-paste
 
       if singleValueForKeyDict != nil {
         if let existing = singleValueForKeyDict[newKey] {
@@ -143,16 +139,12 @@ extension OrderedMultipleValuesForKeyStorage {
             _variant = .left(singleValueForKeyDict)
             return
           }
-                    
-          var multiValueForKeyDict = MultiValueForKeyDict(minimumCapacity: singleValueForKeyDict.count + 1)
-          for index in singleValueForKeyDict.indices {
-            let (key, value) = singleValueForKeyDict[index]
-            multiValueForKeyDict.append(key: key, value: .value(value))
-          }
+          var multiValueDict = OrderedMultiValueDictionary
+            .migratedFrom(singleValueForKeyDictionary: singleValueForKeyDict)
           
-          multiValueForKeyDict.append(key: newKey,
-                                      value: .collidedValue(newValue, collisionSource: writeProvenance()))
-          _variant = .right(multiValueForKeyDict)
+          multiValueDict.append(key: newKey,
+                                value: .collidedValue(newValue, collisionSource: writeProvenance()))
+          _variant = .right(multiValueDict)
         } else {
           singleValueForKeyDict[newKey] = newValue
           _variant = .left(singleValueForKeyDict)
@@ -201,20 +193,16 @@ extension OrderedMultipleValuesForKeyStorage {
       case .right(let instance): multiValueForKeyDict = instance
       }
       _variant = nil // destroy _variant enum wrapper with strong references to underlying dict
-      // end copy-paste
+      // --- end copy-paste
 
       if singleValueForKeyDict != nil {
         if singleValueForKeyDict.hasValue(forKey: newKey) {
+          var multiValueDict = OrderedMultiValueDictionary
+            .migratedFrom(singleValueForKeyDictionary: singleValueForKeyDict)
           
-          var multiValueForKeyDict = MultiValueForKeyDict(minimumCapacity: singleValueForKeyDict.count + 1)
-          for index in singleValueForKeyDict.indices {
-            let (key, value) = singleValueForKeyDict[index]
-            multiValueForKeyDict.append(key: key, value: .value(value))
-          }
-          
-          multiValueForKeyDict.append(key: newKey,
-                                      value: .collidedValue(newValue, collisionSource: writeProvenance()))
-          _variant = .right(multiValueForKeyDict)
+          multiValueDict.append(key: newKey,
+                                value: .collidedValue(newValue, collisionSource: writeProvenance()))
+          _variant = .right(multiValueDict)
         } else {
           singleValueForKeyDict[newKey] = newValue
           _variant = .left(singleValueForKeyDict)
@@ -222,7 +210,7 @@ extension OrderedMultipleValuesForKeyStorage {
         return
       }
 
-      let annotated: TaggedValue = if multiValueForKeyDict.hasValue(forKey: newKey) {
+      let annotated: AnnotatedValue = if multiValueForKeyDict.hasValue(forKey: newKey) {
         .collidedValue(newValue, collisionSource: writeProvenance())
       } else {
         .value(newValue)

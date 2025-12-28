@@ -48,7 +48,7 @@ extension OrderedMultipleValuesForKeyStorage: RandomAccessCollection {
     switch _variant {
     case .left(let singleValueForKeyDict):
       let (key, value) = singleValueForKeyDict[position]
-      return (key, TaggedValue.value(value))
+      return (key, AnnotatedValue.value(value))
     case .right(let multiValueForKeyDict):
       let (key, wrappedValue) = multiValueForKeyDict[position]
       return (key, wrappedValue)

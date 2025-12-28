@@ -17,7 +17,8 @@ struct ErrorInfoAddValueTests {
   private let idKey = "id"
   private let errorCodeKey = "error_code"
   private let indexKey = "index"
-    
+  private let durationKey = "duration"
+  
   /// ## Purpose
   /// The test is a **parameterized micro-benchmark** for `ErrorInfo`’s append logic.
   /// It focuses on measuring the **incremental cost of adding values**, not correctness.
@@ -74,21 +75,27 @@ struct ErrorInfoAddValueTests {
       let switchDuration = performMeasuredAction(count: measurementsCount, prepare: {
         make1000EmptyInstances()
       }, measure: { infos in
-        for _ in infos.indices {
+        for index in infos.indices {
           switch addedValuesCount {
           case 1:
-            emptyFunc0()
+            blackHole(index)
           case 2:
             if addForDifferentKeys {
               emptyFunc0()
             } else {
-              emptyFunc1()
+              blackHole(index)
             }
           case 3:
             if addForDifferentKeys {
               emptyFunc0()
             } else {
-              emptyFunc1()
+              blackHole(index)
+            }
+          case 4:
+            if addForDifferentKeys {
+              emptyFunc0()
+            } else {
+              blackHole(index)
             }
           default: Issue.record("Unexpected key-value pairs count \(addedValuesCount)")
           }
@@ -124,10 +131,44 @@ struct ErrorInfoAddValueTests {
             infos[index]._addValue_Test(index, duplicatePolicy: duplicatePolicy, forKey: key2)
             infos[index]._addValue_Test(index, duplicatePolicy: duplicatePolicy, forKey: key3)
             
+          case 4:
+            let (key1, key2, key3, key4): (String, String, String, String)
+            if addForDifferentKeys {
+              (key1, key2, key3, key4) = (idKey, errorCodeKey, indexKey, durationKey)
+            } else {
+              (key1, key2, key3, key4) = (errorCodeKey, errorCodeKey, errorCodeKey, errorCodeKey)
+            }
+            infos[index]._addValue_Test(index, duplicatePolicy: duplicatePolicy, forKey: key1)
+            infos[index]._addValue_Test(index, duplicatePolicy: duplicatePolicy, forKey: key2)
+            infos[index]._addValue_Test(index, duplicatePolicy: duplicatePolicy, forKey: key3)
+            infos[index]._addValue_Test(index, duplicatePolicy: duplicatePolicy, forKey: key4)
+            
           default: Issue.record("Unexpected key-value pairs count \(addedValuesCount)")
           }
         }
       })
+      
+      /* new imp (optimized migration to multi value storage)
+       535.0    add 1 value for different keys, policy: allowEqual
+       578.2    add 1 value for different keys, policy: rejectEqual
+       588.9    add 1 value for different keys, policy: rejectEqualWithSameOrigin
+       
+       630.3    add 2 values for different keys, policy: allowEqual
+       672.9    add 2 values for different keys, policy: rejectEqual
+       683.7    add 2 values for different keys, policy: rejectEqualWithSameOrigin
+       
+       831.0    add 2 values for same key, policy: allowEqual
+       531.6    add 2 values for same key, policy: rejectEqual
+       546.1    add 2 values for same key, policy: rejectEqualWithSameOrigin
+       
+       661.9    add 3 values for different keys, policy: allowEqual
+       701.0    add 3 values for different keys, policy: rejectEqual
+       710.1    add 3 values for different keys, policy: rejectEqualWithSameOrigin
+       
+       834.9    add 3 values for same key, policy: allowEqual
+       505.0    add 3 values for same key, policy: rejectEqual
+       519.6    add 3 values for same key, policy: rejectEqualWithSameOrigin
+       */
       
       /* new imp (optimized NonEmptyOrderedIndexSet to multi indices transition initializer)
        532.0    add 1 value for different keys, policy: allowEqual

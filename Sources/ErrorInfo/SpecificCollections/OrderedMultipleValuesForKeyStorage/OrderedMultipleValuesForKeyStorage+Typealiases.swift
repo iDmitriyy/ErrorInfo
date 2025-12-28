@@ -11,12 +11,12 @@ extension OrderedMultipleValuesForKeyStorage {
   // public ACL is for inlining
   @usableFromInline internal typealias SingleValueForKeyDict = OrderedDictionary<Key, Value>
   
-  public typealias TaggedValue = CollisionAnnotatedRecord<Value>
-  @usableFromInline internal typealias MultiValueForKeyDict = OrderedMultiValueDictionary<Key, TaggedValue>
+  public typealias AnnotatedValue = CollisionAnnotatedRecord<Value>
+  @usableFromInline internal typealias MultiValueForKeyDict = OrderedMultiValueDictionary<Key, AnnotatedValue>
   
   @usableFromInline internal typealias Variant = Either<SingleValueForKeyDict, MultiValueForKeyDict>
   
-  public typealias Element = (key: Key, value: TaggedValue)
+  public typealias Element = (key: Key, value: AnnotatedValue)
   
   public typealias Index = Int
 }

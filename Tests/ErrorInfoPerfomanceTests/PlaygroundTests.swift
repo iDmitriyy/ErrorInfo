@@ -7,33 +7,32 @@
 
 @_spi(PerfomanceTesting) import ErrorInfo
 import Foundation
-import Testing
 import OrderedCollections
+import Testing
 
 struct PlaygroundTests {
   @Test func playground() throws {
     let count = 10
         
-    var infos: [ErrorInfo] = []
-    for index in 1...1000 {
-      infos.append([:]) // "": 10, "20": "AAAA"
-    }
-    infos.shuffle()
+    let dict: OrderedDictionary<String, String> = [
+      "dcdfdsdsfd": "dsf2sdfsdf",
+      "dcdfdsdsfd2": "dsf1sdfsdf",
+      "dcdfdsdsf3": "dsf4sdfsdf",
+      "dcdfdsdsf4": "dsf2rdfsdf",
+      "dcdfdsdsf5": "dsf2rdfqdf",
+    ]
     
-    let gg = Bool.random()
     let output = performMeasuredAction(count: count) {
-      for index in 1...1_000_000 {
-        blackHole(OrderedSet(_elements: index, index / 2))
+      for index in 1...100_000 {
+        blackHole(index)
       }
     }
     print("__playground: ", output.duration.asString(fractionDigits: 2)) // it takes ~25ms for 10 million of calls of empty blackHole(())
     
-    let outputGet = performMeasuredAction(count: 100) {
-      blackHole(infos[0].lastRecorded(forKey: .index))
-//      blackHole(infos[0].allValues(forKey: .index))
-//      debugPrint(infos[0].fullInfo(forKey: .index)?.count)
-    }
-    print("__outputGet: ", outputGet.duration.asString(fractionDigits: 5))
+    // __playground:  331 transitionedFrom0
+    // __playground:  315 transitionedFrom1
+    // __playground:  315 transitionedFrom2
+    // __playground:  439 transitionedFrom3
     
     // lastRecorded(forKey:) 1 value
     // __playground:  1351.15592 imp fullInfo(forKey:
