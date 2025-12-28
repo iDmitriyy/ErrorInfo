@@ -70,47 +70,6 @@ extension OrderedMultipleValuesForKeyStorage {
     
     /// Replaces `SingleValueForKeyDict` by `MultiValueForKeyDict` when first collision happens
     @inlinable @inline(__always)
-    internal mutating func append(key newKey: Key,
-                                  value newValue: Value,
-                                  writeProvenance: @autoclosure () -> WriteProvenance) {
-      // --- copy-paste from `mutateUnderlying`
-      var singleValueForKeyDict: SingleValueForKeyDict!
-      var multiValueForKeyDict: MultiValueForKeyDict!
-      // keep only one strong reference to underlying dict for CoW prevention
-      switch _variant! {
-      case .left(let instance): singleValueForKeyDict = instance
-      case .right(let instance): multiValueForKeyDict = instance
-      }
-      _variant = nil // destroy _variant enum wrapper with strong references to underlying dict
-      // --- end copy-paste
-      
-      if singleValueForKeyDict != nil {
-        // TODO: instead of checking `hasValue(forKey:)` use `update()` and check if result != nil
-        // measure time which is faster
-        if singleValueForKeyDict.hasValue(forKey: newKey) {
-          var multiValueForKeyDict = MultiValueForKeyDict()
-          for (currentKey, currentValue) in singleValueForKeyDict {
-            multiValueForKeyDict.append(key: currentKey, value: AnnotatedValue.value(currentValue))
-          }
-          let newValueWrapped = AnnotatedValue.collidedValue(newValue, collisionSource: writeProvenance())
-          multiValueForKeyDict.append(key: newKey, value: newValueWrapped)
-          _variant = .right(multiValueForKeyDict)
-        } else {
-          singleValueForKeyDict[newKey] = newValue
-          _variant = .left(singleValueForKeyDict)
-        }
-      } else if multiValueForKeyDict != nil {
-        let newValueWrapped: AnnotatedValue = if multiValueForKeyDict.hasValue(forKey: newKey) {
-          .collidedValue(newValue, collisionSource: writeProvenance())
-        } else {
-          .value(newValue)
-        }
-        multiValueForKeyDict.append(key: newKey, value: newValueWrapped)
-        _variant = .right(multiValueForKeyDict)
-      }
-    }
-    
-    @inlinable @inline(__always)
     internal mutating func appendIfNotPresent(
       key newKey: Key,
       value newValue: Value,
@@ -178,6 +137,7 @@ extension OrderedMultipleValuesForKeyStorage {
       _variant = .right(multiValueForKeyDict)
     }
     
+    /// Replaces `SingleValueForKeyDict` by `MultiValueForKeyDict` when first collision happens
     @inlinable @inline(__always)
     internal mutating func appendUnconditionally(
       key newKey: Key,

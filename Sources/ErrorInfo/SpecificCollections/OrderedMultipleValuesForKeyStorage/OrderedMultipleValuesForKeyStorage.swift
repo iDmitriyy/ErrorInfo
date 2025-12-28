@@ -112,12 +112,6 @@ extension OrderedMultipleValuesForKeyStorage {
 // MARK: Append KeyValue
 
 extension OrderedMultipleValuesForKeyStorage {
-  internal mutating func append(key: Key,
-                                value: Value,
-                                writeProvenance: @autoclosure () -> WriteProvenance) {
-    _mutableVariant.append(key: key, value: value, writeProvenance: writeProvenance())
-  }
-  
   internal mutating func appendIfNotPresent(key newKey: Key,
                                             value newValue: Value,
                                             writeProvenance: @autoclosure () -> WriteProvenance,
@@ -132,10 +126,6 @@ extension OrderedMultipleValuesForKeyStorage {
                                                value newValue: Value,
                                                writeProvenance: @autoclosure () -> WriteProvenance) {
     _mutableVariant.appendUnconditionally(key: newKey, value: newValue, writeProvenance: writeProvenance())
-  }
-  
-  internal mutating func append(_ newElement: (Key, Value), writeProvenance: @autoclosure () -> WriteProvenance) {
-    append(key: newElement.0, value: newElement.1, writeProvenance: writeProvenance())
   }
 }
 
