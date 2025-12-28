@@ -26,49 +26,46 @@ extension OrderedMultipleValuesForKeyStorage {
                                             multiValueForKey mutateRight: (inout MultiValueForKeyDict) -> Void) {
       var singleValueForKeyDict: SingleValueForKeyDict!
       var multiValueForKeyDict: MultiValueForKeyDict!
-      
-      // making only one string reference to underlying dict for COW prevention
+      // keep only one strong reference to underlying dict for CoW prevention
       switch _variant! {
       case .left(let instance): singleValueForKeyDict = instance
       case .right(let instance): multiValueForKeyDict = instance
       }
-      
-      _variant = nil // deallocate _variant enum wrapper with strong references to underlying dict
+      _variant = nil // destroy _variant enum wrapper with strong references to underlying dict
       
       if singleValueForKeyDict != nil {
         mutateLeft(&singleValueForKeyDict)
         _variant = .left(singleValueForKeyDict)
-      } else if multiValueForKeyDict != nil {
-        mutateRight(&multiValueForKeyDict)
-        _variant = .right(multiValueForKeyDict)
+        return
       }
+      
+      mutateRight(&multiValueForKeyDict)
+      _variant = .right(multiValueForKeyDict)
     }
     
     @inlinable @inline(__always)
     internal mutating func withResultMutateUnderlying<R>(singleValueForKey mutateLeft: (inout SingleValueForKeyDict) -> R,
                                                          multiValueForKey mutateRight: (inout MultiValueForKeyDict) -> R) -> R {
+      // --- copy-paste from `mutateUnderlying`
       var singleValueForKeyDict: SingleValueForKeyDict!
       var multiValueForKeyDict: MultiValueForKeyDict!
-      
-      // making only one string reference to underlying dict for COW prevention
+      // keep only one strong reference to underlying dict for CoW prevention
       switch _variant! {
       case .left(let instance): singleValueForKeyDict = instance
       case .right(let instance): multiValueForKeyDict = instance
       }
-      
-      _variant = nil // deallocate _variant enum wrapper with strong references to underlying dict
+      _variant = nil // destroy _variant enum wrapper with strong references to underlying dict
+      // end copy-paste
       
       if singleValueForKeyDict != nil {
         let result = mutateLeft(&singleValueForKeyDict)
         _variant = .left(singleValueForKeyDict)
         return result
-      } else if multiValueForKeyDict != nil {
-        let result = mutateRight(&multiValueForKeyDict)
-        _variant = .right(multiValueForKeyDict)
-        return result
-      } else {
-        fatalError("OrderedMultipleValuesForKeyStorage internal error: empty variant")
       }
+      
+      let result = mutateRight(&multiValueForKeyDict)
+      _variant = .right(multiValueForKeyDict)
+      return result
     }
     
     /// Replaces `SingleValueForKeyDict` by `MultiValueForKeyDict` when first collision happens
@@ -79,13 +76,11 @@ extension OrderedMultipleValuesForKeyStorage {
       // --- copy-paste from `mutateUnderlying`
       var singleValueForKeyDict: SingleValueForKeyDict!
       var multiValueForKeyDict: MultiValueForKeyDict!
-      
-      // making only one string reference to underlying dict for COW prevention
+      // keep only one strong reference to underlying dict for CoW prevention
       switch _variant! {
       case .left(let instance): singleValueForKeyDict = instance
       case .right(let instance): multiValueForKeyDict = instance
       }
-      
       _variant = nil // destroy _variant enum wrapper with strong references to underlying dict
       // end copy-paste
       
@@ -122,14 +117,6 @@ extension OrderedMultipleValuesForKeyStorage {
       writeProvenance: @autoclosure () -> WriteProvenance,
       rejectWhenExistingMatches decideToReject: (_ existing: TaggedValue) -> Bool,
     ) {
-      var singleValueForKeyDict: SingleValueForKeyDict!
-      var multiValueForKeyDict: MultiValueForKeyDict!
-
-      switch _variant! {
-      case .left(let instance): singleValueForKeyDict = instance
-      case .right(let instance): multiValueForKeyDict = instance
-      }
-
       // Improvement:
       // - remove implicitly unwrapped optionals (might be optimized by compiler)
       // - separate closoure for first collision
@@ -139,7 +126,16 @@ extension OrderedMultipleValuesForKeyStorage {
       // - inlining
       // - optimize writeProvenance()
       
-      _variant = nil
+      // --- copy-paste from `mutateUnderlying`
+      var singleValueForKeyDict: SingleValueForKeyDict!
+      var multiValueForKeyDict: MultiValueForKeyDict!
+      // keep only one strong reference to underlying dict for CoW prevention
+      switch _variant! {
+      case .left(let instance): singleValueForKeyDict = instance
+      case .right(let instance): multiValueForKeyDict = instance
+      }
+      _variant = nil // destroy _variant enum wrapper with strong references to underlying dict
+      // end copy-paste
 
       if singleValueForKeyDict != nil {
         if let existing = singleValueForKeyDict[newKey] {
@@ -196,15 +192,16 @@ extension OrderedMultipleValuesForKeyStorage {
       value newValue: Value,
       writeProvenance: @autoclosure () -> WriteProvenance,
     ) {
+      // --- copy-paste from `mutateUnderlying`
       var singleValueForKeyDict: SingleValueForKeyDict!
       var multiValueForKeyDict: MultiValueForKeyDict!
-
+      // keep only one strong reference to underlying dict for CoW prevention
       switch _variant! {
       case .left(let instance): singleValueForKeyDict = instance
       case .right(let instance): multiValueForKeyDict = instance
       }
-      
-      _variant = nil
+      _variant = nil // destroy _variant enum wrapper with strong references to underlying dict
+      // end copy-paste
 
       if singleValueForKeyDict != nil {
         if singleValueForKeyDict.hasValue(forKey: newKey) {
