@@ -6,6 +6,8 @@
 //
 
 public import typealias SwiftCollectionsNonEmpty.NonEmptyOrderedSet
+internal import struct OrderedCollections.OrderedSet
+private import NonEmpty
 
 // MARK: - NonEmpty Ordered IndexSet
 
@@ -77,12 +79,16 @@ public struct NonEmptyOrderedIndexSet: Sendable, RandomAccessCollection {
   /// Inserts `newIndex`, preserving order of insertion.
   /// Switches to heap-backed storage on the first insertion beyond one element.
 //  @_spi(PerfomanceTesting)
+  @inlinable
+  @inline(__always)
   public mutating func insert(_ newIndex: Int) {
     switch _variant {
     case .left(let currentIndex):
       // TBD: newIndex can be equal to currentIndex. However, seems there is no problem from practical perspective
-      // and adding such checks will bring negative impact on prefomance giving no benefits..
-      _variant = .right(NonEmptyOrderedSet<Int>(elements: currentIndex, newIndex))
+      // and adding such checks will bring negative impact on performance giving no benefits..
+      
+      // _variant = .right(NonEmptyOrderedSet<Int>(elements: currentIndex, newIndex)) // FIXME: _elements init
+      _variant = .right(NonEmpty(base: OrderedSet(_elements: currentIndex, newIndex))!)
       
     case .right(var elements):
       // On release builds, compiler optimizes CoW here, like it is inout switch / in-place mutation
@@ -90,7 +96,7 @@ public struct NonEmptyOrderedIndexSet: Sendable, RandomAccessCollection {
       _variant = .right(elements)
     }
     // FIXME: NonEmptyOrderedSet<Int>(elements: currentIndex, newIndex) – slow | need to be optimized in lib NonEmpty
-    // Insertion to single element (.left case) is ~15x slower than case .right
+    // Insertion to single element (.left case) was ~15x slower than case .right | add tests
   }
   
   /// Builds a `RangeSet` of indices relative to `collection`.
@@ -109,4 +115,20 @@ extension NonEmptyOrderedSet<Int> {
   }
 }
 
-// TODO: - perfomance checks
+extension OrderedSet {
+  @inlinable // @inline(__always) // 393.32
+  internal init(_element: Element) {
+    self.init(uncheckedUniqueElements: [_element])
+  }
+  
+  // TODO: - rename args
+  
+  @inlinable
+  public init(_elements first: Element, _ second: Element) { // 358.88
+    if _fastPath(first != second) {
+      self.init(uncheckedUniqueElements: [first, second])
+    } else {
+      self.init(uncheckedUniqueElements: [first])
+    }
+  }
+}

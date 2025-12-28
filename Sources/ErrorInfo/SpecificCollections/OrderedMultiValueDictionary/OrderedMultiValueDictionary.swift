@@ -46,16 +46,7 @@ struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
     _entries = []
     _keyToEntryIndices = [:]
   }
-  
-  @usableFromInline
-  internal init(elements: some Collection<(key: Key, value: Value)>) {
-    let capacity = elements.count + 1
-    _keyToEntryIndices = Dictionary(minimumCapacity: capacity)
-    _entries = Array<Element>(elements)
-//    _entries.append(contentsOf: elements)
-    _rebuildKeyToEntryIndices()
-  }
-  
+    
   @usableFromInline
   internal init(minimumCapacity: Int) {
     _entries = Array(minimumCapacity: minimumCapacity)
@@ -173,10 +164,12 @@ extension OrderedMultiValueDictionary {
   @usableFromInline
   mutating func append(key: Key, value: Value) {
     let newEntryIndex = _entries.endIndex
-    _insert(entryIndex: newEntryIndex, forKey: key)
     _entries.append((key, value))
+    _insert(entryIndex: newEntryIndex, forKey: key)
   }
   
+  @inlinable
+  @inline(__always)
   public mutating func _insert(entryIndex: Int, forKey key: Key) {
     if let bucketIndex = _keyToEntryIndices.index(forKey: key) {
       _keyToEntryIndices.values[bucketIndex].insert(entryIndex)

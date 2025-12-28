@@ -8,6 +8,7 @@
 @_spi(PerfomanceTesting) import ErrorInfo
 import Foundation
 import Testing
+import OrderedCollections
 
 struct PlaygroundTests {
   @Test func playground() throws {
@@ -19,20 +20,13 @@ struct PlaygroundTests {
     }
     infos.shuffle()
     
+    let gg = Bool.random()
     let output = performMeasuredAction(count: count) {
-//      var info = ErrorInfo()
-      for index in 1...1_000 {
-        for infoIndex in infos.indices {
-          blackHole(index)
-//          infos[infoIndex].appendWith(duplicatePolicy: .rejectEqual) {
-//            $0[.index] = infoIndex
-//          }
-//          infos[infoIndex]["infoIndex"] = infoIndex
-//          blackHole(infos[infoIndex].lastRecorded(forKey: "20"))
-        }
+      for index in 1...1_000_000 {
+        blackHole(OrderedSet(_elements: index, index / 2))
       }
     }
-    print("__playground: ", output.duration.asString(fractionDigits: 5)) // it takes ~25ms for 10 million of calls of empty blackHole(())
+    print("__playground: ", output.duration.asString(fractionDigits: 2)) // it takes ~25ms for 10 million of calls of empty blackHole(())
     
     let outputGet = performMeasuredAction(count: 100) {
       blackHole(infos[0].lastRecorded(forKey: .index))
@@ -64,7 +58,6 @@ struct PlaygroundTests {
     // __playground:  3628.39821 allRecordsForKey.indices
     // __playground:  3620.53942 – fast path with if let without for loop
     
-    
     // lastValue(forKey:) 1 value
     // __playground:  2418.18941 allRecordsForKey.reversed()
     // __playground:  1326.62396 allRecordsForKey.indices.reversed()
@@ -79,8 +72,6 @@ struct PlaygroundTests {
     // __playground:  4200.32629 allRecordsForKey.reversed()
     // __playground:  3470.00304 allRecordsForKey.indices.reversed()
     // __playground:  3513.45225 – fast path with if let without for loop
-    
-    
     
     // .allKeys
     // __playground:  1117.44792

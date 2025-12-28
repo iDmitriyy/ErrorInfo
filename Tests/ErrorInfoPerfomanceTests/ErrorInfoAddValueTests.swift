@@ -129,7 +129,29 @@ struct ErrorInfoAddValueTests {
         }
       })
       
-      /* new imp (optimized copy to multi storage)
+      /* new imp (optimized NonEmptyOrderedIndexSet to multi indices transition initializer)
+       532.0    add 1 value for different keys, policy: allowEqual
+       578.5    add 1 value for different keys, policy: rejectEqual
+       575.1    add 1 value for different keys, policy: rejectEqualWithSameOrigin
+       
+       622.9    add 2 values for different keys, policy: allowEqual
+       667.5    add 2 values for different keys, policy: rejectEqual
+       662.4    add 2 values for different keys, policy: rejectEqualWithSameOrigin
+       
+       871.5    add 2 values for same key, policy: allowEqual
+       533.6    add 2 values for same key, policy: rejectEqual
+       538.0    add 2 values for same key, policy: rejectEqualWithSameOrigin
+       
+       651.6    add 3 values for different keys, policy: allowEqual
+       693.3    add 3 values for different keys, policy: rejectEqual
+       691.7    add 3 values for different keys, policy: rejectEqualWithSameOrigin
+       
+       865.0    add 3 values for same key, policy: allowEqual
+       504.8    add 3 values for same key, policy: rejectEqual
+       511.6    add 3 values for same key, policy: rejectEqualWithSameOrigin
+       */
+      
+      /* new imp (optimized copy to multi storage algorithm)
        538.8    add 1 value for different keys, policy: allowEqual
        588.4    add 1 value for different keys, policy: rejectEqual
        588.1    add 1 value for different keys, policy: rejectEqualWithSameOrigin

@@ -135,7 +135,7 @@ extension OrderedMultipleValuesForKeyStorage {
       // - separate closoure for first collision
       // - pass borrowing value
       // - hasValue(forKey:) – which faster
-      // - multiValueForKeyDict.append(contentsOf: singleValueForKeyDict)
+      // + multiValueForKeyDict.append(contentsOf: singleValueForKeyDict)
       // - inlining
       // - optimize writeProvenance()
       
@@ -147,9 +147,10 @@ extension OrderedMultipleValuesForKeyStorage {
             _variant = .left(singleValueForKeyDict)
             return
           }
-          
-          var multiValueForKeyDict = MultiValueForKeyDict()
-          for (key, value) in singleValueForKeyDict {
+                    
+          var multiValueForKeyDict = MultiValueForKeyDict(minimumCapacity: singleValueForKeyDict.count + 1)
+          for index in singleValueForKeyDict.indices {
+            let (key, value) = singleValueForKeyDict[index]
             multiValueForKeyDict.append(key: key, value: .value(value))
           }
           
