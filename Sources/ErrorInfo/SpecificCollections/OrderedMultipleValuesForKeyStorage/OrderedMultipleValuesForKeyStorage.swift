@@ -14,7 +14,7 @@
 /// - Transitions to an `OrderedMultiValueDictionary` when first collision occur (multiple values for the same key).
 ///
 /// While all key-values are unique (and stored in `OrderedDictionary`), there is no need to allocate space for
-/// `CollisionAnnotatedRecord` – values can be atores as is.
+/// `CollisionAnnotatedRecord` – values can be stored as is.
 ///
 /// ### Efficiency:
 /// - Avoids extra memory overhead when there are no collisions, as no additional space for collisions and values indices is required.

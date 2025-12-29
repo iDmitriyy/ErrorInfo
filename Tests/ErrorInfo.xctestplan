@@ -27,6 +27,13 @@
         "identifier" : "ErrorInfoTests",
         "name" : "ErrorInfoTests"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "ErrorInfoPerformanceTests",
+        "name" : "ErrorInfoPerformanceTests"
+      }
     }
   ],
   "version" : 1

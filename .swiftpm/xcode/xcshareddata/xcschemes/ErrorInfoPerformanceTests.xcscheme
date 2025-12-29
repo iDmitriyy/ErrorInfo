@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "2600"
+   LastUpgradeVersion = "2620"
    version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -18,9 +18,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "ErrorInfoPerfomanceTests"
-               BuildableName = "ErrorInfoPerfomanceTests"
-               BlueprintName = "ErrorInfoPerfomanceTests"
+               BlueprintIdentifier = "ErrorInfoPerformanceTests"
+               BuildableName = "ErrorInfoPerformanceTests"
+               BlueprintName = "ErrorInfoPerformanceTests"
                ReferencedContainer = "container:">
             </BuildableReference>
          </TestableReference>

@@ -93,24 +93,20 @@ public struct StringLiteralKey: Hashable, Sendable, CustomStringConvertible, Cus
   }
 }
 
-extension StringLiteralKey: ExpressibleByStringLiteral { // Improvement: try to make it zero-cost abstraction
+extension StringLiteralKey: ExpressibleByStringLiteral {
+  /// `StaticString` completely closes the hole when `StringLiteralKey` can be initialized with dynamically formed string or interpolation.
   public typealias StringLiteralType = StaticString
+  
+  // Improvement: use @const instead of static let (check binary size(reduce swift_once) and performance on first access)
+  // Improvement: try to make it zero-cost abstraction
   
   public init(stringLiteral value: StaticString) {
     rawValue = String(value)
     keyOrigin = .literalConstant
   } // inlining has no effect on performance
-  
-  // StaticString completely closes the hole when ErrorInfoKey can be initialized with dynamically formed string or interpolation.
-  // Improvement: use @const instead of static let (check binary size(reduce swift_once) and performance on first access)
 }
 
 extension StringLiteralKey {
-//  public subscript(dynamicMember keyPath: KeyPath<StringLiteralKey.Type, StringLiteralKey>) -> StringLiteralKey {
-//    let keyToAppend = StringLiteralKey.self[keyPath: keyPath]
-//    return self + keyToAppend
-//  }
-    
   public static func + (lhs: Self, rhs: Self) -> Self {
     Self(_combinedLiteralsString: lhs.rawValue + "_" + rhs.rawValue)
   } // inlining has no effect on performance

@@ -208,10 +208,10 @@ extension OrderedMultiValueDictionary {
     
     for (key, entryIndices) in _keyToEntryIndices {
       precondition(!entryIndices.isEmpty) // entryIndices must be NonEmpty
-      for enryIndex in entryIndices {
-        precondition(seenIndices.insert(enryIndex).inserted)
+      for entryIndex in entryIndices {
+        precondition(seenIndices.insert(entryIndex).inserted)
         
-        let entry = _entries[enryIndex]
+        let entry = _entries[entryIndex]
         precondition(entry.key == key)
         computedEntriesCount += 1
       }

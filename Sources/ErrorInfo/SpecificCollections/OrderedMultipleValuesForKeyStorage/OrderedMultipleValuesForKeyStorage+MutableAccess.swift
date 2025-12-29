@@ -80,6 +80,7 @@ extension OrderedMultipleValuesForKeyStorage {
       // - hasValue(forKey:) – which faster
       // + multiValueForKeyDict.append(contentsOf: singleValueForKeyDict)
       // - optimize writeProvenance()
+      // - https://forums.swift.org/t/in-place-mutation-of-an-enum-associated-value/11747/15
       
       // --- copy-paste from `mutateUnderlying`
       var singleValueForKeyDict: SingleValueForKeyDict!

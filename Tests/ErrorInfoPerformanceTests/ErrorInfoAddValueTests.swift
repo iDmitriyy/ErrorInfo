@@ -321,6 +321,4 @@ struct ErrorInfoAddValueTests {
   internal func make1000EmptyInstances() -> InlineArray<1000, ErrorInfo> {
     InlineArray<1000, ErrorInfo>({ _ in ErrorInfo() })
   }
-  
-  
 }
