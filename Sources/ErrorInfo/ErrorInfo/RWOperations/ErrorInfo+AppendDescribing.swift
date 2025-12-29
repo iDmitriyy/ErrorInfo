@@ -14,7 +14,7 @@ extension ErrorInfo {
     _appendStringOfAnySendable(value: newValue,
                                key: literalKey.rawValue,
                                keyOrigin: literalKey.keyOrigin,
-                               sringTransform: String.init(describing:))
+                               stringTransform: String.init(describing:))
   }
   
   @_disfavoredOverload
@@ -23,7 +23,7 @@ extension ErrorInfo {
     _appendStringOfAnySendable(value: newValue,
                                key: dynamicKey,
                                keyOrigin: .dynamic,
-                               sringTransform: String.init(describing:))
+                               stringTransform: String.init(describing:))
   }
   
   public mutating func appendString(describing newValue: (some Any)?,
@@ -31,7 +31,7 @@ extension ErrorInfo {
     _appendStringOfAny(value: newValue,
                        key: literalKey.rawValue,
                        keyOrigin: literalKey.keyOrigin,
-                       sringTransform: String.init(describing:))
+                       stringTransform: String.init(describing:))
   }
   
   @_disfavoredOverload
@@ -40,7 +40,7 @@ extension ErrorInfo {
     _appendStringOfAny(value: newValue,
                        key: dynamicKey,
                        keyOrigin: .dynamic,
-                       sringTransform: String.init(describing:))
+                       stringTransform: String.init(describing:))
   }
 }
 
@@ -55,7 +55,7 @@ extension ErrorInfo {
     _appendStringOfAnySendable(value: newValue,
                                key: literalKey.rawValue,
                                keyOrigin: literalKey.keyOrigin,
-                               sringTransform: String.init(reflecting:))
+                               stringTransform: String.init(reflecting:))
   }
   
   @_disfavoredOverload
@@ -64,7 +64,7 @@ extension ErrorInfo {
     _appendStringOfAnySendable(value: newValue,
                                key: dynamicKey,
                                keyOrigin: .dynamic,
-                               sringTransform: String.init(reflecting:))
+                               stringTransform: String.init(reflecting:))
   }
   
   public mutating func appendString(reflecting newValue: (some Any)?,
@@ -72,7 +72,7 @@ extension ErrorInfo {
     _appendStringOfAny(value: newValue,
                        key: literalKey.rawValue,
                        keyOrigin: literalKey.keyOrigin,
-                       sringTransform: String.init(reflecting:))
+                       stringTransform: String.init(reflecting:))
   }
   
   /// Appends a value by storing its reflective string representation.
@@ -104,7 +104,7 @@ extension ErrorInfo {
     _appendStringOfAny(value: newValue,
                        key: dynamicKey,
                        keyOrigin: .dynamic,
-                       sringTransform: String.init(reflecting:))
+                       stringTransform: String.init(reflecting:))
   }
 }
 
@@ -114,12 +114,12 @@ extension ErrorInfo {
   private mutating func _appendStringOfAny<T>(value newValue: T?,
                                               key: String,
                                               keyOrigin: KeyOrigin,
-                                              sringTransform: (Any) -> String) {
+                                              stringTransform: (Any) -> String) {
     let stringRepresentation: String = switch ErrorInfoFuncs.flattenOptional(any: newValue) {
-    case .value(let value): sringTransform(value)
+    case .value(let value): stringTransform(value)
     case .nilInstance(let typeOfWrapped): ErrorInfoFuncs.nilString(typeOfWrapped: typeOfWrapped)
-      // TBD: idealy it is good to store explicit `nil` instance (case .nilInstance(typeOfWrapped:))
-      // instead of nilDecription string.
+      // TBD: ideally it is good to store explicit `nil` instance (case .nilInstance(typeOfWrapped:))
+      // instead of nilDescription string.
       // However, this will require OptionalValue store `any Any.Type` instead of `any Sendable.Type` in case .nilInstance
     }
     
@@ -136,10 +136,10 @@ extension ErrorInfo {
   private mutating func _appendStringOfAnySendable(value newValue: (some Sendable)?,
                                                    key: String,
                                                    keyOrigin: KeyOrigin,
-                                                   sringTransform: (any Sendable) -> String) {
+                                                   stringTransform: (any Sendable) -> String) {
     switch ErrorInfoFuncs.flattenOptional(anySendable: newValue) {
     case .left(let value):
-      let stringRepresentation = sringTransform(value)
+      let stringRepresentation = stringTransform(value)
       _addDetachedValue(
         stringRepresentation,
         shouldPreserveNilValues: true, // has no effect in this func

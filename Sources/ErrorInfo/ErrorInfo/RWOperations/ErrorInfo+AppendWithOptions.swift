@@ -121,7 +121,7 @@ extension ErrorInfo {
   ///
   /// - Parameters:
   ///   - duplicatePolicy: How to handle equal values for the same key. Defaults to ``ValueDuplicatePolicy/defaultForAppending``.
-  ///   - nilPreservation: Whether `nil` assignments (typically emplicit) should be recorded as explicit `nil` entries. Defaults to `true`.
+  ///   - nilPreservation: Whether `nil` assignments (typically implicit) should be recorded as explicit `nil` entries. Defaults to `true`.
   ///   - prefixForKeys: A literal prefix to prepend to all keys added within the scope. Defaults to `nil`.
   ///   - file: File identifier used as collision origin (defaults to `#fileID`).
   ///   - line: Line number used as collision origin (defaults to `#line`).
@@ -172,7 +172,7 @@ extension ErrorInfo {
   ///
   /// - Parameters:
   ///   - duplicatePolicy: How to handle equal values for the same key. Defaults to ``ValueDuplicatePolicy/defaultForAppending``.
-  ///   - nilPreservation: Whether `nil` assignments (typically emplicit) should be recorded as explicit `nil` entries. Defaults to `true`.
+  ///   - nilPreservation: Whether `nil` assignments (typically implicit) should be recorded as explicit `nil` entries. Defaults to `true`.
   ///   - prefixForKeys: A literal prefix to prepend to all keys added within the scope. Defaults to `nil`.
   ///   - origin: The origin used for collision diagnostics for operations in the scope.
   ///   - modify: A closure that receives a ``ErrorInfo/CustomOptionsView`` to perform mutations.

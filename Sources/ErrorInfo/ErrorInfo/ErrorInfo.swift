@@ -135,7 +135,7 @@ extension ErrorInfo {
 // MARK: - Append KeyValue with all arguments passed explicitly
 
 extension ErrorInfo {
-  /// The root appending function for public API imps. The term "_add" is chosen to visually / syntatically differentiate from family of public `append()`functions.
+  /// The root appending function for public API imps. The term "_add" is chosen to visually / syntactically differentiate from family of public `append()`functions.
 //  @usableFromInline
 //  internal
   public mutating func _addDetachedValue<V: ValueProtocol>(_ newValue: V?,

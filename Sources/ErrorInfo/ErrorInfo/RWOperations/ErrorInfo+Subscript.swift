@@ -51,12 +51,12 @@ extension ErrorInfo {
   }
 }
 
-// StringLiteralKey with @_disfavoredOverload String-base subscript allows to differemtiate between when it was a
-// literal-key subscript and when it was defenitely some string value passed dynamically / at runtime.
-// So this cleary separate the subscript access to 2 kinds:
+// StringLiteralKey with @_disfavoredOverload String-base subscript allows to differentiate between when it was a
+// literal-key subscript and when it was definitely some string value passed dynamically / at runtime.
+// So this clearly separate the subscript access to 2 kinds:
 // 1. a literal that can be found in source code or a predefined key which can be also found in sources
 // 2. some string value created dynamically
-// The same trick with sub-separaation can be done for append() functions
+// The same trick with sub-separation can be done for append() functions
 // Dictionary literal can then strictly be created with string literals, and when the key dynamic, another APIs are
 // forced to be used.
 

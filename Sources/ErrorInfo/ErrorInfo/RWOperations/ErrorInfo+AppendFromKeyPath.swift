@@ -8,12 +8,12 @@
 // MARK: - Append from Instance's Properies
 
 extension ErrorInfo {
-  // Improvement: stingify-like macro for extrating the string name of value passed to `instance` arg
-  // case .valueName then be useful only in contexts with shortand args like $0.
-  // But typically macro will be more convenient as there no need to duplacte binding name.
-  // e.g. appendFromKeyPaths(of: address, keysPrefix: .valueName("address")) { ... } – need to maanually write "address".
-  // if `address` is renamed in sources, then "address" literal alsso needed to be cnhaged manualy, which is not what we want.
-  // Macro also closses the hole that valueName can be en empty string: .valueName(""). binding can not be empty
+  // Improvement: stringify-like macro for extracting the string name of value passed to `instance` arg
+  // case .valueName then be useful only in contexts with shorthand args like $0.
+  // But typically macro will be more convenient as there no need to duplicate binding name.
+  // e.g. appendFromKeyPaths(of: address, keysPrefix: .valueName("address")) { ... } – need to manually write "address".
+  // if `address` is renamed in sources, then "address" literal also needed to be changed manually, which is not what we want.
+  // Macro also close the hole that valueName can be en empty string: .valueName(""). binding can not be empty
   
   /// Appends values from key paths of an instance to `ErrorInfo`, optionally prefixing keys.
   ///

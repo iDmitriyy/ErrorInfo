@@ -23,7 +23,7 @@ extension ErrorInfo {
   
   @available(*, deprecated, message: "for literal keys use subscript instead, append() is intended for dynamic keys)")
   public mutating func appendValue(_ newValue: (some ValueProtocol)?, forKey literalKey: StringLiteralKey) {
-    // deprecattion is used to guide users
+    // deprecation is used to guide users
     _addDetachedValue(
       newValue,
       shouldPreserveNilValues: true,
