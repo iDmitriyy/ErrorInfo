@@ -11,8 +11,8 @@ extension ErrorInfo {
   /// Instead of subscript overload with `String` key to prevent pollution of autocomplete for `StringLiteralKey` by tons of String methods.
   @_disfavoredOverload
   public mutating func appendValue(_ newValue: (some ValueProtocol)?, forKey dynamicKey: String) {
-    _addDetachedValue(
-      newValue,
+    withCollisionAndDuplicateResolutionAdd(
+      optionalValue: newValue,
       shouldPreserveNilValues: true,
       duplicatePolicy: .defaultForAppending,
       forKey: dynamicKey,
@@ -24,8 +24,8 @@ extension ErrorInfo {
   @available(*, deprecated, message: "for literal keys use subscript instead, append() is intended for dynamic keys)")
   public mutating func appendValue(_ newValue: (some ValueProtocol)?, forKey literalKey: StringLiteralKey) {
     // deprecation is used to guide users
-    _addDetachedValue(
-      newValue,
+    withCollisionAndDuplicateResolutionAdd(
+      optionalValue: newValue,
       shouldPreserveNilValues: true,
       duplicatePolicy: .defaultForAppending,
       forKey: literalKey.rawValue,
@@ -66,8 +66,8 @@ extension ErrorInfo {
   internal mutating func _singleKeyValuePairAppend(key: String,
                                                    keyOrigin: KeyOrigin,
                                                    value: some ValueProtocol) {
-    _addDetachedValue(
-      value,
+    withCollisionAndDuplicateResolutionAdd(
+      optionalValue: value,
       shouldPreserveNilValues: true, // has no effect in this func
       duplicatePolicy: .defaultForAppending,
       forKey: key,

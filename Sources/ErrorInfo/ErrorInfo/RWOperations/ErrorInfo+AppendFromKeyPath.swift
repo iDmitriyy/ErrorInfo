@@ -70,8 +70,8 @@ extension ErrorInfo {
       
       let value = instance[keyPath: keyPath]
       
-      _addDetachedValue(
-        value,
+      withCollisionAndDuplicateResolutionAdd(
+        optionalValue: value,
         shouldPreserveNilValues: true,
         duplicatePolicy: .defaultForAppending,
         forKey: keyPathString,

@@ -74,52 +74,17 @@ extension ErrorInfo {
   /// // As `origin` is the same, equal `key-value` pairs across `query` and `params`
   /// // will be rejected, which may be unexpected.
   /// ```
-  public mutating func append<V: ValueProtocol>(contentsOf sequence: some Sequence<(String, V)>,
-                                                duplicatePolicy: ValueDuplicatePolicy = .allowEqualWhenOriginDiffers,
-                                                dedupeWithinSequence: Bool = true,
-                                                origin: WriteProvenance.Origin) {
+  public mutating func append(contentsOf sequence: some Sequence<(String, some ValueProtocol)>,
+                              duplicatePolicy: ValueDuplicatePolicy = .allowEqualWhenOriginDiffers,
+                              origin: WriteProvenance.Origin) {
     for (dynamicKey, value) in sequence {
-      _addDetachedValue(
-        value,
-        shouldPreserveNilValues: true, // has no effect here
+      withCollisionAndDuplicateResolutionAdd(
+        value: value,
         duplicatePolicy: duplicatePolicy,
         forKey: dynamicKey,
         keyOrigin: .fromCollection,
         writeProvenance: .onSequenceConsumption(origin: origin),
       )
-    }
-    
-    let keyOrigin: KeyOrigin = .fromCollection
-    let preserveNilValues: Bool = true
-    
-    // When `dedupeWithinSequence` is enabled, skip equal (key, value) duplicates inside this batch,
-    // while leaving cross-batch behavior to the chosen `duplicatePolicy` and `origin`.
-    if dedupeWithinSequence {
-      var seen: [String: [V]] = [:]
-      for (dynamicKey, value) in sequence {
-        if let values = seen[dynamicKey], values.contains(value) { continue }
-        
-        seen[dynamicKey, default: []].append(value)
-        _addDetachedValue(
-          value,
-          shouldPreserveNilValues: preserveNilValues, // has no effect here
-          duplicatePolicy: duplicatePolicy,
-          forKey: dynamicKey,
-          keyOrigin: keyOrigin,
-          writeProvenance: .onSequenceConsumption(origin: origin),
-        )
-      }
-    } else {
-      for (dynamicKey, value) in sequence {
-        _addDetachedValue(
-          value,
-          shouldPreserveNilValues: preserveNilValues, // has no effect here
-          duplicatePolicy: duplicatePolicy,
-          forKey: dynamicKey,
-          keyOrigin: keyOrigin,
-          writeProvenance: .onSequenceConsumption(origin: origin),
-        )
-      }
     }
   }
 }

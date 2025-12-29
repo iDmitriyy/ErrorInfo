@@ -42,12 +42,12 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
   @inline(__always) // 2.0x faster creating empty literal
   public init(dictionaryLiteral elements: (Key, Value)...) {
     guard !elements.isEmpty else { // 7.5x faster creating empty literal. | 32 ErrorInfo() vs 42 [:]
-      self.init()
-      return
+      self.init(); return
     }
     self.init(minimumCapacity: elements.count)
     _appendKeyValuesImp(_dictionaryLiteral: elements,
                         preserveNilValues: true,
+                        duplicatePolicy: .allowEqual,
                         writeProvenance: .onCreateWithDictionaryLiteral)
   }
 }

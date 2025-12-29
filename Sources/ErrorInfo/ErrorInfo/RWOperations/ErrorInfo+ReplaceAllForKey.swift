@@ -25,9 +25,8 @@ extension ErrorInfo {
                                                by newValue: ValueExistential,
                                                keyOrigin: KeyOrigin) -> ValuesForKey<ValueExistential>? {
     let oldValues = removeAllRecords(forKey: key)
-    _addDetachedValue(
-      newValue,
-      shouldPreserveNilValues: true, // has no effect in this func
+    withCollisionAndDuplicateResolutionAdd(
+      value: newValue,
       duplicatePolicy: .allowEqual, // has no effect in this func
       forKey: key,
       keyOrigin: keyOrigin,

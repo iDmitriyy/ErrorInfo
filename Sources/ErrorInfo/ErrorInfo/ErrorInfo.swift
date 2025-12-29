@@ -136,14 +136,14 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   /// The root appending function for public API imps. The term "_add" is chosen to visually / syntactically differentiate from family of public `append()`functions.
-//  @usableFromInline
-//  internal
-  public mutating func _addDetachedValue<V: ValueProtocol>(_ newValue: V?,
-                                                           shouldPreserveNilValues: Bool,
-                                                           duplicatePolicy: ValueDuplicatePolicy,
-                                                           forKey key: String,
-                                                           keyOrigin: KeyOrigin,
-                                                           writeProvenance: @autoclosure () -> WriteProvenance) {
+  internal mutating func withCollisionAndDuplicateResolutionAdd<V: ValueProtocol>(
+    optionalValue newValue: V?,
+    shouldPreserveNilValues: Bool,
+    duplicatePolicy: ValueDuplicatePolicy,
+    forKey key: String,
+    keyOrigin: KeyOrigin,
+    writeProvenance: @autoclosure () -> WriteProvenance,
+  ) {
     let optional: EquatableOptionalValue
     if let newValue {
       optional = .value(newValue)
@@ -155,6 +155,21 @@ extension ErrorInfo {
     
     _storage._addRecordWithCollisionAndDuplicateResolution(
       BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
+      forKey: key,
+      duplicatePolicy: duplicatePolicy,
+      writeProvenance: writeProvenance(),
+    )
+  }
+  
+  internal mutating func withCollisionAndDuplicateResolutionAdd(
+    value newValue: some ValueProtocol,
+    duplicatePolicy: ValueDuplicatePolicy,
+    forKey key: String,
+    keyOrigin: KeyOrigin,
+    writeProvenance: @autoclosure () -> WriteProvenance,
+  ) {
+    _storage._addRecordWithCollisionAndDuplicateResolution(
+      BackingStorage.Record(keyOrigin: keyOrigin, someValue: .value(newValue)),
       forKey: key,
       duplicatePolicy: duplicatePolicy,
       writeProvenance: writeProvenance(),

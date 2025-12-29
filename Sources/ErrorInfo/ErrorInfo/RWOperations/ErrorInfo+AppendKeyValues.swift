@@ -36,10 +36,12 @@ extension ErrorInfo {
   /// ```
   public mutating func appendKeyValues(_ dictionaryLiteral: KeyValuePairs<Key, Value>,
                                        preserveNilValues: Bool = true,
+                                       duplicatePolicy: ValueDuplicatePolicy = .allowEqualWhenOriginDiffers,
                                        file: StaticString = #fileID,
                                        line: UInt = #line) {
     appendKeyValues(dictionaryLiteral,
                     preserveNilValues: preserveNilValues,
+                    duplicatePolicy: duplicatePolicy,
                     origin: .fileLine(file: file, line: line))
   }
   
@@ -66,9 +68,11 @@ extension ErrorInfo {
   /// ```
   public mutating func appendKeyValues(_ dictionaryLiteral: KeyValuePairs<Key, Value>,
                                        preserveNilValues: Bool = true,
+                                       duplicatePolicy: ValueDuplicatePolicy = .allowEqualWhenOriginDiffers,
                                        origin: @autoclosure () -> WriteProvenance.Origin) {
     _appendKeyValuesImp(_dictionaryLiteral: dictionaryLiteral,
                         preserveNilValues: preserveNilValues,
+                        duplicatePolicy: duplicatePolicy,
                         writeProvenance: .onDictionaryLiteralConsumption(origin: origin()))
   }
 }
@@ -81,15 +85,12 @@ extension ErrorInfo {
   @usableFromInline
   internal mutating func _appendKeyValuesImp(_dictionaryLiteral elements: some Collection<(key: StringLiteralKey, value: Value)>,
                                              preserveNilValues: Bool,
+                                             duplicatePolicy: ValueDuplicatePolicy,
                                              writeProvenance: @autoclosure () -> WriteProvenance) {
-    let duplicatePolicy: ValueDuplicatePolicy = .defaultForAppendingDictionaryLiteral
-    
     for (literalKey, value) in elements {
       if let value {
-        // TBD: _add() with optional value is used
-        _addDetachedValue(
-          value,
-          shouldPreserveNilValues: true, // has no effect here
+        withCollisionAndDuplicateResolutionAdd(
+          value: value,
           duplicatePolicy: duplicatePolicy,
           forKey: literalKey.rawValue,
           keyOrigin: literalKey.keyOrigin,

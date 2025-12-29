@@ -39,8 +39,8 @@ extension ErrorInfo {
       lastValue(forKey: literalKey) as? V
     }
     set {
-      _addDetachedValue(
-        newValue,
+      withCollisionAndDuplicateResolutionAdd(
+        optionalValue: newValue,
         shouldPreserveNilValues: true,
         duplicatePolicy: .defaultForAppending,
         forKey: literalKey.rawValue,

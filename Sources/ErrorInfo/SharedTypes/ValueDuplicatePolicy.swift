@@ -17,7 +17,7 @@
 /// # Example
 /// ```swift
 /// info.appendWith(duplicatePolicy: .allowEqual) {
-///   $0[.message] = nitification.message
+///   $0[.message] = notification.message
 ///   // key == "message"
 ///
 ///   $0[dynamicKey: response.key] = payload.description
@@ -40,22 +40,22 @@
 ///   > - when there is a first value and another one (equal) is added, different `keyOrigin` typically
 ///     means they are from different sources of data.
 ///     Example: already stored `keyOrigin` is `literal`, and new one is `dynamic`, so keep them both.
-///   > - when a third and all next (equal) values is added (extremely rare in practice), econd value already
+///   > - when a third and all next (equal) values is added (extremely rare in practice), second value already
 ///     have `collisionSource`, but it is the same as `WriteProvenance.Origin`
-///     of redudant subscript.
+///     of redundant subscript.
 ///     So it is added if `keyOrigin` differs.
-///     **! current imp, handle case when and keyOrigin literal & commbinedLiteral are treated the same**
+///     **! current imp, handle case when and keyOrigin literal & combinedLiteral are treated the same**
 ///
 /// - ## DictionaryLiteral init
-///   keyOrigin and writePrvenance constants
+///   keyOrigin and writeProvenance constants
 ///
 ///   As it is init, there are no values already stored in errorInfo, so collisions/duplicated values occur within the literal itself.
 ///
 ///   **duplicates saved**
 ///   > **Rationale:**
 ///   init from literal is made by explicitly defined keys. If duplications happens this is a
-///   mistake (in a cocntrolled code) that should be visible and resolved, if happens. Extremly rare in practice.
-///   **! current imp can be used, need to explictly pass .allowEqual**
+///   mistake (in a controlled code) that should be visible and resolved, if happens. Extremely rare in practice.
+///   **! current imp can be used, need to explicitly pass .allowEqual**
 ///
 /// - ## Append Key-Values from dictionaryLiteral
 ///     KeyOrigin is constant, and `WriteProvenance.Origin` is the same for all operations in scope.
@@ -64,13 +64,13 @@
 ///
 /// - ## Append with options scope
 ///     `keyOrigin` can vary, and `WriteProvenance.Origin` is the same for all operations in scope.
-///     Duplicate policy specified for all write opertions in scope, and
+///     Duplicate policy specified for all write operations in scope, and
 ///     can be defined individually for concrete operation.
 ///
 /// - ## AppendProperties from keyPaths
 ///     KeyOrigin is constant, and `WriteProvenance.Origin` is the same for all operations in scope.
 ///
-///   All key-values are added from the same object, so collisions are a mistake / niose, created by repetitive add
+///   All key-values are added from the same object, so collisions are a mistake / noise, created by repetitive add
 ///   from the same keyPath.
 ///
 /// - ## Append contents of sequence
@@ -81,8 +81,8 @@
 ///
 ///   > **Rationale:**
 ///   Merge operation is intentionally designed for merging several error info instances without data loss.
-///   All content innside instances is treated important and was already processed by another write operations.
-///   Despite collisions occurs only sometimes, it is imprtant to know when they actually happen, so any
+///   All content inside instances is treated important and was already processed by another write operations.
+///   Despite collisions occurs only sometimes, it is important to know when they actually happen, so any
 ///   kind of filtering inside `merge(Self...)` operations family is as loss of data and would be harmful for
 ///   further inspection.
 public struct ValueDuplicatePolicy: Sendable, CustomDebugStringConvertible {
@@ -104,14 +104,6 @@ public struct ValueDuplicatePolicy: Sendable, CustomDebugStringConvertible {
   /// See ``ValueDuplicatePolicy.allowEqualWhenOriginDiffers``
   public static let defaultForAppending = allowEqualWhenOriginDiffers
   
-  /// If the same value appended for th same key, it is typically a noise.
-  /// KeyOrigin may be different when creating from Dictionary Literal, so duplicate
-  /// CollisionOrigin 
-  public static let defaultForAppendingDictionaryLiteral = allowEqualWhenOriginDiffers
-  
-  /// - `.rejectEqual`:
-  /// - `.allowEqualWhenOriginDiffers`:
-  
   /// Skip insertion if any existing value for `key` has an equal `record.someValue`. Otherwise append.
   public static let rejectEqual = Self(kind: .rejectEqualValue)
   
@@ -125,7 +117,6 @@ public struct ValueDuplicatePolicy: Sendable, CustomDebugStringConvertible {
   ///   has no `collisionSource`, this dimension is ignored.
   ///   Otherwise, the new record is appended.
   public static let allowEqualWhenOriginDiffers = Self(kind: .rejectEqualValueWhenEqualOrigin)
-  public static let rejectEqualWithSameOrigin = Self(kind: .rejectEqualValueWhenEqualOrigin)
       
   /// Custom decision logic
   // static func custom((_ existing: FullInfoRecord, _ new: FullInfoRecord) -> Bool)

@@ -51,7 +51,7 @@ extension ErrorInfo {
       _storage._addRecordWithCollisionAndDuplicateResolution(
         record,
         forKey: key,
-        duplicatePolicy: .allowEqual, // no effect here, Swift.Dictionary has unique keys
+        duplicatePolicy: .allowEqualWhenOriginDiffers,
         writeProvenance: .onDictionaryConsumption(origin: origin()),
       )
       // TBD: May be it is good to split into two separated dictionaries. Static initializer will return something like tuple of

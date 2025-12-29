@@ -11,7 +11,7 @@ import ErrorInfo
   static func main() {
     print("____________ ________ -------------")
     let params = [(1, true), (2, true), (2, false), (3, true), (3, false)]
-    let policies = [ValueDuplicatePolicy.allowEqual, .rejectEqual, .rejectEqualWithSameOrigin]
+    let policies = [ValueDuplicatePolicy.allowEqual, .rejectEqual, .allowEqualWhenOriginDiffers]
     
     for param in params {
       for policy in policies {

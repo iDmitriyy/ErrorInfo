@@ -21,7 +21,7 @@ extension ErrorInfo {
   ///
   /// - Parameters:
   ///   - duplicatePolicy: How to handle equal values for the same key. Defaults to ``ValueDuplicatePolicy/defaultForAppending``.
-  ///   - nilPreservation: Whether `nil` assignments (typically emplicit) should be recorded as explicit `nil` entries. Defaults to `true`.
+  ///   - nilPreservation: Whether `nil` assignments (typically implicit) should be recorded as explicit `nil` entries. Defaults to `true`.
   ///   - prefixForKeys: A literal prefix to prepend to all keys added within the scope. Defaults to `nil`.
   ///   - file: File identifier used as collision origin (defaults to `#fileID`).
   ///   - line: Line number used as collision origin (defaults to `#line`).
@@ -68,7 +68,7 @@ extension ErrorInfo {
   ///
   /// - Parameters:
   ///   - duplicatePolicy: How to handle equal values for the same key. Defaults to ``ValueDuplicatePolicy/defaultForAppending``.
-  ///   - nilPreservation: Whether `nil` assignments (typically emplicit) should be recorded as explicit `nil` entries. Defaults to `true`.
+  ///   - nilPreservation: Whether `nil` assignments (typically implicit) should be recorded as explicit `nil` entries. Defaults to `true`.
   ///   - prefixForKeys: A literal prefix to prepend to all keys added within the scope. Defaults to `nil`.
   ///   - origin: The origin used for collision diagnostics for operations in the scope.
   ///   - modify: A closure that receives a ``ErrorInfo/CustomOptionsView`` to perform mutations.
@@ -204,7 +204,7 @@ extension ErrorInfo {
     withUnsafeMutablePointer(to: &self) { pointer in
       let view = CustomOptionsView(pointer: pointer,
                                    duplicatePolicy: duplicatePolicy,
-                                   nilPreservation: nilPreservation,
+                                   preserveNilValues: nilPreservation,
                                    prefixForKeys: prefixForKeys,
                                    origin: origin)
       modify(view)
@@ -237,20 +237,20 @@ extension ErrorInfo.CustomOptionsView {
   /// ```
   public subscript<V: ErrorInfo.ValueProtocol>(
     _ literalKey: StringLiteralKey,
-    nilPreservation: Bool? = nil,
+    preserveNilValues: Bool? = nil,
     duplicatePolicy: ValueDuplicatePolicy? = nil,
   ) -> V? {
     @available(*, unavailable, message: "This is a set-only subscript. To get values for key use `allValues(forKey:)` function")
     get { pointer.pointee.lastValue(forKey: literalKey) as? V }
     nonmutating set {
       let resolvedKey = Self.resolveKey(literalKey: literalKey, prefixForKeys: prefixForKeys)
-      pointer.pointee._addDetachedValue(
-        newValue,
-        shouldPreserveNilValues: nilPreservation ?? self.nilPreservation,
+      pointer.pointee.withCollisionAndDuplicateResolutionAdd(
+        optionalValue: newValue,
+        shouldPreserveNilValues: preserveNilValues ?? self.preserveNilValues,
         duplicatePolicy: duplicatePolicy ?? self.duplicatePolicy,
         forKey: resolvedKey.rawValue,
-                                        keyOrigin: resolvedKey.keyOrigin,
-                                        writeProvenance: .onSubscript(origin: origin)
+        keyOrigin: resolvedKey.keyOrigin,
+        writeProvenance: .onSubscript(origin: origin),
       )
     }
   }
@@ -286,21 +286,21 @@ extension ErrorInfo {
   ///
   /// Values set through the view inherit the context options unless explicitly overridden per operation.
   public struct CustomOptionsView: ~Copyable, ~Escapable {
-    private let pointer: UnsafeMutablePointer<ErrorInfo> // TODO: check CoW not triggered | inplace mutation
+    private let pointer: UnsafeMutablePointer<ErrorInfo> // TODO: check CoW not triggered | in-place mutation
     private let duplicatePolicy: ValueDuplicatePolicy
-    private let nilPreservation: Bool
+    private let preserveNilValues: Bool
     private let prefixForKeys: StringLiteralKey?
     private let origin: WriteProvenance.Origin
     
     @_lifetime(borrow pointer)
     fileprivate init(pointer: UnsafeMutablePointer<ErrorInfo>,
                      duplicatePolicy: ValueDuplicatePolicy,
-                     nilPreservation: Bool,
+                     preserveNilValues: Bool,
                      prefixForKeys: StringLiteralKey?,
                      origin: WriteProvenance.Origin) {
       self.pointer = pointer
       self.duplicatePolicy = duplicatePolicy
-      self.nilPreservation = nilPreservation
+      self.preserveNilValues = preserveNilValues
       self.prefixForKeys = prefixForKeys
       self.origin = origin
     }
