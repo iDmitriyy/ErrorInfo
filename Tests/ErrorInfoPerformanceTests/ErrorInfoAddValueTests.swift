@@ -110,7 +110,9 @@ struct ErrorInfoAddValueTests {
                                       to errorInfo: inout ErrorInfo) {
 //        blackHole(ErrorInfo.merged(info, info2))
         ////        errorInfo.merge(with: info, origin: .fileLine())
-        errorInfo._addValue_Test(value, duplicatePolicy: duplicatePolicy, forKey: key)
+//        errorInfo._addValue_Test(value, duplicatePolicy: duplicatePolicy, forKey: key)
+        errorInfo[.apiEndpoint] = value
+//        errorInfo.appendIfNotNil(value, forKey: key)
       }
       
       let output = performMeasuredAction(count: measurementsCount, prepare: {
@@ -328,6 +330,6 @@ struct ErrorInfoAddValueTests {
   @available(macOS 26.0, *)
   @_transparent
   internal func make1000EmptyInstances() -> InlineArray<1000, ErrorInfo> {
-    InlineArray<1000, ErrorInfo>({ _ in [.apiEndpoint: 0] }) // ErrorInfo()
+    InlineArray<1000, ErrorInfo>({ _ in ErrorInfo() })
   }
 }
