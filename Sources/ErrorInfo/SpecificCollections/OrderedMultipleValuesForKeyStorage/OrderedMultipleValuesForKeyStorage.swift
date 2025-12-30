@@ -39,7 +39,7 @@
   
   internal static var empty: Self {
     Self(_variant: _Variant(.left(OrderedDictionary())))
-  }
+  } // inlining has no performance gain
   
   @inlinable @inline(__always)
   internal mutating func reserveCapacity(_ minimumCapacity: Int) {
