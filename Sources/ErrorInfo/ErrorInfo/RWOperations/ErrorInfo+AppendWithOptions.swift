@@ -91,13 +91,13 @@ extension ErrorInfo {
   public static func withOptions(duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending,
                                  nilPreservation: Bool = true,
                                  prefixForKeys: StringLiteralKey? = nil,
-                                 origin: WriteProvenance.Origin,
+                                 origin: @autoclosure @escaping  () -> WriteProvenance.Origin,
                                  modify: (consuming CustomOptionsView) -> Void) -> Self {
     var info = Self()
     info.appendWith(duplicatePolicy: duplicatePolicy,
                     nilPreservation: nilPreservation,
                     prefixForKeys: prefixForKeys,
-                    origin: origin,
+                    origin: origin(),
                     modify: modify)
     return info
   }
@@ -199,9 +199,11 @@ extension ErrorInfo {
   public mutating func appendWith(duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending,
                                   nilPreservation: Bool = true,
                                   prefixForKeys: StringLiteralKey? = nil,
-                                  origin: WriteProvenance.Origin,
+                                  origin: @autoclosure @escaping () -> WriteProvenance.Origin,
                                   modify: (consuming CustomOptionsView) -> Void) {
     withUnsafeMutablePointer(to: &self) { pointer in
+      // Improvement: origin is effectively nonEscaping closure as CustomOptionsView is ~Escapable
+      // remove @escaping when it will be possible to express
       let view = CustomOptionsView(pointer: pointer,
                                    duplicatePolicy: duplicatePolicy,
                                    preserveNilValues: nilPreservation,
@@ -250,7 +252,7 @@ extension ErrorInfo.CustomOptionsView {
         duplicatePolicy: duplicatePolicy ?? self.duplicatePolicy,
         forKey: resolvedKey.rawValue,
         keyOrigin: resolvedKey.keyOrigin,
-        writeProvenance: .onSubscript(origin: origin),
+        writeProvenance: .onSubscript(origin: origin()),
       )
     }
   }
@@ -290,14 +292,14 @@ extension ErrorInfo {
     private let duplicatePolicy: ValueDuplicatePolicy
     private let preserveNilValues: Bool
     private let prefixForKeys: StringLiteralKey?
-    private let origin: WriteProvenance.Origin
+    private var origin: (() -> WriteProvenance.Origin)!
     
     @_lifetime(borrow pointer)
     fileprivate init(pointer: UnsafeMutablePointer<ErrorInfo>,
                      duplicatePolicy: ValueDuplicatePolicy,
                      preserveNilValues: Bool,
                      prefixForKeys: StringLiteralKey?,
-                     origin: WriteProvenance.Origin) {
+                     origin: @escaping () -> WriteProvenance.Origin) {
       self.pointer = pointer
       self.duplicatePolicy = duplicatePolicy
       self.preserveNilValues = preserveNilValues

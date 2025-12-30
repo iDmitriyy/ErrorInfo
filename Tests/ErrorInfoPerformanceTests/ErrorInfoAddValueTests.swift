@@ -97,7 +97,6 @@ struct ErrorInfoAddValueTests {
         }
       }).duration
       
-      
       let info: ErrorInfo = [.bytesCount: 2,
 //        .authenticationStatus: "foo",
 //                             .base64String: "base64String"
@@ -109,12 +108,10 @@ struct ErrorInfoAddValueTests {
                                       duplicatePolicy: ValueDuplicatePolicy,
                                       forKey key: String,
                                       to errorInfo: inout ErrorInfo) {
-        blackHole(ErrorInfo.merged(info, info2))
-//        errorInfo.merge(with: info, origin: .fileLine())
-//        errorInfo._addValue_Test(value, duplicatePolicy: duplicatePolicy, forKey: key)
+//        blackHole(ErrorInfo.merged(info, info2))
+        ////        errorInfo.merge(with: info, origin: .fileLine())
+        errorInfo._addValue_Test(value, duplicatePolicy: duplicatePolicy, forKey: key)
       }
-      
-      
       
       let output = performMeasuredAction(count: measurementsCount, prepare: {
         make1000EmptyInstances()
@@ -123,6 +120,7 @@ struct ErrorInfoAddValueTests {
           switch addedValuesCount {
           case 1:
             testAddValue(index, duplicatePolicy: duplicatePolicy, forKey: idKey, to: &infos[index])
+
           case 2:
             let (key1, key2): (String, String)
             if addForDifferentKeys {
