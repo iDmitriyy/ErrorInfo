@@ -112,6 +112,7 @@ extension OrderedMultipleValuesForKeyStorage {
 // MARK: Append KeyValue
 
 extension OrderedMultipleValuesForKeyStorage {
+  @usableFromInline
   internal mutating func appendIfNotPresent(key newKey: Key,
                                             value newValue: Value,
                                             writeProvenance: @autoclosure () -> WriteProvenance,
@@ -122,6 +123,7 @@ extension OrderedMultipleValuesForKeyStorage {
                                        rejectWhenExistingMatches: decideToReject)
   }
   
+  @usableFromInline
   internal mutating func appendUnconditionally(key newKey: Key,
                                                value newValue: Value,
                                                writeProvenance: @autoclosure () -> WriteProvenance) {

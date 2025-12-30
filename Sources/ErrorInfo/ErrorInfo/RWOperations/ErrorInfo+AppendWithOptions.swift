@@ -47,7 +47,7 @@ extension ErrorInfo {
   public static func withOptions(duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending,
                                  nilPreservation: Bool = true,
                                  prefixForKeys: StringLiteralKey? = nil,
-                                 file: StaticString = #fileID,
+                                 file: String = #fileID,
                                  line: UInt = #line,
                                  modify: (consuming CustomOptionsView) -> Void) -> Self {
     withOptions(duplicatePolicy: duplicatePolicy,
@@ -151,7 +151,7 @@ extension ErrorInfo {
   public mutating func appendWith(duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending,
                                   nilPreservation: Bool = true,
                                   prefixForKeys: StringLiteralKey? = nil,
-                                  file: StaticString = #fileID,
+                                  file: String = #fileID,
                                   line: UInt = #line,
                                   modify: (consuming CustomOptionsView) -> Void) {
     appendWith(duplicatePolicy: duplicatePolicy,

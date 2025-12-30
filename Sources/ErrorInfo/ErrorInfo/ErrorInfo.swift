@@ -136,6 +136,7 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   /// The root appending function for public API imps. The term "_add" is chosen to visually / syntactically differentiate from family of public `append()`functions.
+  @inlinable @inline(__always)
   internal mutating func withCollisionAndDuplicateResolutionAdd<V: ValueProtocol>(
     optionalValue newValue: V?,
     shouldPreserveNilValues: Bool,
@@ -161,6 +162,7 @@ extension ErrorInfo {
     )
   }
   
+  @inlinable @inline(__always)
   internal mutating func withCollisionAndDuplicateResolutionAdd(
     value newValue: some ValueProtocol,
     duplicatePolicy: ValueDuplicatePolicy,
@@ -213,15 +215,14 @@ extension ErrorInfo {
   ///   - keyOrigin: The origin metadata for the key.
   ///   - duplicatePolicy: How to handle duplicates for subsequent non‑nil inserts.
   ///   - writeProvenance: The collision origin for diagnostics.
+  @inlinable @inline(__always)
   internal mutating func _addNil(typeOfWrapped: any Sendable.Type,
                                  duplicatePolicy: ValueDuplicatePolicy,
                                  forKey key: String,
                                  keyOrigin: KeyOrigin,
                                  writeProvenance: @autoclosure () -> WriteProvenance) {
-    let optional: EquatableOptionalValue = .nilInstance(typeOfWrapped: typeOfWrapped)
-    
     _storage._addRecordWithCollisionAndDuplicateResolution(
-      BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
+      BackingStorage.Record(keyOrigin: keyOrigin, someValue: .nilInstance(typeOfWrapped: typeOfWrapped)),
       forKey: key,
       duplicatePolicy: duplicatePolicy,
       writeProvenance: writeProvenance(),

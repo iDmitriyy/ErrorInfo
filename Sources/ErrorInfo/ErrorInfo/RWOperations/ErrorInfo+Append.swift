@@ -63,16 +63,15 @@ extension ErrorInfo {
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
 extension ErrorInfo {
-  internal mutating func _singleKeyValuePairAppend(key: String,
-                                                   keyOrigin: KeyOrigin,
-                                                   value: some ValueProtocol) {
+  private mutating func _singleKeyValuePairAppend(key: String,
+                                                  keyOrigin: KeyOrigin,
+                                                  value: some ValueProtocol) {
     withCollisionAndDuplicateResolutionAdd(
-      optionalValue: value,
-      shouldPreserveNilValues: true, // has no effect in this func
+      value: value,
       duplicatePolicy: .defaultForAppending,
       forKey: key,
       keyOrigin: keyOrigin,
       writeProvenance: .onAppend(origin: nil),
     ) // providing origin for a single key-value is an overhead for binary size
-  }
+  } // inlining has no performance gain.
 }

@@ -18,6 +18,7 @@ extension ErrorInfoFuncs {
   /// - Returns: An `ErrorInfoOptionalAny` enum representing the flattened value:
   ///   - `.value`: If the value is non-optional or the final unwrapped value is found.
   ///   - `.nilInstance`: If the value is `nil` or the final unwrapped value is `nil`.
+  @usableFromInline
   internal static func flattenOptional<T>(any: T) -> ErrorInfoOptionalAny {
     if let optionalExistential = any as? any ErrorInfoFuncs.__PrivateImps.FlattenableOptionalPrivateProtocol {
       switch optionalExistential.getSelf() {
@@ -35,6 +36,7 @@ extension ErrorInfoFuncs {
   // TODO: - try to reduce count of casts, making arg optionall: any: T => any: T?
   // in most cases there is no nesting
   
+  @usableFromInline
   internal static func flattenOptional<T: Sendable>(anySendable: T) -> Either<any Sendable, (any Sendable.Type)> {
     if let optionalExistential = anySendable as? any ErrorInfoFuncs.__PrivateImps.FlattenableSendableOptionalPrivateProtocol {
       switch optionalExistential.getSendableSelf() {

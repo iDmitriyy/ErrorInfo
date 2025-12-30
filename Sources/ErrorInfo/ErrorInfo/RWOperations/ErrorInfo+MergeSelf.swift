@@ -5,18 +5,24 @@
 //  Created by Dmitriy Ignatyev on 06/10/2025.
 //
 
-// Improvement: minimize CoW / allocations
+// Improvement: reserve capacity
 
 // MARK: - Instance methods
 
 extension ErrorInfo {
   public mutating func merge(with firstDonator: Self,
                              _ otherDonators: Self...,
-                             file: StaticString = #fileID,
+                             file: String = #fileID,
                              line: UInt = #line) {
-    self = Self._mergedImp(recipient: self,
-                           donators: [firstDonator] + otherDonators,
-                           origin: .fileLine(file: file, line: line))
+    Self._mergeTo(recipient: &self, donator: firstDonator, origin: .fileLine(file: file, line: line))
+    
+    if otherDonators.isEmpty {
+      return
+    } else { // ~1% faster than `if !otherDonators.isEmpty { Self._mergeTo(...) }
+      otherDonators.forEach {
+        Self._mergeTo(recipient: &self, donator: $0, origin: .fileLine(file: file, line: line))
+      }
+    }
   }
   
   /// Merges the current `ErrorInfo` instance with one or more other `ErrorInfo` instances.
@@ -44,19 +50,32 @@ extension ErrorInfo {
   /// ```
   public mutating func merge(with firstDonator: Self,
                              _ otherDonators: Self...,
-                             origin: WriteProvenance.Origin) {
-    self = Self._mergedImp(recipient: self,
-                           donators: [firstDonator] + otherDonators,
-                           origin: origin)
+                             origin: @autoclosure () -> WriteProvenance.Origin) {
+    Self._mergeTo(recipient: &self, donator: firstDonator, origin: origin())
+    
+    if otherDonators.isEmpty {
+      return
+    } else { // ~1% faster than `if !otherDonators.isEmpty { Self._mergeTo(...) }
+      otherDonators.forEach {
+        Self._mergeTo(recipient: &self, donator: $0, origin: origin())
+      }
+    }
   }
   
   public consuming func merged(with firstDonator: Self,
                                _ otherDonators: Self...,
-                               file: StaticString = #fileID,
+                               file: String = #fileID,
                                line: UInt = #line) -> Self {
-    Self._mergedImp(recipient: self,
-                    donators: [firstDonator] + otherDonators,
-                    origin: .fileLine(file: file, line: line))
+    Self._mergeTo(recipient: &self, donator: firstDonator, origin: .fileLine(file: file, line: line))
+    
+    if otherDonators.isEmpty {
+      return self
+    } else { // ~1% faster than `if !otherDonators.isEmpty { Self._mergeTo(...) }
+      otherDonators.forEach {
+        Self._mergeTo(recipient: &self, donator: $0, origin: .fileLine(file: file, line: line))
+      }
+      return self
+    }
   }
   
   /// Returns a new `ErrorInfo` instance by merging the current instance with one or more others.
@@ -83,10 +102,17 @@ extension ErrorInfo {
   /// ```
   public consuming func merged(with firstDonator: Self,
                                _ otherDonators: Self...,
-                               origin: WriteProvenance.Origin) -> Self {
-    Self._mergedImp(recipient: self,
-                    donators: [firstDonator] + otherDonators,
-                    origin: origin)
+                               origin: @autoclosure () -> WriteProvenance.Origin) -> Self {
+    Self._mergeTo(recipient: &self, donator: firstDonator, origin: origin())
+    
+    if otherDonators.isEmpty {
+      return self
+    } else { // ~1% faster than `if !otherDonators.isEmpty { Self._mergeTo(...) }
+      otherDonators.forEach {
+        Self._mergeTo(recipient: &self, donator: $0, origin: origin())
+      }
+      return self
+    }
   }
 }
 
@@ -120,14 +146,21 @@ extension ErrorInfo {
   ///
   /// let error = AppError(info: .merged(info, cacheState))
   /// ```
-  public static func merged(_ recipient: Self,
+  public static func merged(_ recipient: consuming Self,
                             _ firstDonator: Self,
                             _ otherDonators: Self...,
-                            file: StaticString = #fileID,
+                            file: String = #fileID,
                             line: UInt = #line) -> Self {
-    _mergedImp(recipient: recipient,
-               donators: [firstDonator] + otherDonators,
-               origin: .fileLine(file: file, line: line))
+    _mergeTo(recipient: &recipient, donator: firstDonator, origin: .fileLine(file: file, line: line))
+    
+    if otherDonators.isEmpty {
+      return recipient
+    } else {
+      otherDonators.forEach {
+        Self._mergeTo(recipient: &recipient, donator: $0, origin: .fileLine(file: file, line: line))
+      }
+      return recipient
+    }
   }
   
   /// Merges multiple `ErrorInfo` instances from an array and returns the resulting merged instance.
@@ -154,11 +187,15 @@ extension ErrorInfo {
   /// let mergedInfo = ErrorInfo.merged(errorInfosArray: [info, cacheState])
   /// ```
   public static func merged(errorInfosArray: consuming [Self],
-                            origin: WriteProvenance.Origin) -> Self {
+                            origin: @autoclosure () -> WriteProvenance.Origin) -> Self {
     switch errorInfosArray.count {
     case 0: return .empty
     case 1: return errorInfosArray[0]
-    default: return _mergedImp(recipient: errorInfosArray[0], donators: errorInfosArray[1...], origin: origin)
+    default:
+      errorInfosArray[1...].forEach {
+        Self._mergeTo(recipient: &errorInfosArray[0], donator: $0, origin: origin())
+      }
+      return errorInfosArray[0]
     }
   }
 }
@@ -168,21 +205,18 @@ extension ErrorInfo {
 // MARK: - Generic IMP
 
 extension ErrorInfo {
-  /// This internal generic method performs the merging operation by iterating over the donators.
-  internal static func _mergedImp(recipient: consuming Self,
-                                  donators: some RandomAccessCollection<Self>,
-                                  origin: WriteProvenance.Origin) -> Self {
-    // Improvement: reserve capacity
-    for donator in donators {
-      for (key, annotatedRecord) in donator._storage {
-        recipient._storage._addRecordWithCollisionAndDuplicateResolution(
-          annotatedRecord.record,
-          forKey: key,
-          duplicatePolicy: .allowEqual,
-          writeProvenance: annotatedRecord.collisionSource ?? .onMerge(origin: origin),
-        )
-      }
+  private static func _mergeTo(recipient: inout Self,
+                               donator: Self,
+                               origin: @autoclosure () -> WriteProvenance.Origin) {
+    for recordIndex in donator._storage.indices {
+      // iteration over indices and access by index is faster than iteration over elements
+      let (key, annotatedRecord) = donator._storage[recordIndex]
+      recipient._storage._addRecordWithCollisionAndDuplicateResolution(
+        annotatedRecord.record,
+        forKey: key,
+        duplicatePolicy: .allowEqual,
+        writeProvenance: annotatedRecord.collisionSource ?? .onMerge(origin: origin()),
+      )
     }
-    return recipient
-  }
+  } // inlining has no performance gain
 }

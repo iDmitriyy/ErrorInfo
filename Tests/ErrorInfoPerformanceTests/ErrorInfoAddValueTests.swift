@@ -62,8 +62,9 @@ struct ErrorInfoAddValueTests {
   /// Produce **stable, apples-to-apples performance numbers** that reflect real storage
   /// behavior rather than test harness overhead.
   @Test(.serialized,
-        arguments: [(1, true), (2, true), (2, false), (3, true), (3, false)],
-        [ValueDuplicatePolicy.allowEqual, .rejectEqual, .rejectEqualWithSameOrigin])
+        arguments: [(1, true)],
+//        arguments: [(1, true), (2, true), (2, false), (3, true), (3, false)],
+        [ValueDuplicatePolicy.allowEqual, .rejectEqual, .allowEqualWhenOriginDiffers])
   @_transparent
   mutating func `add value`(params: (addedValuesCount: Int, addForDifferentKeys: Bool),
                             duplicatePolicy: ValueDuplicatePolicy) {
@@ -91,16 +92,29 @@ struct ErrorInfoAddValueTests {
             } else {
               blackHole(index)
             }
-          case 4:
-            if addForDifferentKeys {
-              emptyFunc0()
-            } else {
-              blackHole(index)
-            }
           default: Issue.record("Unexpected key-value pairs count \(addedValuesCount)")
           }
         }
       }).duration
+      
+      
+      let info: ErrorInfo = [.bytesCount: 2,
+//        .authenticationStatus: "foo",
+//                             .base64String: "base64String"
+      ]
+      
+      let info2: ErrorInfo = [.debug: 2]
+      
+      @_transparent func testAddValue(_ value: some ErrorInfo.ValueProtocol,
+                                      duplicatePolicy: ValueDuplicatePolicy,
+                                      forKey key: String,
+                                      to errorInfo: inout ErrorInfo) {
+        blackHole(ErrorInfo.merged(info, info2))
+//        errorInfo.merge(with: info, origin: .fileLine())
+//        errorInfo._addValue_Test(value, duplicatePolicy: duplicatePolicy, forKey: key)
+      }
+      
+      
       
       let output = performMeasuredAction(count: measurementsCount, prepare: {
         make1000EmptyInstances()
@@ -108,8 +122,7 @@ struct ErrorInfoAddValueTests {
         for index in infos.indices {
           switch addedValuesCount {
           case 1:
-            infos[index]._addValue_Test(index, duplicatePolicy: duplicatePolicy, forKey: idKey)
-            
+            testAddValue(index, duplicatePolicy: duplicatePolicy, forKey: idKey, to: &infos[index])
           case 2:
             let (key1, key2): (String, String)
             if addForDifferentKeys {
@@ -117,8 +130,8 @@ struct ErrorInfoAddValueTests {
             } else {
               (key1, key2) = (errorCodeKey, errorCodeKey)
             }
-            infos[index]._addValue_Test(index, duplicatePolicy: duplicatePolicy, forKey: key1)
-            infos[index]._addValue_Test(index, duplicatePolicy: duplicatePolicy, forKey: key2)
+            testAddValue(index, duplicatePolicy: duplicatePolicy, forKey: key1, to: &infos[index])
+            testAddValue(index, duplicatePolicy: duplicatePolicy, forKey: key2, to: &infos[index])
             
           case 3:
             let (key1, key2, key3): (String, String, String)
@@ -127,26 +140,24 @@ struct ErrorInfoAddValueTests {
             } else {
               (key1, key2, key3) = (errorCodeKey, errorCodeKey, errorCodeKey)
             }
-            infos[index]._addValue_Test(index, duplicatePolicy: duplicatePolicy, forKey: key1)
-            infos[index]._addValue_Test(index, duplicatePolicy: duplicatePolicy, forKey: key2)
-            infos[index]._addValue_Test(index, duplicatePolicy: duplicatePolicy, forKey: key3)
-            
-          case 4:
-            let (key1, key2, key3, key4): (String, String, String, String)
-            if addForDifferentKeys {
-              (key1, key2, key3, key4) = (idKey, errorCodeKey, indexKey, durationKey)
-            } else {
-              (key1, key2, key3, key4) = (errorCodeKey, errorCodeKey, errorCodeKey, errorCodeKey)
-            }
-            infos[index]._addValue_Test(index, duplicatePolicy: duplicatePolicy, forKey: key1)
-            infos[index]._addValue_Test(index, duplicatePolicy: duplicatePolicy, forKey: key2)
-            infos[index]._addValue_Test(index, duplicatePolicy: duplicatePolicy, forKey: key3)
-            infos[index]._addValue_Test(index, duplicatePolicy: duplicatePolicy, forKey: key4)
+            testAddValue(index, duplicatePolicy: duplicatePolicy, forKey: key1, to: &infos[index])
+            testAddValue(index, duplicatePolicy: duplicatePolicy, forKey: key2, to: &infos[index])
+            testAddValue(index, duplicatePolicy: duplicatePolicy, forKey: key3, to: &infos[index])
             
           default: Issue.record("Unexpected key-value pairs count \(addedValuesCount)")
           }
         }
       })
+      
+      /*
+       ____addValue:    1617.3    add 1 value for different keys, policy: allowEqual
+       ____addValue:    1628.1    add 1 value for different keys, policy: rejectEqual
+       ____addValue:    1630.7    add 1 value for different keys, policy: rejectEqualWithSameOrigin
+       
+       ____addValue:    692.9    add 1 value for different keys, policy: allowEqual
+       ____addValue:    699.6    add 1 value for different keys, policy: rejectEqual
+       ____addValue:    696.8    add 1 value for different keys, policy: rejectEqualWithSameOrigin
+       */
       
       /* new imp (optimized migration to multi value storage)
        535.0    add 1 value for different keys, policy: allowEqual
@@ -319,6 +330,6 @@ struct ErrorInfoAddValueTests {
   @available(macOS 26.0, *)
   @_transparent
   internal func make1000EmptyInstances() -> InlineArray<1000, ErrorInfo> {
-    InlineArray<1000, ErrorInfo>({ _ in ErrorInfo() })
+    InlineArray<1000, ErrorInfo>({ _ in [.apiEndpoint: 0] }) // ErrorInfo()
   }
 }

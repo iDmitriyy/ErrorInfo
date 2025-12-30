@@ -148,6 +148,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
   ///   - key: The key under which to store the record.
   ///   - duplicatePolicy: Policy that defines when equal values are rejected or allowed.
   ///   - writeProvenance: Describes the origin of a collision; evaluated lazily.
+  @inlinable @inline(__always)
   internal mutating func _addRecordWithCollisionAndDuplicateResolution(
     _ newRecord: Record,
     forKey key: Key,

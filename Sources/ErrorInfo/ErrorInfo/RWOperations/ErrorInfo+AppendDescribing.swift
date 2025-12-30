@@ -124,14 +124,13 @@ extension ErrorInfo {
     }
     
     withCollisionAndDuplicateResolutionAdd(
-      optionalValue: stringRepresentation,
-      shouldPreserveNilValues: true, // has no effect in this func
+      value: stringRepresentation,
       duplicatePolicy: .defaultForAppending,
       forKey: key,
       keyOrigin: keyOrigin,
       writeProvenance: .onAppend(origin: nil),
     ) // providing origin for a single key-value is an overhead for binary size
-  }
+  } // inlining has no performance gain.
   
   private mutating func _appendStringOfAnySendable(value newValue: (some Sendable)?,
                                                    key: String,
@@ -141,8 +140,7 @@ extension ErrorInfo {
     case .left(let value):
       let stringRepresentation = stringTransform(value)
       withCollisionAndDuplicateResolutionAdd(
-        optionalValue: stringRepresentation,
-        shouldPreserveNilValues: true, // has no effect in this func
+        value: stringRepresentation,
         duplicatePolicy: .defaultForAppending,
         forKey: key,
         keyOrigin: keyOrigin,
@@ -158,5 +156,5 @@ extension ErrorInfo {
         writeProvenance: .onAppend(origin: nil),
       ) // providing origin for a single key-value is an overhead for binary size
     }
-  }
+  } // inlining has no performance gain.
 }

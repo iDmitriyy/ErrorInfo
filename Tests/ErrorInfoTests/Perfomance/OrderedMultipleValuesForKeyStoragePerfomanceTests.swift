@@ -38,7 +38,7 @@ struct OrderedMultipleValuesForKeyStoragePerformanceTests {
     let orderedMultiValueStorageOutput = performMeasuredAction(count: count) {
       var dict = OrderedMultipleValuesForKeyStorage<Int, Int>()
       for element in elements {
-        dict.append(key: element, value: element, writeProvenance: .onSubscript(origin: nil))
+        dict.appendUnconditionally(key: element, value: element, writeProvenance: .onSubscript(origin: nil))
       }
       return dict
     }

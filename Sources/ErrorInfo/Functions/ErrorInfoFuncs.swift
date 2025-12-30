@@ -49,6 +49,7 @@ extension ErrorInfoFuncs {
     file + ":\(line)"
   }
   
+  @usableFromInline
   internal static func nilString(typeOfWrapped: any Any.Type) -> String {
     "nil (\(typeOfWrapped))"
   }

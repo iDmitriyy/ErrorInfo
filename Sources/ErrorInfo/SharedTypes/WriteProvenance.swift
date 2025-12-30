@@ -51,34 +51,44 @@ public struct WriteProvenance: Sendable, Equatable, CustomStringConvertible, Cus
     case onSequenceConsumption(origin: Origin)
   }
   
+  private init(backing: Backing) {
+    self.backing = backing
+  }
+  
   // MARK: - Public Static Initializers
 
   /// Creates a `WriteProvenance` for a key collision triggered by subscript access.
+  @usableFromInline
   internal static func onSubscript(origin: Origin?) -> Self {
     Self(backing: .onSubscript(origin: origin))
   }
       
   /// Creates a `WriteProvenance` for a key collision triggered by appending.
+  @usableFromInline
   internal static func onAppend(origin: Origin?) -> Self {
     Self(backing: .onAppend(origin: origin))
   }
 
   /// Creates a `WriteProvenance` for a key collision triggered by merging.
+  @usableFromInline
   internal static func onMerge(origin: Origin) -> Self {
     Self(backing: .onMerge(origin: origin))
   }
 
   /// Creates a `WriteProvenance` for a key collision triggered by adding a prefix.
+  @usableFromInline
   internal static func onAddPrefix(prefix: String) -> Self {
     Self(backing: .onAddPrefix(prefix: prefix))
   }
 
   /// Creates a `WriteProvenance` for a key collision triggered by adding a suffix.
+  @usableFromInline
   internal static func onAddSuffix(suffix: String) -> Self {
     Self(backing: .onAddSuffix(suffix: suffix))
   }
 
   /// Creates a `WriteProvenance` for a key collision triggered by a keys mapping operation.
+  @usableFromInline
   internal static func onKeysMapping(original: String, mapped: String) -> Self {
     Self(backing: .onKeysMapping(original: original, mapped: mapped))
   }
@@ -89,21 +99,25 @@ public struct WriteProvenance: Sendable, Equatable, CustomStringConvertible, Cus
     Self(backing: .onCreateWithDictionaryLiteral)
   }
   
+  @usableFromInline
   internal static func onDictionaryLiteralConsumption(origin: Origin) -> Self {
     Self(backing: .onDictionaryLiteralConsumption(origin: origin))
   }
   
   /// Creates a `WriteProvenance` for a key collision triggered by dictionary consumption.
+  @usableFromInline
   internal static func onDictionaryConsumption(origin: Origin) -> Self {
     Self(backing: .onDictionaryConsumption(origin: origin))
   }
 
   /// Creates a `WriteProvenance` for a key collision triggered by a sequence creation.
+  @usableFromInline
   internal static func onCreateWithSequence(origin: Origin) -> Self {
     Self(backing: .onCreateWithSequence(origin: origin))
   }
 
   /// Creates a `WriteProvenance` for a key collision triggered by sequence consumption.
+  @usableFromInline
   internal static func onSequenceConsumption(origin: Origin) -> Self {
     Self(backing: .onSequenceConsumption(origin: origin))
   }
@@ -174,8 +188,9 @@ extension WriteProvenance {
       self = .custom(origin: origin)
     }
     
+    @inlinable @inline(__always)
     public static func fileLine(file: StaticString, line: UInt) -> Self {
-      .fileLine(file: String(file), line: line)
+      .fileLine(file: String.init(file), line: line)
     }
     
     fileprivate func _defaultStringInterpolation(collisionName: consuming String) -> String {

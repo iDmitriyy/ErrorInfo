@@ -106,5 +106,5 @@ extension ErrorInfo {
         )
       }
     }
-  }
+  } // inlining has no performance gain for `appendKeyValues` func and make `init(dictionaryLiteral:)` ~2x slower
 }
