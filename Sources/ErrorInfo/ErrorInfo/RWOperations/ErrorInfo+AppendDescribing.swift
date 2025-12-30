@@ -148,7 +148,7 @@ extension ErrorInfo {
       ) // providing origin for a single key-value is an overhead for binary size
       
     case .right(let typeOfWrapped):
-      _addNil(
+      withCollisionAndDuplicateResolutionAddNilInstance(
         typeOfWrapped: typeOfWrapped,
         duplicatePolicy: .defaultForAppending,
         forKey: key,

@@ -91,19 +91,30 @@ public struct ErrorInfo: Sendable, ErrorInfoOperationsProtocol {
   @usableFromInline
   internal var _storage: ErrorInfoGeneric<KeyType, EquatableOptionalValue>
   
-  private init(storage: BackingStorage) {
+  internal init(storage: BackingStorage) {
     _storage = storage
   }
   
+  /// Creates an empty `ErrorInfo` with space preallocated for a small amount of context.
+  ///
+  /// The default capacity is tuned for typical error payloads, which usually contain
+  /// only a few key–value pairs (for example, a message, an underlying error message, and one
+  /// or two domain-specific fields).
+  ///
+  /// This avoids reallocation that happens during the first few insertions while keeping the empty
+  /// instance lightweight.
+  ///
+  /// Use ``empty``  property or empty dictionary literal to create an empty instance without preallocated capacity.
+  /// Use ``init(minimumCapacity:)`` if you are adding a known number of elements.
   public init() {
-    self.init(storage: BackingStorage())
+    self.init(storage: BackingStorage(minimumCapacity: 4))
   } // inlining worsens performance
   
   public init(minimumCapacity: Int) {
     self.init(storage: BackingStorage(minimumCapacity: minimumCapacity))
   }
   
-  public static var empty: Self { Self() }
+  public static var empty: Self { Self(storage: BackingStorage()) }
 }
 
 extension ErrorInfo {
@@ -154,8 +165,8 @@ extension ErrorInfo {
       return
     }
     
-    _storage._addRecordWithCollisionAndDuplicateResolution(
-      BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
+    _storage.withCollisionAndDuplicateResolutionAdd(
+      record: BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
       forKey: key,
       duplicatePolicy: duplicatePolicy,
       writeProvenance: writeProvenance(),
@@ -170,8 +181,8 @@ extension ErrorInfo {
     keyOrigin: KeyOrigin,
     writeProvenance: @autoclosure () -> WriteProvenance,
   ) {
-    _storage._addRecordWithCollisionAndDuplicateResolution(
-      BackingStorage.Record(keyOrigin: keyOrigin, someValue: .value(newValue)),
+    _storage.withCollisionAndDuplicateResolutionAdd(
+      record: BackingStorage.Record(keyOrigin: keyOrigin, someValue: .value(newValue)),
       forKey: key,
       duplicatePolicy: duplicatePolicy,
       writeProvenance: writeProvenance(),
@@ -192,8 +203,8 @@ extension ErrorInfo {
       return
     }
         
-    _storage._addRecordWithCollisionAndDuplicateResolution(
-      BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
+    _storage.withCollisionAndDuplicateResolutionAdd(
+      record: BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
       forKey: key,
       duplicatePolicy: duplicatePolicy,
       writeProvenance: .onSubscript(origin: nil),
@@ -216,13 +227,13 @@ extension ErrorInfo {
   ///   - duplicatePolicy: How to handle duplicates for subsequent non‑nil inserts.
   ///   - writeProvenance: The collision origin for diagnostics.
   @inlinable @inline(__always)
-  internal mutating func _addNil(typeOfWrapped: any Sendable.Type,
-                                 duplicatePolicy: ValueDuplicatePolicy,
-                                 forKey key: String,
-                                 keyOrigin: KeyOrigin,
-                                 writeProvenance: @autoclosure () -> WriteProvenance) {
-    _storage._addRecordWithCollisionAndDuplicateResolution(
-      BackingStorage.Record(keyOrigin: keyOrigin, someValue: .nilInstance(typeOfWrapped: typeOfWrapped)),
+  internal mutating func withCollisionAndDuplicateResolutionAddNilInstance(typeOfWrapped: any Sendable.Type,
+                                                                           duplicatePolicy: ValueDuplicatePolicy,
+                                                                           forKey key: String,
+                                                                           keyOrigin: KeyOrigin,
+                                                                           writeProvenance: @autoclosure () -> WriteProvenance) {
+    _storage.withCollisionAndDuplicateResolutionAdd(
+      record: BackingStorage.Record(keyOrigin: keyOrigin, someValue: .nilInstance(typeOfWrapped: typeOfWrapped)),
       forKey: key,
       duplicatePolicy: duplicatePolicy,
       writeProvenance: writeProvenance(),

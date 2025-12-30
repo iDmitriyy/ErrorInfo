@@ -211,8 +211,8 @@ extension ErrorInfo {
     for recordIndex in donator._storage.indices {
       // iteration over indices and access by index is faster than iteration over elements
       let (key, annotatedRecord) = donator._storage[recordIndex]
-      recipient._storage._addRecordWithCollisionAndDuplicateResolution(
-        annotatedRecord.record,
+      recipient._storage.withCollisionAndDuplicateResolutionAdd(
+        record: annotatedRecord.record,
         forKey: key,
         duplicatePolicy: .allowEqual,
         writeProvenance: annotatedRecord.collisionSource ?? .onMerge(origin: origin()),

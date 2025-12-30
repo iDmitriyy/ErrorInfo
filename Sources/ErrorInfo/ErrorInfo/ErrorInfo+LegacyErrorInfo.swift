@@ -48,8 +48,8 @@ extension ErrorInfo {
     legacyUserInfo.forEach { key, value in
       let compatibleValue = Self._castOrConvertToCompatible(legacyInfoValue: value)
       let record = BackingStorage.Record(keyOrigin: .fromCollection, someValue: .value(compatibleValue))
-      _storage._addRecordWithCollisionAndDuplicateResolution(
-        record,
+      _storage.withCollisionAndDuplicateResolutionAdd(
+        record: record,
         forKey: key,
         duplicatePolicy: .allowEqualWhenOriginDiffers,
         writeProvenance: .onDictionaryConsumption(origin: origin()),

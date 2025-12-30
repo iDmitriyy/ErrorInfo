@@ -103,7 +103,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepre
       return
     }
 
-    _addRecordWithCollisionAndDuplicateResolution(Record(keyOrigin: keyOrigin, someValue: optional),
+    withCollisionAndDuplicateResolutionAdd(record: Record(keyOrigin: keyOrigin, someValue: optional),
                                                   forKey: key,
                                                   duplicatePolicy: duplicatePolicy,
                                                   writeProvenance: writeProvenance())
@@ -118,7 +118,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
                               someValue: RecordValue,
                               duplicatePolicy: ValueDuplicatePolicy,
                               writeProvenance: @autoclosure () -> WriteProvenance) {
-    _addRecordWithCollisionAndDuplicateResolution(Record(keyOrigin: keyOrigin, someValue: someValue),
+    withCollisionAndDuplicateResolutionAdd(record: Record(keyOrigin: keyOrigin, someValue: someValue),
                                                   forKey: key,
                                                   duplicatePolicy: duplicatePolicy,
                                                   writeProvenance: writeProvenance())
@@ -149,8 +149,8 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
   ///   - duplicatePolicy: Policy that defines when equal values are rejected or allowed.
   ///   - writeProvenance: Describes the origin of a collision; evaluated lazily.
   @usableFromInline
-  internal mutating func _addRecordWithCollisionAndDuplicateResolution(
-    _ newRecord: Record,
+  internal mutating func withCollisionAndDuplicateResolutionAdd(
+    record newRecord: Record,
     forKey key: Key,
     duplicatePolicy: ValueDuplicatePolicy,
     writeProvenance: @autoclosure () -> WriteProvenance,
@@ -194,25 +194,26 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
         if let currentCollisionSource = current.collisionSource {
           currentCollisionSource == writeProvenance()
         } else { // do not create writeProvenance() if current.collisionSource == nil
-          false
-        }
-      }()
-  }
-  
-  @inlinable @inline(__always)
-  internal static func isEqualValueKeyOriginAndCollisionSource_B(newRecord: Record,
-                                                                 writeProvenance: @autoclosure () -> WriteProvenance,
-                                                                 current: AnnotatedRecord) -> Bool {
-    newRecord.someValue == current.record.someValue
-      && newRecord.keyOrigin == current.record.keyOrigin
-      && {
-        if let currentCollisionSource = current.collisionSource {
-          currentCollisionSource == writeProvenance()
-        } else { // if no collisionSource (typically for first value), nothing to compare, and can make no assumptions.
+          // if no collisionSource (typically for first value), nothing to compare, and can make no assumptions.
           true // pass true to logically exclude from equality comparison
         }
       }()
   }
+  
+//  @inlinable @inline(__always)
+//  internal static func isEqualValueKeyOriginAndCollisionSource_B(newRecord: Record,
+//                                                                 writeProvenance: @autoclosure () -> WriteProvenance,
+//                                                                 current: AnnotatedRecord) -> Bool {
+//    newRecord.someValue == current.record.someValue
+//      && newRecord.keyOrigin == current.record.keyOrigin
+//      && {
+//        if let currentCollisionSource = current.collisionSource {
+//          currentCollisionSource == writeProvenance()
+//        } else {
+//          false
+//        }
+//      }()
+//  }
 }
 
 extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepresentable {
@@ -246,8 +247,8 @@ extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepre
       return
     }
 
-    _addRecordWithCollisionAndDuplicateResolution(
-      Record(keyOrigin: keyOrigin, someValue: optional),
+    withCollisionAndDuplicateResolutionAdd(
+      record: Record(keyOrigin: keyOrigin, someValue: optional),
       forKey: key,
       duplicatePolicy: duplicatePolicy,
       writeProvenance: writeProvenance(),

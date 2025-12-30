@@ -9,6 +9,7 @@ import ErrorInfo
 import NonEmpty
 import Synchronization
 import Testing
+import OrderedCollections
 
 struct ErrorInfoAddValueTests {
   private let countBase: Int = 3000
@@ -103,16 +104,20 @@ struct ErrorInfoAddValueTests {
       ]
       
       let info2: ErrorInfo = [.debug: 2]
-      
+      let info3: ErrorInfo = [.debug: 2, .date: "", .authenticationStatus: "", .duration: 2, .host: ""]
+      var dict = OrderedDictionary<Int, Int>()
+      dict.reserveCapacity(3)
       @_transparent func testAddValue(_ value: some ErrorInfo.ValueProtocol,
                                       duplicatePolicy: ValueDuplicatePolicy,
                                       forKey key: String,
                                       to errorInfo: inout ErrorInfo) {
-//        blackHole(ErrorInfo.merged(info, info2))
+        //        errorInfo._addValue_Test(value, duplicatePolicy: duplicatePolicy, forKey: key)
+        
+        blackHole(ErrorInfo.merged(info, info3))
         ////        errorInfo.merge(with: info, origin: .fileLine())
-//        errorInfo._addValue_Test(value, duplicatePolicy: duplicatePolicy, forKey: key)
-        errorInfo[.apiEndpoint] = value
+//        errorInfo[.apiEndpoint] = value
 //        errorInfo.appendIfNotNil(value, forKey: key)
+        
       }
       
       let output = performMeasuredAction(count: measurementsCount, prepare: {
@@ -158,7 +163,7 @@ struct ErrorInfoAddValueTests {
        ____addValue:    699.6    add 1 value for different keys, policy: rejectEqual
        ____addValue:    696.8    add 1 value for different keys, policy: rejectEqualWithSameOrigin
        */
-      
+      // 320 init with capacity
       /* new imp (optimized migration to multi value storage)
        535.0    add 1 value for different keys, policy: allowEqual
        578.2    add 1 value for different keys, policy: rejectEqual

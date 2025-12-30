@@ -28,21 +28,21 @@ extension ErrorInfo {
   /// # Example:
   /// ```swift
   /// // Appending multiple key-value pairs from a dictionary literal
-  /// errorInfo.appendKeyValues([
+  /// errorInfo.append([
   ///   .sessionID: 1234,
   ///   .requestID: 42,
   ///   .lastLogin: "2023-12-20T10:00:00Z"
   /// ])
   /// ```
-  public mutating func appendKeyValues(_ dictionaryLiteral: KeyValuePairs<Key, Value>,
-                                       preserveNilValues: Bool = true,
-                                       duplicatePolicy: ValueDuplicatePolicy = .allowEqualWhenOriginDiffers,
-                                       file: StaticString = #fileID,
-                                       line: UInt = #line) {
-    appendKeyValues(dictionaryLiteral,
-                    preserveNilValues: preserveNilValues,
-                    duplicatePolicy: duplicatePolicy,
-                    origin: .fileLine(file: file, line: line))
+  public mutating func append(_ dictionaryLiteral: KeyValuePairs<Key, Value>,
+                              preserveNilValues: Bool = true,
+                              duplicatePolicy: ValueDuplicatePolicy = .allowEqualWhenOriginDiffers,
+                              file: StaticString = #fileID,
+                              line: UInt = #line) {
+    append(dictionaryLiteral,
+           preserveNilValues: preserveNilValues,
+           duplicatePolicy: duplicatePolicy,
+           origin: .fileLine(file: file, line: line))
   }
   
   /// Allows to append key-values from Dictionary literal into the existing `ErrorInfo` instance.
@@ -61,15 +61,15 @@ extension ErrorInfo {
   /// # Example:
   /// ```swift
   /// // Custom origin for the appended key-value pairs
-  /// errorInfo.appendKeyValues([
+  /// errorInfo.append([
   ///   .transactionID: "TXN123456",
   ///   .amount: 99.99
   /// ], origin: "TransactionProcessor")
   /// ```
-  public mutating func appendKeyValues(_ dictionaryLiteral: KeyValuePairs<Key, Value>,
-                                       preserveNilValues: Bool = true,
-                                       duplicatePolicy: ValueDuplicatePolicy = .allowEqualWhenOriginDiffers,
-                                       origin: @autoclosure () -> WriteProvenance.Origin) {
+  public mutating func append(_ dictionaryLiteral: KeyValuePairs<Key, Value>,
+                              preserveNilValues: Bool = true,
+                              duplicatePolicy: ValueDuplicatePolicy = .allowEqualWhenOriginDiffers,
+                              origin: @autoclosure () -> WriteProvenance.Origin) {
     _appendKeyValuesImp(_dictionaryLiteral: dictionaryLiteral,
                         preserveNilValues: preserveNilValues,
                         duplicatePolicy: duplicatePolicy,
@@ -97,7 +97,7 @@ extension ErrorInfo {
           writeProvenance: writeProvenance(),
         )
       } else if preserveNilValues {
-        _addNil(
+        withCollisionAndDuplicateResolutionAddNilInstance(
           typeOfWrapped: ValueExistential.self,
           duplicatePolicy: duplicatePolicy,
           forKey: literalKey.rawValue,

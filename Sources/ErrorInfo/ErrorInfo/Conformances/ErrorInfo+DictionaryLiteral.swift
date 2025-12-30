@@ -39,14 +39,36 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
   /// ]
   /// ```
   public init(dictionaryLiteral elements: (Key, Value)...) {
-    guard !elements.isEmpty else { // 7.5x faster creating empty literal
-      self.init(); return
-    }
-    self.init(minimumCapacity: elements.count)
-    _appendKeyValuesImp(_dictionaryLiteral: elements,
-                        preserveNilValues: true,
-                        duplicatePolicy: .allowEqual,
-                        writeProvenance: .onCreateWithDictionaryLiteral)
-  }
-}
+    if elements.isEmpty {
+      self.init(storage: BackingStorage()) // create empty instance without preallocated capacity
+    } else {
+      self.init(storage: BackingStorage(minimumCapacity: elements.count))
 
+      for (literalKey, value) in elements {
+        if let value {
+          withCollisionAndDuplicateResolutionAdd(
+            value: value,
+            duplicatePolicy: .allowEqual,
+            forKey: literalKey.rawValue,
+            keyOrigin: literalKey.keyOrigin,
+            writeProvenance: .onCreateWithDictionaryLiteral,
+          )
+        } else {
+          withCollisionAndDuplicateResolutionAddNilInstance(
+            typeOfWrapped: ValueExistential.self,
+            duplicatePolicy: .allowEqual,
+            forKey: literalKey.rawValue,
+            keyOrigin: literalKey.keyOrigin,
+            writeProvenance: .onCreateWithDictionaryLiteral,
+          )
+        }
+      }
+    }
+    
+    // Call to function below is significantly slower no matter of using inlining
+    // _appendKeyValuesImp(_dictionaryLiteral: elements,
+    //                     preserveNilValues: true,
+    //                     duplicatePolicy: .allowEqual,
+    //                     writeProvenance: .onCreateWithDictionaryLiteral)
+  } // inlining worsen performance
+}
