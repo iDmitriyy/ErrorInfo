@@ -112,9 +112,11 @@ public struct ErrorInfo: Sendable, ErrorInfoOperationsProtocol {
   
   public init(minimumCapacity: Int) {
     self.init(storage: BackingStorage(minimumCapacity: minimumCapacity))
-  }
+  } // inlining worsens performance
   
-  public static var empty: Self { Self(storage: BackingStorage()) }
+  public static var empty: Self {
+    Self(storage: BackingStorage())
+  } // inlining worsens performance
 }
 
 extension ErrorInfo {

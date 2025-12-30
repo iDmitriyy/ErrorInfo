@@ -40,6 +40,11 @@ public struct ErrorInfoGeneric<Key: Hashable, RecordValue>: Sequence {
   
   /// An empty instance of `ErrorInfo`.
   public static var empty: Self { Self() }
+  
+  @inlinable @inline(__always)
+  public mutating func reserveCapacity(_ minimumCapacity: Int) {
+    _storage.reserveCapacity(minimumCapacity)
+  }
 }
 
 extension ErrorInfoGeneric {

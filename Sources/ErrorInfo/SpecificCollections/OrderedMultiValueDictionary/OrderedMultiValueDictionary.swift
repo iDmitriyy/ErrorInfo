@@ -67,6 +67,12 @@ struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
     }
     return output
   }
+  
+  @inlinable @inline(__always)
+  internal mutating func reserveCapacity(_ minimumCapacity: Int) {
+    _entries.reserveCapacity(minimumCapacity)
+    _keyToEntryIndices.reserveCapacity(minimumCapacity)
+  }
 }
 
 extension OrderedMultiValueDictionary: Sendable where Key: Sendable, Value: Sendable {}

@@ -39,6 +39,15 @@
   private init(_variant: _Variant) {
     _mutableVariant = _variant
   }
+  
+  @inlinable @inline(__always)
+  internal mutating func reserveCapacity(_ minimumCapacity: Int) {
+    _mutableVariant.mutateUnderlying(singleValueForKey: { singleValueForKeyDict in
+      singleValueForKeyDict.reserveCapacity(minimumCapacity)
+    }, multiValueForKey: { multiValueForKeyDict in
+      multiValueForKeyDict.reserveCapacity(minimumCapacity)
+    })
+  }
 }
 
 extension OrderedMultipleValuesForKeyStorage: Sendable where Key: Sendable, Value: Sendable, WriteProvenance: Sendable {}
