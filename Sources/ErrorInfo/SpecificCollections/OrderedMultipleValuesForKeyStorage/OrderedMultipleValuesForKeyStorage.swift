@@ -27,17 +27,18 @@
   
   // FIXME: private set
   @usableFromInline internal var _mutableVariant: _Variant
-  
-  internal init() {
-    _mutableVariant = _Variant(.left(OrderedDictionary()))
-  }
-  
+    
+  @inlinable @inline(__always)
   internal init(minimumCapacity: Int) {
     _mutableVariant = _Variant(.left(OrderedDictionary(minimumCapacity: minimumCapacity)))
   }
   
   private init(_variant: _Variant) {
     _mutableVariant = _variant
+  }
+  
+  internal static var empty: Self {
+    Self(_variant: _Variant(.left(OrderedDictionary())))
   }
   
   @inlinable @inline(__always)

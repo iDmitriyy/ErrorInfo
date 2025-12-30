@@ -115,7 +115,7 @@ public struct ErrorInfo: Sendable, ErrorInfoOperationsProtocol {
   } // inlining worsens performance
   
   public static var empty: Self {
-    Self(storage: BackingStorage())
+    Self(storage: BackingStorage.empty)
   } // inlining worsens performance
 }
 

@@ -1,5 +1,5 @@
 {
-  "originHash" : "3972ddd20bc6aef7422b43cc939d961c00f0d8f8d46a5d2e4b73fc0c120b4bc9",
+  "originHash" : "6cee363a4fcb86717bb6dc61092f6d30dbfe11e6ad47b93a2131bf92f1399f63",
   "pins" : [
     {
       "identity" : "swift-collections",
@@ -25,7 +25,7 @@
       "location" : "https://github.com/iDmitriyy/SwiftCollections-NonEmpty.git",
       "state" : {
         "branch" : "RangeSet",
-        "revision" : "caa988a9021a6b75fa697297fb2ba3a5203cccf7"
+        "revision" : "83fc72848cfb7d47afba7d520c4a874f2197a3db"
       }
     }
   ],

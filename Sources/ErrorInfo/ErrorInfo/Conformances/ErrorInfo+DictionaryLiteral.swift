@@ -40,7 +40,7 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
   /// ```
   public init(dictionaryLiteral elements: (Key, Value)...) {
     if elements.isEmpty {
-      self.init(storage: BackingStorage()) // create empty instance without preallocated capacity
+      self.init(storage: BackingStorage.empty) // create empty instance without preallocated capacity
     } else {
       self.init(storage: BackingStorage(minimumCapacity: elements.count))
 

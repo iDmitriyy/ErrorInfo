@@ -24,22 +24,19 @@ public struct ErrorInfoGeneric<Key: Hashable, RecordValue>: Sequence {
   
   @usableFromInline internal var _storage: BackingStorage
     
-  private init(storage: BackingStorage) {
+  @usableFromInline
+  internal init(storage: BackingStorage) {
     _storage = storage
   }
-  
-  /// Creates an empty `ErrorInfo` instance.
-  public init() {
-    self.init(storage: BackingStorage())
-  }
-  
+    
   /// Creates an empty `ErrorInfo` instance with a specified minimum capacity.
+  @inlinable @inline(__always)
   public init(minimumCapacity: Int) {
     self.init(storage: BackingStorage(minimumCapacity: minimumCapacity))
   }
   
   /// An empty instance of `ErrorInfo`.
-  public static var empty: Self { Self() }
+  public static var empty: Self { Self(storage: BackingStorage.empty) }
   
   @inlinable @inline(__always)
   public mutating func reserveCapacity(_ minimumCapacity: Int) {

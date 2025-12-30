@@ -55,14 +55,14 @@ public struct ErrorInfoAny: ErrorInfoOperationsProtocol {
   }
   
   public init() {
-    self.init(storage: BackingStorage())
+    self.init(storage: BackingStorage.empty)
   }
   
   public init(minimumCapacity: Int) {
     self.init(storage: BackingStorage(minimumCapacity: minimumCapacity))
   }
   
-  public static var empty: Self { Self() }
+  public static var empty: Self { Self(storage: BackingStorage.empty) }
 }
 
 extension ErrorInfoAny {
