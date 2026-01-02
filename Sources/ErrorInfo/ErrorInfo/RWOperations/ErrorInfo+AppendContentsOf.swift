@@ -88,15 +88,13 @@ extension ErrorInfo {
     
     let done: Void? = newKeyValues.withContiguousStorageIfAvailable { new in
       let newCount = new.count
-      
       switch newCount {
       case 0:
-        return Void()
+        break
         
       case 1:
         let (key, value) = new[0]
         add(key: key, value: value)
-        return Void()
       
       default:
         _storage.reserveCapacity(self.count + newCount)
@@ -104,8 +102,8 @@ extension ErrorInfo {
           let (key, value) = new[index]
           add(key: key, value: value)
         }
-        return Void()
       }
+      return Void()
     }
     
     if done == nil {

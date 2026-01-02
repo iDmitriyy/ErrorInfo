@@ -110,7 +110,7 @@ struct ErrorInfoAddValueTests {
 //      let elements: [(String, String)] = [("A", "")]
 //      let elements: [(String, String)] = [("A", ""), ("B", "")]
 //      let elements: [(String, String)] = [("A", ""), ("B", ""), ("C", "")]
-//      let elements: [(String, String)] = [("A", ""), ("B", ""), ("C", ""), ("D", "")]
+//      let elements: [(String, String)] = [("A", ""), ("B", ""), ("C", ""), ("D", ""), ("E", "")]
       let strings = ["A, BB"]
       
       @_transparent func testAddValue(_: some ErrorInfo.ValueProtocol,
