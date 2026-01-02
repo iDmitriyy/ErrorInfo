@@ -7,9 +7,9 @@
 
 import ErrorInfo
 import NonEmpty
+import OrderedCollections
 import Synchronization
 import Testing
-import OrderedCollections
 
 struct ErrorInfoAddValueTests {
   private let countBase: Int = 3000
@@ -105,19 +105,26 @@ struct ErrorInfoAddValueTests {
       
       let info2: ErrorInfo = [.debug: 2]
       let info3: ErrorInfo = [.debug: 2, .date: "", .authenticationStatus: "", .duration: 2, .host: ""]
-      var dict = OrderedDictionary<Int, Int>()
-      dict.reserveCapacity(3)
-      @_transparent func testAddValue(_ value: some ErrorInfo.ValueProtocol,
-                                      duplicatePolicy: ValueDuplicatePolicy,
-                                      forKey key: String,
+      
+      let elements: [(String, String)] = []
+//      let elements: [(String, String)] = [("A", "")]
+//      let elements: [(String, String)] = [("A", ""), ("B", "")]
+//      let elements: [(String, String)] = [("A", ""), ("B", ""), ("C", "")]
+//      let elements: [(String, String)] = [("A", ""), ("B", ""), ("C", ""), ("D", "")]
+      let strings = ["A, BB"]
+      
+      @_transparent func testAddValue(_: some ErrorInfo.ValueProtocol,
+                                      duplicatePolicy _: ValueDuplicatePolicy,
+                                      forKey _: String,
                                       to errorInfo: inout ErrorInfo) {
         //        errorInfo._addValue_Test(value, duplicatePolicy: duplicatePolicy, forKey: key)
-        
-        blackHole(ErrorInfo.merged(info, info3))
+//        blackHole(ErrorInfo.merged(info, info3))
         ////        errorInfo.merge(with: info, origin: .fileLine())
 //        errorInfo[.apiEndpoint] = value
 //        errorInfo.appendIfNotNil(value, forKey: key)
-        
+         errorInfo.append(contentsOf: elements, origin: .fileLine())
+//        errorInfo.appendProperties(of: "A") { \String.count }
+//        errorInfo.appendProperties_2(of: "", origin: .custom(origin: ""), keys: \.count)
       }
       
       let output = performMeasuredAction(count: measurementsCount, prepare: {
@@ -127,6 +134,7 @@ struct ErrorInfoAddValueTests {
           switch addedValuesCount {
           case 1:
             testAddValue(index, duplicatePolicy: duplicatePolicy, forKey: idKey, to: &infos[index])
+            // blackHole([.apiEndpoint: 5, .errorCode: 5] as ErrorInfo)
 
           case 2:
             let (key1, key2): (String, String)
@@ -155,15 +163,46 @@ struct ErrorInfoAddValueTests {
       })
       
       /*
-       ____addValue:    1617.3    add 1 value for different keys, policy: allowEqual
-       ____addValue:    1628.1    add 1 value for different keys, policy: rejectEqual
-       ____addValue:    1630.7    add 1 value for different keys, policy: rejectEqualWithSameOrigin
        
-       ____addValue:    692.9    add 1 value for different keys, policy: allowEqual
-       ____addValue:    699.6    add 1 value for different keys, policy: rejectEqual
-       ____addValue:    696.8    add 1 value for different keys, policy: rejectEqualWithSameOrigin
+       
        */
+      
+      /* append(contentsOf:)
+       // Switch-case imp | Reserve when count > 1 | Always reserve | Without reserving
+               79.1                 239.7                 398.5             191.1               add 0 values
+               77.8                 238.4                 399.3             191.6               add 0 values
+               77.7                 241.5                 400.3             194.4               add 0 values
+                                                                                                          
+              611.5                1030.4                1152.2             978.5               add 1 value
+              614.5                1031.7                1152.5             983.3               add 1 value
+              615.0                1035.4                1149.4             981.8               add 1 value
+                                                                            
+             1129.9                1808.9                1790.2            1919.0               add 2 values
+             1116.3                1819.9                1798.2            1928.4               add 2 values
+             1117.9                1810.7                1803.2            1930.3               add 2 values
+                                                                            
+             1530.2                2471.8                2463.3            2889.9               add 3 values
+             1540.8                2486.5                2457.0            2903.4               add 3 values
+             1536.8                2483.9                2466.3            2904.1               add 3 values
+                                                                            
+             1966.2                3154.3                3129.1            3551.8               add 4 values
+             1969.9                3164.2                3149.7            3589.6               add 4 values
+             1977.4                3166.6                3151.5            3567.3               add 4 values
+       
+       Without reserving – withContiguousStorageIfAvailable not called, just iterate over sequence and add
+       
+       Always reserve - call withContiguousStorageIfAvailable and reserveCapacity(self.count + new.count)
+       unconditionally
+       
+       Reserve when count > 1 - call withContiguousStorageIfAvailable and reserveCapacity(self.count + new.count)
+       if new.count > 1
+       
+       Switch-case imp - call withContiguousStorageIfAvailable, switch new.count and do separate logic for count 0, 1, 1...
+       Values added directly from ContiguousStorage
+       */
+      
       // 320 init with capacity
+      
       /* new imp (optimized migration to multi value storage)
        535.0    add 1 value for different keys, policy: allowEqual
        578.2    add 1 value for different keys, policy: rejectEqual
@@ -335,6 +374,6 @@ struct ErrorInfoAddValueTests {
   @available(macOS 26.0, *)
   @_transparent
   internal func make1000EmptyInstances() -> InlineArray<1000, ErrorInfo> {
-    InlineArray<1000, ErrorInfo>({ _ in ErrorInfo() })
+    InlineArray<1000, ErrorInfo>({ _ in ErrorInfo.empty })
   }
 }

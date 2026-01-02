@@ -17,6 +17,14 @@ extension ErrorInfo {
   
   /// Appends values from key paths of an instance to `ErrorInfo`, optionally prefixing keys.
   ///
+  /// - Note:
+  /// This method is created as a concept, until implementation become performant enough.
+  /// `String(describing: keyPath)` & `String(reflecting: keyPath)` are extremely slow.
+  /// This can be solved by macro, replacing keyPaths by string literals.
+  /// The idea is to keep string literals for property names and type name as string literals separately.
+  /// In such a way binary size will be smaller, as property names and type name will be reused.
+  /// The final string is concatenated at runtime, which is fast.
+  ///
   /// This method allows you to append properties of an instance to the `ErrorInfo` storage,
   /// converting the specified key paths into strings.
   /// You can choose to use either the type name or a custom prefix for the key paths.
@@ -53,10 +61,11 @@ extension ErrorInfo {
   /// // The resulting keys will not be prefixed with "Car":
   /// errorInfo.keys // ["make", "model", "year"]
   /// ```
+  @available(*, deprecated, message: "current imp is too slow")
   public mutating func appendProperties<R, each V: ValueProtocol>(
     of instance: R,
     keysPrefix: KeyPathPrefixOption? = .typeName,
-    origin: WriteProvenance.Origin,
+    origin: @autoclosure () -> WriteProvenance.Origin,
     @ErrorInfoKeyPathsBuilder keys: () -> (repeat KeyPath<R, each V>),
   ) {
     let keyPaths = keys() // R.self
@@ -76,22 +85,24 @@ extension ErrorInfo {
         duplicatePolicy: .defaultForAppending,
         forKey: keyPathString,
         keyOrigin: .keyPath,
-        writeProvenance: .onAppend(origin: origin),
+        writeProvenance: .onAppend(origin: origin()),
       )
     }
   }
   
-  public mutating func appendProperties<R, each V: ValueProtocol>(
-    of instance: R,
-    keysPrefix: KeyPathPrefixOption? = .typeName,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @ErrorInfoKeyPathsBuilder keys: () -> (repeat KeyPath<R, each V>),
-  ) {
-    appendProperties(of: instance, keysPrefix: keysPrefix, origin: .fileLine(file: file, line: line), keys: keys)
-  }
+  // @available(*, deprecated, message: "current imp is too slow")
+  // public mutating func appendProperties<R, each V: ValueProtocol>(
+  //   of instance: R,
+  //   keysPrefix: KeyPathPrefixOption? = .typeName,
+  //   file: StaticString = #fileID,
+  //   line: UInt = #line,
+  //   @ErrorInfoKeyPathsBuilder keys: () -> (repeat KeyPath<R, each V>),
+  // ) {
+  //   appendProperties(of: instance, keysPrefix: keysPrefix, origin: .fileLine(file: file, line: line), keys: keys)
+  // }
   
   // DEFERRED: - slow on release builds. 5 properties takes ~0.0004s.
+  // ~293x slower than subscript
   
   @resultBuilder
   public struct ErrorInfoKeyPathsBuilder {

@@ -76,31 +76,7 @@ extension ErrorInfo {
   public mutating func append(contentsOf newKeyValues: some Sequence<(String, some ValueProtocol)>,
                               duplicatePolicy: ValueDuplicatePolicy = .allowEqualWhenOriginDiffers,
                               origin: @autoclosure () -> WriteProvenance.Origin) {
-    let shouldIterateAndAppend: Bool? = newKeyValues.withContiguousStorageIfAvailable { new in
-      let newCount = new.count
-      
-      switch newCount {
-      case 0:
-        return false
-      case 1:
-        let (key, value) = new.first!
-        withCollisionAndDuplicateResolutionAdd(
-          value: value,
-          duplicatePolicy: duplicatePolicy,
-          forKey: key,
-          keyOrigin: .fromCollection,
-          writeProvenance: .onSequenceConsumption(origin: origin()),
-        )
-        return false
-      default:
-        _storage.reserveCapacity(self.count + newCount)
-        return true
-      }
-    }
-    
-    if _slowPath(shouldIterateAndAppend == false) { return }
-    
-    newKeyValues.forEach { key, value in
+    func add(key: String, value: some ValueProtocol) {
       withCollisionAndDuplicateResolutionAdd(
         value: value,
         duplicatePolicy: duplicatePolicy,
@@ -108,6 +84,34 @@ extension ErrorInfo {
         keyOrigin: .fromCollection,
         writeProvenance: .onSequenceConsumption(origin: origin()),
       )
+    }
+    
+    let done: Void? = newKeyValues.withContiguousStorageIfAvailable { new in
+      let newCount = new.count
+      
+      switch newCount {
+      case 0:
+        return Void()
+        
+      case 1:
+        let (key, value) = new[0]
+        add(key: key, value: value)
+        return Void()
+      
+      default:
+        _storage.reserveCapacity(self.count + newCount)
+        for index in new.indices {
+          let (key, value) = new[index]
+          add(key: key, value: value)
+        }
+        return Void()
+      }
+    }
+    
+    if done == nil {
+      newKeyValues.forEach { key, value in
+        add(key: key, value: value)
+      }
     }
   }
 }
