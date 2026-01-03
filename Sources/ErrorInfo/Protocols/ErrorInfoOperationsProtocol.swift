@@ -60,7 +60,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   ///
   /// This subscript is the ergonomic read path and surfaces the latest meaningful value.
   /// Explicit `nil` entries are preserved for auditing but are skipped here. Use
-  /// ``lastRecorded(forKey:)`` or ``fullInfo(forKey:)``  to inspect the last
+  /// ``lastRecorded(forKey:)`` or ``allRecords(forKey:)``  to inspect the last
   /// recorded entry including `nil`, its ``KeyOrigin``, and ``WriteProvenance``.
   ///
   /// ## Rationale:
@@ -74,7 +74,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   ///   the subscript should remain consistent with that model for predictability and ergonomics.
   /// - Explicit `nil` is still preserved as a record for auditing and legacy‑style “removal” semantics.
   ///   When you need to know that the last write was `nil`, use `lastRecorded(forKey:)` or
-  ///   `fullInfo(forKey:)` to inspect the final record including `nil`.
+  ///   `allRecords(forKey:)` to inspect the final record including `nil`.
   /// - This approach balances resilience (no silent loss of a good value due to a late `nil`)
   ///   with precision (you can still detect and reason about `nil` writes when you care).
   ///

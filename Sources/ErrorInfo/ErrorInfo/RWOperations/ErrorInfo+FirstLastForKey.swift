@@ -12,7 +12,7 @@ extension ErrorInfo {
   ///
   /// This mirrors the subscript’s read behavior and surfaces the latest meaningful value.
   /// `nil` entries are preserved in history but skipped here.
-  /// Use ``lastRecorded(forKey:)`` or ``fullInfo(forKey:)`` to inspect
+  /// Use ``lastRecorded(forKey:)`` or ``allRecords(forKey:)`` to inspect
   /// the final record including `nil` and its provenance.
   ///
   /// - Parameter literalKey: The literal key to read.
@@ -38,7 +38,7 @@ extension ErrorInfo {
   ///
   /// This mirrors the subscript’s read behavior and surfaces the latest meaningful value.
   /// `nil` entries are preserved in history but skipped here.
-  /// Use ``lastRecorded(forKey:)`` or ``fullInfo(forKey:)`` to inspect
+  /// Use ``lastRecorded(forKey:)`` or ``allRecords(forKey:)`` to inspect
   /// the final record including `nil` and its provenance.
   ///
   /// - Parameter dynamicKey: The dynamic key to read.

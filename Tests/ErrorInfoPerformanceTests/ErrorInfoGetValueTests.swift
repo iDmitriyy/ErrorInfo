@@ -13,10 +13,19 @@ import Testing
 
 struct ErrorInfoGetValueTests {
   private let countBase: Int = 1000
-  private let printPrefix = "____getValues"
+  private let printPrefix = "____valuesForKey"
+  private let idKey = "id"
+  
+  private let factor: Double = 1
+  
+  enum InfoStorageKind {
+    case singleForKey
+    case multiForKey(valuesForKeyCount: Int)
+  }
   
   enum RetrievalKind: CaseIterable {
     case allNonNil
+    case allRecords
     case firstNonNil
     case lastNonNil
     case lastRecorded
@@ -24,17 +33,16 @@ struct ErrorInfoGetValueTests {
   
   @Test(.serialized, arguments: RetrievalKind.allCases, [false])
   func `get values`(retrievalKind: RetrievalKind, multipleValuesForKey _: Bool) {
-    let factor: Double = 1
     let iterations = Int((Double(countBase) * factor).rounded(.toNearestOrAwayFromZero))
     
-    
-    if #available(macOS 26.0, *) {      
+    if #available(macOS 26.0, *) {
       let overheadDuration = performMeasuredAction(iterations: iterations, setup: { _ in
         make1000IDKeyInstances()
       }, measure: { infos in
         for index in infos.indices {
           switch retrievalKind {
           case .allNonNil: blackHole(infos[index])
+          case .allRecords: blackHole(infos[index])
           case .firstNonNil: blackHole(infos[index])
           case .lastNonNil: blackHole(infos[index])
           case .lastRecorded: blackHole(infos[index])
@@ -47,10 +55,11 @@ struct ErrorInfoGetValueTests {
       }, measure: { infos in
         for index in infos.indices {
           switch retrievalKind {
-          case .allNonNil: blackHole(infos[index].allValues(forKey: "id"))
-          case .firstNonNil: blackHole(infos[index].firstValue(forKey: "id"))
-          case .lastNonNil: blackHole(infos[index].lastValue(forKey: "id"))
-          case .lastRecorded: blackHole(infos[index].lastRecorded(forKey: "id"))
+          case .allNonNil: blackHole(infos[index].allValues(forKey: idKey))
+          case .allRecords: blackHole(infos[index].allRecords(forKey: idKey))
+          case .firstNonNil: blackHole(infos[index].firstValue(forKey: idKey))
+          case .lastNonNil: blackHole(infos[index].lastValue(forKey: idKey))
+          case .lastRecorded: blackHole(infos[index].lastRecorded_2(forKey: idKey))
           }
         }
       })

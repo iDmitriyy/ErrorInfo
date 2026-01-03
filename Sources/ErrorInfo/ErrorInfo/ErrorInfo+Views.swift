@@ -41,11 +41,11 @@ extension ErrorInfo {
   // MARK: FullInfo for Key
   
   public func fullInfo(forKey literalKey: StringLiteralKey) -> ValuesForKey<FullInfoRecord>? {
-    fullInfo(forKey: literalKey.rawValue)
+    allRecords(forKey: literalKey.rawValue)
   }
   
   @_disfavoredOverload
-  public func fullInfo(forKey dynamicKey: String) -> ValuesForKey<FullInfoRecord>? {
+  public func allRecords(forKey dynamicKey: String) -> ValuesForKey<FullInfoRecord>? {
     guard let annotatedRecords = _storage.allAnnotatedRecords(forKey: dynamicKey) else { return nil }
 
     return annotatedRecords.map { annotatedRecord -> FullInfoRecord in
