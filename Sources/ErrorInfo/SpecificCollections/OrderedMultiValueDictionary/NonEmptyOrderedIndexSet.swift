@@ -61,6 +61,13 @@ public struct NonEmptyOrderedIndexSet: Sendable, RandomAccessCollection {
      }
    } // inlining worsen performance up to 1.7x when single index (case .left). For .right speedup 2%
   
+  public var last: Element {
+    switch _variant {
+    case .left(let index): index
+    case .right(let indices): indices.last
+    }
+  }
+  
   /// Accesses the index at `position`.
   /// - Precondition: `position` is within bounds.
   @_spi(PerformanceTesting)

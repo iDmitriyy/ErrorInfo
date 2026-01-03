@@ -47,41 +47,96 @@ internal func performMeasuredAction<T>(count: Int, _ actions: () -> T) -> (resul
 @inlinable
 @inline(__always)
 @discardableResult
-internal func performMeasuredAction<P, T>(count: Int,
-                                          prepare: (Int) -> P,
+internal func performMeasuredAction<P, T>(iterations: Int,
+                                          setup: (Int) -> P,
                                           measure actions: (inout P) -> T)
--> (results: [T], duration: Double, preparationsDuration: Double) {
+  -> (results: [T], duration: Duration, setupDuration: Duration) {
   let clock = ContinuousClock()
     
   var results: [T] = []
-  
-  var totalPreparationsDuration = Duration.zero
-  var totalMeasuredDuration = Duration.zero
-  for index in 0..<count {
-    let timeBeforePreparation = clock.now
-    var preparedData = prepare(index)
-    let timeAfterPreparation = clock.now
+  results.reserveCapacity(iterations)
     
-    let timeBeforeMeasurement = clock.now
+  var totalSetupDuration = Duration.zero
+  var totalExecutionDuration = Duration.zero
+  for index in 0..<iterations {
+    let setupStart = clock.now
+    var preparedData = setup(index)
+    let setupEnd = clock.now
+    
+    let actionStart = clock.now
     let result = actions(&preparedData)
-    let timeAfterMeasurement = clock.now
+    let actionEnd = clock.now
     
-    let preparationTimeDifference = timeAfterPreparation - timeBeforePreparation
-    totalPreparationsDuration += preparationTimeDifference
+    let setupDuration = setupEnd - setupStart
+    totalSetupDuration += setupDuration
     
-    let measurementTimeDifference = timeAfterMeasurement - timeBeforeMeasurement
-    totalMeasuredDuration += measurementTimeDifference
+    let executionDuration = actionEnd - actionStart
+    totalExecutionDuration += executionDuration
     
     results.append(result)
   }
   
-  return (results, totalMeasuredDuration.inMilliseconds, totalPreparationsDuration.inMilliseconds)
+  return (results, totalExecutionDuration, totalSetupDuration)
 }
 
+// This gives inaccurate results
+// @inlinable
+// @inline(__always)
+// @discardableResult
+// internal func performMeasuredAction<P, T>(iterations: Int,
+//                                          setup: (Int) -> P,
+//                                          measureOverhead: (inout P) -> T,
+//                                          measure actions: (inout P) -> T)
+//  -> (adjustedDuration: Duration, executionDuration: Duration, setupDuration: Duration, results: [T]) {
+//  let clock = ContinuousClock()
+//
+//  var results: [T] = []
+//  var overheadResults: [T] = []
+//
+//  var totalSetupDuration = Duration.zero
+//  var totalOverheadDuration = Duration.zero
+//  var totalExecutionDuration = Duration.zero
+//  for index in 0..<iterations {
+//    let setupStart = clock.now
+//    var preparedData = setup(index)
+//    let setupEnd = clock.now
+//
+//    let overheadStart = clock.now
+//    let overheadResult = measureOverhead(&preparedData)
+//    let overheadEnd = clock.now
+//
+//    let actionStart = clock.now
+//    let result = actions(&preparedData)
+//    let actionEnd = clock.now
+//
+//    totalSetupDuration += (setupEnd - setupStart)
+//    totalOverheadDuration += (overheadEnd - overheadStart)
+//    totalExecutionDuration += (actionEnd - actionStart)
+//
+//    results.append(result)
+//    overheadResults.append(overheadResult)
+//  }
+//
+//  blackHole(overheadResults)
+//  let adjustedExecutionDuration = totalExecutionDuration - totalOverheadDuration
+//
+//  return (adjustedExecutionDuration, totalExecutionDuration, totalSetupDuration, results)
+// }
+
 extension Duration {
+  @usableFromInline internal var inMicroseconds: Double {
+    let (seconds, attoseconds) = components
+    return Double(seconds) * 1_000_000 + Double(attoseconds) * 1e-12
+  }
+  
   @usableFromInline internal var inMilliseconds: Double {
     let (seconds, attoseconds) = components
     return Double(seconds) * 1000 + Double(attoseconds) * 1e-15
+  }
+  
+  @usableFromInline internal var inSeconds: Double {
+    let (seconds, attoseconds) = components
+    return Double(seconds) + Double(attoseconds) * 1e-18
   }
 }
 

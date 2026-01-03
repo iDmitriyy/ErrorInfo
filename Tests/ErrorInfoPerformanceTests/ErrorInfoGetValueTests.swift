@@ -12,26 +12,28 @@ import Synchronization
 import Testing
 
 struct ErrorInfoGetValueTests {
-  private let countBase: Int = 3000
+  private let countBase: Int = 1000
+  private let printPrefix = "____getValues"
   
-  enum GetKind: CaseIterable {
+  enum RetrievalKind: CaseIterable {
     case allNonNil
     case firstNonNil
     case lastNonNil
     case lastRecorded
   }
   
-  @Test(.serialized, arguments: [GetKind.lastRecorded], [false])
-  mutating func `get values`(kind: GetKind, multipleValuesForKey: Bool) {
-    let printPrefix = "____get \(kind):"
+  @Test(.serialized, arguments: RetrievalKind.allCases, [false])
+  func `get values`(retrievalKind: RetrievalKind, multipleValuesForKey _: Bool) {
+    let factor: Double = 1
+    let iterations = Int((Double(countBase) * factor).rounded(.toNearestOrAwayFromZero))
     
-    let measurementsCount = countBase
-    if #available(macOS 26.0, *) {
-      let burdenDuration = performMeasuredAction(count: measurementsCount, prepare: { _ in
+    
+    if #available(macOS 26.0, *) {      
+      let overheadDuration = performMeasuredAction(iterations: iterations, setup: { _ in
         make1000IDKeyInstances()
       }, measure: { infos in
         for index in infos.indices {
-          switch kind {
+          switch retrievalKind {
           case .allNonNil: blackHole(infos[index])
           case .firstNonNil: blackHole(infos[index])
           case .lastNonNil: blackHole(infos[index])
@@ -40,15 +42,15 @@ struct ErrorInfoGetValueTests {
         }
       }).duration
       
-      let output = performMeasuredAction(count: measurementsCount, prepare: { _ in
+      let output = performMeasuredAction(iterations: iterations, setup: { _ in
         make1000IDKeyInstances()
       }, measure: { infos in
         for index in infos.indices {
-          switch kind {
+          switch retrievalKind {
           case .allNonNil: blackHole(infos[index].allValues(forKey: "id"))
           case .firstNonNil: blackHole(infos[index].firstValue(forKey: "id"))
           case .lastNonNil: blackHole(infos[index].lastValue(forKey: "id"))
-          case .lastRecorded: blackHole(infos[index].lastRecorded_2(forKey: "id"))
+          case .lastRecorded: blackHole(infos[index].lastRecorded(forKey: "id"))
           }
         }
       })
@@ -62,14 +64,14 @@ struct ErrorInfoGetValueTests {
        lastRecorded:    334.69
        */
       
-      let balancedDuration = (output.duration - burdenDuration).asString(fractionDigits: 2)
-      print(printPrefix, balancedDuration, separator: "\t\t")
+      let adjustedDuration = ((output.duration - overheadDuration).inMilliseconds / factor).asString(fractionDigits: 2)
+      print(printPrefix + " \(retrievalKind):", adjustedDuration, separator: "\t\t")
     } // end if #available
   }
   
   @available(macOS 26.0, *)
   @_transparent
   internal func make1000IDKeyInstances() -> InlineArray<1000, ErrorInfo> {
-    InlineArray<1000, ErrorInfo>({ _ in [.id: "id", .name: "name", .name: "name2"] }) //, .id: "id2"
+    InlineArray<1000, ErrorInfo>({ _ in [.id: "id", .name: "name"] }) // , .id: "id2" , .name: "name2"
   }
 }

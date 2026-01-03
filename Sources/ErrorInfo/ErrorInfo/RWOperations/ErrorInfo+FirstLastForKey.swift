@@ -96,12 +96,11 @@ extension ErrorInfo {
         return nil
       }
     case .right(let multiValueForKeyDict):
-      return multiValueForKeyDict._entries[0].value.record.someValue.maybeValue
-//      if let indices = multiValueForKeyDict._keyToEntryIndices[dynamicKey] {
-//        return multiValueForKeyDict._entries[indices.first].value.record.someValue.maybeValue
-//      } else {
-//        return nil
-//      }
+      if let indices = multiValueForKeyDict._keyToEntryIndices[dynamicKey] {
+        return multiValueForKeyDict._entries[indices.last].value.record.someValue.maybeValue
+      } else {
+        return nil
+      }
     }
   }
   

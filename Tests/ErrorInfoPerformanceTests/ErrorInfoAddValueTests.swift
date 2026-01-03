@@ -74,7 +74,7 @@ struct ErrorInfoAddValueTests {
     if #available(macOS 26.0, *) {
       let measurementsCount = countBase / addedValuesCount
       
-      let switchDuration = performMeasuredAction(count: measurementsCount, prepare: { _ in
+      let switchDuration = performMeasuredAction(iterations: measurementsCount, setup: { _ in
         make1000EmptyInstances()
       }, measure: { infos in
         for index in infos.indices {
@@ -127,7 +127,7 @@ struct ErrorInfoAddValueTests {
 //        errorInfo.appendProperties_2(of: "", origin: .custom(origin: ""), keys: \.count)
       }
       
-      let output = performMeasuredAction(count: measurementsCount, prepare: { _ in
+      let output = performMeasuredAction(iterations: measurementsCount, setup: { _ in
         make1000EmptyInstances()
       }, measure: { infos in
         for index in infos.indices {
@@ -364,9 +364,9 @@ struct ErrorInfoAddValueTests {
       let whichKeys = "\(addForDifferentKeys ? "different keys" : "same key")"
       let policy = ", policy: \(duplicatePolicy)"
       
-      let balancedDuration = (output.duration - switchDuration).asString(fractionDigits: 1)
+      let adjustedDuration = (output.duration - switchDuration).inMilliseconds.asString(fractionDigits: 1)
       
-      print(printPrefix, balancedDuration, addedValues + " for " + whichKeys + policy, separator: "\t\t")
+      print(printPrefix, adjustedDuration, addedValues + " for " + whichKeys + policy, separator: "\t\t")
     }
   }
   
