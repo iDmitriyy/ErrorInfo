@@ -49,6 +49,13 @@ extension Array {
   }
 }
 
+extension ContiguousArray {
+  @inlinable @inline(__always)
+  internal init(minimumCapacity: Int) {
+    self.init(); reserveCapacity(minimumCapacity)
+  }
+}
+
 extension String {
   /// Performant way to convert StaticString to String
   @inlinable @inline(__always)

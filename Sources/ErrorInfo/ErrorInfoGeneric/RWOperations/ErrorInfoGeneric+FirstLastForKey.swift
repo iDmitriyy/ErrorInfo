@@ -50,7 +50,7 @@ extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
     if let first = annotatedRecords.first.record.someValue.getWrapped { // fast path
       return first
     } else {
-      // ieration by indices.dropFirst() is faster than iteration over allRecordsForKey.dropFirst()
+      // iteration by indices.dropFirst() is faster than iteration over allRecordsForKey.dropFirst()
       for index in annotatedRecords.indices.dropFirst() {
         if let value = annotatedRecords[index].record.someValue.getWrapped {
           return value

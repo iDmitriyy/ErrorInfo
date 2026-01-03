@@ -77,6 +77,7 @@ extension OrderedMultipleValuesForKeyStorage {
       rejectWhenExistingMatches decideToReject: (_ existing: AnnotatedValue) -> Bool,
     ) {
       // Improvement:
+      // - implement geometric growth strategy, OrderedCollections has no `capacity` property now
       // - hasValue(forKey:) – which faster
       // + multiValueForKeyDict.append(contentsOf: singleValueForKeyDict)
       // - optimize writeProvenance()

@@ -55,22 +55,32 @@ extension OrderedMultipleValuesForKeyStorage: Sendable where Key: Sendable, Valu
 
 // MARK: All Values For Key
 
+extension OrderedMultipleValuesForKeyStorage {}
+
 extension OrderedMultipleValuesForKeyStorage {
-  // TODO: performance test allValues vs allValuesSlice
-//  internal func allValuesSlice(forKey key: Key) -> (some Sequence<TaggedValue>)? { // & ~Escapable
-//    ValuesForKeySlice(_variant: _variant, key: key)
+//  internal func iterateAllValues(forKey key: Key, _ iteration: (AnnotatedValue) -> Void) {
+//    switch _variant {
+//    case .left(let singleValueForKeyDict):
+//      if let valueForKey = singleValueForKeyDict[key] {
+//        iteration(AnnotatedValue.value(valueForKey))
+//      }
+//    case .right(let multiValueForKeyDict):
+//      multiValueForKeyDict.iterateAllValues(forKey: key, iteration)
+//    }
 //  }
   
-  internal func iterateAllValues(forKey key: Key, _ iteration: (AnnotatedValue) -> Void) {
-    switch _variant {
-    case .left(let singleValueForKeyDict):
-      if let valueForKey = singleValueForKeyDict[key] {
-        iteration(AnnotatedValue.value(valueForKey))
-      }
-    case .right(let multiValueForKeyDict):
-      multiValueForKeyDict.iterateAllValues(forKey: key, iteration)
-    }
-  }
+//  internal func first(forKey key: Key, where predicate: (Value) -> Bool) -> Value? {
+//    switch _variant {
+//    case .left(let singleValueForKeyDict):
+//      if let valueForKey = singleValueForKeyDict[key], predicate(valueForKey) {
+//        valueForKey
+//      } else {
+//        nil
+//      }
+//    case .right(let multiValueForKeyDict):
+//      multiValueForKeyDict.allValues(forKey: key)
+//    }
+//  }
   
   internal func allValues(forKey key: Key) -> ValuesForKey<AnnotatedValue>? {
     switch _variant {

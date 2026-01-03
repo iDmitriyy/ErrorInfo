@@ -67,14 +67,14 @@ struct ErrorInfoAddValueTests {
 //        arguments: [(1, true), (2, true), (2, false), (3, true), (3, false)],
         [ValueDuplicatePolicy.allowEqual, .rejectEqual, .allowEqualWhenOriginDiffers])
   @_transparent
-  mutating func `add value`(params: (addedValuesCount: Int, addForDifferentKeys: Bool),
-                            duplicatePolicy: ValueDuplicatePolicy) {
+  func `add value`(params: (addedValuesCount: Int, addForDifferentKeys: Bool),
+                   duplicatePolicy: ValueDuplicatePolicy) {
     let (addedValuesCount, addForDifferentKeys) = params
     
     if #available(macOS 26.0, *) {
       let measurementsCount = countBase / addedValuesCount
       
-      let switchDuration = performMeasuredAction(count: measurementsCount, prepare: {
+      let switchDuration = performMeasuredAction(count: measurementsCount, prepare: { _ in
         make1000EmptyInstances()
       }, measure: { infos in
         for index in infos.indices {
@@ -113,21 +113,21 @@ struct ErrorInfoAddValueTests {
 //      let elements: [(String, String)] = [("A", ""), ("B", ""), ("C", ""), ("D", ""), ("E", "")]
       let strings = ["A, BB"]
       
-      @_transparent func testAddValue(_: some ErrorInfo.ValueProtocol,
+      @_transparent func testAddValue(_ value: some ErrorInfo.ValueProtocol,
                                       duplicatePolicy _: ValueDuplicatePolicy,
-                                      forKey _: String,
+                                      forKey key: String,
                                       to errorInfo: inout ErrorInfo) {
-        //        errorInfo._addValue_Test(value, duplicatePolicy: duplicatePolicy, forKey: key)
+        errorInfo._addValue_Test(value, duplicatePolicy: duplicatePolicy, forKey: key)
 //        blackHole(ErrorInfo.merged(info, info3))
         ////        errorInfo.merge(with: info, origin: .fileLine())
 //        errorInfo[.apiEndpoint] = value
 //        errorInfo.appendIfNotNil(value, forKey: key)
-         errorInfo.append(contentsOf: elements, origin: .fileLine())
+//         errorInfo.append(contentsOf: elements, origin: .fileLine())
 //        errorInfo.appendProperties(of: "A") { \String.count }
 //        errorInfo.appendProperties_2(of: "", origin: .custom(origin: ""), keys: \.count)
       }
       
-      let output = performMeasuredAction(count: measurementsCount, prepare: {
+      let output = performMeasuredAction(count: measurementsCount, prepare: { _ in
         make1000EmptyInstances()
       }, measure: { infos in
         for index in infos.indices {
@@ -163,7 +163,6 @@ struct ErrorInfoAddValueTests {
       })
       
       /*
-       
        
        */
       
@@ -374,6 +373,6 @@ struct ErrorInfoAddValueTests {
   @available(macOS 26.0, *)
   @_transparent
   internal func make1000EmptyInstances() -> InlineArray<1000, ErrorInfo> {
-    InlineArray<1000, ErrorInfo>({ _ in ErrorInfo.empty })
+    InlineArray<1000, ErrorInfo>({ _ in ["A": "1"] })
   }
 }

@@ -48,7 +48,7 @@ internal func performMeasuredAction<T>(count: Int, _ actions: () -> T) -> (resul
 @inline(__always)
 @discardableResult
 internal func performMeasuredAction<P, T>(count: Int,
-                                          prepare: () -> P,
+                                          prepare: (Int) -> P,
                                           measure actions: (inout P) -> T)
 -> (results: [T], duration: Double, preparationsDuration: Double) {
   let clock = ContinuousClock()
@@ -57,9 +57,9 @@ internal func performMeasuredAction<P, T>(count: Int,
   
   var totalPreparationsDuration = Duration.zero
   var totalMeasuredDuration = Duration.zero
-  for _ in 0..<count {
+  for index in 0..<count {
     let timeBeforePreparation = clock.now
-    var preparedData = prepare()
+    var preparedData = prepare(index)
     let timeAfterPreparation = clock.now
     
     let timeBeforeMeasurement = clock.now
