@@ -50,7 +50,7 @@ internal func performMeasuredAction<T>(count: Int, _ actions: () -> T) -> (resul
 internal func performMeasuredAction<P, T>(iterations: Int,
                                           setup: (Int) -> P,
                                           measure actions: (inout P) -> T)
-  -> (duration: Duration, setupDuration: Duration, results: [T], ) {
+  -> (duration: Duration, setupDuration: Duration, results: [T]) {
   let clock = ContinuousClock()
     
   var results: [T] = []
@@ -77,6 +77,50 @@ internal func performMeasuredAction<P, T>(iterations: Int,
   }
   
   return (totalExecutionDuration, totalSetupDuration, results)
+}
+
+/// Returns a Boolean value indicating whether a duration is approximately
+/// equal to a baseline duration multiplied by an expected ratio, within
+/// `expectedRatio ± ratioTolerance`.
+///
+/// This function is for stable, ratio-based comparisons of durations,
+/// such as performance tests where absolute timings may vary between runs.
+///
+/// ### Example
+/// ```swift
+/// let baseline = Duration.milliseconds(100)
+/// let measured = Duration.milliseconds(130)
+///
+/// isDuration(measured,
+///            relativeTo: baseline,
+///            expectedRatio: 1.3,
+///            ratioTolerance: 0.01)
+/// // true
+/// ```
+///
+/// - Parameters:
+///   - duration: The measured duration to evaluate.
+///   - baselineDuration: The reference duration used as the comparison baseline.
+///   - expectedRatio: The expected ratio between `duration` and `baselineDuration`.
+///   - ratioTolerance: The allowed deviation from `expectedRatio`.
+/// - Returns: `true` if the ratio of `duration` to `baselineDuration` lies within
+///   the allowed tolerance; otherwise, `false`.
+@inlinable @inline(__always)
+func isDuration(_ duration: Duration,
+                relativeTo baselineDuration: Duration,
+                expectedRatio: Double,
+                ratioTolerance: Double) -> Bool {
+  precondition(baselineDuration > .zero, "Baseline duration must be non-zero")
+  precondition(expectedRatio.isFinite && expectedRatio > 0)
+  precondition(ratioTolerance.isFinite && ratioTolerance >= 0)
+  precondition(expectedRatio - ratioTolerance > 0)
+  
+  let measuredRatio = abs(duration / baselineDuration)
+  
+  let lowerBound = expectedRatio - ratioTolerance
+  let upperBound = expectedRatio + ratioTolerance
+  
+  return lowerBound <= measuredRatio && measuredRatio <= upperBound
 }
 
 // This gives inaccurate results

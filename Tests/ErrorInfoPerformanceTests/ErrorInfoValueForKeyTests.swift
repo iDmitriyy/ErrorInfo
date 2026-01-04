@@ -13,7 +13,7 @@ import Testing
 
 struct ErrorInfoValueForKeyTests {
   private let countBase: Int = 1000
-  private let factor: Double = 10
+  private let factor: Double = 1
   
   private var iterations: Int {
     Int((Double(countBase) * factor).rounded(.toNearestOrAwayFromZero))
@@ -66,18 +66,75 @@ struct ErrorInfoValueForKeyTests {
        316.15    allRecords, multi-storage 2 values nil at end
        */
       
-      printResult(duration: output.duration,
+      let adjustedDuration = output.duration - overheadDuration
+      
+      printResult(adjustedDuration: adjustedDuration,
                   overheadDuration: overheadDuration,
                   accessKind: accessKind,
                   storageKind: storageKind)
+      
+      testByBaseline(accessKind: accessKind,
+                     storageKind: storageKind,
+                     adjustedDuration: adjustedDuration,
+                     overheadDuration: overheadDuration)
     } // end if #available
+  }
+  
+  private func testByBaseline(accessKind: RecordAccessKind,
+                              storageKind: StorageKind,
+                              adjustedDuration: Duration,
+                              overheadDuration: Duration) {
+    let baselineDuration = performMeasuredAction(iterations: iterations, setup: { index in
+      [key: index, "name": "name"] as Dictionary<String, ErrorInfo.ValueExistential>
+    }, measure: { dict in
+      for _ in 0..<1000 {
+        switch accessKind {
+        case .lastRecorded: blackHole(dict[key])
+        case .allRecords: blackHole(dict[key])
+        }
+      }
+    }).duration - overheadDuration
+    
+    let ratio = adjustedDuration / baselineDuration
+    
+    /*
+     ____    62.9    lastRecorded, singl-storage 0 values
+     ____==== ratio: 0.7216639738551123    0.7133654346351713    0.7029623688719272
+     ____    103.6    lastRecorded, singl-storage 1 value
+     ____==== ratio: 1.1699557290508902    1.1819808938473508    1.1905649630061392
+     ____    129.2    lastRecorded, multi-storage 0 values
+     ____==== ratio: 1.4568665288731135    1.3531502340486605    1.3692049629517378
+     ____    285.5    lastRecorded, multi-storage 1 value
+     ____==== ratio: 3.2681981815822323    3.186690140246894    3.267836363473608
+     ____    310.5    lastRecorded, multi-storage 2 values without nil
+     ____==== ratio: 3.5358348993488997    3.420270609412708    3.504647616979162
+     ____    310.3    lastRecorded, multi-storage 2 values nil at start
+     ____==== ratio: 3.473993894473846    3.3991105996986306    3.5059747661910152
+     ____    273.6    lastRecorded, multi-storage 2 values nil at end
+     ____==== ratio: 3.095647950523024    2.9955600803212383    3.096027108439646
+     ____    82.2    allRecords, singl-storage 0 values
+     ____==== ratio: 0.9234815496961638   0.9122241464628474    0.915624802907003
+     ____    260.3    allRecords, singl-storage 1 value
+     ____==== ratio: 2.9353220373105007    2.9299742043558736    2.952386818042477
+     ____    146.2    allRecords, multi-storage 0 values
+     ____==== ratio: 1.6476868471828308    1.5419865837600137    1.5470718137565571
+     ____    367.8    allRecords, multi-storage 1 value
+     ____==== ratio: 4.164729052053808    4.12156451374267     4.162502589293339
+     ____    969.1    allRecords, multi-storage 2 values without nil
+     ____==== ratio: 10.940466894666416    10.870457570153606    11.005448627647498
+     ____    957.8    allRecords, multi-storage 2 values nil at start
+     ____==== ratio: 10.931777088672218    10.724172127280179    10.766528074706173
+     ____    963.6    allRecords, multi-storage 2 values nil at end
+     ____==== ratio: 11.00817323850178    10.872776583719006    10.892942192616886
+     */
+    
+    print("____====", "ratio:", ratio)
   }
   
   @Test(.serialized, arguments: NonNilValueAccessKind.allCases, StorageKind.allCases)
   func `get non nil value`(accessKind: NonNilValueAccessKind, storageKind: StorageKind) {
-    let iterations = Int((Double(countBase) * factor).rounded(.toNearestOrAwayFromZero))
-    
     if #available(macOS 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, *) {
+      
       let overheadDuration = performMeasuredAction(iterations: iterations, setup: { _ in
         make1000IDKeyInstances(storageKind: storageKind)
       }, measure: { infos in
@@ -109,18 +166,20 @@ struct ErrorInfoValueForKeyTests {
        lastRecorded:    334.69
        */
       
-      printResult(duration: output.duration,
+      let adjustedDuration = output.duration - overheadDuration
+      
+      printResult(adjustedDuration: adjustedDuration,
                   overheadDuration: overheadDuration,
                   accessKind: accessKind,
                   storageKind: storageKind)
     } // end if #available
   }
   
-  private func printResult(duration: Duration,
+  private func printResult(adjustedDuration: Duration,
                            overheadDuration: Duration,
                            accessKind: some Any,
                            storageKind: some CustomStringConvertible) {
-    let adjustedDuration = ((duration - overheadDuration).inMilliseconds).asString(fractionDigits: 1)
+    let adjustedDuration = (adjustedDuration.inMilliseconds).asString(fractionDigits: 1)
     print(printPrefix, adjustedDuration, "\(accessKind), \(storageKind)", separator: "\t\t")
   }
 }
