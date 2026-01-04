@@ -35,11 +35,11 @@ struct PlaygroundTests {
     // __playground:  439 transitionedFrom3
     
     // lastRecorded(forKey:) 1 value
-    // __playground:  1351.15592 imp fullInfo(forKey:
+    // __playground:  1351.15592 imp allRecords(forKey:
     // __playground:  934.76617 imp firstSomeValue(forKey:
     
     // lastRecorded(forKey:) 2 values
-    // __playground:  4387.46592 imp fullInfo(forKey:
+    // __playground:  4387.46592 imp allRecords(forKey:
     // __playground:  3034.21750 imp firstSomeValue(forKey:
     
     // firstValue(forKey:) 1 value

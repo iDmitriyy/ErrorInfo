@@ -19,8 +19,8 @@ struct ErrorInfoValueForKeyTests {
   
   private let printPrefix = "____"
   
-  @Test(.serialized, arguments: [RecordAccessKind.allRecords], StorageWithNilKind.allCases)
-  func `get record`(accessKind: RecordAccessKind, storageKind: StorageWithNilKind) {
+  @Test(.serialized, arguments: RecordAccessKind.allCases, StorageKind.allCases)
+  func `get record`(accessKind: RecordAccessKind, storageKind: StorageKind) {
     let iterations = Int((Double(countBase) * factor).rounded(.toNearestOrAwayFromZero))
     
     if #available(macOS 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, *) {
@@ -40,8 +40,8 @@ struct ErrorInfoValueForKeyTests {
       }, measure: { infos in
         for index in infos.indices {
           switch accessKind {
-          case .lastRecorded: break
-//            blackHole(infos[index].lastRecorded(forKey: key))
+          case .lastRecorded: // break
+            blackHole(infos[index].lastRecorded(forKey: key))
           case .allRecords: //break
             blackHole(infos[index].allRecords(forKey: key))
           }
@@ -73,8 +73,8 @@ struct ErrorInfoValueForKeyTests {
     } // end if #available
   }
   
-  @Test(.serialized, arguments: NonNilValueAccessKind.allCases, StorageWithNilKind.allCases)
-  func `get non nil value`(accessKind: NonNilValueAccessKind, storageKind: StorageWithNilKind) {
+  @Test(.serialized, arguments: NonNilValueAccessKind.allCases, StorageKind.allCases)
+  func `get non nil value`(accessKind: NonNilValueAccessKind, storageKind: StorageKind) {
     let iterations = Int((Double(countBase) * factor).rounded(.toNearestOrAwayFromZero))
     
     if #available(macOS 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, *) {
@@ -132,7 +132,7 @@ extension ErrorInfoValueForKeyTests {
     case singleValue
   }
   
-  enum StorageWithNilKind: CaseIterable, CustomStringConvertible {
+  enum StorageKind: CaseIterable, CustomStringConvertible {
     /// OrderedDictionary
     case singleForKey(variant: SingleStorageValuesCount)
     
@@ -202,7 +202,7 @@ extension ErrorInfoValueForKeyTests {
   @inlinable
   @inline(__always)
   @available(macOS 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, *)
-  internal func make1000IDKeyInstances(storageKind: StorageWithNilKind) -> InlineArray<1000, ErrorInfo> {
+  internal func make1000IDKeyInstances(storageKind: StorageKind) -> InlineArray<1000, ErrorInfo> {
     InlineArray<1000, ErrorInfo>({ index in
       var info = ErrorInfo()
       info[.name] = "name"
