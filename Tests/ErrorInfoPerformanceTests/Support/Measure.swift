@@ -220,6 +220,29 @@ func adaptiveRatioTolerance(iterations: Int,
 /// | 1 000       | ±1.6%                 |
 /// | 10 000     | ±0.5%                 |
 ///
+/// This states:` When I run 100 iterations, ±5% variation is acceptable.`
+///
+/// | Iterations | Effective tolerance       |
+/// |:---------:|-----------------------------|
+/// |         25 | 2× noisier → ±10%         |
+/// |        100 | expected noise → ±5% |
+/// |        400 | 2× cleaner → ±2.5%      |
+/// |      1 600 | 4× cleaner → ±1.25%   |
+///
+/// ### How to choose referenceIterations
+///
+/// Pick the iteration count where:
+/// - The benchmark usually feels “stable”
+/// - You’ve observed acceptable variance
+///
+/// **Common choices**:
+/// |         Context        | Typical value |
+/// |:--------------------:|:--------------:|
+/// | Heavy workloads  | 20–50           |
+/// | Microbenchmarks | 100              |
+/// | Tight loops            | 500              |
+/// | CI environments   | 200–500       |
+///
 /// - Parameters:
 ///   - iterations: The number of iterations used in the measurement.
 ///   - baseTolerance: The expected relative tolerance at `referenceIterations`.
