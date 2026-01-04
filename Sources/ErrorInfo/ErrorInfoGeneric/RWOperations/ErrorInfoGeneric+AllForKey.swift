@@ -24,7 +24,7 @@ extension ErrorInfoGeneric {
     case .right(let multiValueForKeyDict):
       multiValueForKeyDict.allValues(forKey: key)
     }
-  }
+  } // inlining has no performance gain.
 }
 
 extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {

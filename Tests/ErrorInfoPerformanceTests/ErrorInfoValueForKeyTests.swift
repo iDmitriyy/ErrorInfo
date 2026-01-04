@@ -13,7 +13,11 @@ import Testing
 
 struct ErrorInfoValueForKeyTests {
   private let countBase: Int = 1000
-  private let factor: Double = 1
+  private let factor: Double = 10
+  
+  private var iterations: Int {
+    Int((Double(countBase) * factor).rounded(.toNearestOrAwayFromZero))
+  }
   
   private let key = String(describing: StringLiteralKey.id)
   
@@ -21,49 +25,45 @@ struct ErrorInfoValueForKeyTests {
   
   @Test(.serialized, arguments: RecordAccessKind.allCases, StorageKind.allCases)
   func `get record`(accessKind: RecordAccessKind, storageKind: StorageKind) {
-    let iterations = Int((Double(countBase) * factor).rounded(.toNearestOrAwayFromZero))
-    
     if #available(macOS 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, *) {
-      let overheadDuration = performMeasuredAction(iterations: iterations, setup: { _ in
-        make1000IDKeyInstances(storageKind: storageKind)
-      }, measure: { infos in
-        for index in infos.indices {
+      let overheadDuration = performMeasuredAction(iterations: iterations, setup: { index in
+        makeIDKeyInstance(storageKind: storageKind, index: index)
+      }, measure: { info in
+        for _ in 0..<1000 {
           switch accessKind {
-          case .allRecords: blackHole(infos[index])
-          case .lastRecorded: blackHole(infos[index])
+          case .lastRecorded: blackHole(info)
+          case .allRecords: blackHole(info)
           }
         }
       }).duration
       
-      let output = performMeasuredAction(iterations: iterations, setup: { _ in
-        make1000IDKeyInstances(storageKind: storageKind)
-      }, measure: { infos in
-        for index in infos.indices {
+      let output = performMeasuredAction(iterations: iterations, setup: { index in
+        makeIDKeyInstance(storageKind: storageKind, index: index)
+      }, measure: { info in
+        for _ in 0..<1000 {
           switch accessKind {
-          case .lastRecorded: // break
-            blackHole(infos[index].lastRecorded(forKey: key))
-          case .allRecords: //break
-            blackHole(infos[index].allRecords(forKey: key))
+          case .lastRecorded: blackHole(info.lastRecorded(forKey: key))
+          case .allRecords: blackHole(info.allRecords(forKey: key))
           }
         }
       })
       
       /*
-        92.21    lastRecorded, singl-storage 0 values
-       131.83    lastRecorded, singl-storage 1 value
-       158.19    lastRecorded, multi-storage 0 values
-       331.23    lastRecorded, multi-storage 1 value
-       343.16    lastRecorded, multi-storage 2 values without nil
-       344.30    lastRecorded, multi-storage 2 values nil at start
-       303.28    lastRecorded, multi-storage 2 values nil at end
+        20.95    lastRecorded, singl-storage 0 values
+        34.32    lastRecorded, singl-storage 1 value
+        39.69    lastRecorded, multi-storage 0 values
+        95.21    lastRecorded, multi-storage 1 value
+       102.22    lastRecorded, multi-storage 2 values without nil
+       101.74    lastRecorded, multi-storage 2 values nil at start
+        90.05    lastRecorded, multi-storage 2 values nil at end
        
-       112.46    allRecords, singl-storage 0 values
-       290.46    allRecords, singl-storage 1 value
-       183.10    allRecords, multi-storage 0 values
-       384.24    allRecords, multi-storage 1 value
-       970.81    allRecords, multi-storage 2 values without nil
-       961.61    allRecords, multi-storage 2 values nil at start
-       967.70    allRecords, multi-storage 2 values nil at end
+        26.91    allRecords, singl-storage 0 values
+        85.19    allRecords, singl-storage 1 value
+        45.17    allRecords, multi-storage 0 values
+       120.49    allRecords, multi-storage 1 value
+       321.49    allRecords, multi-storage 2 values without nil
+       318.40    allRecords, multi-storage 2 values nil at start
+       316.15    allRecords, multi-storage 2 values nil at end
        */
       
       printResult(duration: output.duration,
@@ -120,8 +120,7 @@ struct ErrorInfoValueForKeyTests {
                            overheadDuration: Duration,
                            accessKind: some Any,
                            storageKind: some CustomStringConvertible) {
-    let adjustedDuration = ((duration - overheadDuration).inMilliseconds / factor * 3).asString(fractionDigits: 2)
-    
+    let adjustedDuration = ((duration - overheadDuration).inMilliseconds).asString(fractionDigits: 1)
     print(printPrefix, adjustedDuration, "\(accessKind), \(storageKind)", separator: "\t\t")
   }
 }
@@ -236,5 +235,42 @@ extension ErrorInfoValueForKeyTests {
       }
       return info
     })
+  }
+  
+  @inlinable
+  @inline(__always)
+  @available(macOS 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, *)
+  internal func makeIDKeyInstance(storageKind: StorageKind, index: Int) -> ErrorInfo {
+    var info = ErrorInfo()
+    info[.name] = "name"
+    
+    switch storageKind {
+    case .singleForKey(let valuesForTargetKeyCount):
+      switch valuesForTargetKeyCount {
+      case .noValues: break
+      case .singleValue: info[.id] = index
+      }
+    case .multiForKey(let valuesForTargetKeyCount):
+      switch valuesForTargetKeyCount {
+      case .noValues:
+        info[.name] = "name2" // trigger transition to multiValueForKey storage
+        
+      case .singleValue:
+        info[.id] = index
+        info[.name] = "name2" // trigger transition to multiValueForKey storage
+        
+      case .twoValues(let nilPosition):
+        let range = 0..<2 // transition to multiValueForKey storage is triggered by multiple values added for key `.id`
+        for number in range {
+          let value: Int? = switch nilPosition {
+          case .withoutNil: index + number
+          case .atStart: number == range.first ? nil : index + number
+          case .atEnd: number == range.last ? nil : index + number
+          }
+          info[.id] = value
+        }
+      }
+    }
+    return info
   }
 }

@@ -131,6 +131,10 @@ extension ErrorInfo {
   public func lastRecorded(forKey dynamicKey: String) -> OptionalValue? {
     _storage.lastRecordedInstance(forKey: dynamicKey)
   }
+  
+  public func testStub(forKey dynamicKey: String) -> OptionalValue? {
+    nil
+  }
 }
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
