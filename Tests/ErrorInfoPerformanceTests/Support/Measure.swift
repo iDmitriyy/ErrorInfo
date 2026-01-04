@@ -50,7 +50,7 @@ internal func performMeasuredAction<T>(count: Int, _ actions: () -> T) -> (resul
 internal func performMeasuredAction<P, T>(iterations: Int,
                                           setup: (Int) -> P,
                                           measure actions: (inout P) -> T)
-  -> (results: [T], duration: Duration, setupDuration: Duration) {
+  -> (duration: Duration, setupDuration: Duration, results: [T], ) {
   let clock = ContinuousClock()
     
   var results: [T] = []
@@ -76,7 +76,7 @@ internal func performMeasuredAction<P, T>(iterations: Int,
     results.append(result)
   }
   
-  return (results, totalExecutionDuration, totalSetupDuration)
+  return (totalExecutionDuration, totalSetupDuration, results)
 }
 
 // This gives inaccurate results
@@ -154,10 +154,10 @@ public func blackHole<T>(_ thing: T) {
 }
 
 @inline(never) @_optimize(none)
-public func emptyFunc1() {}
+public func emptyFunc0() {}
 
 @inline(never) @_optimize(none)
-public func emptyFunc0() {}
+public func emptyFunc1() {}
 
 extension Double {
   public func asString(fractionDigits: UInt8) -> String {

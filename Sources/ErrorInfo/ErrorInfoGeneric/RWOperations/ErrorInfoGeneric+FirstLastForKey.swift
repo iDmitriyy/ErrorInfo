@@ -7,11 +7,23 @@
 
 // MARK: - Last For Key
 
-extension ErrorInfoGeneric {
-  func lastSomeValue(forKey key: Key) -> RecordValue? {
-    guard let allRecordsForKey = _storage.allValues(forKey: key) else { return nil }
-    return allRecordsForKey.last.record.someValue
-  }
+extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentableEquatable {
+  internal func lastRecordedInstance(forKey key: Key) -> RecordValue.OptionalInstanceType? {
+    switch _storage._variant {
+    case .left(let singleValueForKeyDict):
+      if let index = singleValueForKeyDict.index(forKey: key) {
+        return singleValueForKeyDict.values[index].someValue.instanceOfOptional
+      } else {
+        return nil
+      }
+    case .right(let multiValueForKeyDict):
+      if let indices = multiValueForKeyDict._keyToEntryIndices[key] {
+        return multiValueForKeyDict._entries[indices.last].value.record.someValue.instanceOfOptional
+      } else {
+        return nil
+      }
+    }
+  } // inlining has no performance gain.
 }
 
 extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
@@ -21,7 +33,7 @@ extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
     if let last = annotatedRecords.last.record.someValue.getWrapped { // fast path
       return last
     } else {
-      // ieration by indices.dropLast().reversed() is faster than iteration over allRecordsForKey.dropLast().reversed()
+      // iteration by indices.dropLast().reversed() is faster than iteration over allRecordsForKey.dropLast().reversed()
       for index in annotatedRecords.indices.dropLast().reversed() {
         if let value = annotatedRecords[index].record.someValue.getWrapped {
           return value

@@ -28,33 +28,34 @@ extension ErrorInfo {
   /// - `.value` never equals `.nilInstance`.
   @usableFromInline
   @frozen
-  internal struct EquatableOptionalValue: Sendable, Equatable, ErrorInfoOptionalRepresentable,
+  internal struct EquatableOptionalValue: Sendable, ErrorInfoOptionalRepresentableEquatable,
     CustomDebugStringConvertible {
     
     @usableFromInline
-    internal let maybeValue: OptionalValue
+    internal let instanceOfOptional: OptionalValue
     
     @usableFromInline
     static func value(_ value: ValueExistential) -> Self {
-      Self(maybeValue: .value(value))
+      Self(instanceOfOptional: .value(value))
     }
     
     @usableFromInline
     static func nilInstance(typeOfWrapped: any Sendable.Type) -> Self {
-      Self(maybeValue: .nilInstance(typeOfWrapped: typeOfWrapped))
+      Self(instanceOfOptional: .nilInstance(typeOfWrapped: typeOfWrapped))
     }
     
     @usableFromInline
-    var getWrapped: ValueExistential? { maybeValue.getWrapped } // inlining has no effect on performance
-    
-    var isValue: Bool { maybeValue.isValue } // inlining has no effect on performance
+    var getWrapped: ValueExistential? { instanceOfOptional.getWrapped } // inlining has no effect on performance
     
     @usableFromInline
-    var debugDescription: String { maybeValue.debugDescription }
+    var isValue: Bool { instanceOfOptional.isValue } // inlining has no effect on performance
+    
+    @usableFromInline
+    var debugDescription: String { instanceOfOptional.debugDescription }
     
     @usableFromInline
     static func == (lhs: Self, rhs: Self) -> Bool {
-      switch (lhs.maybeValue, rhs.maybeValue) {
+      switch (lhs.instanceOfOptional, rhs.instanceOfOptional) {
       case let (.value(lhsInstance), .value(rhsInstance)):
         ErrorInfoFuncs.isEqualEquatableExistential(a: lhsInstance, b: rhsInstance)
         
@@ -90,7 +91,7 @@ extension ErrorInfo {
   /// b.getWrapped // nil
   /// ```
   @frozen
-  public enum OptionalValue: Sendable, CustomDebugStringConvertible {
+  public enum OptionalValue: Sendable, ErrorInfoOptionalRepresentable, CustomDebugStringConvertible {
     case value(any ValueProtocol)
     case nilInstance(typeOfWrapped: any Sendable.Type)
     
@@ -110,8 +111,8 @@ extension ErrorInfo {
     
     public var isNil: Bool {
       switch self {
-      case .value: false
       case .nilInstance: true
+      case .value: false
       }
     } // inlining has no effect on performance
     

@@ -22,40 +22,44 @@ extension ErrorInfoAny {
   /// - `.value` and `.nilInstance` are never equal.
   @usableFromInline
   @frozen
-  internal struct EquatableOptionalAny: Equatable, ErrorInfoOptionalRepresentable, CustomDebugStringConvertible {
-    typealias Wrapped = Any
-    typealias TypeOfWrapped = any Any.Type
+  internal struct EquatableOptionalAny: Equatable, ErrorInfoOptionalRepresentableEquatable, CustomDebugStringConvertible {
+    @usableFromInline typealias Wrapped = Any
+    @usableFromInline typealias TypeOfWrapped = any Any.Type
     
-    let maybeValue: ErrorInfoOptionalAny
+    @usableFromInline
+    let instanceOfOptional: ErrorInfoOptionalAny
     
     private init(_unverifiedMaybeValue: ErrorInfoOptionalAny) {
-      maybeValue = _unverifiedMaybeValue
+      instanceOfOptional = _unverifiedMaybeValue
     }
     
     private init(anyValue: any Any) {
-      maybeValue = ErrorInfoFuncs.flattenOptional(any: anyValue)
+      instanceOfOptional = ErrorInfoFuncs.flattenOptional(any: anyValue)
     }
     
+    @usableFromInline
     static func value(_ anyValue: Any) -> Self {
       Self(anyValue: anyValue)
     }
     
+    @usableFromInline
     static func nilInstance(typeOfWrapped: any Any.Type) -> Self {
       // FIXME: - type can be incorrect, extract root type
       Self(_unverifiedMaybeValue: .nilInstance(typeOfWrapped: typeOfWrapped))
     }
     
-    var isValue: Bool { maybeValue.isValue }
+    @usableFromInline
+    var isValue: Bool { instanceOfOptional.isValue }
     
     @usableFromInline
-    var getWrapped: Any? { maybeValue.getWrapped }
+    var getWrapped: Any? { instanceOfOptional.getWrapped }
     
     @usableFromInline
-    var debugDescription: String { maybeValue.debugDescription }
+    var debugDescription: String { instanceOfOptional.debugDescription }
     
     @usableFromInline
     static func == (lhs: Self, rhs: Self) -> Bool {
-      switch (lhs.maybeValue, rhs.maybeValue) {
+      switch (lhs.instanceOfOptional, rhs.instanceOfOptional) {
       case (.value, .nilInstance),
            (.nilInstance, .value):
         false
@@ -98,6 +102,13 @@ public enum ErrorInfoOptionalAny: ErrorInfoOptionalRepresentable, CustomDebugStr
     switch self {
     case .value: true
     case .nilInstance: false
+    }
+  }
+  
+  public var isNil: Bool {
+    switch self {
+    case .nilInstance: true
+    case .value: false
     }
   }
   

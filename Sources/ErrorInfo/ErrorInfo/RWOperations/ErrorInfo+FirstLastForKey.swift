@@ -91,13 +91,13 @@ extension ErrorInfo {
     switch _storage._storage._variant {
     case .left(let singleValueForKeyDict):
       if let index = singleValueForKeyDict.index(forKey: dynamicKey) {
-        return singleValueForKeyDict.values[index].someValue.maybeValue
+        return singleValueForKeyDict.values[index].someValue.instanceOfOptional
       } else {
         return nil
       }
     case .right(let multiValueForKeyDict):
       if let indices = multiValueForKeyDict._keyToEntryIndices[dynamicKey] {
-        return multiValueForKeyDict._entries[indices.last].value.record.someValue.maybeValue
+        return multiValueForKeyDict._entries[indices.last].value.record.someValue.instanceOfOptional
       } else {
         return nil
       }
@@ -129,7 +129,7 @@ extension ErrorInfo {
   ///   // print: "last write was a nil of type Int"
   /// ```
   public func lastRecorded(forKey dynamicKey: String) -> OptionalValue? {
-    _storage.lastSomeValue(forKey: dynamicKey)?.maybeValue
+    _storage.lastRecordedInstance(forKey: dynamicKey)
   }
 }
 

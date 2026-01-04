@@ -11,7 +11,7 @@
 /// `nil` that preserves the intended wrapped type (`TypeOfWrapped`). This lets
 /// higher-level APIs filter `non-nil` values while keeping type information for
 /// missing values.
-protocol ErrorInfoOptionalRepresentable {
+public protocol ErrorInfoOptionalRepresentable {
   /// The underlying non-optional value type.
   associatedtype Wrapped
   /// A type that identifies `Wrapped` when constructing a typed `nil`
@@ -23,10 +23,19 @@ protocol ErrorInfoOptionalRepresentable {
   static func nilInstance(typeOfWrapped: TypeOfWrapped) -> Self
   
   /// Returns the wrapped value, or `nil` if this instance represents a typed `nil`.
+  /// It is effectively converting instance to `Swift.Optional`
   var getWrapped: Wrapped? { get }
   
   /// Returns `true` if this instance contains a value; `false` if it is a typed `nil`.
   var isValue: Bool { get } // TODO: - check performance with inlining
+  
+  var isNil: Bool { get }
+}
+
+@usableFromInline protocol ErrorInfoOptionalRepresentableEquatable: ErrorInfoOptionalRepresentable, Equatable {
+  associatedtype OptionalInstanceType: ErrorInfoOptionalRepresentable
+  
+  var instanceOfOptional: OptionalInstanceType { get }
 }
 
 extension ErrorInfoOptionalRepresentable {

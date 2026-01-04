@@ -34,7 +34,7 @@ extension ErrorInfo {
   public var fullInfoView: some Sequence<FullInfoElement> {
     _storage.lazy.map { key, annotatedRecord -> FullInfoElement in
       let record = annotatedRecord.record
-      return (key, (record.someValue.maybeValue, record.keyOrigin, annotatedRecord.collisionSource))
+      return (key, (record.someValue.instanceOfOptional, record.keyOrigin, annotatedRecord.collisionSource))
     }
   }
   
@@ -49,7 +49,7 @@ extension ErrorInfo {
     guard let annotatedRecords = _storage.allAnnotatedRecords(forKey: dynamicKey) else { return nil }
 
     return annotatedRecords.map { annotatedRecord -> FullInfoRecord in
-      (annotatedRecord.record.someValue.maybeValue, annotatedRecord.record.keyOrigin, annotatedRecord.collisionSource)
+      (annotatedRecord.record.someValue.instanceOfOptional, annotatedRecord.record.keyOrigin, annotatedRecord.collisionSource)
     }
   }
 }
