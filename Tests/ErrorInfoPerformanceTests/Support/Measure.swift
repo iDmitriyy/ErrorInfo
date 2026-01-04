@@ -44,13 +44,40 @@ internal func performMeasuredAction<T>(count: Int, _ actions: () -> T) -> (resul
   return (results, ms)
 }
 
+@usableFromInline struct MeasureOutput<T> {
+  let totalDuration: Duration
+  let medianDuration: Duration
+  let measurements: [Duration]
+  let setupDuration: Duration
+  let results: [T]
+  
+  @usableFromInline
+  init(totalDuration: Duration, medianDuration: Duration, measurements: [Duration], setupDuration: Duration, results: [T]) {
+    self.totalDuration = totalDuration
+    self.medianDuration = medianDuration
+    self.measurements = measurements
+    self.setupDuration = setupDuration
+    self.results = results
+  }
+}
+
+/// One iteration should take at least 50× the clock’s minimum resolution.
+/// Om M1 processors, Clock.minimumResolution == 0.042 µs.
+///
+/// | Target per-iteration time |                     Quality                          |
+/// |:---------------------------:|------------------------------------------|
+/// |                       < 5 µs | ❌ unreliable            |
+/// |                        10–20 µs | ⚠️ barely usable                                |
+/// |                      50–200 µs | ✅ good                                             |
+/// |                        0.5–2 ms | ✅ excellent                                       |
+/// |                         > 10 ms | ❌ too slow for iteration-based tests |
 @inlinable
 @inline(__always)
 @discardableResult
 internal func performMeasuredAction<P, T>(iterations: Int,
                                           setup: (Int) -> P,
                                           measure actions: (inout P) -> T)
-  -> (totalDuration: Duration, medianDuration: Duration, setupDuration: Duration, results: [T]) {
+  -> MeasureOutput<T> {
   let clock = ContinuousClock()
     
   var results: [T] = []
@@ -60,7 +87,7 @@ internal func performMeasuredAction<P, T>(iterations: Int,
   executionDurations.reserveCapacity(iterations)
     
   var totalSetupDuration = Duration.zero
-  var totalExecutionDuration = Duration.zero
+  var totalDuration = Duration.zero
     
   for index in 0..<iterations {
     let setupStart = clock.now
@@ -75,7 +102,7 @@ internal func performMeasuredAction<P, T>(iterations: Int,
     totalSetupDuration += setupDuration
     
     let executionDuration = actionEnd - actionStart
-    totalExecutionDuration += executionDuration
+    totalDuration += executionDuration
     executionDurations.append(executionDuration)
     
     results.append(result)
@@ -83,7 +110,13 @@ internal func performMeasuredAction<P, T>(iterations: Int,
   
   let medianDuration = median(executionDurations)
   
-  return (totalExecutionDuration, medianDuration, totalSetupDuration, results)
+    
+    
+  return MeasureOutput(totalDuration: totalDuration,
+                       medianDuration: medianDuration,
+                       measurements: executionDurations,
+                       setupDuration: totalSetupDuration,
+                       results: results)
 }
 
 @inlinable
@@ -101,19 +134,34 @@ func median(_ values: [Duration]) -> Duration {
   }
 }
 
-@inlinable
-@inline(__always)
-func averageWithDelta<F: FloatingPoint>(_ values: [[F]])
-  -> [(average: F, lowerDelta: F, upperDelta: F, minDelta: F, maxDelta: F, averageDelta: F)] {
+struct AverageWithDelta<N> {
+  let average: N
+  let lowerDelta: N
+  let upperDelta: N
+  let minDelta: N
+  let maxDelta: N
+  let averageDelta: N
+}
+
+extension AverageWithDelta where N: FloatingPoint {
+  static var zero: Self {
+    Self(average: .zero, lowerDelta:  .zero, upperDelta:  .zero, minDelta:  .zero, maxDelta:  .zero, averageDelta:  .zero)
+  }
+}
+
+extension AverageWithDelta where N == Duration {
+  static var zero: Self {
+    Self(average: .zero, lowerDelta:  .zero, upperDelta:  .zero, minDelta:  .zero, maxDelta:  .zero, averageDelta:  .zero)
+  }
+}
+
+func averageWithDelta<F: FloatingPoint>(_ values: [[F]]) -> [AverageWithDelta<F>] {
   guard !values.isEmpty else { return [] }
   return values.map(averageWithDelta(_:))
 }
 
-@inlinable
-@inline(__always)
-func averageWithDelta<F: FloatingPoint>(_ values: [F])
-  -> (average: F, lowerDelta: F, upperDelta: F, minDelta: F, maxDelta: F, averageDelta: F) {
-  guard !values.isEmpty else { return (.zero, .zero, .zero, .zero, .zero, .zero) }
+func averageWithDelta<F: FloatingPoint>(_ values: [F]) -> AverageWithDelta<F> {
+    guard !values.isEmpty else { return .zero }
   
   let sum = values.reduce(into: F.zero) { result, value in result += value }
   
@@ -132,7 +180,12 @@ func averageWithDelta<F: FloatingPoint>(_ values: [F])
   
   let averageDelta = deltasToAverage.reduce(into: F.zero) { result, value in result += value } / F(values.count)
   
-  return (average, lowerDelta, upperDelta, minDelta, maxDelta, averageDelta)
+  return AverageWithDelta(average: average,
+                          lowerDelta: lowerDelta,
+                          upperDelta: upperDelta,
+                          minDelta: minDelta,
+                          maxDelta: maxDelta,
+                          averageDelta: averageDelta)
 }
 
 /// Returns a Boolean value indicating whether a duration is approximately
@@ -177,14 +230,6 @@ func isDuration(_ duration: Duration,
   let upperBound = expectedRatio + ratioTolerance
   
   return lowerBound <= measuredRatio && measuredRatio <= upperBound
-}
-
-//@inlinable @inline(__always)
-func adaptiveRatioTolerance(iterations: Int,
-                            baseTolerance: Double = 0.15,
-                            minimumTolerance: Double = 0.005) -> Double {
-  precondition(iterations > 0)
-  return max(baseTolerance / sqrt(Double(iterations)), minimumTolerance)
 }
 
 /// Returns a ratio tolerance that adapts to the number of iterations used in a
