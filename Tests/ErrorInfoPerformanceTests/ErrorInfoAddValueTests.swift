@@ -96,7 +96,7 @@ struct ErrorInfoAddValueTests {
           default: Issue.record("Unexpected key-value pairs count \(addedValuesCount)")
           }
         }
-      }).duration
+      }).totalDuration
       
       let info: ErrorInfo = [.bytesCount: 2,
 //        .authenticationStatus: "foo",
@@ -364,7 +364,7 @@ struct ErrorInfoAddValueTests {
       let whichKeys = "\(addForDifferentKeys ? "different keys" : "same key")"
       let policy = ", policy: \(duplicatePolicy)"
       
-      let adjustedDuration = (output.duration - overheadDuration).inMilliseconds.asString(fractionDigits: 1)
+      let adjustedDuration = (output.totalDuration - overheadDuration).inMilliseconds.asString(fractionDigits: 1)
       
       print(printPrefix, adjustedDuration, addedValues + " for " + whichKeys + policy, separator: "\t\t")
     }

@@ -13,7 +13,7 @@ import Testing
 
 struct ErrorInfoValueForKeyTests {
   private let countBase: Int = 1000
-  private let factor: Double = 1
+  private let factor: Double = 10
   
   private var iterations: Int {
     Int((Double(countBase) * factor).rounded(.toNearestOrAwayFromZero))
@@ -25,8 +25,36 @@ struct ErrorInfoValueForKeyTests {
   
   @Test(.serialized, arguments: RecordAccessKind.allCases, StorageKind.allCases)
   func `get record`(accessKind: RecordAccessKind, storageKind: StorageKind) {
+    let dd = [
+      [0.7056380032663495, 0.7063259911894273, 0.6925172413793104, 0.7083981337480559, 0.7088201037659266, 0.7286017699115044, 0.7073480623985318, 0.7088201037659266, 0.7088201037659266, 0.7077958694579545],
+      [1.1449504532995993, 1.1615154185022027, 1.1233730459334756, 1.1466023858957666, 1.1581277672359267, 1.1557059279622188, 1.1510011612767006, 1.1556299559471366, 1.1554405968468469, 1.1554405968468469],
+      [1.411781315074295, 1.415929203539823, 1.4762759859106291, 1.409741312469162, 1.5088412804856528, 1.4646878198567042, 1.3681959564541213, 1.3696804750459495, 1.3681959564541213, 1.3670707640259374],
+      [3.249735673503912, 3.2493313626126126, 3.2758620689655173, 3.2468104602805385, 3.2390554617117115, 3.2496211453744492, 3.1967577092511013, 3.3191684608054213, 3.2334449339207048, 3.20507164537305],
+      [3.505127753303965, 3.5066079295154187, 3.434560397817529, 3.5007224669603523, 3.504469313063063, 3.459001970720721, 3.480835745041293, 3.4757709251101323, 3.4744131951786845, 3.5940566104326956],
+      [3.509533039647577, 3.51325309709526, 3.528075143311002, 3.5066079295154187, 3.503647577092511, 3.4661184442718995, 3.4684405286343614, 3.584549235215338, 3.4720996717608443, 3.5800176211453745],
+      [3.086789256344192, 3.179437405145943, 3.103448275862069, 3.173398181433707, 3.1880594910833864, 3.1556651982378856, 3.060193832599119, 3.072140534426693, 3.072073024599986, 3.173251101321586],
+      [0.96331148234299, 0.9573642042847563, 0.9439655172413793, 0.9559808275181504, 0.9559808275181504, 0.9134994369369369, 0.9148193832599119, 0.9176225602654149, 0.9148193832599119, 0.9148193832599119],
+      [3.055896243039402, 3.0456005364768997, 2.979901926928655, 3.0353140198773527, 3.0324240501867905, 2.9383259911894273, 2.933983179082943, 2.9411993082271555, 2.9368458149779735, 2.9383259911894273],
+      [1.5991753013322056, 1.688243391098719, 1.6705228261620277, 1.5874039613730881, 1.5874039613730881, 1.5447753303964757, 1.543330396475771, 1.6431944738140551, 1.5447753303964757, 1.6440671984188608],
+      [4.092447916666667, 4.083859810115413, 4.102, 4.073589101048247, 4.070592796221893, 4.014696035242291, 4.039634361544434, 4.048564965361233, 4.035384506942976, 4.136528634361233],
+      [10.869669415662226, 10.957470087883387, 10.844706126113682, 10.850139413404863, 10.925495171636005, 10.875171806167401, 10.74593832599119, 10.776585606889492, 10.774758240982566, 10.743013215859031],
+      [10.81153384626244, 10.836903963576042, 10.63609365287658, 10.737506167618243, 10.705223091562699, 10.640602456276172, 10.62847577092511, 10.786856315956658, 10.68541982846857, 10.647577092511014],
+      [10.939472012423238, 10.792750502947094, 10.802990538020582, 10.75390625, 10.761013604003665, 10.649774774774775, 10.624070484581498, 10.77955034765115, 10.6920067667583, 10.619665198237886],
+    ]
+    
+    let average = averageWithDelta(dd)
+    
+    for average in average {
+      print("____–––",
+            average.average.asString(fractionDigits: 4),
+            "delta average/min/max",
+            average.averageDelta.asString(fractionDigits: 4),
+            average.minDelta.asString(fractionDigits: 4),
+            average.maxDelta.asString(fractionDigits: 4))
+    }
+    
     if #available(macOS 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, *) {
-      let overheadDuration = performMeasuredAction(iterations: iterations, setup: { index in
+      let overhead = performMeasuredAction(iterations: iterations, setup: { index in
         makeIDKeyInstance(storageKind: storageKind, index: index)
       }, measure: { info in
         for _ in 0..<1000 {
@@ -35,7 +63,7 @@ struct ErrorInfoValueForKeyTests {
           case .allRecords: blackHole(info)
           }
         }
-      }).duration
+      })
       
       let output = performMeasuredAction(iterations: iterations, setup: { index in
         makeIDKeyInstance(storageKind: storageKind, index: index)
@@ -66,17 +94,14 @@ struct ErrorInfoValueForKeyTests {
        316.15    allRecords, multi-storage 2 values nil at end
        */
       
-      let adjustedDuration = output.duration - overheadDuration
-      
-      printResult(adjustedDuration: adjustedDuration,
-                  overheadDuration: overheadDuration,
+      printResult(adjustedDuration: output.totalDuration - overhead.totalDuration,
                   accessKind: accessKind,
                   storageKind: storageKind)
       
       testByBaseline(accessKind: accessKind,
                      storageKind: storageKind,
-                     adjustedDuration: adjustedDuration,
-                     overheadDuration: overheadDuration)
+                     adjustedDuration: output.medianDuration - overhead.medianDuration,
+                     overheadDuration: overhead.medianDuration)
     } // end if #available
   }
   
@@ -84,7 +109,7 @@ struct ErrorInfoValueForKeyTests {
                               storageKind: StorageKind,
                               adjustedDuration: Duration,
                               overheadDuration: Duration) {
-    let baselineDuration = performMeasuredAction(iterations: iterations, setup: { index in
+    let baseline = performMeasuredAction(iterations: iterations, setup: { index in
       [key: index, "name": "name"] as Dictionary<String, ErrorInfo.ValueExistential>
     }, measure: { dict in
       for _ in 0..<1000 {
@@ -93,39 +118,46 @@ struct ErrorInfoValueForKeyTests {
         case .allRecords: blackHole(dict[key])
         }
       }
-    }).duration - overheadDuration
+    })
     
-    let ratio = adjustedDuration / baselineDuration
+    let adjustedBaselineDuration = baseline.medianDuration - overheadDuration
+    
+    let ratio = adjustedDuration / adjustedBaselineDuration
+    
+//    print("____", adjustedDuration.inMicroseconds, overheadDuration.inMicroseconds, adjustedBaselineDuration.inMicroseconds)
     
     /*
-     ____    62.9    lastRecorded, singl-storage 0 values
-     ____==== ratio: 0.7216639738551123    0.7133654346351713    0.7029623688719272
-     ____    103.6    lastRecorded, singl-storage 1 value
-     ____==== ratio: 1.1699557290508902    1.1819808938473508    1.1905649630061392
-     ____    129.2    lastRecorded, multi-storage 0 values
-     ____==== ratio: 1.4568665288731135    1.3531502340486605    1.3692049629517378
-     ____    285.5    lastRecorded, multi-storage 1 value
-     ____==== ratio: 3.2681981815822323    3.186690140246894    3.267836363473608
-     ____    310.5    lastRecorded, multi-storage 2 values without nil
-     ____==== ratio: 3.5358348993488997    3.420270609412708    3.504647616979162
-     ____    310.3    lastRecorded, multi-storage 2 values nil at start
-     ____==== ratio: 3.473993894473846    3.3991105996986306    3.5059747661910152
-     ____    273.6    lastRecorded, multi-storage 2 values nil at end
-     ____==== ratio: 3.095647950523024    2.9955600803212383    3.096027108439646
-     ____    82.2    allRecords, singl-storage 0 values
-     ____==== ratio: 0.9234815496961638   0.9122241464628474    0.915624802907003
-     ____    260.3    allRecords, singl-storage 1 value
-     ____==== ratio: 2.9353220373105007    2.9299742043558736    2.952386818042477
-     ____    146.2    allRecords, multi-storage 0 values
-     ____==== ratio: 1.6476868471828308    1.5419865837600137    1.5470718137565571
-     ____    367.8    allRecords, multi-storage 1 value
-     ____==== ratio: 4.164729052053808    4.12156451374267     4.162502589293339
-     ____    969.1    allRecords, multi-storage 2 values without nil
-     ____==== ratio: 10.940466894666416    10.870457570153606    11.005448627647498
-     ____    957.8    allRecords, multi-storage 2 values nil at start
-     ____==== ratio: 10.931777088672218    10.724172127280179    10.766528074706173
-     ____    963.6    allRecords, multi-storage 2 values nil at end
-     ____==== ratio: 11.00817323850178    10.872776583719006    10.892942192616886
+     Average:
+      0.7083 delta average/min/max 0.0044 0.0001 0.0203
+      1.1508 delta average/min/max 0.0075 0.0002 0.0274
+      1.4160 delta average/min/max 0.0403 0.0001 0.0928
+      3.2465 delta average/min/max 0.0223 0.0003 0.0727
+      3.4936 delta average/min/max 0.0286 0.0072 0.1005
+      3.5132 delta average/min/max 0.0306 0.0000 0.0713
+      3.1264 delta average/min/max 0.0475 0.0230 0.0663
+     
+      0.9352 delta average/min/max 0.0201 0.0087 0.0281
+      2.9838 delta average/min/max 0.0468 0.0039 0.0721
+      1.6053 delta average/min/max 0.0450 0.0061 0.0830
+      4.0697 delta average/min/max 0.0281 0.0009 0.0668
+     10.8363 delta average/min/max 0.0610 0.0084 0.1212
+     10.7116 delta average/min/max 0.0653 0.0064 0.1253
+     10.7415 delta average/min/max 0.0761 0.0124 0.1980
+     
+     ____==== ratio: 0.7056380032663495 + 0.7063259911894273 + 0.6925172413793104 + 0.7083981337480559 + 0.7088201037659266
+     ____==== ratio: 1.1449504532995993 + 1.1615154185022027 + 1.1233730459334756 + 1.1466023858957666 + 1.1581277672359267
+     ____==== ratio: 1.411781315074295 + 1.415929203539823 + 1.4762759859106291 + 1.409741312469162 + 1.5088412804856528
+     ____==== ratio: 3.249735673503912 + 3.2493313626126126 + 3.2758620689655173 + 3.2468104602805385 + 3.2390554617117115
+     ____==== ratio: 3.505127753303965 + 3.5066079295154187 + 3.434560397817529 + 3.5007224669603523 + 3.504469313063063
+     ____==== ratio: 3.509533039647577 + 3.51325309709526 + 3.528075143311002 + 3.5066079295154187 + 3.503647577092511
+     ____==== ratio: 3.086789256344192 + 3.179437405145943 + 3.103448275862069 + 3.173398181433707 + 3.1880594910833864
+     ____==== ratio: 0.96331148234299 + 0.9573642042847563 + 0.9439655172413793 + 0.9559808275181504 + 0.9559808275181504
+     ____==== ratio: 3.055896243039402 + 3.0456005364768997 + 2.979901926928655 + 3.0353140198773527 + 3.0324240501867905
+     ____==== ratio: 1.5991753013322056 + 1.688243391098719 + 1.6705228261620277 + 1.5874039613730881 + 1.5874039613730881
+     ____==== ratio: 4.092447916666667 + 4.083859810115413 + 4.102 + 4.073589101048247 + 4.070592796221893
+     ____==== ratio: 10.869669415662226 + 10.957470087883387 + 10.844706126113682 + 10.850139413404863 + 10.925495171636005
+     ____==== ratio: 10.81153384626244 + 10.836903963576042 + 10.63609365287658 + 10.737506167618243 + 10.705223091562699
+     ____==== ratio: 10.939472012423238 + 10.792750502947094 + 10.802990538020582 + 10.75390625 + 10.761013604003665
      */
     
     print("____====", "ratio:", ratio)
@@ -135,7 +167,7 @@ struct ErrorInfoValueForKeyTests {
   func `get non nil value`(accessKind: NonNilValueAccessKind, storageKind: StorageKind) {
     if #available(macOS 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, *) {
       
-      let overheadDuration = performMeasuredAction(iterations: iterations, setup: { _ in
+      let overhead = performMeasuredAction(iterations: iterations, setup: { _ in
         make1000IDKeyInstances(storageKind: storageKind)
       }, measure: { infos in
         for index in infos.indices {
@@ -145,7 +177,7 @@ struct ErrorInfoValueForKeyTests {
           case .allNonNil: blackHole(infos[index])
           }
         }
-      }).duration
+      })
       
       let output = performMeasuredAction(iterations: iterations, setup: { _ in
         make1000IDKeyInstances(storageKind: storageKind)
@@ -165,18 +197,14 @@ struct ErrorInfoValueForKeyTests {
        lastNonNil:    296.58
        lastRecorded:    334.69
        */
-      
-      let adjustedDuration = output.duration - overheadDuration
-      
-      printResult(adjustedDuration: adjustedDuration,
-                  overheadDuration: overheadDuration,
+            
+      printResult(adjustedDuration: output.totalDuration - overhead.totalDuration,
                   accessKind: accessKind,
                   storageKind: storageKind)
     } // end if #available
   }
   
   private func printResult(adjustedDuration: Duration,
-                           overheadDuration: Duration,
                            accessKind: some Any,
                            storageKind: some CustomStringConvertible) {
     let adjustedDuration = (adjustedDuration.inMilliseconds).asString(fractionDigits: 1)

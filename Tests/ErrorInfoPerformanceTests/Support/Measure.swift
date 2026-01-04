@@ -50,14 +50,18 @@ internal func performMeasuredAction<T>(count: Int, _ actions: () -> T) -> (resul
 internal func performMeasuredAction<P, T>(iterations: Int,
                                           setup: (Int) -> P,
                                           measure actions: (inout P) -> T)
-  -> (duration: Duration, setupDuration: Duration, results: [T]) {
+  -> (totalDuration: Duration, medianDuration: Duration, setupDuration: Duration, results: [T]) {
   let clock = ContinuousClock()
     
   var results: [T] = []
   results.reserveCapacity(iterations)
+  
+  var executionDurations: [Duration] = []
+  executionDurations.reserveCapacity(iterations)
     
   var totalSetupDuration = Duration.zero
   var totalExecutionDuration = Duration.zero
+    
   for index in 0..<iterations {
     let setupStart = clock.now
     var preparedData = setup(index)
@@ -72,11 +76,63 @@ internal func performMeasuredAction<P, T>(iterations: Int,
     
     let executionDuration = actionEnd - actionStart
     totalExecutionDuration += executionDuration
+    executionDurations.append(executionDuration)
     
     results.append(result)
   }
   
-  return (totalExecutionDuration, totalSetupDuration, results)
+  let medianDuration = median(executionDurations)
+  
+  return (totalExecutionDuration, medianDuration, totalSetupDuration, results)
+}
+
+@inlinable
+@inline(__always)
+func median(_ values: [Duration]) -> Duration {
+  guard !values.isEmpty else { return .zero }
+  
+  let sorted = values.sorted()
+  let mid = sorted.count / 2
+  
+  return if sorted.count % 2 == 0 {
+    (sorted[mid - 1] + sorted[mid]) / 2
+  } else {
+    sorted[mid]
+  }
+}
+
+@inlinable
+@inline(__always)
+func averageWithDelta<F: FloatingPoint>(_ values: [[F]])
+  -> [(average: F, lowerDelta: F, upperDelta: F, minDelta: F, maxDelta: F, averageDelta: F)] {
+  guard !values.isEmpty else { return [] }
+  return values.map(averageWithDelta(_:))
+}
+
+@inlinable
+@inline(__always)
+func averageWithDelta<F: FloatingPoint>(_ values: [F])
+  -> (average: F, lowerDelta: F, upperDelta: F, minDelta: F, maxDelta: F, averageDelta: F) {
+  guard !values.isEmpty else { return (.zero, .zero, .zero, .zero, .zero, .zero) }
+  
+  let sum = values.reduce(into: F.zero) { result, value in result += value }
+  
+  let average = sum / F(values.count)
+  
+  let minValue = values.min()!
+  let maxValue = values.max()!
+  
+  let lowerDelta: F = average - minValue
+  let upperDelta: F = maxValue - average
+  
+  let maxDelta: F = F.maximum(lowerDelta, upperDelta)
+  
+  let deltasToAverage = values.map { abs($0 - average) }
+  let minDelta = deltasToAverage.min()!
+  
+  let averageDelta = deltasToAverage.reduce(into: F.zero) { result, value in result += value } / F(values.count)
+  
+  return (average, lowerDelta, upperDelta, minDelta, maxDelta, averageDelta)
 }
 
 /// Returns a Boolean value indicating whether a duration is approximately
@@ -121,6 +177,70 @@ func isDuration(_ duration: Duration,
   let upperBound = expectedRatio + ratioTolerance
   
   return lowerBound <= measuredRatio && measuredRatio <= upperBound
+}
+
+//@inlinable @inline(__always)
+func adaptiveRatioTolerance(iterations: Int,
+                            baseTolerance: Double = 0.15,
+                            minimumTolerance: Double = 0.005) -> Double {
+  precondition(iterations > 0)
+  return max(baseTolerance / sqrt(Double(iterations)), minimumTolerance)
+}
+
+/// Returns a ratio tolerance that adapts to the number of iterations used in a
+/// performance measurement.
+///
+/// The returned tolerance decreases proportionally to `1 / √iterations`,
+/// reflecting the fact that measurement noise diminishes as more iterations
+/// are performed.
+///
+/// This function is intended for stabilizing performance tests whose absolute
+/// timings vary between runs, machines, or environments.
+///
+/// ### Formula
+/// ```text
+/// tolerance = baseTolerance × √(referenceIterations / iterations)
+/// ```
+///
+/// The result is clamped to `minimumTolerance` to avoid unrealistically strict
+/// comparisons.
+///
+/// ### Example
+/// ```swift
+/// let tolerance = adaptiveRatioTolerance(iterations: 1_000)
+/// // ≈ 0.016 (±1.6%)
+/// ```
+///
+/// ### Default values behavior
+///
+/// | Iterations | Computed tolerance |
+/// |:-----------:|:-------------------:|
+/// | 10            | ±15.8%               |
+/// | 100          | ±5.0%                 |
+/// | 1 000       | ±1.6%                 |
+/// | 10 000     | ±0.5%                 |
+///
+/// - Parameters:
+///   - iterations: The number of iterations used in the measurement.
+///   - baseTolerance: The expected relative tolerance at `referenceIterations`.
+///     Defaults to `0.05` (±5%).
+///   - referenceIterations: The iteration count at which `baseTolerance` is
+///     considered normal. Defaults to `100`.
+///   - minimumTolerance: The lower bound for the returned tolerance.
+///     Defaults to `0.005` (±0.5%).
+/// - Returns: A relative tolerance suitable for comparing duration ratios.
+@inline(__always)
+func adaptiveRatioTolerance(
+  iterations: Int,
+  baseTolerance: Double = 0.05,
+  referenceIterations: Int = 100,
+  minimumTolerance: Double = 0.005
+) -> Double {
+  precondition(iterations > 0)
+  precondition(referenceIterations > 0)
+
+  let scaled = baseTolerance * sqrt(Double(referenceIterations) / Double(iterations))
+  return max(scaled, minimumTolerance)
 }
 
 // This gives inaccurate results
