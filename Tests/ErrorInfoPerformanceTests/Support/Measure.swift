@@ -47,14 +47,21 @@ internal func performMeasuredAction<T>(count: Int, _ actions: () -> T) -> (resul
 @usableFromInline struct MeasureOutput<T> {
   let totalDuration: Duration
   let medianDuration: Duration
+  let averageDuration: Duration
   let measurements: [Duration]
   let setupDuration: Duration
   let results: [T]
   
   @usableFromInline
-  init(totalDuration: Duration, medianDuration: Duration, measurements: [Duration], setupDuration: Duration, results: [T]) {
+  init(totalDuration: Duration,
+       medianDuration: Duration,
+       averageDuration: Duration,
+       measurements: [Duration],
+       setupDuration: Duration,
+       results: [T]) {
     self.totalDuration = totalDuration
     self.medianDuration = medianDuration
+    self.averageDuration = averageDuration
     self.measurements = measurements
     self.setupDuration = setupDuration
     self.results = results
@@ -63,6 +70,16 @@ internal func performMeasuredAction<T>(count: Int, _ actions: () -> T) -> (resul
 
 /// One iteration should take at least 50× the clock’s minimum resolution.
 /// Om M1 processors, Clock.minimumResolution == 0.042 µs.
+///
+/// ### Recommendations:
+/// - Tolerance handles noise.
+/// - Medians handle outliers.
+///
+/// ### When spikes mean something is wrong
+/// Spikes are a bug if:
+/// - they happen frequently (>20% of runs)
+/// - both baseline and measured spike together
+/// - variance grows with iteration count
 ///
 /// | Target per-iteration time |                     Quality                          |
 /// |:---------------------------:|------------------------------------------|
@@ -110,18 +127,16 @@ internal func performMeasuredAction<P, T>(iterations: Int,
   
   let medianDuration = median(executionDurations)
   
-    
-    
   return MeasureOutput(totalDuration: totalDuration,
                        medianDuration: medianDuration,
+                       averageDuration: totalDuration / iterations,
                        measurements: executionDurations,
                        setupDuration: totalSetupDuration,
                        results: results)
 }
 
-@inlinable
-@inline(__always)
-func median(_ values: [Duration]) -> Duration {
+@usableFromInline
+func median<D: DurationProtocol>(_ values: [D]) -> D {
   guard !values.isEmpty else { return .zero }
   
   let sorted = values.sorted()
@@ -134,58 +149,124 @@ func median(_ values: [Duration]) -> Duration {
   }
 }
 
+func median<N: FloatingPoint>(_ values: [N]) -> N {
+  guard !values.isEmpty else { return .zero }
+  
+  let sorted = values.sorted()
+  let mid = sorted.count / 2
+  
+  return if sorted.count % 2 == 0 {
+    (sorted[mid - 1] + sorted[mid]) / 2
+  } else {
+    sorted[mid]
+  }
+}
+
+/// possible fix is median-of-ratios (or trimmed mean) across multiple runs, not larger tolerance.
+func trimmedMeasurements<T: Comparable>(_ values: [T], trimFraction: Double = 0.2) -> [T] {
+  precondition(trimFraction >= 0 && trimFraction <= 0.5)
+  
+  let sorted = values.sorted()
+  let trimCount = Int(Double(sorted.count) * trimFraction)
+  let trimmed = sorted.dropFirst(trimCount).dropLast(trimCount)
+  return Array(trimmed)
+}
+
 struct AverageWithDelta<N> {
-  let average: N
-  let lowerDelta: N
-  let upperDelta: N
-  let minDelta: N
-  let maxDelta: N
-  let averageDelta: N
+  let mean: N
+  let belowAverageDelta: N
+  let aboveAverageDelta: N
+  let minDeviation: N
+  let maxDeviation: N
+  let meanDeviation: N
 }
 
 extension AverageWithDelta where N: FloatingPoint {
   static var zero: Self {
-    Self(average: .zero, lowerDelta:  .zero, upperDelta:  .zero, minDelta:  .zero, maxDelta:  .zero, averageDelta:  .zero)
+    Self(mean: .zero,
+         belowAverageDelta: .zero,
+         aboveAverageDelta: .zero,
+         minDeviation: .zero,
+         maxDeviation: .zero,
+         meanDeviation: .zero)
   }
 }
 
-extension AverageWithDelta where N == Duration {
+extension AverageWithDelta where N: DurationProtocol {
   static var zero: Self {
-    Self(average: .zero, lowerDelta:  .zero, upperDelta:  .zero, minDelta:  .zero, maxDelta:  .zero, averageDelta:  .zero)
+    Self(mean: .zero,
+         belowAverageDelta: .zero,
+         aboveAverageDelta: .zero,
+         minDeviation: .zero,
+         maxDeviation: .zero,
+         meanDeviation: .zero)
   }
 }
 
-func averageWithDelta<F: FloatingPoint>(_ values: [[F]]) -> [AverageWithDelta<F>] {
+func averageWithDelta<N: FloatingPoint>(_ values: [[N]]) -> [AverageWithDelta<N>] {
   guard !values.isEmpty else { return [] }
   return values.map(averageWithDelta(_:))
 }
 
-func averageWithDelta<F: FloatingPoint>(_ values: [F]) -> AverageWithDelta<F> {
-    guard !values.isEmpty else { return .zero }
+func averageWithDelta<N: FloatingPoint>(_ values: [N]) -> AverageWithDelta<N> {
+  guard !values.isEmpty else { return .zero }
   
-  let sum = values.reduce(into: F.zero) { result, value in result += value }
+  let sum = values.reduce(into: N.zero, +=)
   
-  let average = sum / F(values.count)
+  let average = sum / N(values.count)
   
   let minValue = values.min()!
   let maxValue = values.max()!
   
-  let lowerDelta: F = average - minValue
-  let upperDelta: F = maxValue - average
+  let belowAverageDelta: N = average - minValue
+  let aboveAverageDelta: N = maxValue - average
   
-  let maxDelta: F = F.maximum(lowerDelta, upperDelta)
+  let maxDeviation: N = N.maximum(belowAverageDelta, aboveAverageDelta)
   
   let deltasToAverage = values.map { abs($0 - average) }
-  let minDelta = deltasToAverage.min()!
+  let minDeviation = deltasToAverage.min()!
   
-  let averageDelta = deltasToAverage.reduce(into: F.zero) { result, value in result += value } / F(values.count)
+  let averageDeviation = deltasToAverage.reduce(into: N.zero, +=) / N(values.count)
   
-  return AverageWithDelta(average: average,
-                          lowerDelta: lowerDelta,
-                          upperDelta: upperDelta,
-                          minDelta: minDelta,
-                          maxDelta: maxDelta,
-                          averageDelta: averageDelta)
+  return AverageWithDelta(mean: average,
+                          belowAverageDelta: belowAverageDelta,
+                          aboveAverageDelta: aboveAverageDelta,
+                          minDeviation: minDeviation,
+                          maxDeviation: maxDeviation,
+                          meanDeviation: averageDeviation)
+}
+
+/// copy-paste of FloatingPoint imp
+func averageWithDelta<D: DurationProtocol>(_ values: [D]) -> AverageWithDelta<D> {
+  guard !values.isEmpty else { return .zero }
+  
+  let sum = values.reduce(into: D.zero, +=)
+  
+  let average = sum / values.count
+  
+  let minValue = values.min()!
+  let maxValue = values.max()!
+  
+  let belowAverageDelta: D = average - minValue
+  let aboveAverageDelta: D = maxValue - average
+  
+  let maxDeviation: D = max(belowAverageDelta, aboveAverageDelta)
+  
+  let deltasToAverage = values.map { abs($0 - average) }
+  let minDeviation = deltasToAverage.min()!
+  
+  let averageDeviation = deltasToAverage.reduce(into: D.zero, +=) / values.count
+  
+  return AverageWithDelta(mean: average,
+                          belowAverageDelta: belowAverageDelta,
+                          aboveAverageDelta: aboveAverageDelta,
+                          minDeviation: minDeviation,
+                          maxDeviation: maxDeviation,
+                          meanDeviation: averageDeviation)
+}
+
+func abs<N: DurationProtocol>(_ duration: N) -> N {
+  duration < .zero ? .zero - duration : duration
 }
 
 /// Returns a Boolean value indicating whether a duration is approximately
@@ -302,7 +383,7 @@ func adaptiveRatioTolerance(
   iterations: Int,
   baseTolerance: Double = 0.05,
   referenceIterations: Int = 100,
-  minimumTolerance: Double = 0.005
+  minimumTolerance: Double = 0.005,
 ) -> Double {
   precondition(iterations > 0)
   precondition(referenceIterations > 0)
@@ -356,6 +437,11 @@ func adaptiveRatioTolerance(
 // }
 
 extension Duration {
+  @usableFromInline internal var inNanoseconds: Double {
+    let (seconds, attoseconds) = components
+    return Double(seconds) * 1_000_000_000 + Double(attoseconds) * 1e-9
+  }
+  
   @usableFromInline internal var inMicroseconds: Double {
     let (seconds, attoseconds) = components
     return Double(seconds) * 1_000_000 + Double(attoseconds) * 1e-12

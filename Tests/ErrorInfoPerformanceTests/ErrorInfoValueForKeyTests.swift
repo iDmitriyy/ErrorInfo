@@ -19,7 +19,7 @@ struct ErrorInfoValueForKeyTests {
     Int((Double(countBase) * factor).rounded(.toNearestOrAwayFromZero))
   }
   
-  private let innerLoopCount: Int = 2000
+  private let innerLoopCount: Int = 2000 // 2000 is optimal for one measurement be ~50 µs
   
   private let key = String(describing: StringLiteralKey.id)
   
@@ -79,21 +79,16 @@ struct ErrorInfoValueForKeyTests {
         }
       })
       
-      printResult(adjustedDuration: measured.totalDuration - overhead.totalDuration,
-                  accessKind: accessKind,
-                  storageKind: storageKind)
+      printResult(measured: measured, overhead: overhead, accessKind: accessKind, storageKind: storageKind)
       
-      testByBaseline(accessKind: accessKind,
-                     storageKind: storageKind,
-                     measured: measured,
-                     overhead: overhead)
+      testByBaseline(measured: measured, overhead: overhead, accessKind: accessKind, storageKind: storageKind)
     } // end if #available
   }
   
-  private func testByBaseline(accessKind: RecordAccessKind,
-                              storageKind: StorageKind,
-                              measured: MeasureOutput<Void>,
-                              overhead: MeasureOutput<Void>) {
+  private func testByBaseline(measured: MeasureOutput<Void>,
+                              overhead: MeasureOutput<Void>,
+                              accessKind: RecordAccessKind,
+                              storageKind: StorageKind) {
     let baseline = performMeasuredAction(iterations: iterations, setup: { index in
       var dict = Dictionary<String, ErrorInfo.ValueExistential>(minimumCapacity: 2)
       dict["name"] = "name"
@@ -130,7 +125,7 @@ struct ErrorInfoValueForKeyTests {
     let ratio = adjustedDuration / adjustedBaselineDuration
     
 //    print("____", adjustedDuration.inMicroseconds, overheadDuration.inMicroseconds, adjustedBaselineDuration.inMicroseconds)
-    print("____====", "\(accessKind), \(storageKind)", "ratio:", ratio.asString(fractionDigits: 3))
+//    print("____====", "\(accessKind), \(storageKind)", "ratio:", ratio.asString(fractionDigits: 3))
     
     /*
      Average:
@@ -154,9 +149,9 @@ struct ErrorInfoValueForKeyTests {
      */
     
     // Absolute duration for single iteration:
-    // print(">>>> min", ContinuousClock().minimumResolution.inMicroseconds)
-    // print(">>>> measured", "\(accessKind), \(storageKind)", measured.medianDuration.inMicroseconds)
-    // print(">>>> baseline", "\(accessKind), \(storageKind)", baseline.medianDuration.inMicroseconds)
+//     print(">>>> min", ContinuousClock().minimumResolution.inMicroseconds)
+//     print(">>>> measured", "\(accessKind), \(storageKind)", measured.medianDuration.inMicroseconds)
+//     print(">>>> baseline", "\(accessKind), \(storageKind)", baseline.medianDuration.inMicroseconds)
   }
   
   @Test(.serialized, arguments: NonNilValueAccessKind.allCases, StorageKind.allCases)
@@ -175,7 +170,7 @@ struct ErrorInfoValueForKeyTests {
         }
       })
       
-      let output = performMeasuredAction(iterations: iterations, setup: { _ in
+      let measured = performMeasuredAction(iterations: iterations, setup: { _ in
         make1000IDKeyInstances(storageKind: storageKind)
       }, measure: { infos in
         for index in infos.indices {
@@ -194,20 +189,19 @@ struct ErrorInfoValueForKeyTests {
        lastRecorded:    334.69
        */
             
-      printResult(adjustedDuration: output.totalDuration - overhead.totalDuration,
-                  accessKind: accessKind,
-                  storageKind: storageKind)
+      printResult(measured: measured, overhead: overhead, accessKind: accessKind, storageKind: storageKind)
     } // end if #available
   }
   
-  private func printResult(adjustedDuration: Duration,
+  private func printResult(measured: MeasureOutput<Void>,
+                           overhead: MeasureOutput<Void>,
                            accessKind: some Any,
                            storageKind: some CustomStringConvertible) {
-    let adjustedDuration = (adjustedDuration.inMilliseconds).asString(fractionDigits: 1)
+    let adjustedDuration = ((measured.totalDuration - overhead.totalDuration).inMilliseconds).asString(fractionDigits: 1)
     print(printPrefix, adjustedDuration, "\(accessKind), \(storageKind)", separator: "\t\t")
   }
   
-  @Test func `calc`() {
+  @Test func calc() {
     //    let dd = [
     //      [0.7056380032663495, 0.7063259911894273, 0.6925172413793104, 0.7083981337480559, 0.7088201037659266, 0.7286017699115044, 0.7073480623985318, 0.7088201037659266, 0.7088201037659266, 0.7077958694579545],
     //      [1.1449504532995993, 1.1615154185022027, 1.1233730459334756, 1.1466023858957666, 1.1581277672359267, 1.1557059279622188, 1.1510011612767006, 1.1556299559471366, 1.1554405968468469, 1.1554405968468469],
