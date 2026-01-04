@@ -37,7 +37,7 @@ internal
 struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   @usableFromInline typealias Element = (key: Key, value: Value)
   
-  @usableFromInline internal var _entries: [Element]
+  @usableFromInline internal var _entries: ContiguousArray<Element>
   
   @usableFromInline internal var _keyToEntryIndices: Dictionary<Key, NonEmptyOrderedIndexSet>
   // TODO: ? use RangeSet instead of NonEmptyOrderedIndexSet?
@@ -49,7 +49,7 @@ struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   
   @usableFromInline
   internal init(minimumCapacity: Int) {
-    _entries = Array(minimumCapacity: minimumCapacity)
+    _entries = ContiguousArray(minimumCapacity: minimumCapacity)
     _keyToEntryIndices = Dictionary(minimumCapacity: minimumCapacity)
   }
   
@@ -89,7 +89,7 @@ extension OrderedMultiValueDictionary {
   }
   
   internal var hasMultipleValuesForAtLeastOneKey: Bool {
-    for entriesForKeyIndices in _keyToEntryIndices.values where entriesForKeyIndices.count > 1 {
+    for entriesIndices in _keyToEntryIndices.values where entriesIndices.count > 1 {
       return true
     }
     return false
@@ -99,57 +99,36 @@ extension OrderedMultiValueDictionary {
 // MARK: All Values For Key
 
 extension OrderedMultiValueDictionary {
-//  internal func allValuesSlice(forKey key: Key) -> (some Sequence<Value>)? { // & ~Escapable
-//    if let allValuesForKeyIndices = _keyToEntryIndices[key] {
-//      ValuesForKeySlice(entries: _entries, valueIndices: allValuesForKeyIndices)
-//    } else {
-//      nil as Optional<ValuesForKeySlice>
-//    }
-//  }
-  
-  internal func iterateAllValues(forKey key: Key, _ iteration: (Value) -> Void) {
-    guard let indexSet = _keyToEntryIndices[key] else { return }
-    
-    switch indexSet._variant {
-    case .left(let index): // Typically there is only one value for key
-      iteration(_entries[index].value)
-       
-    case .right(let indices):
-      for index in indices {
-        iteration(_entries[index].value)
-      }
-    }
-  }
-  
-  internal func allValues(forKey key: Key) -> ValuesForKey<Value>? {
+  @usableFromInline
+  internal func allValues(forKey key: Key) -> ItemsForKey<Value>? {
     guard let indexSet = _keyToEntryIndices[key] else { return nil }
     
-    let valuesForKey: ValuesForKey<Value>
+    let valuesForKey: ItemsForKey<Value>
     switch indexSet._variant {
     case .left(let index): // Typically there is only one value for key
-      valuesForKey = ValuesForKey(element: _entries[index].value)
+      valuesForKey = ItemsForKey(element: _entries[index].value)
        
     case .right(let indices):
       let valuesForKeyArray = indices.map { index in _entries[index].value }
-      valuesForKey = ValuesForKey(array: valuesForKeyArray)
+      valuesForKey = ItemsForKey(array: valuesForKeyArray)
     }
     return valuesForKey
   }
   
   @discardableResult
-  internal mutating func removeAllValues(forKey key: Key) -> ValuesForKey<Value>? {
+  internal mutating func removeAllValues(forKey key: Key) -> ItemsForKey<Value>? {
     guard let indexSetForKey = _keyToEntryIndices.removeValue(forKey: key) else { return nil }
       
-    let removedValues: ValuesForKey<Value>
+    let removedValues: ItemsForKey<Value>
     switch indexSetForKey._variant {
     case .left(let index): // Typically there is only one value for key
       let removedElement = _entries.remove(at: index)
-      removedValues = ValuesForKey(element: removedElement.value)
+      removedValues = ItemsForKey(element: removedElement.value)
        
     case .right(let indicesToRemove):
       let removedValuesArray = indicesToRemove.map { index in _entries[index].value }
       _entries.removeSubranges(indicesToRemove.asRangeSet(for: _entries))
-      removedValues = ValuesForKey(array: removedValuesArray)
+      removedValues = ItemsForKey(array: removedValuesArray)
     }
     _rebuildKeyToEntryIndices()
     return removedValues

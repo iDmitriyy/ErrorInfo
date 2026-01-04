@@ -10,7 +10,7 @@ import Testing
 
 struct ValuesForKeyLayoutTests {
   @Test func `size limits`() {
-    let memoryLayout = MemoryLayout<ValuesForKey<ErrorInfo.ValueExistential>>.self
+    let memoryLayout = MemoryLayout<ItemsForKey<ErrorInfo.ValueExistential>>.self
     let errorInfoValueTypeLayout = MemoryLayout<ErrorInfo.ValueExistential>.self
     let arrayLayout = MemoryLayout<Array<ErrorInfo.ValueExistential>>.self
     

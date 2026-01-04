@@ -1,5 +1,5 @@
 //
-//  ValuesForKey.swift
+//  ItemsForKey.swift
 //  ErrorInfo
 //
 //  Created by Dmitriy Ignatyev on 06/10/2025.
@@ -13,7 +13,7 @@ import NonEmpty
 /// - `Value`: The type of the value(s) associated with the key.
 ///
 /// ## Performance:
-/// `ValuesForKey` is optimized for the case where only a single value is stored, providing fast access.
+/// `ItemsForKey` is optimized for the case where only a single value is stored, providing fast access.
 /// The  case where multiple values are stored still offers efficient access.
 ///
 /// # Example:
@@ -31,21 +31,21 @@ import NonEmpty
 /// }
 /// ```
 @frozen
-public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
+public struct ItemsForKey<Value>: Sequence, RandomAccessCollection {
   @usableFromInline internal let _elements: Either<Value, NonEmptyArray<Value>>
   
   public typealias Index = Int
   
   // MARK: - Initializers
     
-  /// Creates a `ValuesForKey` instance with a single value.
+  /// Creates a `ItemsForKey` instance with a single value.
   ///
   /// - Parameter element: The value to store.
   @inlinable
   @inline(__always)
   internal init(element: Value) { _elements = .left(element) }
   
-  /// Creates a `ValuesForKey` instance with multiple values.
+  /// Creates a `ItemsForKey` instance with multiple values.
   ///
   /// - Parameter array: A non-empty array of values to store.
   @inlinable
@@ -129,37 +129,37 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
   
   // MARK: - Transformations
   
-  /// Applies a transformation to each value in the collection and returns a new `ValuesForKey`
+  /// Applies a transformation to each value in the collection and returns a new `ItemsForKey`
   /// instance with the transformed values.
   ///
   /// - Parameter transform: A closure that transforms each element.
-  /// - Returns: A new `ValuesForKey` instance containing the transformed values.
+  /// - Returns: A new `ItemsForKey` instance containing the transformed values.
   /// - Throws: Any error that occurs during the transformation.
   @inlinable
-  public func map<T, E>(_ transform: (Self.Element) throws(E) -> T) throws(E) -> ValuesForKey<T> {
+  public func map<T, E>(_ transform: (Self.Element) throws(E) -> T) throws(E) -> ItemsForKey<T> {
     switch _elements {
-    case .left(let element): try ValuesForKey<T>(element: transform(element))
-    case .right(let elements): try ValuesForKey<T>(array: elements.map(transform))
+    case .left(let element): try ItemsForKey<T>(element: transform(element))
+    case .right(let elements): try ItemsForKey<T>(array: elements.map(transform))
     }
   }
     
-  /// Returns a new `ValuesForKey` instance containing only the `non-nil` results of applying the transformation closure.
+  /// Returns a new `ItemsForKey` instance containing only the `non-nil` results of applying the transformation closure.
   ///
   /// - Parameter transform: A closure that transforms each element into an optional value.
-  /// - Returns: A new `ValuesForKey` instance containing only the `non-nil` transformed
+  /// - Returns: A new `ItemsForKey` instance containing only the `non-nil` transformed
   /// elements, or `nil` if no valid elements are left.
   @inlinable
-  internal func _compactMap<U>(_ transform: (Value) -> U?) -> ValuesForKey<U>? {
+  internal func _compactMap<U>(_ transform: (Value) -> U?) -> ItemsForKey<U>? {
     switch _elements {
     case .left(let element):
       return if let transformedElement = transform(element) {
-        ValuesForKey<U>(element: transformedElement)
+        ItemsForKey<U>(element: transformedElement)
       } else {
         nil
       }
     case .right(let elements):
       return if let transformed = NonEmptyArray(base: elements.compactMap(transform)) {
-        ValuesForKey<U>(array: transformed)
+        ItemsForKey<U>(array: transformed)
       } else {
         nil
       }
@@ -167,7 +167,7 @@ public struct ValuesForKey<Value>: Sequence, RandomAccessCollection {
   }
 }
 
-extension ValuesForKey {
+extension ItemsForKey {
   @_spi(PerformanceTesting)
   @inlinable @_transparent
   public init(__element: Value) { self.init(element: __element) }

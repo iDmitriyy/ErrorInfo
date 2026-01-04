@@ -139,7 +139,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   ///
   /// // errorInfo.allValues(forKey: .id) // returns [5, 6]
   /// ```
-  func allValues(forKey literalKey: StringLiteralKey) -> ValuesForKey<ValueExistential>?
+  func allValues(forKey literalKey: StringLiteralKey) -> ItemsForKey<ValueExistential>?
   
   /// Returns all `non-nil` values associated with a given key in the `ErrorInfo` storage.
   ///
@@ -160,7 +160,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   /// // errorInfo.allValues(forKey: "id") // returns [5, 6]
   /// ```
   @_disfavoredOverload
-  func allValues(forKey dynamicKey: KeyType) -> ValuesForKey<ValueExistential>?
+  func allValues(forKey dynamicKey: KeyType) -> ItemsForKey<ValueExistential>?
   
   // ===-------------------------------------------------------------------------------------------------------------------=== //
   
@@ -386,7 +386,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   /// // returns nil
   /// ```
   @discardableResult
-  mutating func removeAllRecords(forKey literalKey: StringLiteralKey) -> ValuesForKey<ValueExistential>?
+  mutating func removeAllRecords(forKey literalKey: StringLiteralKey) -> ItemsForKey<ValueExistential>?
   
   /// Removes all records associated with the specified key and returns the removed `non-nil` values
   /// as a sequence.
@@ -411,7 +411,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   /// ```
   @_disfavoredOverload
   @discardableResult
-  mutating func removeAllRecords(forKey dynamicKey: KeyType) -> ValuesForKey<ValueExistential>?
+  mutating func removeAllRecords(forKey dynamicKey: KeyType) -> ItemsForKey<ValueExistential>?
   
   // ===-------------------------------------------------------------------------------------------------------------------=== //
   
@@ -441,7 +441,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   /// ```
   @discardableResult
   mutating func replaceAllRecords(forKey literalKey: StringLiteralKey,
-                                  by newValue: ValueExistential) -> ValuesForKey<ValueExistential>?
+                                  by newValue: ValueExistential) -> ItemsForKey<ValueExistential>?
   
   /// Removes all existing records associated with the specified key and replaces them with
   /// a new value, returning the removed `non-nil` values as a sequence.
@@ -468,7 +468,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   @_disfavoredOverload
   @discardableResult
   mutating func replaceAllRecords(forKey dynamicKey: KeyType,
-                                  by newValue: ValueExistential) -> ValuesForKey<ValueExistential>?
+                                  by newValue: ValueExistential) -> ItemsForKey<ValueExistential>?
 }
 
 extension ErrorInfoOperationsProtocol {

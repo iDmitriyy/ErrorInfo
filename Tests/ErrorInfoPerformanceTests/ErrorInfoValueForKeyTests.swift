@@ -19,7 +19,7 @@ struct ErrorInfoValueForKeyTests {
   
   private let printPrefix = "____"
   
-  @Test(.serialized, arguments: [RecordAccessKind.lastRecorded], StorageWithNilKind.allCases)
+  @Test(.serialized, arguments: [RecordAccessKind.allRecords], StorageWithNilKind.allCases)
   func `get record`(accessKind: RecordAccessKind, storageKind: StorageWithNilKind) {
     let iterations = Int((Double(countBase) * factor).rounded(.toNearestOrAwayFromZero))
     
@@ -40,23 +40,15 @@ struct ErrorInfoValueForKeyTests {
       }, measure: { infos in
         for index in infos.indices {
           switch accessKind {
-          case .allRecords: break
-//            blackHole(infos[index].allRecords(forKey: key))
-          case .lastRecorded:
-            blackHole(infos[index].lastRecorded(forKey: key))
+          case .lastRecorded: break
+//            blackHole(infos[index].lastRecorded(forKey: key))
+          case .allRecords: //break
+            blackHole(infos[index].allRecords(forKey: key))
           }
         }
       })
       
       /*
-       139.99    allRecords, singl-storage 0 values
-       299.11    allRecords, singl-storage 1 value
-       179.37    allRecords, multi-storage 0 values
-       401.50    allRecords, multi-storage 1 value
-       990.32    allRecords, multi-storage 2 values without nil
-       981.61    allRecords, multi-storage 2 values nil at start
-       984.78    allRecords, multi-storage 2 values nil at end
-       
         92.21    lastRecorded, singl-storage 0 values
        131.83    lastRecorded, singl-storage 1 value
        158.19    lastRecorded, multi-storage 0 values
@@ -64,6 +56,14 @@ struct ErrorInfoValueForKeyTests {
        343.16    lastRecorded, multi-storage 2 values without nil
        344.30    lastRecorded, multi-storage 2 values nil at start
        303.28    lastRecorded, multi-storage 2 values nil at end
+       
+       112.46    allRecords, singl-storage 0 values
+       290.46    allRecords, singl-storage 1 value
+       183.10    allRecords, multi-storage 0 values
+       384.24    allRecords, multi-storage 1 value
+       970.81    allRecords, multi-storage 2 values without nil
+       961.61    allRecords, multi-storage 2 values nil at start
+       967.70    allRecords, multi-storage 2 values nil at end
        */
       
       printResult(duration: output.duration,
@@ -83,9 +83,9 @@ struct ErrorInfoValueForKeyTests {
       }, measure: { infos in
         for index in infos.indices {
           switch accessKind {
-          case .allNonNil: blackHole(infos[index])
           case .firstNonNil: blackHole(infos[index])
           case .lastNonNil: blackHole(infos[index])
+          case .allNonNil: blackHole(infos[index])
           }
         }
       }).duration
@@ -95,9 +95,9 @@ struct ErrorInfoValueForKeyTests {
       }, measure: { infos in
         for index in infos.indices {
           switch accessKind {
-          case .allNonNil: blackHole(infos[index].allValues(forKey: key))
           case .firstNonNil: blackHole(infos[index].firstValue(forKey: key))
           case .lastNonNil: blackHole(infos[index].lastValue(forKey: key))
+          case .allNonNil: blackHole(infos[index].allValues(forKey: key))
           }
         }
       })
@@ -189,14 +189,14 @@ extension ErrorInfoValueForKeyTests {
   }
   
   enum RecordAccessKind: CaseIterable {
-    case allRecords
     case lastRecorded
+    case allRecords
   }
   
   enum NonNilValueAccessKind: CaseIterable {
-    case allNonNil
     case firstNonNil
     case lastNonNil
+    case allNonNil
   }
   
   @inlinable
@@ -223,7 +223,7 @@ extension ErrorInfoValueForKeyTests {
           info[.name] = "name2" // trigger transition to multiValueForKey storage
           
         case .twoValues(let nilPosition):
-          let range = 0..<2 // transition to multiValueForKey storage is triggered as multiple values added for key `.id`
+          let range = 0..<2 // transition to multiValueForKey storage is triggered by multiple values added for key `.id`
           for number in range {
             let value: Int? = switch nilPosition {
             case .withoutNil: index + number

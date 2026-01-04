@@ -47,7 +47,7 @@ struct OrderedMultipleValuesForKeyStoragePerformanceTests {
   }
     
   @Test func getSingleValueForKey() {
-    // measure OrderedMultipleValuesForKeyStorage.ValuesForKey overhead
+    // measure OrderedMultipleValuesForKeyStorage.ItemsForKey overhead
   }
   
   @Test func hasValueForKey() {

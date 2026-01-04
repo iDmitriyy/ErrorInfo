@@ -24,15 +24,15 @@ extension ErrorInfo {
 // MARK: - Full Info View
 
 extension ErrorInfo {
-  public typealias FullInfoRecord = (value: OptionalValue, keyOrigin: KeyOrigin, collisionSource: WriteProvenance?)
-  public typealias FullInfoElement = (key: String, record: FullInfoRecord)
+  public typealias Record = (value: OptionalValue, keyOrigin: KeyOrigin, collisionSource: WriteProvenance?)
+  public typealias RecordElement = (key: String, record: Record)
   
   // MARK: FullInfo All
   
   /// Returns a sequence of tuples, where each element consists of a key with its origin and a collision-tagged value.
   /// This view provides an enriched sequence of key-value pairs with additional metadata, useful for deep inspection, logging or debugging.
-  public var fullInfoView: some Sequence<FullInfoElement> {
-    _storage.lazy.map { key, annotatedRecord -> FullInfoElement in
+  public var fullInfoView: some Sequence<RecordElement> {
+    _storage.lazy.map { key, annotatedRecord -> RecordElement in
       let record = annotatedRecord.record
       return (key, (record.someValue.instanceOfOptional, record.keyOrigin, annotatedRecord.collisionSource))
     }
@@ -40,15 +40,15 @@ extension ErrorInfo {
   
   // MARK: FullInfo for Key
   
-  public func fullInfo(forKey literalKey: StringLiteralKey) -> ValuesForKey<FullInfoRecord>? {
+  public func fullInfo(forKey literalKey: StringLiteralKey) -> ItemsForKey<Record>? {
     allRecords(forKey: literalKey.rawValue)
   }
   
   @_disfavoredOverload
-  public func allRecords(forKey dynamicKey: String) -> ValuesForKey<FullInfoRecord>? {
+  public func allRecords(forKey dynamicKey: String) -> ItemsForKey<Record>? {
     guard let annotatedRecords = _storage.allAnnotatedRecords(forKey: dynamicKey) else { return nil }
 
-    return annotatedRecords.map { annotatedRecord -> FullInfoRecord in
+    return annotatedRecords.map { annotatedRecord -> Record in
       (annotatedRecord.record.someValue.instanceOfOptional, annotatedRecord.record.keyOrigin, annotatedRecord.collisionSource)
     }
   }

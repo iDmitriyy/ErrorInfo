@@ -82,11 +82,11 @@ extension OrderedMultipleValuesForKeyStorage {
 //    }
 //  }
   
-  internal func allValues(forKey key: Key) -> ValuesForKey<AnnotatedValue>? {
+  internal func allValues(forKey key: Key) -> ItemsForKey<AnnotatedValue>? {
     switch _variant {
     case .left(let singleValueForKeyDict):
       if let valueForKey = singleValueForKeyDict[key] {
-        ValuesForKey(element: AnnotatedValue.value(valueForKey))
+        ItemsForKey(element: AnnotatedValue.value(valueForKey))
       } else {
         nil
       }
@@ -96,10 +96,10 @@ extension OrderedMultipleValuesForKeyStorage {
   }
   
   @discardableResult
-  internal mutating func removeAllValues(forKey key: Key) -> ValuesForKey<AnnotatedValue>? {
+  internal mutating func removeAllValues(forKey key: Key) -> ItemsForKey<AnnotatedValue>? {
     _mutableVariant.withResultMutateUnderlying(singleValueForKey: { singleValueForKeyDict in
       if let oldValue = singleValueForKeyDict.removeValue(forKey: key) {
-        ValuesForKey(element: AnnotatedValue.value(oldValue))
+        ItemsForKey(element: AnnotatedValue.value(oldValue))
       } else {
         nil
       }

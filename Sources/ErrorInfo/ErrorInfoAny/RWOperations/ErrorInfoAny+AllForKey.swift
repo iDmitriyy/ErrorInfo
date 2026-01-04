@@ -6,12 +6,12 @@
 //
 
 extension ErrorInfoAny {
-  public func allValues(forKey literalKey: StringLiteralKey) -> ValuesForKey<ValueExistential>? {
+  public func allValues(forKey literalKey: StringLiteralKey) -> ItemsForKey<ValueExistential>? {
     allValues(forKey: literalKey.rawValue)
   }
   
   @_disfavoredOverload
-  public func allValues(forKey dynamicKey: String) -> ValuesForKey<ValueExistential>? {
+  public func allValues(forKey dynamicKey: String) -> ItemsForKey<ValueExistential>? {
     _storage.allNonNilValues(forKey: dynamicKey)
   }
 }

@@ -32,9 +32,9 @@ struct ValuesForKeyPerformanceTests {
       }
       
       let valuesForKeyOutput = performMeasuredAction(count: count) {
-        InlineArray<1000, ValuesForKey<Int>>({ index in
+        InlineArray<1000, ItemsForKey<Int>>({ index in
           let value = index // as ErrorInfo.ValueExistential
-          let valueWrappedByValuesForKey = ValuesForKey(__element: value)
+          let valueWrappedByValuesForKey = ItemsForKey(__element: value)
           return valueWrappedByValuesForKey
         })
       }
@@ -67,8 +67,8 @@ struct ValuesForKeyPerformanceTests {
       }
       
       let valuesForKeyOutput = performMeasuredAction(count: count) {
-        InlineArray<1000, ValuesForKey<Int>>({ index in
-          let valuesWrappedByValuesForKey = ValuesForKey(__array: NonEmptyArray(base: [index, index])!)
+        InlineArray<1000, ItemsForKey<Int>>({ index in
+          let valuesWrappedByValuesForKey = ItemsForKey(__array: NonEmptyArray(base: [index, index])!)
           return valuesWrappedByValuesForKey
         })
       }

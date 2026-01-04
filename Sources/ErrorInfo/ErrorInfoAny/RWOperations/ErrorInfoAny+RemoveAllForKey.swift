@@ -9,12 +9,12 @@
 
 extension ErrorInfoAny {
   @discardableResult
-  public mutating func removeAllRecords(forKey literalKey: StringLiteralKey) -> ValuesForKey<ValueExistential>? {
+  public mutating func removeAllRecords(forKey literalKey: StringLiteralKey) -> ItemsForKey<ValueExistential>? {
     removeAllRecords(forKey: literalKey.rawValue)
   }
   
   @_disfavoredOverload @discardableResult
-  public mutating func removeAllRecords(forKey dynamicKey: String) -> ValuesForKey<ValueExistential>? {
+  public mutating func removeAllRecords(forKey dynamicKey: String) -> ItemsForKey<ValueExistential>? {
     _storage.removeAllRecords_ReturningNonNilValues(forKey: dynamicKey)
   }
 }
