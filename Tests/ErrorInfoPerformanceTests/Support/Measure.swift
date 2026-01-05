@@ -172,35 +172,65 @@ func trimmedMeasurements<T: Comparable>(_ values: [T], trimFraction: Double = 0.
   return Array(trimmed)
 }
 
+/// A structure that contains various statistical measures derived from a collection of values.
 struct AverageWithDelta<N> {
+  /// The mean (average) of the values in the dataset.
+  ///
+  /// The mean represents the central value of the dataset. It's calculated by summing all values and dividing by the number of values.
+  /// Example:
+  /// - If the dataset is `[1, 4, 7]`, the mean is `(1 + 4 + 7) / 3 = 4`.
+  /// - If the dataset is `[10.79, 10.83, 10.93]`, the mean is `(10.79 + 10.83 + 10.93) / 3 ≈ 10.85`.
   let mean: N
+    
+  /// The difference between the mean and the minimum value in the dataset.
+  ///
+  /// This value indicates how far the minimum value is from the mean. A larger value suggests the minimum value is farther from the mean.
+  /// Example:
+  /// - For the dataset `[1, 4, 7]` with a mean of `4`, the below average delta is `4 - 1 = 3`.
+  /// - For the dataset `[10.79, 10.83, 10.93]` with a mean of `10.85`, the below average delta is `10.85 - 10.79 = 0.06`.
   let belowAverageDelta: N
+  
+  /// The difference between the mean and the maximum value in the dataset.
+  ///
+  /// This value shows how far the maximum value is from the mean. A larger value indicates the maximum value is farther from the mean.
+  /// Example:
+  /// - For the dataset `[1, 4, 7]` with a mean of `4`, the above average delta is `7 - 4 = 3`.
+  /// - For the dataset `[10.79, 10.83, 10.93]` with a mean of `10.85`, the above average delta is `10.93 - 10.85 = 0.08`.
   let aboveAverageDelta: N
+    
+  /// The smallest absolute deviation of any value from the mean.
+  ///
+  /// This value shows how close the closest value is to the mean. It can be used to understand how tightly the data is clustered around the mean.
+  /// Example:
+  /// - For the dataset `[1, 4, 7]` with a mean of `4`, the minimum deviation is `abs(4 - 4) = 0`.
+  /// - For the dataset `[10.79, 10.83, 10.93]` with a mean of `10.85`, the minimum deviation is `abs(10.83 - 10.85) = 0.02`.
   let minDeviation: N
+    
+  /// The largest absolute deviation of any value from the mean.
+  ///
+  /// This value represents the greatest distance from the mean. It helps to understand the spread of the data.
+  /// Example:
+  /// - For the dataset `[1, 4, 7]` with a mean of `4`, the maximum deviation is `max(abs(1 - 4), abs(7 - 4)) = 3`.
+  /// - For the dataset `[0.72, 0.69, 0.75]` with a mean of `0.72`, the maximum deviation is `max(abs(0.72 - 0.72), abs(0.75 - 0.72)) = 0.03`.
   let maxDeviation: N
+  
+  /// The mean (average) of the absolute deviations from the mean.
+  ///
+  /// This value shows the average amount by which the values deviate from the mean. It provides a sense of the overall spread of the dataset.
+  /// Example: If the dataset is [2, 4, 6] and the mean is 4, the mean deviation is (abs(2 - 4) + abs(4 - 4) + abs(6 - 4)) / 3 = 1.33.
   let meanDeviation: N
-}
-
-extension AverageWithDelta where N: FloatingPoint {
-  static var zero: Self {
-    Self(mean: .zero,
-         belowAverageDelta: .zero,
-         aboveAverageDelta: .zero,
-         minDeviation: .zero,
-         maxDeviation: .zero,
-         meanDeviation: .zero)
-  }
-}
-
-extension AverageWithDelta where N: DurationProtocol {
-  static var zero: Self {
-    Self(mean: .zero,
-         belowAverageDelta: .zero,
-         aboveAverageDelta: .zero,
-         minDeviation: .zero,
-         maxDeviation: .zero,
-         meanDeviation: .zero)
-  }
+  
+  /// The variance of the dataset, which is the average of the squared deviations from the mean.
+  ///
+  /// Variance measures the overall spread of the data, giving more weight to values that are farther from the mean.
+  /// Example: If the dataset is [2, 4, 6] and the mean is 4, the variance is ((2 - 4)^2 + (4 - 4)^2 + (6 - 4)^2) / 3 = 2.67.
+  let variance: N
+  
+  /// The standard deviation of the dataset, which is the square root of the variance.
+  ///
+  /// Standard deviation provides a measure of the spread of the dataset, with the same units as the original data. It tells you how much values tend to deviate from the mean.
+  /// Example: If the dataset is [2, 4, 6] and the variance is 2.67, the standard deviation is sqrt(2.67) ≈ 1.63.
+  let standardDeviation: N
 }
 
 func averageWithDelta<N: FloatingPoint>(_ values: [[N]]) -> [AverageWithDelta<N>] {
@@ -246,45 +276,73 @@ func averageWithDelta<N: FloatingPoint>(_ values: [N]) -> AverageWithDelta<N> {
                           aboveAverageDelta: aboveAverageDelta,
                           minDeviation: minDeviation,
                           maxDeviation: maxDeviation,
-                          meanDeviation: meanDeviation)
+                          meanDeviation: meanDeviation,
+                          variance: variance,
+                          standardDeviation: standardDeviation)
 }
 
 /// copy-paste of FloatingPoint imp
-func averageWithDelta<D: DurationProtocol>(_ values: [D]) -> AverageWithDelta<D> {
-  guard !values.isEmpty else { return .zero }
-  
-  let sum = values.reduce(into: D.zero, +=)
-  
-  let average = sum / values.count
-  
-  let minValue = values.min()!
-  let maxValue = values.max()!
-  
-  let belowAverageDelta: D = average - minValue
-  let aboveAverageDelta: D = maxValue - average
-  
-  let maxDeviation: D = max(belowAverageDelta, aboveAverageDelta)
-  
-  let deltasToAverage = values.map { abs($0 - average) }
-  let minDeviation = deltasToAverage.min()!
-  
-  let averageDeviation = deltasToAverage.reduce(into: D.zero, +=) / values.count
-  
-  // Calculate squared deviations from the mean
-//  let squaredDeviations = values.map { ($0 - average) * ($0 - average) }
-//
-//  // Calculate variance (average of squared deviations)
-//  let variance = squaredDeviations.reduce(into: D.zero, +=) / values.count
-//
-//  // Standard deviation is the square root of the variance
-//  let standardDeviation = variance.squareRoot()
-  
-  return AverageWithDelta(mean: average,
-                          belowAverageDelta: belowAverageDelta,
-                          aboveAverageDelta: aboveAverageDelta,
-                          minDeviation: minDeviation,
-                          maxDeviation: maxDeviation,
-                          meanDeviation: averageDeviation)
+//func averageWithDelta<D: DurationProtocol>(_ values: [D]) -> AverageWithDelta<D> {
+//  guard !values.isEmpty else { return .zero }
+//  
+//  let sum = values.reduce(into: D.zero, +=)
+//  
+//  let average = sum / values.count
+//  
+//  let minValue = values.min()!
+//  let maxValue = values.max()!
+//  
+//  let belowAverageDelta: D = average - minValue
+//  let aboveAverageDelta: D = maxValue - average
+//  
+//  let maxDeviation: D = max(belowAverageDelta, aboveAverageDelta)
+//  
+//  let deltasToAverage = values.map { abs($0 - average) }
+//  let minDeviation = deltasToAverage.min()!
+//  
+//  let averageDeviation = deltasToAverage.reduce(into: D.zero, +=) / values.count
+//  
+//  // Calculate squared deviations from the mean
+////  let squaredDeviations = values.map { ($0 - average) * ($0 - average) }
+////
+////  // Calculate variance (average of squared deviations)
+////  let variance = squaredDeviations.reduce(into: D.zero, +=) / values.count
+////
+////  // Standard deviation is the square root of the variance
+////  let standardDeviation = variance.squareRoot()
+//  
+//  return AverageWithDelta(mean: average,
+//                          belowAverageDelta: belowAverageDelta,
+//                          aboveAverageDelta: aboveAverageDelta,
+//                          minDeviation: minDeviation,
+//                          maxDeviation: maxDeviation,
+//                          meanDeviation: averageDeviation)
+//}
+
+extension AverageWithDelta where N: FloatingPoint {
+  static var zero: Self {
+    Self(mean: .zero,
+         belowAverageDelta: .zero,
+         aboveAverageDelta: .zero,
+         minDeviation: .zero,
+         maxDeviation: .zero,
+         meanDeviation: .zero,
+         variance: .zero,
+         standardDeviation: .zero)
+  }
+}
+
+extension AverageWithDelta where N: DurationProtocol {
+  static var zero: Self {
+    Self(mean: .zero,
+         belowAverageDelta: .zero,
+         aboveAverageDelta: .zero,
+         minDeviation: .zero,
+         maxDeviation: .zero,
+         meanDeviation: .zero,
+         variance: .zero,
+         standardDeviation: .zero)
+  }
 }
 
 func abs<N: DurationProtocol>(_ duration: N) -> N {
