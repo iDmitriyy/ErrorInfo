@@ -212,28 +212,41 @@ func averageWithDelta<N: FloatingPoint>(_ values: [N]) -> AverageWithDelta<N> {
   guard !values.isEmpty else { return .zero }
   
   let sum = values.reduce(into: N.zero, +=)
-  
-  let average = sum / N(values.count)
+  let mean = sum / N(values.count)
   
   let minValue = values.min()!
   let maxValue = values.max()!
   
-  let belowAverageDelta: N = average - minValue
-  let aboveAverageDelta: N = maxValue - average
+  let belowAverageDelta: N = mean - minValue
+  let aboveAverageDelta: N = maxValue - mean
   
+  // Find the maximum absolute deviation
   let maxDeviation: N = N.maximum(belowAverageDelta, aboveAverageDelta)
   
-  let deltasToAverage = values.map { abs($0 - average) }
+  // Calculate absolute deviations for each value from the mean
+  let deltasToAverage = values.map { abs($0 - mean) }
+  
+  // Find the minimum absolute deviation
   let minDeviation = deltasToAverage.min()!
   
-  let averageDeviation = deltasToAverage.reduce(into: N.zero, +=) / N(values.count)
+  // Calculate the average (mean) of the deviations
+  let meanDeviation = deltasToAverage.reduce(into: N.zero, +=) / N(values.count)
   
-  return AverageWithDelta(mean: average,
+  // Calculate squared deviations from the mean
+  let squaredDeviations = values.map { ($0 - mean) * ($0 - mean) }
+  
+  // Calculate variance (average of squared deviations)
+  let variance = squaredDeviations.reduce(into: N.zero, +=) / N(values.count)
+  
+  // Standard deviation is the square root of the variance
+  let standardDeviation = variance.squareRoot()
+  
+  return AverageWithDelta(mean: mean,
                           belowAverageDelta: belowAverageDelta,
                           aboveAverageDelta: aboveAverageDelta,
                           minDeviation: minDeviation,
                           maxDeviation: maxDeviation,
-                          meanDeviation: averageDeviation)
+                          meanDeviation: meanDeviation)
 }
 
 /// copy-paste of FloatingPoint imp
@@ -257,6 +270,15 @@ func averageWithDelta<D: DurationProtocol>(_ values: [D]) -> AverageWithDelta<D>
   
   let averageDeviation = deltasToAverage.reduce(into: D.zero, +=) / values.count
   
+  // Calculate squared deviations from the mean
+//  let squaredDeviations = values.map { ($0 - average) * ($0 - average) }
+//
+//  // Calculate variance (average of squared deviations)
+//  let variance = squaredDeviations.reduce(into: D.zero, +=) / values.count
+//
+//  // Standard deviation is the square root of the variance
+//  let standardDeviation = variance.squareRoot()
+  
   return AverageWithDelta(mean: average,
                           belowAverageDelta: belowAverageDelta,
                           aboveAverageDelta: aboveAverageDelta,
@@ -267,6 +289,25 @@ func averageWithDelta<D: DurationProtocol>(_ values: [D]) -> AverageWithDelta<D>
 
 func abs<N: DurationProtocol>(_ duration: N) -> N {
   duration < .zero ? .zero - duration : duration
+}
+
+@available(macOS 15.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0, *)
+internal func squareDuration(_ duration: Duration) -> Duration {
+  let duration = abs(duration)
+  let attoScale: Int128 = 1_000_000_000_000_000_000
+  
+  let seconds = duration.attoseconds / attoScale
+  let squaredSeconds = seconds * seconds
+  
+  let a = Int128(duration.components.seconds)
+  let b = Int128(duration.components.attoseconds)
+  let crossTerm = 2 * a * b
+  
+  let squaredAtto = b * b
+  let squaredAttoAdjusted = squaredAtto / attoScale
+  
+  let squaredSecondsAdjusted = (squaredSeconds * attoScale)
+  return Duration(attoseconds: squaredSecondsAdjusted + crossTerm + squaredAttoAdjusted)
 }
 
 /// Returns a Boolean value indicating whether a duration is approximately

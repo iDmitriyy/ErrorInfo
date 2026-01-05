@@ -10,16 +10,17 @@ import NonEmpty
 import OrderedCollections
 import Synchronization
 import Testing
+import Foundation
 
 struct ErrorInfoValueForKeyTests {
   private let countBase: Int = 1000
-  private let factor: Double = 2
+  private let factor: Double = 1
   
   private var iterations: Int {
     Int((Double(countBase) * factor).rounded(.toNearestOrAwayFromZero))
   }
   
-  private let innerLoopCount: Int = 2000 // 2000 is optimal for one measurement be ~50 µs
+  private let innerLoopCount: Int = 2000 // 2000 is optimal for one measurement be ~= 50-70 µs
   
   private let key = String(describing: StringLiteralKey.id)
   
@@ -181,13 +182,6 @@ struct ErrorInfoValueForKeyTests {
           }
         }
       })
-      
-      /*
-       allNonNil:    289.38
-       firstNonNil:    296.18
-       lastNonNil:    296.58
-       lastRecorded:    334.69
-       */
             
       printResult(measured: measured, overhead: overhead, accessKind: accessKind, storageKind: storageKind)
     } // end if #available
@@ -202,6 +196,14 @@ struct ErrorInfoValueForKeyTests {
   }
   
   @Test func calc() {
+    let root = Int64(Double(Int64.max).squareRoot())
+    let duration = Duration(secondsComponent: -9, attosecondsComponent: -(.max / 10))
+    print(">>>", duration)
+    print(">>>", squareDuration(duration))
+    
+    
+//     print(">>>", Int128(Int64.max) * Int128(Int64.max) * 2)
+        
     //    let dd = [
     //      [0.7056380032663495, 0.7063259911894273, 0.6925172413793104, 0.7083981337480559, 0.7088201037659266, 0.7286017699115044, 0.7073480623985318, 0.7088201037659266, 0.7088201037659266, 0.7077958694579545],
     //      [1.1449504532995993, 1.1615154185022027, 1.1233730459334756, 1.1466023858957666, 1.1581277672359267, 1.1557059279622188, 1.1510011612767006, 1.1556299559471366, 1.1554405968468469, 1.1554405968468469],
