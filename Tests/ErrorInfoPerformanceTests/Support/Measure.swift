@@ -299,15 +299,15 @@ internal func squareDuration(_ duration: Duration) -> Duration {
   let seconds = duration.attoseconds / attoScale
   let squaredSeconds = seconds * seconds
   
-  let a = Int128(duration.components.seconds)
-  let b = Int128(duration.components.attoseconds)
+  let a = seconds
+  let b = duration.attoseconds % attoScale
   let crossTerm = 2 * a * b
   
-  let squaredAtto = b * b
-  let squaredAttoAdjusted = squaredAtto / attoScale
+  let squaredAttoseconds = b * b
+  let squaredAttosecndsAdjusted = squaredAttoseconds / attoScale
   
   let squaredSecondsAdjusted = (squaredSeconds * attoScale)
-  return Duration(attoseconds: squaredSecondsAdjusted + crossTerm + squaredAttoAdjusted)
+  return Duration(attoseconds: squaredSecondsAdjusted + crossTerm + squaredAttosecndsAdjusted)
 }
 
 /// Returns a Boolean value indicating whether a duration is approximately

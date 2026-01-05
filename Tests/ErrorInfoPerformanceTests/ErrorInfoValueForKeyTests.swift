@@ -6,11 +6,11 @@
 //
 
 import ErrorInfo
+import Foundation
 import NonEmpty
 import OrderedCollections
 import Synchronization
 import Testing
-import Foundation
 
 struct ErrorInfoValueForKeyTests {
   private let countBase: Int = 1000
@@ -196,11 +196,10 @@ struct ErrorInfoValueForKeyTests {
   }
   
   @Test func calc() {
-    let root = Int64(Double(Int64.max).squareRoot())
-    let duration = Duration(secondsComponent: -9, attosecondsComponent: -(.max / 10))
-    print(">>>", duration)
-    print(">>>", squareDuration(duration))
-    
+    // let root = Int64(Double(Int64.max).squareRoot())
+    // let duration = Duration(secondsComponent: -9, attosecondsComponent: -1_000_000_000_000_000)
+    // print(">>>", duration)
+    // print(">>>", squareDuration(duration))
     
 //     print(">>>", Int128(Int64.max) * Int128(Int64.max) * 2)
         
