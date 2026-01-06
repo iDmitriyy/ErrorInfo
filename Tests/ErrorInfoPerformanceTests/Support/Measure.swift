@@ -173,7 +173,7 @@ func trimmedMeasurements<T: Comparable>(_ values: [T], trimFraction: Double = 0.
 }
 
 /// A structure that contains various statistical measures derived from a collection of values.
-struct AverageWithDelta<N> {
+struct StatisticalSummary<N> {
   /// The mean (average) of the values in the dataset.
   ///
   /// The mean represents the central value of the dataset. It's calculated by summing all values and dividing by the number of values.
@@ -246,12 +246,12 @@ struct AverageWithDelta<N> {
   let standardDeviation: N
 }
 
-func averageWithDelta<N: FloatingPoint>(_ values: [[N]]) -> [AverageWithDelta<N>] {
+func statisticalSummary<N: FloatingPoint>(of values: [[N]]) -> [StatisticalSummary<N>] {
   guard !values.isEmpty else { return [] }
-  return values.map(averageWithDelta(_:))
+  return values.map(statisticalSummary(of:))
 }
 
-func averageWithDelta<N: FloatingPoint>(_ values: [N]) -> AverageWithDelta<N> {
+func statisticalSummary<N: FloatingPoint>(of values: [N]) -> StatisticalSummary<N> {
   guard !values.isEmpty else { return .zero }
   
   let sum = values.reduce(into: N.zero, +=)
@@ -284,55 +284,62 @@ func averageWithDelta<N: FloatingPoint>(_ values: [N]) -> AverageWithDelta<N> {
   // Standard deviation is the square root of the variance
   let standardDeviation = variance.squareRoot()
   
-  return AverageWithDelta(mean: mean,
-                          belowMeanDelta: belowMeanDelta,
-                          aboveMeanDelta: aboveMeanDelta,
-                          minAbsDeviation: minAbsDeviation,
-                          maxAbsDeviation: maxAbsDeviation,
-                          meanAbsoluteDeviation: meanAbsDeviation,
-                          variance: variance,
-                          standardDeviation: standardDeviation)
+  return StatisticalSummary(mean: mean,
+                            belowMeanDelta: belowMeanDelta,
+                            aboveMeanDelta: aboveMeanDelta,
+                            minAbsDeviation: minAbsDeviation,
+                            maxAbsDeviation: maxAbsDeviation,
+                            meanAbsoluteDeviation: meanAbsDeviation,
+                            variance: variance,
+                            standardDeviation: standardDeviation)
 }
 
 /// copy-paste of FloatingPoint imp
-// func averageWithDelta<D: DurationProtocol>(_ values: [D]) -> AverageWithDelta<D> {
-//  guard !values.isEmpty else { return .zero }
-//
-//  let sum = values.reduce(into: D.zero, +=)
-//
-//  let average = sum / values.count
-//
-//  let minValue = values.min()!
-//  let maxValue = values.max()!
-//
-//  let belowAverageDelta: D = average - minValue
-//  let aboveAverageDelta: D = maxValue - average
-//
-//  let maxDeviation: D = max(belowAverageDelta, aboveAverageDelta)
-//
-//  let deltasToAverage = values.map { abs($0 - average) }
-//  let minDeviation = deltasToAverage.min()!
-//
-//  let averageDeviation = deltasToAverage.reduce(into: D.zero, +=) / values.count
-//
-//  // Calculate squared deviations from the mean
-////  let squaredDeviations = values.map { ($0 - average) * ($0 - average) }
-////
-////  // Calculate variance (average of squared deviations)
-////  let variance = squaredDeviations.reduce(into: D.zero, +=) / values.count
-////
-////  // Standard deviation is the square root of the variance
-////  let standardDeviation = variance.squareRoot()
-//
-//  return AverageWithDelta(mean: average,
-//                          belowAverageDelta: belowAverageDelta,
-//                          aboveAverageDelta: aboveAverageDelta,
-//                          minDeviation: minDeviation,
-//                          maxDeviation: maxDeviation,
-//                          meanDeviation: averageDeviation)
-// }
+func statisticalSummary(of values: [Duration]) -> StatisticalSummary<Duration> {
+  guard !values.isEmpty else { return .zero }
+  typealias N = Duration
+  
+  let sum = values.reduce(into: N.zero, +=)
+  let mean = sum / values.count
+  
+  let minValue = values.min()!
+  let maxValue = values.max()!
+  
+  let belowMeanDelta: N = mean - minValue
+  let aboveMeanDelta: N = maxValue - mean
+  
+  // Calculate absolute deviations for each value from the mean
+  let absDeltasToMean = values.map { abs($0 - mean) }
+  
+  // Find the minimum absolute deviation
+  let minAbsDeviation = absDeltasToMean.min()!
+  
+  // Find the maximum absolute deviation
+  let maxAbsDeviation = absDeltasToMean.max()!
+  
+  // Calculate the average (mean) of the deviations
+  let meanAbsDeviation = absDeltasToMean.reduce(into: N.zero, +=) / values.count
+    
+  // Calculate squared deviations from the mean
+  let squaredDeviations = values.map { squareDuration($0 - mean) }
+  
+  // Calculate variance (average of squared deviations)
+  let variance = squaredDeviations.reduce(into: N.zero, +=) / values.count
+  
+  // Standard deviation is the square root of the variance
+  let standardDeviation = squareRootOfDuration(variance)
+  
+  return StatisticalSummary(mean: mean,
+                            belowMeanDelta: belowMeanDelta,
+                            aboveMeanDelta: aboveMeanDelta,
+                            minAbsDeviation: minAbsDeviation,
+                            maxAbsDeviation: maxAbsDeviation,
+                            meanAbsoluteDeviation: meanAbsDeviation,
+                            variance: variance,
+                            standardDeviation: standardDeviation)
+}
 
-extension AverageWithDelta where N: FloatingPoint {
+extension StatisticalSummary where N: FloatingPoint {
   static var zero: Self {
     Self(mean: .zero,
          belowMeanDelta: .zero,
@@ -345,7 +352,7 @@ extension AverageWithDelta where N: FloatingPoint {
   }
 }
 
-extension AverageWithDelta where N: DurationProtocol {
+extension StatisticalSummary where N: DurationProtocol {
   static var zero: Self {
     Self(mean: .zero,
          belowMeanDelta: .zero,
@@ -383,7 +390,7 @@ internal func squareDuration(_ duration: Duration) -> Duration {
 
 internal func squareRootOfDuration(_ duration: Duration) -> Duration {
   // Handle absolute value of the duration (ignoring negative duration)
-  let duration = abs(duration)
+  precondition(duration >= .zero, "squareRoot can not be get from negative value")
     
   let attoScaleSqrt: Double = 1_000_000_000
   
