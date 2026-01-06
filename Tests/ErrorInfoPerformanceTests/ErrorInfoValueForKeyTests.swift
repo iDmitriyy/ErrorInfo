@@ -13,7 +13,7 @@ import Synchronization
 import Testing
 
 struct ErrorInfoValueForKeyTests {
-  private let countBase: Int = 1000
+  private let countBase: Int = 4000
   private let factor: Double = 1
   
   private var iterations: Int {
@@ -142,7 +142,7 @@ struct ErrorInfoValueForKeyTests {
     
     printStat(for: measured, named: "measured", printPrefix: "____===>")
     printStat(for: baseline, named: "baseline", printPrefix: "____===>")
-    printStat(for: overhead, named: "overhead", printPrefix: "____===>")
+//    printStat(for: overhead, named: "overhead", printPrefix: "____===>")
     /*
      Average:
      
@@ -171,12 +171,12 @@ struct ErrorInfoValueForKeyTests {
   
   func printStat<T>(for output: MeasureOutput<T>, named name: String, printPrefix: String) {
     let stat = statisticalSummary(of: output.measurements)
-    let statTrimmed = statisticalSummary(of: trimmedMeasurements(output.measurements, trimFraction: 0.2))
+    lazy var statTrimmed = statisticalSummary(of: trimmedMeasurements(output.measurements, trimFraction: 0.2))
     
     func printSummary(_ summary: StatisticalSummary<Duration>, named name: String, fractionDigits: UInt8 = 2) {
       print(printPrefix,
             name,
-            "median mean min max:",
+            "values: median mean min max:",
             summary.median.inMicroseconds.asString(fractionDigits: fractionDigits),
             summary.mean.inMicroseconds.asString(fractionDigits: fractionDigits),
             summary.minValue.inMicroseconds.asString(fractionDigits: fractionDigits),
@@ -193,7 +193,7 @@ struct ErrorInfoValueForKeyTests {
     }
     
     printSummary(stat, named: name)
-    printSummary(statTrimmed, named: name + "{trimmed}")
+//    printSummary(statTrimmed, named: name + "{trimmed}")
     print(printPrefix)
   }
   
