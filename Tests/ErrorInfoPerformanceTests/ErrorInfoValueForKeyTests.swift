@@ -13,14 +13,14 @@ import Synchronization
 import Testing
 
 struct ErrorInfoValueForKeyTests {
-  private let countBase: Int = 4000
+  private let countBase: Int = 100 //
   private let factor: Double = 1
   
   private var iterations: Int {
     Int((Double(countBase) * factor).rounded(.toNearestOrAwayFromZero))
   }
   
-  private let innerLoopCount: Int = 2000 // 2000 is optimal for one measurement be ~= 50-70 µs
+  private let innerLoopCount: Int = 20000 // 20000 is optimal for one measurement be ~= 450-800 µs
   private var innerLoopRange: Range<Int> { 0..<innerLoopCount }
   
   private let key = String(describing: StringLiteralKey.id)
@@ -29,62 +29,62 @@ struct ErrorInfoValueForKeyTests {
   
   @Test(.serialized, arguments: RecordAccessKind.allCases, StorageKind.allCases)
   func `get record`(accessKind: RecordAccessKind, storageKind: StorageKind) {
-    if #available(macOS 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, *) {
-      let workloadFactor: Int = switch accessKind {
-      case .lastRecorded:
-        switch storageKind {
-        case .singleForKey: 1
-        case .multiForKey(let variant):
-          switch variant {
-          case .noValues: 1
-          case .singleValue: 2
-          case .twoValues: 2
-          }
-        }
-      case .allRecords:
-        switch storageKind {
-        case .singleForKey(let variant):
-          switch variant {
-          case .noValues: 1
-          case .singleValue: 2
-          }
-        case .multiForKey(let variant):
-          switch variant {
-          case .noValues: 1
-          case .singleValue: 2
-          case .twoValues: 5
-          }
+    let workloadFactor: Int = switch accessKind {
+    case .lastRecorded:
+      switch storageKind {
+      case .singleForKey: 1
+      case .multiForKey(let variant):
+        switch variant {
+        case .noValues: 1
+        case .singleValue: 2
+        case .twoValues: 2
         }
       }
-      
-      let overhead = performMeasuredAction(iterations: iterations, setup: { index in
-        Self.makeIDKeyInstance(storageKind: storageKind, index: index)
-      }, measure: { info in
-        for _ in innerLoopRange {
-          switch accessKind {
-          case .lastRecorded: blackHole(info)
-          case .allRecords: blackHole(info)
-          }
+    case .allRecords:
+      switch storageKind {
+      case .singleForKey(let variant):
+        switch variant {
+        case .noValues: 1
+        case .singleValue: 2
         }
-      })
-      
-      let workloadAdjustedIterations = iterations / workloadFactor
-      
-      let measured = performMeasuredAction(iterations: workloadAdjustedIterations, setup: { index in
-        Self.makeIDKeyInstance(storageKind: storageKind, index: index)
-      }, measure: { info in
-        for _ in innerLoopRange {
-          switch accessKind {
-          case .lastRecorded: blackHole(info.lastRecorded(forKey: key))
-          case .allRecords: blackHole(info.allRecords(forKey: key))
-          }
+      case .multiForKey(let variant):
+        switch variant {
+        case .noValues: 1
+        case .singleValue: 2
+        case .twoValues: 5
         }
-      })
-      
-      printResult(measured: measured, overhead: overhead, accessKind: accessKind, storageKind: storageKind)
-      
-      testByBaseline(measured: measured, overhead: overhead, accessKind: accessKind, storageKind: storageKind)
-    } // end if #available
+      }
+    }
+    
+    let overhead = performMeasuredAction(iterations: iterations, setup: { index in
+      Self.makeIDKeyInstance(storageKind: storageKind, index: index)
+    }, measure: { info in
+      for _ in innerLoopRange {
+        blackHole(info)
+//        switch accessKind {
+//        case .lastRecorded: blackHole(info)
+//        case .allRecords: blackHole(info)
+//        }
+      }
+    })
+    
+    let workloadAdjustedIterations = iterations / workloadFactor
+    
+    let measured = performMeasuredAction(iterations: workloadAdjustedIterations, setup: { index in
+      Self.makeIDKeyInstance(storageKind: storageKind, index: index)
+    }, measure: { info in
+      for _ in innerLoopRange {
+        blackHole(info.lastRecorded(forKey: key))
+//        switch accessKind {
+//        case .lastRecorded: blackHole(info.lastRecorded(forKey: key))
+//        case .allRecords: blackHole(info.allRecords(forKey: key))
+//        }
+      }
+    })
+    
+    printResult(measured: measured, overhead: overhead, accessKind: accessKind, storageKind: storageKind)
+    
+    testByBaseline(measured: measured, overhead: overhead, accessKind: accessKind, storageKind: storageKind)
   }
   
   private func testByBaseline(measured: MeasureOutput<Void>,
@@ -110,10 +110,11 @@ struct ErrorInfoValueForKeyTests {
       return dict
     }, measure: { dict in
       for _ in innerLoopRange {
-        switch accessKind {
-        case .lastRecorded: blackHole(dict[key])
-        case .allRecords: blackHole(dict[key])
-        }
+        blackHole(dict[key])
+//        switch accessKind {
+//        case .lastRecorded: blackHole(dict[key])
+//        case .allRecords: blackHole(dict[key])
+//        }
       }
     })
     
@@ -130,36 +131,38 @@ struct ErrorInfoValueForKeyTests {
     let ratio = adjustedMeasuredDuration / adjustedBaselineDuration
     print("____====", "ratio:", ratio.asString(fractionDigits: 3))
         
-    let measuredTrimmed = trimmedMeasurements(measured.measurements)
-    let baselineTrimmed = trimmedMeasurements(baseline.measurements)
-    let overheadTrimmed = trimmedMeasurements(overhead.measurements)
     
-    let trimmedAdjustedDuration = median(of: measuredTrimmed) - median(of: overheadTrimmed)
-    let trimmedAdjustedBaselineDuration = median(of: baselineTrimmed) - median(of: overheadTrimmed)
     
-    let ratioTrimmed = trimmedAdjustedDuration / trimmedAdjustedBaselineDuration
-    print("____====", "ratio(trimmed):", ratioTrimmed.asString(fractionDigits: 3))
+//    let measuredTrimmed = trimmedMeasurements(measured.measurements)
+//    let baselineTrimmed = trimmedMeasurements(baseline.measurements)
+//    let overheadTrimmed = trimmedMeasurements(overhead.measurements)
+//    
+//    let trimmedAdjustedDuration = mean(of: measuredTrimmed) - mean(of: overheadTrimmed)
+//    let trimmedAdjustedBaselineDuration = mean(of: baselineTrimmed) - mean(of: overheadTrimmed)
+//    
+//    let ratioTrimmed = trimmedAdjustedDuration / trimmedAdjustedBaselineDuration
+//    print("____====", "ratio(trimmed):", ratioTrimmed.asString(fractionDigits: 3))
     
-    printStat(for: measured, named: "measured", printPrefix: "____===>")
-    printStat(for: baseline, named: "baseline", printPrefix: "____===>")
+//    printStat(for: measured, named: "measured", printPrefix: "____===>")
+//    printStat(for: baseline, named: "baseline", printPrefix: "____===>")
 //    printStat(for: overhead, named: "overhead", printPrefix: "____===>")
     /*
      Average:
      
-      0.891, 0.784,  0.862,                 .
-      1.182, 1.059,  1.183,                 .
-      1.656, 1.570,  1.779,                 .
-      3.214, 2.914,  3.321,                 .
-      3.415, 3.266,  3.594,                 .
-      3.503, 3.031,  3.605,                 .
-      3.120, 3.007,  3.271,                 .
-      1.109, 0.983,  1.065,                 .
-      2.955, 2.711,  3.001,                 .
-      1.873, 1.675,  1.973,                 .
-      4.121, 3.792,  4.227,                 .
-     10.941, 9.868, 11.144,                 .
-     10.868, 9.700, 10.854,                 .
-     10.833, 9.648, 10.903,                 .
+     0.843, 0.847, 0.845, 0.845, 0.760, 0.721, 0.843, 0.846, 0.746, 0.745               .
+     1.185, 1.188, 1.203, 1.200, 1.085, 1.073, 1.215, 1.166, 1.073, 1.044               .
+     1.693, 1.649, 1.657, 1.683, 1.457, 1.456, 1.683, 1.658, 1.455, 1.463               .
+     3.333, 3.375, 3.213, 3.250, 2.888, 2.843, 3.258, 3.199, 2.881, 2.856               .
+     3.587, 3.634, 3.459, 3.452, 3.111, 3.126, 3.459, 3.480, 3.104, 3.285               .
+     3.662, 3.657, 3.440, 3.532, 3.197, 3.137, 3.501, 3.469, 3.132, 3.183               .
+     3.266, 3.252, 3.101, 3.153, 2.710, 2.818, 3.147, 3.156, 2.764, 2.898               .
+                            .
+                            .
+                            .
+                            .
+                            .
+                            .
+                            .
      
      */
     
@@ -173,13 +176,13 @@ struct ErrorInfoValueForKeyTests {
     let stat = statisticalSummary(of: output.measurements)
     lazy var statTrimmed = statisticalSummary(of: trimmedMeasurements(output.measurements, trimFraction: 0.2))
     
-    func printSummary(_ summary: StatisticalSummary<Duration>, named name: String, fractionDigits: UInt8 = 2) {
+    func printSummary(_ summary: StatisticalSummary<Duration>, named name: String, fractionDigits: UInt8 = 1) {
       print(printPrefix,
             name,
-            "values: median mean min max:",
+            "values: min median mean max:",
+            summary.minValue.inMicroseconds.asString(fractionDigits: fractionDigits),
             summary.median.inMicroseconds.asString(fractionDigits: fractionDigits),
             summary.mean.inMicroseconds.asString(fractionDigits: fractionDigits),
-            summary.minValue.inMicroseconds.asString(fractionDigits: fractionDigits),
             summary.maxValue.inMicroseconds.asString(fractionDigits: fractionDigits))
       
       print(printPrefix,
@@ -189,7 +192,7 @@ struct ErrorInfoValueForKeyTests {
             summary.standardDeviation.inMicroseconds.asString(fractionDigits: fractionDigits),
             summary.maxAbsDeviation.inMicroseconds.asString(fractionDigits: fractionDigits),
             "cv:",
-            (summary.coefficientOfVariation * 100).asString(fractionDigits: fractionDigits) + "%")
+            (summary.coefficientOfVariation * 100).asString(fractionDigits: 2) + "%")
     }
     
     printSummary(stat, named: name)
@@ -298,6 +301,14 @@ struct ErrorInfoValueForKeyTests {
   }
   
   @Test func calc() async throws {
+    print("===", describeRegimes([0.843, 0.847, 0.845, 0.845, 0.760, 0.721, 0.843]), "\n")
+    print("===", describeRegimes([1.185, 1.188, 1.203, 1.200, 1.085, 1.073, 1.215]), "\n")
+    print("===", describeRegimes([1.693, 1.649, 1.657, 1.683, 1.457, 1.456, 1.683]), "\n")
+    print("===", describeRegimes([3.333, 3.375, 3.213, 3.250, 2.888, 2.843, 3.258]), "\n")
+    print("===", describeRegimes([3.587, 3.634, 3.459, 3.452, 3.111, 3.126, 3.459]), "\n")
+    print("===", describeRegimes([3.662, 3.657, 3.440, 3.532, 3.197, 3.137, 3.501]), "\n")
+    print("===", describeRegimes([3.266, 3.252, 3.101, 3.153, 2.710, 2.818, 3.147]), "\n")
+    
     
     //    let dd = [
     //      [0.7056380032663495, 0.7063259911894273, 0.6925172413793104, 0.7083981337480559, 0.7088201037659266, 0.7286017699115044, 0.7073480623985318, 0.7088201037659266, 0.7088201037659266, 0.7077958694579545],

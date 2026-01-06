@@ -94,13 +94,37 @@ extension MeasureOutput {
 /// |                      50–200 µs | ✅ good                                             |
 /// |                        0.5–2 ms | ✅ excellent                                       |
 /// |                         > 10 ms | ❌ too slow for iteration-based tests |
+///
+/// ### Rule of thumb
+/// Use case  Best statistic
+/// - Very noisy / few samples  **Median**
+/// - Moderate noise / want sensitivity  **Trimmed mean**
+/// - Low noise / many samples  **Mean**
+///
+/// ### For performance tests:
+/// - Median – safest default
+/// - Trimmed mean (10–25%) – best balance
+///
+/// ### When trimmed mean becomes unreliable
+/// 1. Too few samples
+/// Minimum recommended samples
+/// Median: ≥ 5
+/// Trimmed mean (20%): ≥ 10
+///
+/// 2. Bimodal distributions
+/// Example: [1.0, 1.0, 1.0, 1.4, 1.4, 1.4]
+/// Trimmed mean: ≈ 1.2  ❌ value that never actually occurs
+/// Median: 1.2 (even count) — also misleading
+///
+/// But the shape tells that the system has two regimes (e.g. core migration, cache state).
+/// – Trimmed mean hides this; median hides it too
+/// – You must inspect variance or clusters
 @inlinable
 @inline(__always)
 @discardableResult
 internal func performMeasuredAction<P, T>(iterations: Int,
                                           setup: (Int) -> P,
-                                          measure actions: (inout P) -> T)
-  -> MeasureOutput<T> {
+                                          measure actions: (inout P) -> T) -> MeasureOutput<T> {
   let clock = ContinuousClock()
     
   var results: [T] = []
@@ -166,6 +190,22 @@ func median<N: FloatingPoint>(of values: [N]) -> N {
   } else {
     sorted[mid]
   }
+}
+
+func mean<N: FloatingPoint>(of values: [N]) -> N {
+  guard !values.isEmpty else { return .zero }
+  
+  let sum = values.reduce(into: N.zero, +=)
+  let mean = sum / N(values.count)
+  return mean
+}
+
+func mean<D: DurationProtocol>(of values: [D]) -> D {
+  guard !values.isEmpty else { return .zero }
+  
+  let sum = values.reduce(into: D.zero, +=)
+  let mean = sum / values.count
+  return mean
 }
 
 /// A structure that contains various statistical measures derived from a collection of values.
@@ -473,7 +513,250 @@ func isDuration(_ duration: Duration,
   return lowerBound <= measuredRatio && measuredRatio <= upperBound
 }
 
+/// Descr
+///
+/// - Median protects against noise.
+/// - Trimmed mean detects drift.
+/// - Max guards against spikes.
+///
+/// ### How to interpret failures
+/// |                          Failure                       |         Meaning               |
+/// |:-----------------------------------------:|:--------------------------:|
+/// | Median fails                                       | Clear regression           |
+/// | Trimmed mean fails, median passes | Slow drift                      |
+/// | Worst-case fails only                         | Sporadic system issue |
+/// | All fail                                                 | Serious regression        |
+///
+/// This gives you diagnostic power, not just pass/fail.
+///
+/// ### Practical defaults
+/// |           Parameter         |            Value            |
+/// |:-------------------------:|:----------------------:|
+/// | Runs                            | 7–11                        |
+/// | Trim fraction                | 0.15–0.25                 |
+/// | Median tolerance        | adaptive                   |
+/// | Worst-case allowance | `2×tolerance`   |
+func assertPerformanceStable(ratios: [Double],
+                             expectedRatio: Double,
+                             tolerance: Double) -> Bool {
+  precondition(ratios.count >= 7)
+
+  let med = median(of: ratios)
+//  let tmean = trimmedMean(ratios, trimFraction: 0.2)
+  let tmean = mean(of: trimmedMeasurements(ratios, trimFraction: 0.2))
+  let worst = ratios.max()!
+
+  let medianOK = abs(med - expectedRatio) <= tolerance
+
+  let trimmedMeanOK = abs(tmean - expectedRatio) <= tolerance
+
+  let worstCaseOK = worst <= expectedRatio + tolerance * 2
+
+  return medianOK && trimmedMeanOK && worstCaseOK
+}
+
+///
+///
+/// ### How to interpret failures:
+/// |                               Signal                              |                 Meaning                  |
+/// |:-------------------------------------------------:|:----------------------------------:|
+/// | `median OK`, `trimmed mean FAIL` | Systematic regression             |
+/// | `percentile FAIL` only                        | Rare spikes (environment)        |
+/// | `bimodal = true`                                  | Core migration / cache regime |
+/// | Everything fails                                             | Real regression                         |
+///
+/// ### Recommended defaults (battle-tested)
+/// |        Parameter          |                         Value                     |
+/// |:-----------------------:|:--------------------------------------:|
+/// | Runs                          | 7–11                                             |
+/// | Trim fraction              | 0.2                                                |
+/// | Percentile                  | 95%                                              |
+/// | Gap factor                 | 4×                                                  |
+/// | Percentile allowance | `expected + 2×tolerance` |
+///
+/// # Example:
+/// ```
+/// let result = evaluatePerformance(ratios: ratios,
+///                                  expectedRatio: expectedRatio,
+///                                  tolerance: tolerance)
+///
+/// if !result.passed {
+///   XCTFail(result.diagnostics, file: file, line: line)
+/// }
+/// ```
+func evaluatePerformance(ratios: [Double],
+                         expectedRatio: Double,
+                         tolerance: Double) -> (passed: Bool, diagnostics: String) {
+
+  precondition(ratios.count >= 7)
+
+  let med = median(of: ratios)
+  //  let tmean = trimmedMean(ratios, trimFraction: 0.2)
+  let tmean = mean(of: trimmedMeasurements(ratios, trimFraction: 0.2))
+  let p95 = percentile(ratios, p: 0.95)
+  let bimodal = isLikelyBimodal(ratios)
+
+  let medianOK = abs(med - expectedRatio) <= tolerance
+  let trimmedOK = abs(tmean - expectedRatio) <= tolerance
+  let percentileOK = p95 <= expectedRatio + tolerance * 2
+
+  let passed = medianOK && trimmedOK && percentileOK && !bimodal
+
+  let diagnostics = """
+  Performance evaluation failed:
+    expected ratio: \(expectedRatio)
+    tolerance: ±\(tolerance)
+  
+    median: \(med)
+    trimmed mean: \(tmean)
+    95th percentile: \(p95)
+  
+    median OK: \(medianOK)
+    trimmed mean OK: \(trimmedOK)
+    percentile OK: \(percentileOK)
+    bimodal distribution: \(bimodal)
+  
+    raw ratios: \(ratios.sorted())
+  """
+
+  return (passed, diagnostics)
+}
+
+enum PerformanceFailureKind: String {
+  /// sustained slowdown
+  case regression
+  /// scheduling / cache regimes | core migration, cache state, OS noise
+  case environment
+  /// statistical instability | insufficient samples / unstable setup
+  case noise
+}
+
+func classifyFailure(medianOK: Bool,
+                     trimmedMeanOK: Bool,
+                     percentileOK: Bool,
+                     bimodal: Bool) -> PerformanceFailureKind {
+
+  if bimodal {
+    return .environment
+  }
+
+  if !medianOK, !trimmedMeanOK {
+    return .regression
+  }
+
+  if medianOK, !trimmedMeanOK {
+    return .regression // slow drift
+  }
+
+  if !percentileOK {
+    return .environment
+  }
+
+  return .noise
+}
+
+/// ```
+/// let isCI = ProcessInfo.processInfo.environment["CI"] == nil
+/// let profile: PerformanceProfile = isCI ? .localDefault : .ciDefault
+/// ```
+struct PerformanceProfile {
+  let trimFraction: Double
+  let percentile: Double
+  let percentileMultiplier: Double
+  let gapFactor: Double
+  let minSamples: Int
+  
+  static let localDefault = Self(trimFraction: 0.20,
+                                 percentile: 0.95,
+                                 percentileMultiplier: 1.8,
+                                 gapFactor: 4.0,
+                                 minSamples: 7)
+
+  static let ciDefault = Self(trimFraction: 0.25,
+                              percentile: 0.90,
+                              percentileMultiplier: 2.5,
+                              gapFactor: 6.0,
+                              minSamples: 9)
+}
+
+func isLikelyBimodal(_ values: [Double], gapFactor: Double = 4.0) -> Bool {
+  precondition(values.count >= 6)
+
+  let sorted = values.sorted()
+  let gaps = zip(sorted, sorted.dropFirst()).map { $1 - $0 }
+
+  let medianGap = gaps.sorted()[gaps.count / 2]
+  let maxGap = gaps.max()!
+
+  return medianGap > 0 && maxGap > gapFactor * medianGap
+}
+
+func describeRegimes(_ values: [Double]) -> String {
+  let s = values.sorted()
+  let gaps = zip(s, s.dropFirst()).map { $1 - $0 }
+
+  guard let maxGap = gaps.max(),
+        let splitIndex = gaps.firstIndex(of: maxGap) else {
+    return "single regime"
+  }
+
+  let left = Array(s.prefix(splitIndex + 1))
+  let right = Array(s.suffix(from: splitIndex + 1))
+
+  func summary(_ v: [Double]) -> String {
+    let min = v.first!
+    let max = v.last!
+    let med = median(of: v)
+    return String(format: "count=%d min=%.3f med=%.3f max=%.3f",
+                  v.count, min, med, max)
+  }
+
+  return """
+  bimodal distribution detected:
+    regime A: \(summary(left))
+    regime B: \(summary(right))
+    separation gap: \(String(format: "%.3f", maxGap))
+  """
+}
+
+/// Percentile-based guard (instead of max)
+///
+/// If using max is too sensitive.
+///
+/// Typical choice:
+/// - p = 0.95 → CI-safe
+/// - p = 0.90 → stricter
+func percentile(_ values: [Double], p: Double) -> Double {
+  precondition(0...1 ~= p)
+  let sorted = values.sorted()
+  let index = Int(Double(sorted.count - 1) * p)
+  return sorted[index]
+}
+
 /// possible fix is median-of-ratios (or trimmed mean) across multiple runs, not larger tolerance.
+///
+/// ## Median vs trimmed mean (what each optimizes)
+/// ### Median
+/// - Uses one data point (or two)
+/// - Completely ignores magnitude of other values
+/// - Extremely robust to outliers
+/// - Higher variance (less sensitive)
+///
+/// ### Trimmed mean
+/// - Uses many central points
+/// - Discards only extreme tails
+/// - More efficient estimator (lower variance)
+/// - Still robust to outliers
+///
+/// So trimmed mean sits between mean and median.
+///
+/// ### Also:
+/// - Median hides the skew
+/// - Trimmed mean reveals it
+///
+/// ### Trimmed mean gives:
+/// - Much of mean’s sensitivity
+/// - Much of median’s robustness
 func trimmedMeasurements<T: Comparable>(_ values: [T], trimFraction: Double = 0.2) -> [T] {
   precondition(trimFraction >= 0 && trimFraction <= 0.5)
   
