@@ -21,6 +21,7 @@ struct ErrorInfoValueForKeyTests {
   }
   
   private let innerLoopCount: Int = 2000 // 2000 is optimal for one measurement be ~= 50-70 µs
+  private var innerLoopRange: Range<Int> { 0..<innerLoopCount }
   
   private let key = String(describing: StringLiteralKey.id)
   
@@ -59,7 +60,7 @@ struct ErrorInfoValueForKeyTests {
       let overhead = performMeasuredAction(iterations: iterations, setup: { index in
         makeIDKeyInstance(storageKind: storageKind, index: index)
       }, measure: { info in
-        for _ in 0..<innerLoopCount {
+        for _ in innerLoopRange {
           switch accessKind {
           case .lastRecorded: blackHole(info)
           case .allRecords: blackHole(info)
@@ -72,7 +73,7 @@ struct ErrorInfoValueForKeyTests {
       let measured = performMeasuredAction(iterations: workloadAdjustedIterations, setup: { index in
         makeIDKeyInstance(storageKind: storageKind, index: index)
       }, measure: { info in
-        for _ in 0..<innerLoopCount {
+        for _ in innerLoopRange {
           switch accessKind {
           case .lastRecorded: blackHole(info.lastRecorded(forKey: key))
           case .allRecords: blackHole(info.allRecords(forKey: key))
@@ -108,7 +109,7 @@ struct ErrorInfoValueForKeyTests {
       }
       return dict
     }, measure: { dict in
-      for _ in 0..<innerLoopCount {
+      for _ in innerLoopRange {
         switch accessKind {
         case .lastRecorded: blackHole(dict[key])
         case .allRecords: blackHole(dict[key])
@@ -116,25 +117,32 @@ struct ErrorInfoValueForKeyTests {
       }
     })
     
-    let adjustedDuration = measured.medianDuration - overhead.medianDuration
+    let adjustedMeasuredDuration = measured.medianDuration - overhead.medianDuration
     let adjustedBaselineDuration = baseline.medianDuration - overhead.medianDuration
     
     // the average / median ratio is within tolerance
     // occasionally the ratio jumps to ~2 × tolerance
     // – outliers, not noise. Adaptive tolerance alone cannot eliminate them
     
-    let ratio = adjustedDuration / adjustedBaselineDuration
+    //    print("____", adjustedDuration.inMicroseconds, overheadDuration.inMicroseconds, adjustedBaselineDuration.inMicroseconds)
+    //    print("____====", "\(accessKind), \(storageKind)", "ratio:", ratio.asString(fractionDigits: 3))
     
-//    print("____", adjustedDuration.inMicroseconds, overheadDuration.inMicroseconds, adjustedBaselineDuration.inMicroseconds)
-//    print("____====", "\(accessKind), \(storageKind)", "ratio:", ratio.asString(fractionDigits: 3))
-    
+    let ratio = adjustedMeasuredDuration / adjustedBaselineDuration
     print("____====", "ratio:", ratio.asString(fractionDigits: 3))
+        
+    let measuredTrimmed = trimmedMeasurements(measured.measurements)
+    let baselineTrimmed = trimmedMeasurements(baseline.measurements)
+    let overheadTrimmed = trimmedMeasurements(overhead.measurements)
     
-    measured.averageDuration
-    measured.medianDuration
+    let trimmedAdjustedDuration = median(of: measuredTrimmed) - median(of: overheadTrimmed)
+    let trimmedAdjustedBaselineDuration = median(of: baselineTrimmed) - median(of: overheadTrimmed)
     
-    print("____===>")
+    let ratioTrimmed = trimmedAdjustedDuration / trimmedAdjustedBaselineDuration
+    print("____====", "ratio(trimmed):", ratioTrimmed.asString(fractionDigits: 3))
     
+    printStat(for: measured, named: "measured", printPrefix: "____===>")
+    printStat(for: baseline, named: "baseline", printPrefix: "____===>")
+    printStat(for: overhead, named: "overhead", printPrefix: "____===>")
     /*
      Average:
      
@@ -159,6 +167,34 @@ struct ErrorInfoValueForKeyTests {
 //     print(">>>> min", ContinuousClock().minimumResolution.inMicroseconds)
 //     print(">>>> measured", "\(accessKind), \(storageKind)", measured.medianDuration.inMicroseconds)
 //     print(">>>> baseline", "\(accessKind), \(storageKind)", baseline.medianDuration.inMicroseconds)
+  }
+  
+  func printStat<T>(for output: MeasureOutput<T>, named name: String, printPrefix: String) {
+    let stat = statisticalSummary(of: output.measurements)
+    let statTrimmed = statisticalSummary(of: trimmedMeasurements(output.measurements, trimFraction: 0.2))
+    
+    func printSummary(_ summary: StatisticalSummary<Duration>, named name: String, fractionDigits: UInt8 = 2) {
+      print(printPrefix,
+            name,
+            "median mean min max:",
+            summary.median.inMicroseconds.asString(fractionDigits: fractionDigits),
+            summary.mean.inMicroseconds.asString(fractionDigits: fractionDigits),
+            summary.minValue.inMicroseconds.asString(fractionDigits: fractionDigits),
+            summary.maxValue.inMicroseconds.asString(fractionDigits: fractionDigits))
+      
+      print(printPrefix,
+            name,
+            "deviation: mean std max:",
+            summary.meanAbsoluteDeviation.inMicroseconds.asString(fractionDigits: fractionDigits),
+            summary.standardDeviation.inMicroseconds.asString(fractionDigits: fractionDigits),
+            summary.maxAbsDeviation.inMicroseconds.asString(fractionDigits: fractionDigits),
+            "cv:",
+            (summary.coefficientOfVariation * 100).asString(fractionDigits: fractionDigits) + "%")
+    }
+    
+    printSummary(stat, named: name)
+    printSummary(statTrimmed, named: name + "{trimmed}")
+    print(printPrefix)
   }
   
   @Test(.serialized, arguments: NonNilValueAccessKind.allCases, StorageKind.allCases)

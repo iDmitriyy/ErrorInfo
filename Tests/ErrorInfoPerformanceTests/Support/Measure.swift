@@ -47,7 +47,7 @@ internal func performMeasuredAction<T>(count: Int, _ actions: () -> T) -> (resul
 @usableFromInline struct MeasureOutput<T> {
   let totalDuration: Duration
   let medianDuration: Duration
-  let averageDuration: Duration
+  let meanDuration: Duration
   let measurements: [Duration]
   let setupDuration: Duration
   let results: [T]
@@ -61,7 +61,7 @@ internal func performMeasuredAction<T>(count: Int, _ actions: () -> T) -> (resul
        results: [T]) {
     self.totalDuration = totalDuration
     self.medianDuration = medianDuration
-    self.averageDuration = averageDuration
+    meanDuration = averageDuration
     self.measurements = measurements
     self.setupDuration = setupDuration
     self.results = results
@@ -125,7 +125,7 @@ internal func performMeasuredAction<P, T>(iterations: Int,
     results.append(result)
   }
   
-  let medianDuration = median(executionDurations)
+  let medianDuration = median(of: executionDurations)
   
   return MeasureOutput(totalDuration: totalDuration,
                        medianDuration: medianDuration,
@@ -136,7 +136,7 @@ internal func performMeasuredAction<P, T>(iterations: Int,
 }
 
 @usableFromInline
-func median<D: DurationProtocol>(_ values: [D]) -> D {
+func median<D: DurationProtocol>(of values: [D]) -> D {
   guard !values.isEmpty else { return .zero }
   
   let sorted = values.sorted()
@@ -149,7 +149,7 @@ func median<D: DurationProtocol>(_ values: [D]) -> D {
   }
 }
 
-func median<N: FloatingPoint>(_ values: [N]) -> N {
+func median<N: FloatingPoint>(of values: [N]) -> N {
   guard !values.isEmpty else { return .zero }
   
   let sorted = values.sorted()
@@ -160,20 +160,14 @@ func median<N: FloatingPoint>(_ values: [N]) -> N {
   } else {
     sorted[mid]
   }
-}
-
-/// possible fix is median-of-ratios (or trimmed mean) across multiple runs, not larger tolerance.
-func trimmedMeasurements<T: Comparable>(_ values: [T], trimFraction: Double = 0.2) -> [T] {
-  precondition(trimFraction >= 0 && trimFraction <= 0.5)
-  
-  let sorted = values.sorted()
-  let trimCount = Int(Double(sorted.count) * trimFraction)
-  let trimmed = sorted.dropFirst(trimCount).dropLast(trimCount)
-  return Array(trimmed)
 }
 
 /// A structure that contains various statistical measures derived from a collection of values.
 struct StatisticalSummary<N> {
+  let minValue: N
+  
+  let maxValue: N
+  
   /// The mean (average) of the values in the dataset.
   ///
   /// The mean represents the central value of the dataset. It's calculated by summing all values and dividing by the number of values.
@@ -181,6 +175,8 @@ struct StatisticalSummary<N> {
   /// - If the dataset is `[1, 4, 7]`, the mean is `(1 + 4 + 7) / 3 = 4`.
   /// - If the dataset is `[10.79, 10.83, 10.93]`, the mean is `(10.79 + 10.83 + 10.93) / 3 ≈ 10.85`.
   let mean: N
+  
+  let median: N
     
   /// The difference between the mean and the minimum value in the dataset.
   ///
@@ -244,18 +240,23 @@ struct StatisticalSummary<N> {
   /// - For the dataset `[1, 4, 7]` with a variance of `6`, the standard deviation is `sqrt(6) ≈ 2.45`.
   /// - For the dataset `[10.79, 10.83, 10.93]` with a variance of `≈ 0.00346`, the standard deviation is `sqrt(variance) ≈ 0.05887`.
   let standardDeviation: N
+  
+  /// The Coefficient of Variation (CV), which is the standard deviation expressed as a percentage of the mean.
+  let coefficientOfVariation: Double
 }
 
-func statisticalSummary<N: FloatingPoint>(of values: [[N]]) -> [StatisticalSummary<N>] {
+func statisticalSummary<N: BinaryFloatingPoint>(of values: [[N]]) -> [StatisticalSummary<N>] {
   guard !values.isEmpty else { return [] }
   return values.map(statisticalSummary(of:))
 }
 
-func statisticalSummary<N: FloatingPoint>(of values: [N]) -> StatisticalSummary<N> {
+func statisticalSummary<N: BinaryFloatingPoint>(of values: [N]) -> StatisticalSummary<N> {
   guard !values.isEmpty else { return .zero }
   
   let sum = values.reduce(into: N.zero, +=)
   let mean = sum / N(values.count)
+  
+  let median = median(of: values)
   
   let minValue = values.min()!
   let maxValue = values.max()!
@@ -284,14 +285,20 @@ func statisticalSummary<N: FloatingPoint>(of values: [N]) -> StatisticalSummary<
   // Standard deviation is the square root of the variance
   let standardDeviation = variance.squareRoot()
   
-  return StatisticalSummary(mean: mean,
+  let coefficientOfVariation = standardDeviation / mean
+  
+  return StatisticalSummary(minValue: minValue,
+                            maxValue: maxValue,
+                            mean: mean,
+                            median: median,
                             belowMeanDelta: belowMeanDelta,
                             aboveMeanDelta: aboveMeanDelta,
                             minAbsDeviation: minAbsDeviation,
                             maxAbsDeviation: maxAbsDeviation,
                             meanAbsoluteDeviation: meanAbsDeviation,
                             variance: variance,
-                            standardDeviation: standardDeviation)
+                            standardDeviation: standardDeviation,
+                            coefficientOfVariation: Double(coefficientOfVariation))
 }
 
 /// copy-paste of FloatingPoint imp
@@ -301,6 +308,8 @@ func statisticalSummary(of values: [Duration]) -> StatisticalSummary<Duration> {
   
   let sum = values.reduce(into: N.zero, +=)
   let mean = sum / values.count
+  
+  let median = median(of: values)
   
   let minValue = values.min()!
   let maxValue = values.max()!
@@ -329,39 +338,53 @@ func statisticalSummary(of values: [Duration]) -> StatisticalSummary<Duration> {
   // Standard deviation is the square root of the variance
   let standardDeviation = squareRootOfDuration(variance)
   
-  return StatisticalSummary(mean: mean,
+  let coefficientOfVariation = standardDeviation / mean
+  
+  return StatisticalSummary(minValue: minValue,
+                            maxValue: maxValue,
+                            mean: mean,
+                            median: median,
                             belowMeanDelta: belowMeanDelta,
                             aboveMeanDelta: aboveMeanDelta,
                             minAbsDeviation: minAbsDeviation,
                             maxAbsDeviation: maxAbsDeviation,
                             meanAbsoluteDeviation: meanAbsDeviation,
                             variance: variance,
-                            standardDeviation: standardDeviation)
+                            standardDeviation: standardDeviation,
+                            coefficientOfVariation: coefficientOfVariation)
 }
 
 extension StatisticalSummary where N: FloatingPoint {
   static var zero: Self {
-    Self(mean: .zero,
+    Self(minValue: .zero,
+         maxValue: .zero,
+         mean: .zero,
+         median: .zero,
          belowMeanDelta: .zero,
          aboveMeanDelta: .zero,
          minAbsDeviation: .zero,
          maxAbsDeviation: .zero,
          meanAbsoluteDeviation: .zero,
          variance: .zero,
-         standardDeviation: .zero)
+         standardDeviation: .zero,
+         coefficientOfVariation: .zero)
   }
 }
 
 extension StatisticalSummary where N: DurationProtocol {
   static var zero: Self {
-    Self(mean: .zero,
+    Self(minValue: .zero,
+         maxValue: .zero,
+         mean: .zero,
+         median: .zero,
          belowMeanDelta: .zero,
          aboveMeanDelta: .zero,
          minAbsDeviation: .zero,
          maxAbsDeviation: .zero,
          meanAbsoluteDeviation: .zero,
          variance: .zero,
-         standardDeviation: .zero)
+         standardDeviation: .zero,
+         coefficientOfVariation: .zero)
   }
 }
 
@@ -442,6 +465,16 @@ func isDuration(_ duration: Duration,
   let upperBound = expectedRatio + ratioTolerance
   
   return lowerBound <= measuredRatio && measuredRatio <= upperBound
+}
+
+/// possible fix is median-of-ratios (or trimmed mean) across multiple runs, not larger tolerance.
+func trimmedMeasurements<T: Comparable>(_ values: [T], trimFraction: Double = 0.2) -> [T] {
+  precondition(trimFraction >= 0 && trimFraction <= 0.5)
+  
+  let sorted = values.sorted()
+  let trimCount = Int(Double(sorted.count) * trimFraction)
+  let trimmed = sorted.dropFirst(trimCount).dropLast(trimCount)
+  return Array(trimmed)
 }
 
 /// Returns a ratio tolerance that adapts to the number of iterations used in a
