@@ -58,7 +58,7 @@ struct ErrorInfoValueForKeyTests {
       }
       
       let overhead = performMeasuredAction(iterations: iterations, setup: { index in
-        makeIDKeyInstance(storageKind: storageKind, index: index)
+        Self.makeIDKeyInstance(storageKind: storageKind, index: index)
       }, measure: { info in
         for _ in innerLoopRange {
           switch accessKind {
@@ -71,7 +71,7 @@ struct ErrorInfoValueForKeyTests {
       let workloadAdjustedIterations = iterations / workloadFactor
       
       let measured = performMeasuredAction(iterations: workloadAdjustedIterations, setup: { index in
-        makeIDKeyInstance(storageKind: storageKind, index: index)
+        Self.makeIDKeyInstance(storageKind: storageKind, index: index)
       }, measure: { info in
         for _ in innerLoopRange {
           switch accessKind {
@@ -237,7 +237,68 @@ struct ErrorInfoValueForKeyTests {
     print(printPrefix, adjustedDuration, "\(accessKind), \(storageKind)", separator: "\t\t")
   }
   
-  @Test func calc() {
+  static let testFileURL = tempFileURL(fileName: "test")
+  
+  @Test func withProcessSpawn() async throws {
+    // file:///var/folders/2d/dtvhfqfs623fxs8dzl713m3h0000gp/T/test_test.txt
+    
+    print("===", Self.testFileURL)
+        
+    let accessKind: RecordAccessKind = .lastRecorded
+    let storageKind: StorageKind = .singleForKey(variant: .noValues)
+
+//    let overhead = performMeasuredAction(iterations: iterations, setup: { index in
+//      Self.makeIDKeyInstance(storageKind: storageKind, index: index)
+//    }, measure: { info in
+//      for _ in innerLoopRange {
+//        switch accessKind {
+//        case .lastRecorded: blackHole(info)
+//        case .allRecords: blackHole(info)
+//        }
+//      }
+//    })
+//
+//    let workloadAdjustedIterations = iterations
+//
+//    let measured = performMeasuredAction(iterations: workloadAdjustedIterations, setup: { index in
+//      Self.makeIDKeyInstance(storageKind: storageKind, index: index)
+//    }, measure: { info in
+//      for _ in innerLoopRange {
+//        switch accessKind {
+//        case .lastRecorded: blackHole(info.lastRecorded(forKey: key))
+//        case .allRecords: blackHole(info.allRecords(forKey: key))
+//        }
+//      }
+//    })
+      
+//    try removeFileIfExists(at: Self.testFileURL)
+    
+//    let result = await #expect(processExitsWith: .success) {
+//      fatalError()
+//    } // end #expect(processExitsWith:
+    
+//    let result = await #expect(processExitsWith: .success) {
+//      fatalError()
+//    }
+//    print("===", result as Any)
+    
+    
+    for _ in 1...10 {
+      let result = await #expect(processExitsWith: .success) {
+        try appendDouble(Double(Int.random(in: 1...10)), toFile: Self.testFileURL)
+      }
+
+      print("=== processExitResult", unwrappedDescription(of: result?.exitStatus))
+    } // end for
+      
+    let doubles = try readDoubles(from: Self.testFileURL)
+    print("===", doubles)
+      
+    try removeFileIfExists(at: Self.testFileURL)
+  }
+  
+  @Test func calc() async throws {
+    
     //    let dd = [
     //      [0.7056380032663495, 0.7063259911894273, 0.6925172413793104, 0.7083981337480559, 0.7088201037659266, 0.7286017699115044, 0.7073480623985318, 0.7088201037659266, 0.7088201037659266, 0.7077958694579545],
     //      [1.1449504532995993, 1.1615154185022027, 1.1233730459334756, 1.1466023858957666, 1.1581277672359267, 1.1557059279622188, 1.1510011612767006, 1.1556299559471366, 1.1554405968468469, 1.1554405968468469],
@@ -382,8 +443,7 @@ extension ErrorInfoValueForKeyTests {
   
   @inlinable
   @inline(__always)
-  @available(macOS 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, *)
-  internal func makeIDKeyInstance(storageKind: StorageKind, index: Int) -> ErrorInfo {
+  internal static func makeIDKeyInstance(storageKind: StorageKind, index: Int) -> ErrorInfo {
     var info = ErrorInfo()
     info[.name] = "name"
     

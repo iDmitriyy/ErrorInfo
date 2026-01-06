@@ -68,6 +68,12 @@ internal func performMeasuredAction<T>(count: Int, _ actions: () -> T) -> (resul
   }
 }
 
+extension MeasureOutput {
+  func measurementsStatSummary() -> StatisticalSummary<Duration> {
+    statisticalSummary(of: measurements)
+  }
+}
+
 /// One iteration should take at least 50× the clock’s minimum resolution.
 /// Om M1 processors, Clock.minimumResolution == 0.042 µs.
 ///
@@ -651,4 +657,61 @@ extension Double {
 internal func mutate<T: ~Copyable, E>(value: consuming T, mutation: (inout T) throws(E) -> Void) throws(E) -> T {
   try mutation(&value)
   return value
+}
+
+func tempFileURL(fileName: String) -> URL {
+  let tempDir = FileManager.default.temporaryDirectory
+  let fileName = "test_\(fileName).txt"
+  return tempDir.appendingPathComponent(fileName)
+}
+
+func appendDouble(_ value: Double, toFile fileURL: URL) throws {
+  let stringValue = "\(value)\n"
+  let data = Data(stringValue.utf8)
+  let fileManager = FileManager.default
+
+  if fileManager.fileExists(atPath: fileURL.path) {
+    // Append to existing file
+    let fileHandle = try FileHandle(forWritingTo: fileURL)
+    defer { fileHandle.closeFile() }
+    try fileHandle.seekToEnd()
+    fileHandle.write(data)
+    print("=== fileHandle.write(data) \(fileURL)")
+  } else {
+    // Create new file
+    try data.write(to: fileURL, options: .atomic)
+    print("=== data.write(to: \(fileURL)")
+  }
+}
+
+/// Reads all double values from a file, returns them as [Double].
+/// Throws an error if any line cannot be converted to Double.
+func readDoubles(from fileURL: URL) throws -> [Double] {
+  let content = try String(contentsOf: fileURL, encoding: .utf8)
+  let lines = content.split(separator: "\n")
+    
+  return try lines.map { line in
+    guard let value = Double(line) else { throw ReadDoubleError.invalidLine(String(line)) }
+    return value
+  }
+}
+
+func throwError() throws {
+  throw ReadDoubleError.invalidLine("dwfdsfsdf")
+}
+
+fileprivate enum ReadDoubleError: Error, LocalizedError {
+  case invalidLine(String)
+  var errorDescription: String? {
+    switch self {
+    case .invalidLine(let line): "Cannot convert '\(line)' to Double."
+    }
+  }
+}
+
+func removeFileIfExists(at fileURL: URL) throws {
+  let fileManager = FileManager.default
+  if fileManager.fileExists(atPath: fileURL.path) {
+    try fileManager.removeItem(at: fileURL)
+  }
 }
