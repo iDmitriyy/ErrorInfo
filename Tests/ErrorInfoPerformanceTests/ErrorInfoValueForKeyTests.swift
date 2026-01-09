@@ -13,7 +13,7 @@ import Synchronization
 import Testing
 
 struct ErrorInfoValueForKeyTests {
-  private let countBase: Int = 100 //
+  private let countBase: Int = 1000 //
   private let factor: Double = 1
   
   private var iterations: Int {
@@ -27,7 +27,10 @@ struct ErrorInfoValueForKeyTests {
   
   private let printPrefix = "____"
   
-  @Test(.serialized, arguments: RecordAccessKind.allCases, StorageKind.allCases)
+  // for 1000 measurements:
+  // 0.723 0.725 0.730   0.804 0.812 0.813 0.815 0.833 0.834 0.838 0.840 0.858 0.858
+  
+  @Test(.serialized, arguments: [RecordAccessKind.lastRecorded], StorageKind.allCases)
   func `get record`(accessKind: RecordAccessKind, storageKind: StorageKind) {
     let workloadFactor: Int = switch accessKind {
     case .lastRecorded:
@@ -55,6 +58,7 @@ struct ErrorInfoValueForKeyTests {
         }
       }
     }
+    // let adjustedIterations = max(1, Int(Double(baseIterations) * baselineDuration / measuredDuration))
     
     let overhead = performMeasuredAction(iterations: iterations, setup: { index in
       Self.makeIDKeyInstance(storageKind: storageKind, index: index)
@@ -89,7 +93,7 @@ struct ErrorInfoValueForKeyTests {
   
   private func testByBaseline(measured: MeasureOutput<Void>,
                               overhead: MeasureOutput<Void>,
-                              accessKind: RecordAccessKind,
+                              accessKind _: RecordAccessKind,
                               storageKind: StorageKind) {
     let baseline = performMeasuredAction(iterations: iterations, setup: { index in
       var dict = Dictionary<String, ErrorInfo.ValueExistential>(minimumCapacity: 2)
@@ -131,20 +135,18 @@ struct ErrorInfoValueForKeyTests {
     let ratio = adjustedMeasuredDuration / adjustedBaselineDuration
     print("____====", "ratio:", ratio.asString(fractionDigits: 3))
         
-    
-    
 //    let measuredTrimmed = trimmedMeasurements(measured.measurements)
 //    let baselineTrimmed = trimmedMeasurements(baseline.measurements)
 //    let overheadTrimmed = trimmedMeasurements(overhead.measurements)
-//    
+//
 //    let trimmedAdjustedDuration = mean(of: measuredTrimmed) - mean(of: overheadTrimmed)
 //    let trimmedAdjustedBaselineDuration = mean(of: baselineTrimmed) - mean(of: overheadTrimmed)
-//    
+//
 //    let ratioTrimmed = trimmedAdjustedDuration / trimmedAdjustedBaselineDuration
 //    print("____====", "ratio(trimmed):", ratioTrimmed.asString(fractionDigits: 3))
     
-//    printStat(for: measured, named: "measured", printPrefix: "____===>")
-//    printStat(for: baseline, named: "baseline", printPrefix: "____===>")
+    printStat(for: measured, named: "measured", printPrefix: "____===>")
+    printStat(for: baseline, named: "baseline", printPrefix: "____===>")
 //    printStat(for: overhead, named: "overhead", printPrefix: "____===>")
     /*
      Average:
@@ -285,7 +287,6 @@ struct ErrorInfoValueForKeyTests {
 //    }
 //    print("===", result as Any)
     
-    
     for _ in 1...10 {
       let result = await #expect(processExitsWith: .success) {
         try appendDouble(Double(Int.random(in: 1...10)), toFile: Self.testFileURL)
@@ -308,7 +309,6 @@ struct ErrorInfoValueForKeyTests {
     print("===", describeRegimes([3.587, 3.634, 3.459, 3.452, 3.111, 3.126, 3.459]), "\n")
     print("===", describeRegimes([3.662, 3.657, 3.440, 3.532, 3.197, 3.137, 3.501]), "\n")
     print("===", describeRegimes([3.266, 3.252, 3.101, 3.153, 2.710, 2.818, 3.147]), "\n")
-    
     
     //    let dd = [
     //      [0.7056380032663495, 0.7063259911894273, 0.6925172413793104, 0.7083981337480559, 0.7088201037659266, 0.7286017699115044, 0.7073480623985318, 0.7088201037659266, 0.7088201037659266, 0.7077958694579545],

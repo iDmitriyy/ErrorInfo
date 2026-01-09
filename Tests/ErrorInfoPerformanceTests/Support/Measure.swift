@@ -626,6 +626,12 @@ enum PerformanceFailureKind: String {
   /// sustained slowdown
   case regression
   /// scheduling / cache regimes | core migration, cache state, OS noise
+  ///
+  /// You are saying:
+  /// The observed performance difference is dominated by factors outside the code under test.
+  /// In other words:
+  /// the code behaves consistently within each regime
+  /// but the runtime environment switches between regimes
   case environment
   /// statistical instability | insufficient samples / unstable setup
   case noise
@@ -655,11 +661,61 @@ func classifyFailure(medianOK: Bool,
   return .noise
 }
 
+func evaluatePerformance(ratios: [Double],
+                         expectedRatio: Double,
+                         tolerance: Double,
+                         profile: PerformanceTestProfile)
+  -> (passed: Bool, label: PerformanceFailureKind?, diagnostics: String) {
+
+  guard ratios.count >= profile.minSamples else {
+    return (false, .noise, "insufficient samples: \(ratios.count)")
+  }
+
+  let med = median(of: ratios)
+//  let tmean = trimmedMean(ratios, trimFraction: profile.trimFraction)
+  let tmean = mean(of: trimmedMeasurements(ratios, trimFraction: 0.2))
+  let perc = percentile(ratios, p: profile.percentile)
+  let bimodal = isLikelyBimodal(ratios, gapFactor: profile.gapFactor)
+
+  let medianOK = abs(med - expectedRatio) <= tolerance
+  let trimmedOK = abs(tmean - expectedRatio) <= tolerance
+  let percentileOK =
+    perc <= expectedRatio + tolerance * profile.percentileMultiplier
+
+  let passed = medianOK && trimmedOK && percentileOK && !bimodal
+
+  let label = passed ? nil :
+    classifyFailure(
+      medianOK: medianOK,
+      trimmedMeanOK: trimmedOK,
+      percentileOK: percentileOK,
+      bimodal: bimodal,
+    )
+
+  let diagnostics = """
+  Performance evaluation (\(label?.rawValue ?? "passed")):
+  
+    expected ratio: \(expectedRatio)
+    tolerance: ±\(tolerance)
+  
+    median: \(med)            [\(medianOK)]
+    trimmed mean: \(tmean)    [\(trimmedOK)]
+    p\(Int(profile.percentile * 100)): \(perc)       [\(percentileOK)]
+    bimodal: \(bimodal)
+  
+    ratios: \(ratios.sorted())
+  
+  \(bimodal ? describeRegimes(ratios) : "")
+  """
+
+  return (passed, label, diagnostics)
+}
+
 /// ```
 /// let isCI = ProcessInfo.processInfo.environment["CI"] == nil
 /// let profile: PerformanceProfile = isCI ? .localDefault : .ciDefault
 /// ```
-struct PerformanceProfile {
+struct PerformanceTestProfile {
   let trimFraction: Double
   let percentile: Double
   let percentileMultiplier: Double
@@ -692,16 +748,17 @@ func isLikelyBimodal(_ values: [Double], gapFactor: Double = 4.0) -> Bool {
 }
 
 func describeRegimes(_ values: [Double]) -> String {
-  let s = values.sorted()
-  let gaps = zip(s, s.dropFirst()).map { $1 - $0 }
+  let sorted = values.sorted()
+  let gaps = zip(sorted, sorted.dropFirst()).map { $1 - $0 }
 
+  // FIXME: - ?? abs
   guard let maxGap = gaps.max(),
         let splitIndex = gaps.firstIndex(of: maxGap) else {
     return "single regime"
   }
 
-  let left = Array(s.prefix(splitIndex + 1))
-  let right = Array(s.suffix(from: splitIndex + 1))
+  let left = Array(sorted.prefix(splitIndex + 1))
+  let right = Array(sorted.suffix(from: splitIndex + 1))
 
   func summary(_ v: [Double]) -> String {
     let min = v.first!
