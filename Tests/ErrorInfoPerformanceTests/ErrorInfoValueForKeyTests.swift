@@ -13,25 +13,192 @@ import Synchronization
 import Testing
 
 struct ErrorInfoValueForKeyTests {
-  private let countBase: Int = 1000 //
+  private let countBase: Int = 100 //
   private let factor: Double = 1
+  private static let countBase: Int = 100 //
+  private static let factor: Double = 1
   
   private var iterations: Int {
+    Int((Double(countBase) * factor).rounded(.toNearestOrAwayFromZero))
+  }
+
+  private static var iterations: Int {
     Int((Double(countBase) * factor).rounded(.toNearestOrAwayFromZero))
   }
   
   private let innerLoopCount: Int = 20000 // 20000 is optimal for one measurement be ~= 450-800 µs
   private var innerLoopRange: Range<Int> { 0..<innerLoopCount }
   
+  private static let innerLoopCount: Int = 20000 // 20000 is optimal for one measurement be ~= 450-800 µs
+  private static var innerLoopRange: Range<Int> { 0..<innerLoopCount }
+  
+  private static let key = String(describing: StringLiteralKey.id)
   private let key = String(describing: StringLiteralKey.id)
   
   private let printPrefix = "____"
   
-  // for 1000 measurements:
-  // 0.723 0.725 0.730   0.804 0.812 0.813 0.815 0.833 0.834 0.838 0.840 0.858 0.858
+  let queue = DispatchQueue(label: "perf.test", qos: .userInteractive)
+    
+  @Test(.serialized, arguments: BackingStorageKind.allCases)
+  func lastRecordedForKey(storageKind: BackingStorageKind) throws {
+    var ratios: [Double] = []
+    for run in 0...11 {
+      let ratio =
+        Self.lastRecordedForKey_Ratio(iterations: iterations,
+                                      innerLoopRange: innerLoopRange,
+                                      storageKind: storageKind)
+      if run == 0 { continue } // run 0 is preheat
+      ratios.append(ratio)
+    }
+    
+    let statSummary = statisticalSummary(of: ratios)
+    print("____====ratios:", ratios.map { $0.rounded(toPlaces: 3) })
+    print("____====median:", statSummary.median.rounded(toPlaces: 3))
+//    printStatSummary(statSummary, named: "ratios", printPrefix: "____===>", fractionDigits: 3)
+    let median = statSummary.median
+    
+    switch storageKind {
+    case .singleForKey(let variant):
+      switch variant {
+      case .noValues:
+        // 0.747, 0.747, 0.747, 0.746, 0.746, 0.747, 0.747
+        // 0.847, 0.847, 0.847, 0.847, 0.847, 0.847
+        #expect(median <= 0.87)
+        
+      case .singleValue:
+        // 1.066 1.067 1.059 1.061
+        // 1.180 1.191 1.183 1.185 1.184 1.186 1.178 1.185
+        #expect(median <= 1.21)
+      }
+    case .multiForKey(let variant):
+      switch variant {
+      case .noValues:
+        // 1.454 1.455 1.451
+        // 1.650 1.648 1.766 1.652 1.762 1.653
+        #expect(median <= 1.78)
+        
+      case .singleValue:
+        // iterations: 1000
+        // 2.870   | abs deviation max: 0.010
+        // 3.181 3.104 3.103 3.121 3.100 | abs deviation max: 0.008 0.007 0.007 0.008 0.002
+        
+        // iterations: 100
+        // 3.107 3.100 3.110 3.100 | abs deviation max: 0.118 0.090 0.076 0.074
+        // 3.27 3.274 3.273 3.265 3.267
+        #expect(median <= 3.295)
+        
+      case .twoValues(let nilPosition):
+        switch nilPosition {
+        case .withoutNil:
+          // 3.181
+          // 3.467 3.570 3.462 3.478 3.489 3.583 3.487
+          #expect(median <= 3.6)
+          
+        case .atStart:
+          // 3.224 3.101 3.099
+          // 3.466 3.468 3.592 3.548 3.494 3.558
+          #expect(median <= 3.6)
+          
+        case .atEnd:
+          // iterations: 1000
+          // 2.750
+          // 3.083 3.070 3.076 3.085 3.060
+          // 3.163 3.138
+          
+          // iterations: 100
+          // 2.761 2.866 2.752
+          // 3.072 3.077 3.098
+          // 3.209 3.184 3.197
+          #expect(median <= 3.22)
+        }
+      }
+    }
+  }
   
-  @Test(.serialized, arguments: [RecordAccessKind.lastRecorded], StorageKind.allCases)
-  func `get record`(accessKind: RecordAccessKind, storageKind: StorageKind) {
+  @inline(never)
+  static func lastRecordedForKey_Ratio(iterations: Int,
+                                       innerLoopRange: Range<Int>,
+                                       storageKind: BackingStorageKind) -> Double {
+//    blackHole(overheadMeasureOutput(iterations: iterations, innerLoopRange: innerLoopRange, storageKind: storageKind))
+    
+    let overhead = overheadMeasureOutput(iterations: iterations, innerLoopRange: innerLoopRange, storageKind: storageKind)
+    
+    let workloadFactor: Int = switch storageKind {
+    case .singleForKey: 1
+    case .multiForKey(let variant):
+      switch variant {
+      case .noValues: 1
+      case .singleValue: 1
+      case .twoValues: 1
+      }
+    }
+    
+    let workloadAdjustedIterations = iterations / workloadFactor
+    
+    let measured = performMeasuredAction(iterations: workloadAdjustedIterations, setup: { index in
+      Self.makeIDKeyInstance(storageKind: storageKind, index: index)
+    }, measure: { info in
+      for _ in innerLoopRange {
+        blackHole(info.lastRecorded(forKey: key))
+      }
+    })
+    
+    let baseline = baselineMeasureOutput(iterations: iterations, innerLoopRange: innerLoopRange, storageKind: storageKind)
+    
+    let adjustedMeasuredDuration = measured.medianDuration - overhead.medianDuration
+    let adjustedBaselineDuration = baseline.medianDuration - overhead.medianDuration
+    
+//    printStat(for: measured, named: "measured", printPrefix: "____===>")
+//    printStat(for: baseline, named: "baseline", printPrefix: "____===>")
+//    printStat(for: overhead, named: "overhead", printPrefix: "____===>")
+    
+    return adjustedMeasuredDuration / adjustedBaselineDuration
+  }
+  
+  @inline(never)
+  static func overheadMeasureOutput(iterations: Int,
+                                    innerLoopRange: Range<Int>,
+                                    storageKind: BackingStorageKind) -> MeasureOutput<Void> {
+    performMeasuredAction(iterations: iterations * 4, setup: { index in
+      makeIDKeyInstance(storageKind: storageKind, index: index)
+    }, measure: { info in
+      for _ in innerLoopRange {
+        blackHole(info)
+      }
+    })
+  }
+  
+  @inline(never)
+  static func baselineMeasureOutput(iterations: Int,
+                                    innerLoopRange: Range<Int>,
+                                    storageKind: BackingStorageKind) -> MeasureOutput<Void> {
+    performMeasuredAction(iterations: iterations, setup: { index in
+      var dict = Dictionary<String, ErrorInfo.ValueExistential>(minimumCapacity: 2)
+      dict["name"] = "name"
+      
+      switch storageKind {
+      case .singleForKey(let variant):
+        switch variant {
+        case .noValues: break
+        case .singleValue: dict[key] = index
+        }
+      case .multiForKey(let variant):
+        switch variant {
+        case .noValues: break
+        case .singleValue: dict[key] = index
+        case .twoValues: dict[key] = index // dict can't have multiple values for key, so compare with subscript and 1 value
+        }
+      }
+      return dict
+    }, measure: { dict in
+      for _ in innerLoopRange {
+        blackHole(dict[key])
+      }
+    })
+  }
+  
+  @Test(.serialized, arguments: [RecordAccessKind.lastRecorded], BackingStorageKind.allCases)
+  func `get record`(accessKind: RecordAccessKind, storageKind: BackingStorageKind) {
     let workloadFactor: Int = switch accessKind {
     case .lastRecorded:
       switch storageKind {
@@ -94,7 +261,7 @@ struct ErrorInfoValueForKeyTests {
   private func testByBaseline(measured: MeasureOutput<Void>,
                               overhead: MeasureOutput<Void>,
                               accessKind _: RecordAccessKind,
-                              storageKind: StorageKind) {
+                              storageKind: BackingStorageKind) {
     let baseline = performMeasuredAction(iterations: iterations, setup: { index in
       var dict = Dictionary<String, ErrorInfo.ValueExistential>(minimumCapacity: 2)
       dict["name"] = "name"
@@ -174,36 +341,8 @@ struct ErrorInfoValueForKeyTests {
 //     print(">>>> baseline", "\(accessKind), \(storageKind)", baseline.medianDuration.inMicroseconds)
   }
   
-  func printStat<T>(for output: MeasureOutput<T>, named name: String, printPrefix: String) {
-    let stat = statisticalSummary(of: output.measurements)
-    lazy var statTrimmed = statisticalSummary(of: trimmedMeasurements(output.measurements, trimFraction: 0.2))
-    
-    func printSummary(_ summary: StatisticalSummary<Duration>, named name: String, fractionDigits: UInt8 = 1) {
-      print(printPrefix,
-            name,
-            "values: min median mean max:",
-            summary.minValue.inMicroseconds.asString(fractionDigits: fractionDigits),
-            summary.median.inMicroseconds.asString(fractionDigits: fractionDigits),
-            summary.mean.inMicroseconds.asString(fractionDigits: fractionDigits),
-            summary.maxValue.inMicroseconds.asString(fractionDigits: fractionDigits))
-      
-      print(printPrefix,
-            name,
-            "deviation: mean std max:",
-            summary.meanAbsoluteDeviation.inMicroseconds.asString(fractionDigits: fractionDigits),
-            summary.standardDeviation.inMicroseconds.asString(fractionDigits: fractionDigits),
-            summary.maxAbsDeviation.inMicroseconds.asString(fractionDigits: fractionDigits),
-            "cv:",
-            (summary.coefficientOfVariation * 100).asString(fractionDigits: 2) + "%")
-    }
-    
-    printSummary(stat, named: name)
-//    printSummary(statTrimmed, named: name + "{trimmed}")
-    print(printPrefix)
-  }
-  
-  @Test(.serialized, arguments: NonNilValueAccessKind.allCases, StorageKind.allCases)
-  func `get non nil value`(accessKind: NonNilValueAccessKind, storageKind: StorageKind) {
+  @Test(.serialized, arguments: NonNilValueAccessKind.allCases, BackingStorageKind.allCases)
+  func `get non nil value`(accessKind: NonNilValueAccessKind, storageKind: BackingStorageKind) {
     if #available(macOS 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, *) {
       
       let overhead = performMeasuredAction(iterations: iterations, setup: { _ in
@@ -250,7 +389,7 @@ struct ErrorInfoValueForKeyTests {
     print("===", Self.testFileURL)
         
     let accessKind: RecordAccessKind = .lastRecorded
-    let storageKind: StorageKind = .singleForKey(variant: .noValues)
+    let storageKind: BackingStorageKind = .singleForKey(variant: .noValues)
 
 //    let overhead = performMeasuredAction(iterations: iterations, setup: { index in
 //      Self.makeIDKeyInstance(storageKind: storageKind, index: index)
@@ -346,7 +485,7 @@ extension ErrorInfoValueForKeyTests {
     case singleValue
   }
   
-  enum StorageKind: CaseIterable, CustomStringConvertible {
+  enum BackingStorageKind: CaseIterable, CustomStringConvertible {
     /// OrderedDictionary
     case singleForKey(variant: SingleStorageValuesCount)
     
@@ -416,7 +555,7 @@ extension ErrorInfoValueForKeyTests {
   @inlinable
   @inline(__always)
   @available(macOS 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, *)
-  internal func make1000IDKeyInstances(storageKind: StorageKind) -> InlineArray<1000, ErrorInfo> {
+  internal func make1000IDKeyInstances(storageKind: BackingStorageKind) -> InlineArray<1000, ErrorInfo> {
     InlineArray<1000, ErrorInfo>({ index in
       var info = ErrorInfo()
       info[.name] = "name"
@@ -454,7 +593,7 @@ extension ErrorInfoValueForKeyTests {
   
   @inlinable
   @inline(__always)
-  internal static func makeIDKeyInstance(storageKind: StorageKind, index: Int) -> ErrorInfo {
+  internal static func makeIDKeyInstance(storageKind: BackingStorageKind, index: Int) -> ErrorInfo {
     var info = ErrorInfo()
     info[.name] = "name"
     
@@ -487,4 +626,60 @@ extension ErrorInfoValueForKeyTests {
     }
     return info
   }
+}
+
+func printStat<T>(for output: MeasureOutput<T>, named name: String, printPrefix: String) {
+  let stat = statisticalSummary(of: output.measurements)
+  lazy var statTrimmed = statisticalSummary(of: trimmedMeasurements(output.measurements, trimFraction: 0.2))
+  
+  printStatSummary(stat, named: name, printPrefix: printPrefix)
+  printStatSummary(statTrimmed, named: name + "{trimmed}", printPrefix: printPrefix)
+  print(printPrefix)
+  print(printPrefix)
+}
+
+func printStatSummary(_ summary: StatisticalSummary<Duration>,
+                      named name: String,
+                      printPrefix: String,
+                      fractionDigits: UInt8 = 1) {
+  print(printPrefix,
+        name,
+        "values: min median mean max:",
+        summary.minValue.inMicroseconds.asString(fractionDigits: fractionDigits),
+        summary.median.inMicroseconds.asString(fractionDigits: fractionDigits),
+        summary.mean.inMicroseconds.asString(fractionDigits: fractionDigits),
+        summary.maxValue.inMicroseconds.asString(fractionDigits: fractionDigits))
+  
+  print(printPrefix,
+        name,
+        "deviation: mean std max:",
+        summary.meanAbsoluteDeviation.inMicroseconds.asString(fractionDigits: fractionDigits),
+        summary.standardDeviation.inMicroseconds.asString(fractionDigits: fractionDigits),
+        summary.maxAbsDeviation.inMicroseconds.asString(fractionDigits: fractionDigits),
+        "cv:",
+        (summary.coefficientOfVariation * 100).asString(fractionDigits: 2) + "%")
+}
+
+func printStatSummary(_ summary: StatisticalSummary<Double>,
+                      named name: String,
+                      printPrefix: String,
+                      fractionDigits: UInt8 = 1) {
+  print(printPrefix,
+        name,
+        "values: min median mean max:",
+        summary.minValue.asString(fractionDigits: fractionDigits),
+        summary.median.asString(fractionDigits: fractionDigits),
+        summary.mean.asString(fractionDigits: fractionDigits),
+        summary.maxValue.asString(fractionDigits: fractionDigits))
+  
+  print(printPrefix,
+        name,
+        "deviation: mean std max:",
+        summary.meanAbsoluteDeviation.asString(fractionDigits: fractionDigits),
+        summary.standardDeviation.asString(fractionDigits: fractionDigits),
+        summary.maxAbsDeviation.asString(fractionDigits: fractionDigits),
+        "cv:",
+        (summary.coefficientOfVariation * 100).asString(fractionDigits: 2) + "%",
+        "maxRD:",
+        (summary.maxRelativeDeviation * 100).asString(fractionDigits: 2) + "%")
 }

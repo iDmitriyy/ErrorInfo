@@ -166,7 +166,7 @@ internal func performMeasuredAction<P, T>(iterations: Int,
 }
 
 @usableFromInline
-func median<D: DurationProtocol>(of values: [D]) -> D {
+func median<D: DurationProtocol>(of values: some RandomAccessCollection<D>) -> D {
   guard !values.isEmpty else { return .zero }
   
   let sorted = values.sorted()
@@ -179,7 +179,7 @@ func median<D: DurationProtocol>(of values: [D]) -> D {
   }
 }
 
-func median<N: FloatingPoint>(of values: [N]) -> N {
+func median<N: FloatingPoint>(of values: some RandomAccessCollection<N>) -> N {
   guard !values.isEmpty else { return .zero }
   
   let sorted = values.sorted()
@@ -255,6 +255,8 @@ struct StatisticalSummary<N> {
   /// - For the dataset `[1, 4, 7]` with a mean of `4`, the maximum deviation is `max(abs(1 - 4), abs(7 - 4)) = 3`.
   /// - For the dataset `[10.79, 10.83, 10.93]` with a mean of `10.85`, the maximum deviation is `0.08`.
   let maxAbsDeviation: N
+  
+  let maxRelativeDeviation: Double
     
   /// The mean (average) of the absolute deviations from the mean.
   ///
@@ -296,7 +298,7 @@ func statisticalSummary<N: BinaryFloatingPoint>(of values: [[N]]) -> [Statistica
   return values.map(statisticalSummary(of:))
 }
 
-func statisticalSummary<N: BinaryFloatingPoint>(of values: [N]) -> StatisticalSummary<N> {
+func statisticalSummary<N: BinaryFloatingPoint>(of values: some RandomAccessCollection<N>) -> StatisticalSummary<N> {
   guard !values.isEmpty else { return .zero }
   
   let sum = values.reduce(into: N.zero, +=)
@@ -318,6 +320,8 @@ func statisticalSummary<N: BinaryFloatingPoint>(of values: [N]) -> StatisticalSu
   
   // Find the maximum absolute deviation
   let maxAbsDeviation = absDeltasToMean.max()!
+  
+  let maxRelativeDeviation = maxAbsDeviation / mean
   
   // Calculate the average (mean) of the deviations
   let meanAbsDeviation = absDeltasToMean.reduce(into: N.zero, +=) / N(values.count)
@@ -341,6 +345,7 @@ func statisticalSummary<N: BinaryFloatingPoint>(of values: [N]) -> StatisticalSu
                             aboveMeanDelta: aboveMeanDelta,
                             minAbsDeviation: minAbsDeviation,
                             maxAbsDeviation: maxAbsDeviation,
+                            maxRelativeDeviation: Double(maxRelativeDeviation),
                             meanAbsoluteDeviation: meanAbsDeviation,
                             variance: variance,
                             standardDeviation: standardDeviation,
@@ -372,6 +377,8 @@ func statisticalSummary(of values: [Duration]) -> StatisticalSummary<Duration> {
   // Find the maximum absolute deviation
   let maxAbsDeviation = absDeltasToMean.max()!
   
+  let maxRelativeDeviation = maxAbsDeviation / mean
+  
   // Calculate the average (mean) of the deviations
   let meanAbsDeviation = absDeltasToMean.reduce(into: N.zero, +=) / values.count
     
@@ -394,6 +401,7 @@ func statisticalSummary(of values: [Duration]) -> StatisticalSummary<Duration> {
                             aboveMeanDelta: aboveMeanDelta,
                             minAbsDeviation: minAbsDeviation,
                             maxAbsDeviation: maxAbsDeviation,
+                            maxRelativeDeviation: maxRelativeDeviation,
                             meanAbsoluteDeviation: meanAbsDeviation,
                             variance: variance,
                             standardDeviation: standardDeviation,
@@ -410,6 +418,7 @@ extension StatisticalSummary where N: FloatingPoint {
          aboveMeanDelta: .zero,
          minAbsDeviation: .zero,
          maxAbsDeviation: .zero,
+         maxRelativeDeviation: .zero,
          meanAbsoluteDeviation: .zero,
          variance: .zero,
          standardDeviation: .zero,
@@ -427,6 +436,7 @@ extension StatisticalSummary where N: DurationProtocol {
          aboveMeanDelta: .zero,
          minAbsDeviation: .zero,
          maxAbsDeviation: .zero,
+         maxRelativeDeviation: .zero,
          meanAbsoluteDeviation: .zero,
          variance: .zero,
          standardDeviation: .zero,
@@ -965,6 +975,20 @@ extension Duration {
   @usableFromInline internal var inSeconds: Double {
     let (seconds, attoseconds) = components
     return Double(seconds) + Double(attoseconds) * 1e-18
+  }
+}
+
+extension Double {
+  public func rounded(toPlaces places: Int) -> Double {
+    let places = places < 0 ? 0 : places
+    let divisor = pow(10.0, Double(places))
+    return (self * divisor).rounded() / divisor
+  }
+
+  public func rounded(toPlaces places: Int, rule: FloatingPointRoundingRule) -> Double {
+    let places = places < 0 ? 0 : places
+    let divisor = pow(10.0, Double(places))
+    return (self * divisor).rounded(rule) / divisor
   }
 }
 
