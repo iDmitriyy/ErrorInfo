@@ -119,5 +119,5 @@ extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
         return .nothing
       }
     }
-  }
+  } // inlining gives +2% performance, which is meaningless
 }

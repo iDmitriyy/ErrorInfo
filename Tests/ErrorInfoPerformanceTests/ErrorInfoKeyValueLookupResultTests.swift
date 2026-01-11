@@ -1,5 +1,5 @@
 //
-//  KeyValueLookupResultTests.swift
+//  ErrorInfoKeyValueLookupResultTests.swift
 //  ErrorInfo
 //
 //  Created by Dmitriy Ignatyev on 11/01/2026.
@@ -10,7 +10,7 @@ import Foundation
 import OrderedCollections
 import Testing
 
-struct KeyValueLookupResultTests {
+struct ErrorInfoKeyValueLookupResultTests {
   private static let key = String(describing: StringLiteralKey.id)
   private let key = String(describing: StringLiteralKey.id)
   
@@ -29,11 +29,11 @@ struct KeyValueLookupResultTests {
     
     let ratioSummary = collectRatioResults(runsCount: 9, shouldPreheat: true, getResult: {
       let measurements = collectMeasurements(overhead: {
-        Self.overheadMeasurement(config: config, storageKind: storageKind)
+        ErrorInfoKeyValueLookupResultTests.overheadMeasurement(config: config, storageKind: storageKind)
       }, baseline: {
-        Self.baselineMeasurement(config: config, storageKind: storageKind)
+        ErrorInfoKeyValueLookupResultTests.baselineMeasurement(config: config, storageKind: storageKind)
       }, measured: {
-        Self.keyValueLookupIncludingNilMeasurement(config: config, storageKind: storageKind)
+        ErrorInfoKeyValueLookupResultTests.keyValueLookupIncludingNilMeasurement(config: config, storageKind: storageKind)
       })
       return measurements.adjustedRatio
     })
@@ -46,36 +46,36 @@ struct KeyValueLookupResultTests {
       case .noValues:
         #expect(medianRatio <= 0)
         // 0.49
-        // 0.57 0.58
+        // 0.57 0.58 0.55 0.63
       case .singleValue:
         #expect(medianRatio <= 0)
         // 0.49
-        // 0.56 0.56
+        // 0.56 0.56 0.54
       }
     case .multiForKey(let valuesForKey):
       switch valuesForKey {
       case .noValues:
         #expect(medianRatio <= 0)
         // 1.05
-        // 1.22 1.22
+        // 1.22 1.22 1.1 1.28
       case .singleValue:
         #expect(medianRatio <= 0)
         // 1.77
-        // 1.93 1.93
+        // 1.93 1.93 1.91 1.89
       case .twoValues(let nilPosition):
         switch nilPosition {
         case .withoutNil:
           #expect(medianRatio <= 0)
-          // 2.18
-          // 2.33 2.34
+          // 2.18 2.16
+          // 2.33 2.34 2.29
         case .atStart:
           #expect(medianRatio <= 0)
           // 2.04
-          // 2.18 2.19
+          // 2.18 2.19 2.16 2.14
         case .atEnd:
           #expect(medianRatio <= 0)
-          // 2.04
-          // 2.18 2.18
+          // 2.03 2.04
+          // 2.18 2.18 2.20
         }
       }
     }
@@ -94,7 +94,7 @@ struct KeyValueLookupResultTests {
   }
 }
 
-extension KeyValueLookupResultTests {
+extension ErrorInfoKeyValueLookupResultTests {
   struct Config {
     let iterations: Int
     let innerLoopRange: Range<Int>
@@ -240,5 +240,4 @@ struct CollectedOutputs<O, M, B> {
      }
    }
  }
- 
  */
