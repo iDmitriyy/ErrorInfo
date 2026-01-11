@@ -28,8 +28,35 @@ extension ErrorInfoGeneric {
 }
 
 extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
-  func allNonNilValues(forKey key: Key) -> ItemsForKey<RecordValue.Wrapped>? {
-    _storage.allValues(forKey: key)?._compactMap { $0.record.someValue.getWrapped }
+  func allNonNilValues(forKey key: Key) -> ItemsForKey<RecordValue.Wrapped>? { // optimized
+    switch _storage._variant {
+    case .left(let singleValueForKeyDict):
+      if let index = singleValueForKeyDict.index(forKey: key),
+          let value = singleValueForKeyDict.values[index].someValue.getWrapped {
+        return ItemsForKey(element: value)
+      } else {
+        return nil
+      }
+      
+    case .right(let multiValueForKeyDict):
+      if let indexSet = multiValueForKeyDict._keyToEntryIndices[key] {
+        switch indexSet._variant {
+        case .left(let singleIndex):
+          if let value = multiValueForKeyDict._entries[singleIndex].value.record.someValue.getWrapped {
+            return ItemsForKey(element: value)
+          }
+        case .right(let indices):
+          var values: Array<RecordValue.Wrapped> = Array(minimumCapacity: 2)
+          for index in indices.base {
+            if let value = multiValueForKeyDict._entries[index].value.record.someValue.getWrapped {
+              values.append(value)
+            }
+          }
+          return ItemsForKey(swiftArray: values)
+        }
+      }
+      return nil
+    }
   }
 }
 

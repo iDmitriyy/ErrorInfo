@@ -15,7 +15,7 @@ import Testing
 /// Relative performance compared to OrderedDictionary
 struct ErrorInfoValueForKeyTests {
   private let measurementsCount: Int = 100 //
-  private let factor: Double = 1
+  private let factor: Double = 5
   
   private var iterations: Int {
     Int((Double(measurementsCount) * factor).rounded(.toNearestOrAwayFromZero))
@@ -349,19 +349,6 @@ struct ErrorInfoValueForKeyTests {
     }
   }
   
-  @Test func lastValueForKey() throws {
-    let storageKind: BackingStorageKind = .multiForKey(variant: .twoValues(nilPosition: .withoutNil))
-    let config = Config(iterations: iterations, innerLoopRange: innerLoopRange, storageKind: storageKind)
-    
-    let ratio = Self.lastValueForKey_Ratio(config: config)
-    
-    blackHole(ratio)
-    
-    // .multiForKey(variant: .twoValues(nilPosition: .atEnd))
-    // 1460
-    // 2904
-  }
-  
   @inline(never)
   static func lastValueForKey_Ratio(config: Config) -> Double {
     let overhead = overheadMeasureOutput(config: config)
@@ -376,8 +363,8 @@ struct ErrorInfoValueForKeyTests {
     
     let baseline = baselineMeasureOutput(config: config)
     
-    print("____dur:", measured.totalDuration.inMilliseconds.asString(fractionDigits: 3))
-    print("____durMedian:", measured.medianDuration.inMicroseconds.asString(fractionDigits: 3))
+    // print("____dur:", measured.totalDuration.inMilliseconds.asString(fractionDigits: 3))
+    // print("____durMedian:", measured.medianDuration.inMicroseconds.asString(fractionDigits: 3))
     
     let adjustedMeasuredDuration = measured.medianDuration - overhead.medianDuration
     let adjustedBaselineDuration = baseline.medianDuration - overhead.medianDuration
@@ -493,40 +480,78 @@ struct ErrorInfoValueForKeyTests {
       switch variant {
       case .noValues:
         #expect(median <= 0)
-        // 1.28
-        // 1.46
+        // 0.89 0.9 0.9
+        //
       case .singleValue:
         #expect(median <= 0)
-        // 2.43
-        // 2.72
+        // 1.22 1.22 1.22
+        //
       }
     case .multiForKey(let variant):
       switch variant {
       case .noValues:
         #expect(median <= 0)
-        // 1.67
-        // 2.01
+        // 1.67 1.7 1.58
+        //
       case .singleValue:
         #expect(median <= 0)
-        // 3.53
-        // 3.85
+        // 3.44 3.33 3.36
+        //
       case .twoValues(let nilPosition):
         switch nilPosition {
         case .withoutNil:
           #expect(median <= 0)
-          // 9.7
-          // 10.83
+          // 7.89 7.96 7.79
+          //
         case .atStart:
           #expect(median <= 0)
-          // 8.26
-          // 9.02
+          // 7.55 7.41 7.44
+          //
         case .atEnd:
           #expect(median <= 0)
-          // 8.22
-          // 9.15
+          // 7.53 7.56 7.6
+          //
         }
       }
     }
+  }
+  
+  @Test func allValuesForKey() throws {
+    let storageKind: BackingStorageKind = .singleForKey(variant: .singleValue)
+    let config = Config(iterations: iterations, innerLoopRange: innerLoopRange, storageKind: storageKind)
+    
+    let ratio = Self.allValuesForKey_Ratio(config: config)
+    
+    blackHole(ratio)
+    
+    // .multiForKey(variant: .twoValues(nilPosition: .atStart))
+    // 2151
+    // 4293
+    
+    // .multiForKey(variant: .twoValues(nilPosition: .withoutNil))
+    // 2286
+    // 4570
+    
+    //.multiForKey(variant: .singleValue)
+    // =>
+    // 984
+    // 1967
+    
+    // .multiForKey(variant: .noValues)
+    // 403
+    // 798
+    
+    // .singleForKey(variant: .singleValue)
+    // 790
+    // 1577
+    // =>
+    // 373
+    // 729
+    
+    // .singleForKey(variant: .noValues)
+    // =>
+    // 245 241
+    // 465 460
   }
   
   @inline(never)
@@ -542,6 +567,9 @@ struct ErrorInfoValueForKeyTests {
     })
     
     let baseline = baselineMeasureOutput(config: config)
+    
+    print("____dur:", measured.totalDuration.inMilliseconds.asString(fractionDigits: 3))
+    print("____durMedian:", measured.medianDuration.inMicroseconds.asString(fractionDigits: 3))
     
     let adjustedMeasuredDuration = measured.medianDuration - overhead.medianDuration
     let adjustedBaselineDuration = baseline.medianDuration - overhead.medianDuration

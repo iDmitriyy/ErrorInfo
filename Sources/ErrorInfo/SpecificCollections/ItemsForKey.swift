@@ -43,15 +43,25 @@ public struct ItemsForKey<Value>: Sequence, RandomAccessCollection {
   /// - Parameter element: The value to store.
   @inlinable
   @inline(__always)
-  internal init(element: Value) { _elements = .left(element) }
+  internal init(element: consuming Value) { _elements = .left(element) }
   
   /// Creates a `ItemsForKey` instance with multiple values.
   ///
   /// - Parameter array: A non-empty array of values to store.
   @inlinable
   @inline(__always)
-  internal init(array: NonEmptyArray<Element>) {
+  internal init(array: consuming NonEmptyArray<Element>) { // FIXME: make guarantee that array contains >= 2 elements
     _elements = .right(array)
+  }
+  
+  @inlinable
+  @inline(__always)
+  internal init?(swiftArray: consuming Array<Element>) {
+    switch swiftArray.count {
+    case 1: _elements = .left(swiftArray[0])
+    case 0: return nil
+    default: _elements = .right(NonEmpty(base: swiftArray)!)
+    }
   }
   
   // MARK: - Collection Access
@@ -158,6 +168,7 @@ public struct ItemsForKey<Value>: Sequence, RandomAccessCollection {
         nil
       }
     case .right(let elements):
+      // FIXME: can contain 1 element, deprecate / remake
       return if let transformed = NonEmptyArray(base: elements.compactMap(transform)) {
         ItemsForKey<U>(array: transformed)
       } else {
