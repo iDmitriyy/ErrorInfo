@@ -59,14 +59,22 @@ extension ErrorInfoGeneric {
 
 extension ErrorInfoGeneric {
   func keyValueLookupResultIgnoringNil(forKey key: Key) -> KeyNonOptionalValueLookupResult {
-    if let taggedRecords = _storage.allValues(forKey: key) {
-      let valuesCount = taggedRecords.count
-      switch valuesCount {
-      case 1: return .singleValue
-      default: return .multipleRecords(valuesCount: valuesCount)
+    switch _storage._variant {
+    case .left(let singleValueForKeyDict):
+      if let _ = singleValueForKeyDict.index(forKey: key) {
+        return .singleValue
+      } else {
+        return .nothing
       }
-    } else {
-      return .nothing
+      
+    case .right(let multiValueForKeyDict):
+      if let indexSet = multiValueForKeyDict._keyToEntryIndices[key] {
+        // TODO: count is default imp from stdlib, check perf.
+        // need guarantee that count >= 2 for returning multipleRecords
+        return .multipleRecords(valuesCount: indexSet.count)
+      } else {
+        return .nothing
+      }
     }
   }
 }
