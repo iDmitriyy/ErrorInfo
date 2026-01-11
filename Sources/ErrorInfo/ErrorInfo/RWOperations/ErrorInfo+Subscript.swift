@@ -12,6 +12,10 @@ extension ErrorInfo {
     lastValue(forKey: literalKey)
   }
   
+  public subscript(dynamicKey key: String) -> (ValueExistential)? {
+    lastValue(forKey: key)
+  }
+  
   // MARK: - Mutating subscript
   
   /// Sets the value associated with the given literal key.

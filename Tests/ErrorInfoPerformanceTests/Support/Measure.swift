@@ -291,6 +291,22 @@ struct StatisticalSummary<N> {
   
   /// The Coefficient of Variation (CV), which is the standard deviation expressed as a percentage of the mean.
   let coefficientOfVariation: Double
+  
+  func map<T, E>(_ transform: (N) throws(E) -> T) throws(E) -> StatisticalSummary<T> where E: Error {
+    try StatisticalSummary<T>(minValue: transform(minValue),
+                              maxValue: transform(maxValue),
+                              mean: transform(mean),
+                              median: transform(median),
+                              belowMeanDelta: transform(belowMeanDelta),
+                              aboveMeanDelta: transform(aboveMeanDelta),
+                              minAbsDeviation: transform(minAbsDeviation),
+                              maxAbsDeviation: transform(maxAbsDeviation),
+                              maxRelativeDeviation: maxRelativeDeviation,
+                              meanAbsoluteDeviation: transform(meanAbsoluteDeviation),
+                              variance: transform(variance),
+                              standardDeviation: transform(standardDeviation),
+                              coefficientOfVariation: coefficientOfVariation)
+  }
 }
 
 func statisticalSummary<N: BinaryFloatingPoint>(of values: [[N]]) -> [StatisticalSummary<N>] {

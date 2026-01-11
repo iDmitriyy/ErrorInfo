@@ -9,7 +9,7 @@
 
 extension ErrorInfoGeneric {
   func allSomeValues(forKey key: Key) -> ItemsForKey<RecordValue>? {
-    // FIXME: - migh be incorrect, replace _compactMap
+    // FIXME: - might be incorrect, replace _compactMap
     _storage.allValues(forKey: key)?._compactMap { $0.record.someValue }
   }
   

@@ -8,7 +8,7 @@
 // MARK: - Last For Key
 
 extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentableEquatable {
-  internal func lastRecordedInstance(forKey key: Key) -> RecordValue.OptionalInstanceType? {
+  internal func lastRecordedInstance(forKey key: Key) -> RecordValue.OptionalInstanceType? { // optimized
     switch _storage._variant {
     case .left(let singleValueForKeyDict):
       if let index = singleValueForKeyDict.index(forKey: key) {
