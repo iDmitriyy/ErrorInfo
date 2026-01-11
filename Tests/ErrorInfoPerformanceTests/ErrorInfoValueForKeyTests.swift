@@ -14,11 +14,11 @@ import Testing
 
 /// Relative performance compared to OrderedDictionary
 struct ErrorInfoValueForKeyTests {
-  private let countBase: Int = 100 //
-  private let factor: Double = 1
+  private let measurementsCount: Int = 100 //
+  private let factor: Double = 5
   
   private var iterations: Int {
-    Int((Double(countBase) * factor).rounded(.toNearestOrAwayFromZero))
+    Int((Double(measurementsCount) * factor).rounded(.toNearestOrAwayFromZero))
   }
   
   private let innerLoopCount: Int = 20000 // 20000 is optimal for one measurement be ~= 450-800 µs
@@ -211,7 +211,7 @@ struct ErrorInfoValueForKeyTests {
     let config = Config(iterations: iterations, innerLoopRange: innerLoopRange, storageKind: storageKind)
     
     var ratios: [Double] = []
-    for run in 0...11 {
+    for run in 0...3 {
       let ratio = Self.firstValueForKey_Ratio(config: config)
       if run == 0 { continue } // run 0 is preheat
       ratios.append(ratio)
@@ -228,40 +228,97 @@ struct ErrorInfoValueForKeyTests {
       switch variant {
       case .noValues:
         #expect(median <= 0)
-        // 1.51
+        // 1.51 1.52
         //
       case .singleValue:
         #expect(median <= 0)
-        // 2.77
+        // 2.77 2.72
         //
       }
     case .multiForKey(let variant):
       switch variant {
       case .noValues:
         #expect(median <= 0)
-        // 2.08
+        // 2.08 2.06
         //
       case .singleValue:
         #expect(median <= 0)
-        // 3.89
+        // 3.89 3.96
         //
       case .twoValues(let nilPosition):
         switch nilPosition {
         case .withoutNil:
           #expect(median <= 0)
-          // 7.66
+          // 7.66 7.78
           //
         case .atStart:
           #expect(median <= 0)
-          // 9.51
+          // 9.51 9.67
           //
         case .atEnd:
           #expect(median <= 0)
-          // 7.7
+          // 7.70 7.70
           //
         }
       }
     }
+  }
+  
+  @Test
+  func firstValueForKey() throws {
+    let storageKind: BackingStorageKind = .multiForKey(variant: .twoValues(nilPosition: .atEnd))
+    let config = Config(iterations: iterations, innerLoopRange: innerLoopRange, storageKind: storageKind)
+    
+    let ratio = Self.firstValueForKey_Ratio(config: config)
+    
+    blackHole(ratio)
+    
+    
+    // .multiForKey(variant: .twoValues(nilPosition: .atEnd))
+    // 952
+    // 1889
+    
+    // .multiForKey(variant: .twoValues(nilPosition: .atStart))
+    // for index in indices.base + if count == 2
+    // 1053
+    // 2084
+    // for index in indices
+    // 1412
+    // 2812
+    // for index in indices.base
+    // 1404
+    // 2788
+    
+    // .multiForKey(variant: .singleValue)
+    // 1103
+    // 2182
+    // =>
+    // 889
+    // 1760
+    
+    // .multiForKey(variant: .noValues)
+    // 480
+    // 946
+    // =>
+    // 380
+    // 749
+    
+    // .singleForKey(variant: .noValues)
+    // 382
+    // 747
+    // =>
+    // 215
+    // 405
+    
+    // .singleForKey(variant: .singleValue)
+    // 799.833 800.578 804.198
+    // 1590 1589 1589 1587
+    
+    // 1590us -> 0.00160000 20k calls -> 0.00080000 10k -> 0.000000080000
+    //  800ms -> 0.00000008 | 1 call to firstValue(forKey:)
+    // =>
+    // 297
+    // 577
   }
   
   @inline(never)
@@ -277,6 +334,9 @@ struct ErrorInfoValueForKeyTests {
     })
     
     let baseline = baselineMeasureOutput(config: config)
+    
+    print("____dur:", measured.totalDuration.inMilliseconds.asString(fractionDigits: 3))
+    print("____durMedian:", measured.medianDuration.inMicroseconds.asString(fractionDigits: 3))
     
     let adjustedMeasuredDuration = measured.medianDuration - overhead.medianDuration
     let adjustedBaselineDuration = baseline.medianDuration - overhead.medianDuration

@@ -56,19 +56,35 @@ extension ErrorInfoGeneric {
 }
 
 extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
-  func firstNonNilValue(forKey key: Key) -> RecordValue.Wrapped? {
-    guard let annotatedRecords = _storage.allValues(forKey: key) else { return nil }
-
-    if let first = annotatedRecords.first.record.someValue.getWrapped { // fast path
-      return first
-    } else {
-      // iteration by indices.dropFirst() is faster than iteration over allRecordsForKey.dropFirst()
-      for index in annotatedRecords.indices.dropFirst() {
-        if let value = annotatedRecords[index].record.someValue.getWrapped {
-          return value
+  func firstNonNilValue(forKey key: Key) -> RecordValue.Wrapped? { // optimized
+    switch _storage._variant {
+    case .left(let singleValueForKeyDict):
+      if let index = singleValueForKeyDict.index(forKey: key) {
+        return singleValueForKeyDict.values[index].someValue.getWrapped
+      } else {
+        return nil
+      }
+    case .right(let multiValueForKeyDict):
+      if let indices = multiValueForKeyDict._keyToEntryIndices[key] {
+        switch indices._variant {
+        case .left(let singleIndex): return multiValueForKeyDict._entries[singleIndex].value.record.someValue.getWrapped
+        case .right(let indices):
+          if indices.base.count == 2 {
+            if let value = multiValueForKeyDict._entries[0].value.record.someValue.getWrapped {
+              return value
+            } else if let value = multiValueForKeyDict._entries[1].value.record.someValue.getWrapped {
+              return value
+            }
+          } else {
+            for index in indices.base {
+              if let value = multiValueForKeyDict._entries[index].value.record.someValue.getWrapped {
+                return value
+              }
+            }
+          }
         }
       }
       return nil
     }
-  }
+  } // inlining has no performance gain.
 }
