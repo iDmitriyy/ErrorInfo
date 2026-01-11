@@ -15,7 +15,7 @@ import Testing
 /// Relative performance compared to OrderedDictionary
 struct ErrorInfoValueForKeyTests {
   private let measurementsCount: Int = 100 //
-  private let factor: Double = 5
+  private let factor: Double = 1
   
   private var iterations: Int {
     Int((Double(measurementsCount) * factor).rounded(.toNearestOrAwayFromZero))
@@ -211,7 +211,7 @@ struct ErrorInfoValueForKeyTests {
     let config = Config(iterations: iterations, innerLoopRange: innerLoopRange, storageKind: storageKind)
     
     var ratios: [Double] = []
-    for run in 0...3 {
+    for run in 0...11 {
       let ratio = Self.firstValueForKey_Ratio(config: config)
       if run == 0 { continue } // run 0 is preheat
       ratios.append(ratio)
@@ -228,97 +228,40 @@ struct ErrorInfoValueForKeyTests {
       switch variant {
       case .noValues:
         #expect(median <= 0)
-        // 1.51 1.52
-        //
+        // 0.78 0.78
+        // 0.7
       case .singleValue:
         #expect(median <= 0)
-        // 2.77 2.72
-        //
+        // 0.96 0.96
+        // 0.85
       }
     case .multiForKey(let variant):
       switch variant {
       case .noValues:
         #expect(median <= 0)
-        // 2.08 2.06
-        //
+        // 1.51 1.51 1.63
+        // 1.33
       case .singleValue:
         #expect(median <= 0)
-        // 3.89 3.96
-        //
+        // 3.05 3.03 3.29 3.37
+        // 2.73
       case .twoValues(let nilPosition):
         switch nilPosition {
         case .withoutNil:
           #expect(median <= 0)
-          // 7.66 7.78
-          //
+          // 3.55 3.56 3.30
+          // 3.16 2.98
         case .atStart:
           #expect(median <= 0)
-          // 9.51 9.67
+          // 5.32
           //
         case .atEnd:
           #expect(median <= 0)
-          // 7.70 7.70
-          //
+          // 3.53 3.53 3.43
+          // 3.15
         }
       }
     }
-  }
-  
-  @Test
-  func firstValueForKey() throws {
-    let storageKind: BackingStorageKind = .multiForKey(variant: .twoValues(nilPosition: .atEnd))
-    let config = Config(iterations: iterations, innerLoopRange: innerLoopRange, storageKind: storageKind)
-    
-    let ratio = Self.firstValueForKey_Ratio(config: config)
-    
-    blackHole(ratio)
-    
-    
-    // .multiForKey(variant: .twoValues(nilPosition: .atEnd))
-    // 952
-    // 1889
-    
-    // .multiForKey(variant: .twoValues(nilPosition: .atStart))
-    // for index in indices.base + if count == 2
-    // 1053
-    // 2084
-    // for index in indices
-    // 1412
-    // 2812
-    // for index in indices.base
-    // 1404
-    // 2788
-    
-    // .multiForKey(variant: .singleValue)
-    // 1103
-    // 2182
-    // =>
-    // 889
-    // 1760
-    
-    // .multiForKey(variant: .noValues)
-    // 480
-    // 946
-    // =>
-    // 380
-    // 749
-    
-    // .singleForKey(variant: .noValues)
-    // 382
-    // 747
-    // =>
-    // 215
-    // 405
-    
-    // .singleForKey(variant: .singleValue)
-    // 799.833 800.578 804.198
-    // 1590 1589 1589 1587
-    
-    // 1590us -> 0.00160000 20k calls -> 0.00080000 10k -> 0.000000080000
-    //  800ms -> 0.00000008 | 1 call to firstValue(forKey:)
-    // =>
-    // 297
-    // 577
   }
   
   @inline(never)
@@ -335,8 +278,8 @@ struct ErrorInfoValueForKeyTests {
     
     let baseline = baselineMeasureOutput(config: config)
     
-    print("____dur:", measured.totalDuration.inMilliseconds.asString(fractionDigits: 3))
-    print("____durMedian:", measured.medianDuration.inMicroseconds.asString(fractionDigits: 3))
+//    print("____dur:", measured.totalDuration.inMilliseconds.asString(fractionDigits: 3))
+//    print("____durMedian:", measured.medianDuration.inMicroseconds.asString(fractionDigits: 3))
     
     let adjustedMeasuredDuration = measured.medianDuration - overhead.medianDuration
     let adjustedBaselineDuration = baseline.medianDuration - overhead.medianDuration
@@ -370,40 +313,53 @@ struct ErrorInfoValueForKeyTests {
       switch variant {
       case .noValues:
         #expect(median <= 0)
-        // 1.33 1.34
-        // 1.51
+        // 0.69
+        // 0.79
       case .singleValue:
         #expect(median <= 0)
-        // 2.50 2.44
-        // 2.71
+        // 0.86
+        // 0.98
       }
     case .multiForKey(let variant):
       switch variant {
       case .noValues:
         #expect(median <= 0)
-        // 1.72 1.82
-        // 1.95
+        // 1.32
+        // 1.50
       case .singleValue:
         #expect(median <= 0)
-        // 3.45 3.53
-        // 3.85
+        // 2.78 2.82
+        // 3.05
       case .twoValues(let nilPosition):
         switch nilPosition {
         case .withoutNil:
           #expect(median <= 0)
-          // 6.77 6.98
-          // 7.61
+          // 3.28
+          // 3.04
         case .atStart:
           #expect(median <= 0)
-          // 6.77 6.94
-          // 7.56
+          // 3.27
+          // 3.03
         case .atEnd:
           #expect(median <= 0)
-          // 8.50 8.65
-          // 9.48
+          // 5.05
+          // 4.61
         }
       }
     }
+  }
+  
+  @Test func lastValueForKey() throws {
+    let storageKind: BackingStorageKind = .multiForKey(variant: .twoValues(nilPosition: .withoutNil))
+    let config = Config(iterations: iterations, innerLoopRange: innerLoopRange, storageKind: storageKind)
+    
+    let ratio = Self.lastValueForKey_Ratio(config: config)
+    
+    blackHole(ratio)
+    
+    // .multiForKey(variant: .twoValues(nilPosition: .atEnd))
+    // 1460
+    // 2904
   }
   
   @inline(never)
@@ -419,6 +375,9 @@ struct ErrorInfoValueForKeyTests {
     })
     
     let baseline = baselineMeasureOutput(config: config)
+    
+    print("____dur:", measured.totalDuration.inMilliseconds.asString(fractionDigits: 3))
+    print("____durMedian:", measured.medianDuration.inMicroseconds.asString(fractionDigits: 3))
     
     let adjustedMeasuredDuration = measured.medianDuration - overhead.medianDuration
     let adjustedBaselineDuration = baseline.medianDuration - overhead.medianDuration
@@ -452,37 +411,37 @@ struct ErrorInfoValueForKeyTests {
       switch variant {
       case .noValues:
         #expect(median <= 0)
-        //
-        // 1.53 1.53
+        // 0.69
+        // 0.79 0.78
       case .singleValue:
         #expect(median <= 0)
-        //
-        // 2.72 2.73
+        // 0.98
+        // 0.88 0.88
       }
     case .multiForKey(let variant):
       switch variant {
       case .noValues:
         #expect(median <= 0)
-        //
-        // 1.95 2.08
+        // 1.51 1.63
+        // 1.34 1.34
       case .singleValue:
         #expect(median <= 0)
-        //
-        // 3.84 3.96
+        // 3.06 3.04
+        // 2.74 2.85
       case .twoValues(let nilPosition):
         switch nilPosition {
         case .withoutNil:
           #expect(median <= 0)
-          //
-          // 7.57 7.62
+          // 3.38
+          // 2.93
         case .atStart:
           #expect(median <= 0)
-          //
-          // 7.55 7.76
+          // 3.25
+          // 3.03
         case .atEnd:
           #expect(median <= 0)
-          //
-          // 9.47 9.57 9.66
+          // 5.09
+          // 4.51
         }
       }
     }

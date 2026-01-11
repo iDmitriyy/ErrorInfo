@@ -87,23 +87,6 @@ extension ErrorInfo {
     lastRecorded(forKey: literalKey.rawValue)
   }
   
-  public func lastRecorded_2(forKey dynamicKey: String) -> OptionalValue? {
-    switch _storage._storage._variant {
-    case .left(let singleValueForKeyDict):
-      if let index = singleValueForKeyDict.index(forKey: dynamicKey) {
-        return singleValueForKeyDict.values[index].someValue.instanceOfOptional
-      } else {
-        return nil
-      }
-    case .right(let multiValueForKeyDict):
-      if let indices = multiValueForKeyDict._keyToEntryIndices[dynamicKey] {
-        return multiValueForKeyDict._entries[indices.last].value.record.someValue.instanceOfOptional
-      } else {
-        return nil
-      }
-    }
-  }
-  
   /// Returns the last recorded entry for the given key, including explicit or implicit `nil`.
   ///
   /// Use this when you need to audit the final write for a key. For typical lookups of the latest
@@ -129,11 +112,7 @@ extension ErrorInfo {
   ///   // print: "last write was a nil of type Int"
   /// ```
   public func lastRecorded(forKey dynamicKey: String) -> OptionalValue? {
-    _storage.lastRecordedInstance(forKey: dynamicKey)
-  }
-  
-  public func testStub(forKey dynamicKey: String) -> OptionalValue? {
-    nil
+    _storage.lastRecordedOptionalInstance(forKey: dynamicKey)
   }
 }
 
