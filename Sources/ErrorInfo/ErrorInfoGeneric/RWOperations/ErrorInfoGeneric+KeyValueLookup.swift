@@ -15,7 +15,7 @@ extension ErrorInfoGeneric {
 
 extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
   func hasNonNilValue(forKey key: Key) -> Bool {
-    switch keyValueLookupResult_Optional(forKey: key) {
+    switch keyValueLookupResultIncludingNil(forKey: key) {
     case .nothing: false
     case .singleValue: true
     case .singleNil: false
@@ -26,7 +26,7 @@ extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
   // DEFERRED: optimize – for hasNonNilValue / hasNilInstance it is enough to find first value and return early
   
   func hasNilInstance(forKey key: Key) -> Bool {
-    switch keyValueLookupResult_Optional(forKey: key) {
+    switch keyValueLookupResultIncludingNil(forKey: key) {
     case .nothing: false
     case .singleValue: false
     case .singleNil: true
@@ -58,7 +58,7 @@ extension ErrorInfoGeneric {
 // MARK: - KeyValue Lookup Result
 
 extension ErrorInfoGeneric {
-  func keyValueLookupResult_NonOptional(forKey key: Key) -> KeyNonOptionalValueLookupResult {
+  func keyValueLookupResultIgnoringNil(forKey key: Key) -> KeyNonOptionalValueLookupResult {
     if let taggedRecords = _storage.allValues(forKey: key) {
       let valuesCount = taggedRecords.count
       switch valuesCount {
@@ -72,7 +72,7 @@ extension ErrorInfoGeneric {
 }
 
 extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
-  func keyValueLookupResult_Optional(forKey key: Key) -> KeyValueLookupResult {
+  func keyValueLookupResultIncludingNil(forKey key: Key) -> KeyValueLookupResult {
     // FIXME: instead of _storage.allValues(forKey: key) smth like
     // _storage.iterateWithResult(forKey: key), to eliminate allocations
     // on the other side, allValues(forKey:) should be quite fast.

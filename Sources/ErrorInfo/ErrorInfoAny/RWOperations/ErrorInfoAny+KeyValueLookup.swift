@@ -45,6 +45,6 @@ extension ErrorInfoAny {
   }
   
   @_disfavoredOverload public func keyValueLookupResult(forKey key: String) -> KeyValueLookupResult {
-    _storage.keyValueLookupResult_Optional(forKey: key)
+    _storage.keyValueLookupResultIncludingNil(forKey: key)
   }
 }
