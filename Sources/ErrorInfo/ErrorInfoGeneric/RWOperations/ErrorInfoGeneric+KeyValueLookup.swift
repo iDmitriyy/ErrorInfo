@@ -72,38 +72,44 @@ extension ErrorInfoGeneric {
 }
 
 extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
-  func keyValueLookupResultIncludingNil(forKey key: Key) -> KeyValueLookupResult {
-    // FIXME: instead of _storage.allValues(forKey: key) smth like
-    // _storage.iterateWithResult(forKey: key), to eliminate allocations
-    // on the other side, allValues(forKey:) should be quite fast.
-    
-//    _storage.iterateAllValues(forKey: key) { annotatedRecord in
-//    }
-    
-//    if let allRecords = _storage.allValues(forKey: key) {
-//      if allRecords.count == 1 {
-//      } else {
-//      }
-//    }
-    
-    if let taggedRecords = _storage.allValues(forKey: key) {
-      var valuesCount: Int = 0
-      var nilInstancesCount: Int = 0
-      for taggedRecord in taggedRecords {
-        if taggedRecord.record.someValue.isValue {
-          valuesCount += 1
+  func keyValueLookupResultIncludingNil(forKey key: Key) -> KeyValueLookupResult { // optimized
+    switch _storage._variant {
+    case .left(let singleValueForKeyDict):
+      if let index = singleValueForKeyDict.index(forKey: key) {
+        if singleValueForKeyDict.values[index].someValue.isValue {
+          return .singleValue
         } else {
-          nilInstancesCount += 1
+          return .singleNil
         }
+      } else {
+        return .nothing
       }
       
-      switch (valuesCount, nilInstancesCount) {
-      case (1, 0): return .singleValue
-      case (0, 1): return .singleNil
-      default: return .multipleRecords(valuesCount: valuesCount, nilCount: nilInstancesCount)
+    case .right(let multiValueForKeyDict):
+      if let indexSet = multiValueForKeyDict._keyToEntryIndices[key] {
+        switch indexSet._variant {
+        case .left(let singleIndex):
+          if multiValueForKeyDict._entries[singleIndex].value.record.someValue.isValue {
+            return .singleValue
+          } else {
+            return .singleNil
+          }
+        case .right(let indices):
+          var valuesCount: Int = 0
+          var nilInstancesCount: Int = 0
+          
+          for index in indices.base {
+            if multiValueForKeyDict._entries[index].value.record.someValue.isValue {
+              valuesCount += 1
+            } else {
+              nilInstancesCount += 1
+            }
+          }
+          return .multipleRecords(valuesCount: valuesCount, nilCount: nilInstancesCount)
+        }
+      } else {
+        return .nothing
       }
-    } else {
-      return .nothing
     }
   }
 }

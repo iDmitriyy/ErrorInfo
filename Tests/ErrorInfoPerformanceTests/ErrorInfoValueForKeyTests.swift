@@ -101,7 +101,7 @@ struct ErrorInfoValueForKeyTests {
     let overhead = overheadMeasureOutput(config: config)
     
     let measured = performMeasuredAction(iterations: config.iterations, setup: { index in
-      Self.makeIDKeyInstance(storageKind: config.storageKind, index: index)
+      makeIDKeyErrorInfo(storageKind: config.storageKind, index: index)
     }, measure: { info in
       for _ in config.innerLoopRange {
         blackHole(info.lastRecorded(forKey: key))
@@ -187,7 +187,7 @@ struct ErrorInfoValueForKeyTests {
     let overhead = overheadMeasureOutput(config: config)
     
     let measured = performMeasuredAction(iterations: config.iterations, setup: { index in
-      Self.makeIDKeyInstance(storageKind: config.storageKind, index: index)
+      makeIDKeyErrorInfo(storageKind: config.storageKind, index: index)
     }, measure: { info in
       for _ in config.innerLoopRange {
         blackHole(info.allRecords(forKey: key))
@@ -269,7 +269,7 @@ struct ErrorInfoValueForKeyTests {
     let overhead = overheadMeasureOutput(config: config)
     
     let measured = performMeasuredAction(iterations: config.iterations, setup: { index in
-      Self.makeIDKeyInstance(storageKind: config.storageKind, index: index)
+      makeIDKeyErrorInfo(storageKind: config.storageKind, index: index)
     }, measure: { info in
       for _ in config.innerLoopRange {
         blackHole(info.firstValue(forKey: key))
@@ -354,7 +354,7 @@ struct ErrorInfoValueForKeyTests {
     let overhead = overheadMeasureOutput(config: config)
     
     let measured = performMeasuredAction(iterations: config.iterations, setup: { index in
-      Self.makeIDKeyInstance(storageKind: config.storageKind, index: index)
+      makeIDKeyErrorInfo(storageKind: config.storageKind, index: index)
     }, measure: { info in
       for _ in config.innerLoopRange {
         blackHole(info.lastValue(forKey: key))
@@ -439,7 +439,7 @@ struct ErrorInfoValueForKeyTests {
     let overhead = overheadMeasureOutput(config: config)
     
     let measured = performMeasuredAction(iterations: config.iterations, setup: { index in
-      Self.makeIDKeyInstance(storageKind: config.storageKind, index: index)
+      makeIDKeyErrorInfo(storageKind: config.storageKind, index: index)
     }, measure: { info in
       for _ in config.innerLoopRange {
         blackHole(info[dynamicKey: key])
@@ -516,50 +516,12 @@ struct ErrorInfoValueForKeyTests {
     }
   }
   
-  @Test func allValuesForKey() throws {
-    let storageKind: BackingStorageKind = .singleForKey(variant: .singleValue)
-    let config = Config(iterations: iterations, innerLoopRange: innerLoopRange, storageKind: storageKind)
-    
-    let ratio = Self.allValuesForKey_Ratio(config: config)
-    
-    blackHole(ratio)
-    
-    // .multiForKey(variant: .twoValues(nilPosition: .atStart))
-    // 2151
-    // 4293
-    
-    // .multiForKey(variant: .twoValues(nilPosition: .withoutNil))
-    // 2286
-    // 4570
-    
-    //.multiForKey(variant: .singleValue)
-    // =>
-    // 984
-    // 1967
-    
-    // .multiForKey(variant: .noValues)
-    // 403
-    // 798
-    
-    // .singleForKey(variant: .singleValue)
-    // 790
-    // 1577
-    // =>
-    // 373
-    // 729
-    
-    // .singleForKey(variant: .noValues)
-    // =>
-    // 245 241
-    // 465 460
-  }
-  
   @inline(never)
   static func allValuesForKey_Ratio(config: Config) -> Double {
     let overhead = overheadMeasureOutput(config: config)
     
     let measured = performMeasuredAction(iterations: config.iterations, setup: { index in
-      Self.makeIDKeyInstance(storageKind: config.storageKind, index: index)
+      makeIDKeyErrorInfo(storageKind: config.storageKind, index: index)
     }, measure: { info in
       for _ in config.innerLoopRange {
         blackHole(info.allValues(forKey: key))
@@ -587,103 +549,6 @@ extension ErrorInfoValueForKeyTests {
     let iterations: Int
     let innerLoopRange: Range<Int>
     let storageKind: BackingStorageKind
-  }
-  
-  enum BackingStorageKind: CaseIterable, CustomStringConvertible {
-    /// OrderedDictionary
-    case singleForKey(variant: SingleStorageValuesCount)
-    
-    /// OrderedMultiValueDictionary
-    case multiForKey(variant: MultipleForKeyVariant)
-    
-    enum SingleStorageValuesCount {
-      case noValues
-      case singleValue
-    }
-    
-    enum MultipleForKeyVariant {
-      case noValues
-      case singleValue
-      case twoValues(nilPosition: NilPositionForKey)
-    }
-    
-    enum NilPositionForKey {
-      case withoutNil
-      case atStart
-      case atEnd
-    }
-    
-    static var allCases: [Self] {
-      [
-        .singleForKey(variant: .noValues),
-        .singleForKey(variant: .singleValue),
-        .multiForKey(variant: .noValues),
-        .multiForKey(variant: .singleValue), // underlying IndexSet is a single in-place value
-        .multiForKey(variant: .twoValues(nilPosition: .withoutNil)), // underlying IndexSet is heap allocated
-        .multiForKey(variant: .twoValues(nilPosition: .atStart)), // underlying IndexSet is heap allocated
-        .multiForKey(variant: .twoValues(nilPosition: .atEnd)), // underlying IndexSet is heap allocated
-      ]
-    }
-    
-    var description: String {
-      switch self {
-      case .singleForKey(let variant):
-        let valuesCount: String = switch variant {
-        case .noValues: "0 values"
-        case .singleValue: "1 value"
-        }
-        return "singl-storage " + valuesCount
-        
-      case .multiForKey(let variant):
-        let valuesCount: String = switch variant {
-        case .noValues: "0 values"
-        case .singleValue: "1 value"
-        case .twoValues(let nilPosition):
-          switch nilPosition {
-          case .withoutNil: "2 values without nil"
-          case .atStart: "2 values nil at start"
-          case .atEnd: "2 values nil at end"
-          }
-        }
-        return "multi-storage " + valuesCount
-      }
-    }
-  }
-    
-  @inlinable
-  @inline(__always)
-  internal static func makeIDKeyInstance(storageKind: BackingStorageKind, index: Int) -> ErrorInfo {
-    var info = ErrorInfo()
-    info[.name] = "name"
-    
-    switch storageKind {
-    case .singleForKey(let valuesForTargetKeyCount):
-      switch valuesForTargetKeyCount {
-      case .noValues: break
-      case .singleValue: info[.id] = index
-      }
-    case .multiForKey(let valuesForTargetKeyCount):
-      switch valuesForTargetKeyCount {
-      case .noValues:
-        info[.name] = "name2" // trigger transition to multiValueForKey storage
-        
-      case .singleValue:
-        info[.id] = index
-        info[.name] = "name2" // trigger transition to multiValueForKey storage
-        
-      case .twoValues(let nilPosition):
-        let range = 0..<2 // transition to multiValueForKey storage is triggered by multiple values added for key `.id`
-        for number in range {
-          let value: Int? = switch nilPosition {
-          case .withoutNil: index + number
-          case .atStart: number == range.first ? nil : index + number
-          case .atEnd: number == range.last ? nil : index + number
-          }
-          info[.id] = value
-        }
-      }
-    }
-    return info
   }
   
   @inline(never)
@@ -716,12 +581,107 @@ extension ErrorInfoValueForKeyTests {
   @inline(never)
   static func overheadMeasureOutput(config: Config) -> MeasureOutput<Void> {
     performMeasuredAction(iterations: config.iterations, setup: { index in
-      makeIDKeyInstance(storageKind: config.storageKind, index: index)
+      makeIDKeyErrorInfo(storageKind: config.storageKind, index: index)
     }, measure: { info in
       for _ in config.innerLoopRange {
         blackHole(info)
       }
     })
+  }
+}
+
+internal func makeIDKeyErrorInfo(storageKind: BackingStorageKind, index: Int) -> ErrorInfo {
+  var info = ErrorInfo()
+  info[.name] = "name"
+  
+  switch storageKind {
+  case .singleForKey(let valuesForTargetKeyCount):
+    switch valuesForTargetKeyCount {
+    case .noValues: break
+    case .singleValue: info[.id] = index
+    }
+  case .multiForKey(let valuesForTargetKeyCount):
+    switch valuesForTargetKeyCount {
+    case .noValues:
+      info[.name] = "name2" // trigger transition to multiValueForKey storage
+      
+    case .singleValue:
+      info[.id] = index
+      info[.name] = "name2" // trigger transition to multiValueForKey storage
+      
+    case .twoValues(let nilPosition):
+      let range = 0..<2 // transition to multiValueForKey storage is triggered by multiple values added for key `.id`
+      for number in range {
+        let value: Int? = switch nilPosition {
+        case .withoutNil: index + number
+        case .atStart: number == range.first ? nil : index + number
+        case .atEnd: number == range.last ? nil : index + number
+        }
+        info[.id] = value
+      }
+    }
+  }
+  return info
+}
+
+enum BackingStorageKind: CaseIterable, CustomStringConvertible {
+  /// OrderedDictionary
+  case singleForKey(valuesForKey: SingleStorageValuesCount)
+  
+  /// OrderedMultiValueDictionary
+  case multiForKey(valuesForKey: MultipleForKeyVariant)
+  
+  enum SingleStorageValuesCount {
+    case noValues
+    case singleValue
+  }
+  
+  enum MultipleForKeyVariant {
+    case noValues
+    case singleValue
+    case twoValues(nilPosition: NilPositionForKey)
+  }
+  
+  enum NilPositionForKey {
+    case withoutNil
+    case atStart
+    case atEnd
+  }
+  
+  static var allCases: [Self] {
+    [
+      .singleForKey(valuesForKey: .noValues),
+      .singleForKey(valuesForKey: .singleValue),
+      .multiForKey(valuesForKey: .noValues),
+      .multiForKey(valuesForKey: .singleValue), // underlying IndexSet is a single in-place value
+      .multiForKey(valuesForKey: .twoValues(nilPosition: .withoutNil)), // underlying IndexSet is heap allocated
+      .multiForKey(valuesForKey: .twoValues(nilPosition: .atStart)), // underlying IndexSet is heap allocated
+      .multiForKey(valuesForKey: .twoValues(nilPosition: .atEnd)), // underlying IndexSet is heap allocated
+    ]
+  }
+  
+  var description: String {
+    switch self {
+    case .singleForKey(let variant):
+      let valuesCount: String = switch variant {
+      case .noValues: "0 values"
+      case .singleValue: "1 value"
+      }
+      return "singl-storage " + valuesCount
+      
+    case .multiForKey(let variant):
+      let valuesCount: String = switch variant {
+      case .noValues: "0 values"
+      case .singleValue: "1 value"
+      case .twoValues(let nilPosition):
+        switch nilPosition {
+        case .withoutNil: "2 values without nil"
+        case .atStart: "2 values nil at start"
+        case .atEnd: "2 values nil at end"
+        }
+      }
+      return "multi-storage " + valuesCount
+    }
   }
 }
 

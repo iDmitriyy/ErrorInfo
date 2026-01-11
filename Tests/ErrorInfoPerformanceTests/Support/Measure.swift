@@ -209,6 +209,7 @@ func mean<D: DurationProtocol>(of values: [D]) -> D {
 }
 
 /// A structure that contains various statistical measures derived from a collection of values.
+@usableFromInline
 struct StatisticalSummary<N> {
   let minValue: N
   
@@ -314,6 +315,7 @@ func statisticalSummary<N: BinaryFloatingPoint>(of values: [[N]]) -> [Statistica
   return values.map(statisticalSummary(of:))
 }
 
+@usableFromInline
 func statisticalSummary<N: BinaryFloatingPoint>(of values: some RandomAccessCollection<N>) -> StatisticalSummary<N> {
   guard !values.isEmpty else { return .zero }
   
