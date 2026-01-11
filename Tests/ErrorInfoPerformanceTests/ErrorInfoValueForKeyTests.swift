@@ -15,7 +15,7 @@ import Testing
 /// Relative performance compared to OrderedDictionary
 struct ErrorInfoValueForKeyTests {
   private let measurementsCount: Int = 100 //
-  private let factor: Double = 5
+  private let factor: Double = 1
   
   private var iterations: Int {
     Int((Double(measurementsCount) * factor).rounded(.toNearestOrAwayFromZero))
@@ -481,36 +481,36 @@ struct ErrorInfoValueForKeyTests {
       case .noValues:
         #expect(median <= 0)
         // 0.89 0.9 0.9
-        //
+        // 0.84
       case .singleValue:
         #expect(median <= 0)
         // 1.22 1.22 1.22
-        //
+        // 1.09
       }
     case .multiForKey(let variant):
       switch variant {
       case .noValues:
         #expect(median <= 0)
         // 1.67 1.7 1.58
-        //
+        // 1.37
       case .singleValue:
         #expect(median <= 0)
         // 3.44 3.33 3.36
-        //
+        // 2.97
       case .twoValues(let nilPosition):
         switch nilPosition {
         case .withoutNil:
           #expect(median <= 0)
           // 7.89 7.96 7.79
-          //
+          // 7.12
         case .atStart:
           #expect(median <= 0)
           // 7.55 7.41 7.44
-          //
+          // 6.68
         case .atEnd:
           #expect(median <= 0)
           // 7.53 7.56 7.6
-          //
+          // 6.69
         }
       }
     }

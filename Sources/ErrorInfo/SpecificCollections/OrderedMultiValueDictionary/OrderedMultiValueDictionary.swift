@@ -109,7 +109,7 @@ extension OrderedMultiValueDictionary {
       valuesForKey = ItemsForKey(element: _entries[index].value)
        
     case .right(let indices):
-      let valuesForKeyArray = indices.map { index in _entries[index].value }
+      let valuesForKeyArray = indices.map { index in _entries[index].value } // TODO: - 1 value possible, need 2
       valuesForKey = ItemsForKey(array: valuesForKeyArray)
     }
     return valuesForKey

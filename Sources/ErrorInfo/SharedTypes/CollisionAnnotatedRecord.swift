@@ -44,7 +44,8 @@ public struct CollisionAnnotatedRecord<Record>: CustomDebugStringConvertible {
   @inline(__always)
   internal init(value: Record, collisionSource: WriteProvenance?) {
     record = value
-    _collisionSource = collisionSource.map(HeapBox.init) // TODO: check prefomnace when using if-let
+    _collisionSource = collisionSource.map(HeapBox.init) // TODO: check preformnace when using if-let
+    // TODO: check consuming for array element by index
   }
   
   @inlinable
