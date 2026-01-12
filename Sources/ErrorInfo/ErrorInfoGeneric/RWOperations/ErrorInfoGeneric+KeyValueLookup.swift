@@ -73,9 +73,12 @@ extension ErrorInfoGeneric {
       
     case .right(let multiValueForKeyDict):
       if let indexSet = multiValueForKeyDict._keyToEntryIndices[key] {
-        // TODO: count is default imp from stdlib, check perf.
-        // need guarantee that count >= 2 for returning multipleRecords
-        return .multipleRecords(valuesCount: indexSet.count)
+        let indexSetCount = indexSet.count
+        if indexSetCount < 2 {
+          return .singleValue
+        } else {
+          return .multipleRecords(valuesCount: indexSetCount)
+        }
       } else {
         return .nothing
       }
