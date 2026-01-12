@@ -11,6 +11,10 @@ extension ErrorInfoAny {
   public func hasValue(forKey key: String) -> Bool {
     _storage.hasNonNilValue(forKey: key)
   }
+  
+  public func hasRecord(forKey key: String) -> Bool {
+    _storage.hasRecord(forKey: key)
+  }
 }
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
@@ -18,10 +22,6 @@ extension ErrorInfoAny {
 // MARK: - Has Multiple Records For Key
 
 extension ErrorInfoAny {
-  public func hasRecord(forKey key: String) -> Bool {
-    _storage.hasRecord(forKey: key)
-  }
-  
   public func hasMultipleRecords(forKey key: String) -> Bool {
     _storage.hasMultipleRecords(forKey: key)
   }

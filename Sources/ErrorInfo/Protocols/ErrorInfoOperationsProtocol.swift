@@ -356,7 +356,6 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   /// errorInfo["id"] = 5
   /// errorInfo.hasValue(forKey: "id") // returns true
   /// ```
-  @_disfavoredOverload
   func hasValue(forKey key: KeyType) -> Bool
   
   func hasRecord(forKey key: KeyType) -> Bool
@@ -456,7 +455,6 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   /// // because one value is `non-nil` and one is nil.
   /// ```
   ///
-  @_disfavoredOverload
   func keyValueLookupResult(forKey key: KeyType) -> KeyValueLookupResult
   
   // ===-------------------------------------------------------------------------------------------------------------------=== //

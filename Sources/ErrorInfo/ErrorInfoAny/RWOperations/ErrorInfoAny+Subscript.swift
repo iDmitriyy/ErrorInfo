@@ -5,13 +5,7 @@
 //  Created by Dmitriy Ignatyev on 17/12/2025.
 //
 
-extension ErrorInfoAny {  
-  // MARK: - Read access Subscript
-  
-  public subscript(_ literalKey: StringLiteralKey) -> (ValueExistential)? {
-    lastValue(forKey: literalKey)
-  }
-  
+extension ErrorInfoAny {    
   // MARK: - Mutating subscript
   
   public subscript<V>(_ literalKey: StringLiteralKey) -> V? {
