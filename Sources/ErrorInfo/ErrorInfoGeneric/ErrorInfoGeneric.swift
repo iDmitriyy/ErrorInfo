@@ -20,27 +20,56 @@ public struct ErrorInfoGeneric<Key: Hashable, RecordValue>: Sequence {
   public typealias Element = (key: Key, value: AnnotatedRecord)
   public typealias AnnotatedRecord = CollisionAnnotatedRecord<Record>
   
-  @usableFromInline internal typealias BackingStorage = OrderedMultipleValuesForKeyStorage<Key, Record>
+  @inlinable
+  @inline(__always)
+  internal var _variant: Variant { _mutableVariant._variant }
   
-  @usableFromInline internal var _storage: BackingStorage
+  // FIXME: private set
+  @usableFromInline internal var _mutableVariant: _Variant
+  
+//  @usableFromInline internal typealias BackingStorage = OrderedMultipleValuesForKeyStorage<Key, Record>
+//
+//  @usableFromInline internal var _storage: BackingStorage
     
-  @usableFromInline
-  internal init(storage: BackingStorage) {
-    _storage = storage
-  }
-    
-  /// Creates an empty `ErrorInfo` instance with a specified minimum capacity.
-  @inlinable @inline(__always)
-  public init(minimumCapacity: Int) {
-    self.init(storage: BackingStorage(minimumCapacity: minimumCapacity))
+//  @usableFromInline
+//  internal init(storage: BackingStorage) {
+//    _storage = storage
+//  }
+//
+//  /// Creates an empty `ErrorInfo` instance with a specified minimum capacity.
+//  @inlinable @inline(__always)
+//  public init(minimumCapacity: Int) {
+//    self.init(storage: BackingStorage(minimumCapacity: minimumCapacity))
+//  }
+//
+//  /// An empty instance of `ErrorInfo`.
+//  public static var empty: Self { Self(storage: BackingStorage.empty) }
+//
+//  @inlinable @inline(__always)
+//  public mutating func reserveCapacity(_ minimumCapacity: Int) {
+//    _storage.reserveCapacity(minimumCapacity)
+//  }
+  
+  private init(_variant: _Variant) {
+    _mutableVariant = _variant
   }
   
-  /// An empty instance of `ErrorInfo`.
-  public static var empty: Self { Self(storage: BackingStorage.empty) }
+  @inlinable @inline(__always)
+  internal init(minimumCapacity: Int) {
+    _mutableVariant = _Variant(.left(OrderedDictionary(minimumCapacity: minimumCapacity)))
+  }
+  
+  internal static var empty: Self {
+    Self(_variant: _Variant(.left(OrderedDictionary())))
+  } // inlining has no performance gain
   
   @inlinable @inline(__always)
-  public mutating func reserveCapacity(_ minimumCapacity: Int) {
-    _storage.reserveCapacity(minimumCapacity)
+  internal mutating func reserveCapacity(_ minimumCapacity: Int) {
+    _mutableVariant.mutateUnderlying(singleValueForKey: { singleValueForKeyDict in
+      singleValueForKeyDict.reserveCapacity(minimumCapacity)
+    }, multiValueForKey: { multiValueForKeyDict in
+      multiValueForKeyDict.reserveCapacity(minimumCapacity)
+    })
   }
 }
 
@@ -106,9 +135,9 @@ extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepre
     }
 
     withCollisionAndDuplicateResolutionAdd(record: Record(keyOrigin: keyOrigin, someValue: optional),
-                                                  forKey: key,
-                                                  duplicatePolicy: duplicatePolicy,
-                                                  writeProvenance: writeProvenance())
+                                           forKey: key,
+                                           duplicatePolicy: duplicatePolicy,
+                                           writeProvenance: writeProvenance())
   }
 }
 
@@ -121,9 +150,9 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
                               duplicatePolicy: ValueDuplicatePolicy,
                               writeProvenance: @autoclosure () -> WriteProvenance) {
     withCollisionAndDuplicateResolutionAdd(record: Record(keyOrigin: keyOrigin, someValue: someValue),
-                                                  forKey: key,
-                                                  duplicatePolicy: duplicatePolicy,
-                                                  writeProvenance: writeProvenance())
+                                           forKey: key,
+                                           duplicatePolicy: duplicatePolicy,
+                                           writeProvenance: writeProvenance())
   }
 }
 
@@ -154,25 +183,25 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
   ) {
     switch duplicatePolicy.kind {
     case .rejectEqualValue:
-      _storage.appendIfNotPresent(key: key,
-                                  value: newRecord,
-                                  writeProvenance: writeProvenance(),
-                                  andRejectWhenExistingMatches: { current in
-                                    Self.isEqualValue(newRecord: newRecord, current: current.record)
-                                  })
+      appendIfNotPresent(key: key,
+                         value: newRecord,
+                         writeProvenance: writeProvenance(),
+                         andRejectWhenExistingMatches: { current in
+                           Self.isEqualValue(newRecord: newRecord, current: current.record)
+                         })
       
     case .rejectEqualValueWhenEqualOrigin:
-      _storage.appendIfNotPresent(key: key,
-                                  value: newRecord,
-                                  writeProvenance: writeProvenance(),
-                                  andRejectWhenExistingMatches: { current in
-                                    Self.isEqualValueKeyOriginAndCollisionSource_A(newRecord: newRecord,
-                                                                                   writeProvenance: writeProvenance(),
-                                                                                   current: current)
-                                  })
+      appendIfNotPresent(key: key,
+                         value: newRecord,
+                         writeProvenance: writeProvenance(),
+                         andRejectWhenExistingMatches: { current in
+                           Self.isEqualValueKeyOriginAndCollisionSource_A(newRecord: newRecord,
+                                                                          writeProvenance: writeProvenance(),
+                                                                          current: current)
+                         })
       
     case .allowEqual:
-      _storage.appendUnconditionally(key: key, value: newRecord, writeProvenance: writeProvenance())
+      appendUnconditionally(key: key, value: newRecord, writeProvenance: writeProvenance())
     }
   }
   
@@ -211,6 +240,28 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
 //        }
 //      }()
 //  }
+}
+
+// MARK: Append KeyValue
+
+extension ErrorInfoGeneric {
+  @usableFromInline
+  internal mutating func appendIfNotPresent(key newKey: Key,
+                                            value newValue: Record,
+                                            writeProvenance: @autoclosure () -> WriteProvenance,
+                                            andRejectWhenExistingMatches decideToReject: (_ existing: AnnotatedRecord) -> Bool) {
+    _mutableVariant.appendIfNotPresent(key: newKey,
+                                       value: newValue,
+                                       writeProvenance: writeProvenance(),
+                                       rejectWhenExistingMatches: decideToReject)
+  }
+  
+  @usableFromInline
+  internal mutating func appendUnconditionally(key newKey: Key,
+                                               value newValue: Record,
+                                               writeProvenance: @autoclosure () -> WriteProvenance) {
+    _mutableVariant.appendUnconditionally(key: newKey, value: newValue, writeProvenance: writeProvenance())
+  }
 }
 
 extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepresentable {

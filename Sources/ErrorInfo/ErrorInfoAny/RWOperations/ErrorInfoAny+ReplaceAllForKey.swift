@@ -23,13 +23,15 @@ extension ErrorInfoAny {
   internal mutating func _replaceAllRecordsImp<T>(forKey key: String,
                                                   by newValue: T,
                                                   keyOrigin: KeyOrigin) -> ItemsForKey<ValueExistential>? {
-    let oldValues = _storage.removeAllRecords_ReturningNonNilValues(forKey: key)
-    _add(key: key,
-         keyOrigin: keyOrigin,
-         value: newValue,
-         preserveNilValues: true, // has no effect in this func
-         duplicatePolicy: .allowEqual, // has no effect in this func
-         writeProvenance: .onAppend(origin: nil)) // collisions must never happen using this func
-    return oldValues
+//    let oldValues = _storage.removeAllRecords_ReturningNonNilValues(forKey: key)
+//    _add(key: key,
+//         keyOrigin: keyOrigin,
+//         value: newValue,
+//         preserveNilValues: true, // has no effect in this func
+//         duplicatePolicy: .allowEqual, // has no effect in this func
+//         writeProvenance: .onAppend(origin: nil)) // collisions must never happen using this func
+//    return oldValues
+    // FIXME: - imp
+    return  nil
   }
 }

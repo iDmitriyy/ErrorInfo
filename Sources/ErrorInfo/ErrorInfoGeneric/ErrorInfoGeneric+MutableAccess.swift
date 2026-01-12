@@ -1,16 +1,23 @@
 //
-//  OrderedMultipleValuesForKeyStorage+MutableAccess.swift
+//  ErrorInfoGeneric+MutableAccess.swift
 //  ErrorInfo
 //
-//  Created by Dmitriy Ignatyev on 05/10/2025.
+//  Created by Dmitriy Ignatyev on 12/01/2026.
 //
 
-extension OrderedMultipleValuesForKeyStorage {
+extension ErrorInfoGeneric {
+  @usableFromInline internal typealias Variant = Either<SingleValueForKeyDict, MultiValueForKeyDict>
+  
+  @usableFromInline internal typealias SingleValueForKeyDict = OrderedDictionary<Key, Record>
+  @usableFromInline internal typealias MultiValueForKeyDict = OrderedMultiValueDictionary<Key, AnnotatedRecord>
+  
   // References:
   // - https://github.com/swiftlang/swift-evolution/blob/main/proposals/0432-noncopyable-switch.md
   //   Future directions: inout pattern matches
   // - https://forums.swift.org/t/in-place-mutation-of-an-enum-associated-value/11747/5
-  @usableFromInline internal struct _Variant {
+  @usableFromInline
+  @frozen
+  internal struct _Variant {
     @usableFromInline internal var _variant: Variant!
     
     @inlinable @inline(__always)
@@ -70,9 +77,9 @@ extension OrderedMultipleValuesForKeyStorage {
     @inlinable @inline(__always)
     internal mutating func appendIfNotPresent(
       key newKey: Key,
-      value newValue: Value,
+      value newValue: Record,
       writeProvenance: @autoclosure () -> WriteProvenance,
-      rejectWhenExistingMatches decideToReject: (_ existing: AnnotatedValue) -> Bool,
+      rejectWhenExistingMatches decideToReject: (_ existing: AnnotatedRecord) -> Bool,
     ) {
       // Improvement:
       // - implement geometric growth strategy, OrderedCollections has no `capacity` property now
@@ -141,7 +148,7 @@ extension OrderedMultipleValuesForKeyStorage {
     @inlinable @inline(__always)
     internal mutating func appendUnconditionally(
       key newKey: Key,
-      value newValue: Value,
+      value newValue: Record,
       writeProvenance: @autoclosure () -> WriteProvenance,
     ) {
       // --- copy-paste from `mutateUnderlying`
@@ -170,7 +177,7 @@ extension OrderedMultipleValuesForKeyStorage {
         return
       }
 
-      let annotated: AnnotatedValue = if multiValueForKeyDict.hasValue(forKey: newKey) {
+      let annotated: AnnotatedRecord = if multiValueForKeyDict.hasValue(forKey: newKey) {
         .collidedValue(newValue, collisionSource: writeProvenance())
       } else {
         .value(newValue)
@@ -181,4 +188,4 @@ extension OrderedMultipleValuesForKeyStorage {
   }
 }
 
-extension OrderedMultipleValuesForKeyStorage._Variant: Sendable where Key: Sendable, Value: Sendable, WriteProvenance: Sendable {}
+extension ErrorInfoGeneric._Variant: Sendable where Key: Sendable, RecordValue: Sendable, WriteProvenance: Sendable {}

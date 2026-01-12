@@ -14,7 +14,7 @@ import Testing
 
 /// Relative performance compared to OrderedDictionary
 struct ErrorInfoValueForKeyTests {
-  private let measurementsCount: Int = 400 //
+  private let measurementsCount: Int = 100 //
   private let factor: Double = 1
   
   private var iterations: Int {

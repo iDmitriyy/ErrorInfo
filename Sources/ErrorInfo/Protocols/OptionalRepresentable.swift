@@ -41,6 +41,6 @@ public protocol ErrorInfoOptionalRepresentable {
 extension ErrorInfoOptionalRepresentable {
   @inlinable
   @inline(__always)
-  var isNil: Bool { !isValue }
+  var isNil: Bool { !isValue } // FIXME: - check perf
 }
 
