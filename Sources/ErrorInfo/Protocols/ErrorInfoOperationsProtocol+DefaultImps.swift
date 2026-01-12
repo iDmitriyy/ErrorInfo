@@ -95,6 +95,23 @@ extension ErrorInfoOperationsProtocol where KeyType == String {
     hasRecord(forKey: literalKey.rawValue)
   }
   
+  public func recordsCount(forKey literalKey: StringLiteralKey) -> Int {
+    recordsCount(forKey: literalKey.rawValue)
+  }
+  
+  public func valuesCount(forKey literalKey: StringLiteralKey) -> Int {
+    valuesCount(forKey: literalKey.rawValue)
+  }
+  
+  public func valuesCount(forKey key: KeyType) -> Int {
+    switch keyValueLookupResult(forKey: key) {
+    case .nothing: 0
+    case .singleValue: 1
+    case .singleNil: 0
+    case .multipleRecords(let valuesCount, _): valuesCount
+    }
+  }
+  
   public func hasMultipleRecords(forKey literalKey: StringLiteralKey) -> Bool {
     hasMultipleRecords(forKey: literalKey.rawValue)
   }

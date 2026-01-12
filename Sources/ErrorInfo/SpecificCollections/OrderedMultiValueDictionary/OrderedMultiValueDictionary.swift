@@ -91,6 +91,10 @@ extension OrderedMultiValueDictionary {
     return entriesForKeyIndices.count > 1 
   }
   
+  func valuesCount(forKey key: Key) -> Int {
+    _keyToEntryIndices[key]?.count ?? 0
+  }
+  
   internal var hasMultipleValuesForAtLeastOneKey: Bool { // optimized
     for entriesIndices in _keyToEntryIndices.values where entriesIndices.count > 1 {
       return true

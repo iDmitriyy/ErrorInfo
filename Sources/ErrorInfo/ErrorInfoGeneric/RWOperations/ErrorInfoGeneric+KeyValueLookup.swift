@@ -14,6 +14,15 @@ extension ErrorInfoGeneric {
     case .right(let multiValueForKeyDict): multiValueForKeyDict.hasValue(forKey: key)
     }
   }
+  
+  public func recordsCount(forKey key: Key) -> Int {
+    switch _variant {
+    case .left(let singleValueForKeyDict):
+      singleValueForKeyDict.hasValue(forKey: key) ? 1 : 0
+    case .right(let multiValueForKeyDict):
+      multiValueForKeyDict.valuesCount(forKey: key)
+    }
+  }
 }
 
 extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {

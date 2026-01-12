@@ -33,6 +33,16 @@ extension ErrorInfoAny {
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
+// MARK: - Count For Key
+
+extension ErrorInfoAny {
+  public func recordsCount(forKey key: String) -> Int {
+    _storage.recordsCount(forKey: key)
+  }
+}
+
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
 // MARK: - KeyValue Lookup Result
 
 extension ErrorInfoAny {  

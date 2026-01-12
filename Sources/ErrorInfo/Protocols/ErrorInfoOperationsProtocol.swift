@@ -381,6 +381,8 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   /// ```
   func hasValue(forKey key: KeyType) -> Bool
   
+  func hasRecord(forKey literalKey: StringLiteralKey) -> Bool
+  
   func hasRecord(forKey key: KeyType) -> Bool
   
   // MARK: Has Multiple Records For Key
@@ -436,6 +438,16 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   /// // true because "key1" has multiple records
   /// ```
   func hasMultipleRecordsForAtLeastOneKey() -> Bool
+  
+  // MARK: Count for key
+  
+  func recordsCount(forKey literalKey: StringLiteralKey) -> Int
+  
+  func recordsCount(forKey key: KeyType) -> Int
+  
+  func valuesCount(forKey literalKey: StringLiteralKey) -> Int
+  
+  func valuesCount(forKey key: KeyType) -> Int
   
   // MARK: KeyValue Lookup Result
   
