@@ -25,7 +25,7 @@ extension ErrorInfoFuncs {
       case .some(let wrapped):
         return flattenOptional(any: wrapped)
       case .none:
-        let rootWrappedType = __PrivateImps._getRootWrappedType(anyType: optionalExistential.getStaticWrrappedType())
+        let rootWrappedType = __PrivateImps._getRootWrappedType(anyType: optionalExistential.getStaticWrappedType())
         return .nilInstance(typeOfWrapped: rootWrappedType)
       }
     } else {
@@ -43,7 +43,8 @@ extension ErrorInfoFuncs {
       case .some(let wrapped):
         return flattenOptional(anySendable: wrapped)
       case .none:
-        let rootWrappedType = __PrivateImps._getSendableRootWrappedType(anyType: optionalExistential.getStaticWrrappedSendableType())
+        let rootWrappedType = __PrivateImps
+          ._getSendableRootWrappedType(anyType: optionalExistential.getStaticWrappedSendableType())
         return .right(rootWrappedType)
       }
     } else {
@@ -76,7 +77,7 @@ extension ErrorInfoFuncs {
       case .some(let wrapped):
         return typeOfWrapped(any: wrapped)
       case .none:
-        return __PrivateImps._getRootWrappedType(anyType: optionalExistential.getStaticWrrappedType())
+        return __PrivateImps._getRootWrappedType(anyType: optionalExistential.getStaticWrappedType())
       }
     } else {
       // returning here type(of: any) can return `Any` for value like this: Optional<Any>.some("")
@@ -94,7 +95,7 @@ extension ErrorInfoFuncs.__PrivateImps {
   /// When passed value is `nil`, we can not get type of values. In this extract `Wrapped` type from the most nested Optional type.
   fileprivate static func _getRootWrappedType(anyType: any Any.Type) -> any Any.Type {
     if let optionalType = anyType as? (any FlattenableOptionalPrivateProtocol.Type) {
-      return _getRootWrappedType(anyType: optionalType.getStaticWrrappedType())
+      return _getRootWrappedType(anyType: optionalType.getStaticWrappedType())
     } else {
       return anyType
     }
@@ -102,7 +103,7 @@ extension ErrorInfoFuncs.__PrivateImps {
   
   fileprivate static func _getSendableRootWrappedType(anyType: any Sendable.Type) -> any Sendable.Type {
     if let optionalType = anyType as? (any FlattenableSendableOptionalPrivateProtocol.Type) {
-      return _getSendableRootWrappedType(anyType: optionalType.getStaticWrrappedSendableType())
+      return _getSendableRootWrappedType(anyType: optionalType.getStaticWrappedSendableType())
     } else {
       return anyType
     }
@@ -124,9 +125,9 @@ extension ErrorInfoFuncs.__PrivateImps {
   fileprivate protocol FlattenableOptionalPrivateProtocol<Wrapped> {
     associatedtype Wrapped
       
-    static func getStaticWrrappedType() -> Wrapped.Type
+    static func getStaticWrappedType() -> Wrapped.Type
     
-    func getStaticWrrappedType() -> Wrapped.Type
+    func getStaticWrappedType() -> Wrapped.Type
     
     func getSelf() -> Wrapped?
   }
@@ -134,26 +135,26 @@ extension ErrorInfoFuncs.__PrivateImps {
   fileprivate protocol FlattenableSendableOptionalPrivateProtocol<Wrapped>: Sendable {
     associatedtype Wrapped: Sendable
       
-    static func getStaticWrrappedSendableType() -> Wrapped.Type
+    static func getStaticWrappedSendableType() -> Wrapped.Type
     
-    func getStaticWrrappedSendableType() -> Wrapped.Type
+    func getStaticWrappedSendableType() -> Wrapped.Type
     
     func getSendableSelf() -> Wrapped?
   }
 }
 
 extension Optional: ErrorInfoFuncs.__PrivateImps.FlattenableOptionalPrivateProtocol {
-  fileprivate static func getStaticWrrappedType() -> Wrapped.Type { Wrapped.self }
+  fileprivate static func getStaticWrappedType() -> Wrapped.Type { Wrapped.self }
   
-  fileprivate func getStaticWrrappedType() -> Wrapped.Type { Wrapped.self }
+  fileprivate func getStaticWrappedType() -> Wrapped.Type { Wrapped.self }
   
   fileprivate func getSelf() -> Wrapped? { self }
 }
 
 extension Optional: ErrorInfoFuncs.__PrivateImps.FlattenableSendableOptionalPrivateProtocol {
-  fileprivate static func getStaticWrrappedSendableType() -> Wrapped.Type { Wrapped.self }
+  fileprivate static func getStaticWrappedSendableType() -> Wrapped.Type { Wrapped.self }
   
-  fileprivate func getStaticWrrappedSendableType() -> Wrapped.Type { Wrapped.self }
+  fileprivate func getStaticWrappedSendableType() -> Wrapped.Type { Wrapped.self }
   
   fileprivate func getSendableSelf() -> Wrapped? { self }
 }

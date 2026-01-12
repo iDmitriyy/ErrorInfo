@@ -96,7 +96,7 @@ public struct ValueDuplicatePolicy: Sendable, CustomDebugStringConvertible {
   public var debugDescription: String {
     switch kind {
     case .rejectEqualValue: "rejectEqual"
-    case .rejectEqualValueWhenEqualOrigin: "rejectEqualWithSameOrigin"
+    case .rejectEqualValueWhenEqualOrigin: "allowEqualWhenOriginDiffers"
     case .allowEqual: "allowEqual"
     }
   }

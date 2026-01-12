@@ -29,8 +29,8 @@ public func unwrappedDescription(of any: some Any) -> String {
   if let value = _specialize(any, for: Bool.self) { return String(value) }
   if let value = _specialize(any, for: Double.self) { return String(value) }
   
-  if let custStr = any as? any CustomStringConvertible {
-    return custStr.description
+  if let customStringConvertible = any as? any CustomStringConvertible {
+    return customStringConvertible.description
   }
   
   let description = String(describing: any)

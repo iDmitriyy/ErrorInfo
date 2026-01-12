@@ -15,7 +15,7 @@ public import protocol InternalCollectionsUtilities._UniqueCollection
 public protocol ErrorInfoOperationsProtocol where KeyType == String {
   associatedtype KeyType: Hashable
   associatedtype ValueExistential
-  associatedtype OptionalValue: ErrorInfoOptionalRepresentable
+  associatedtype OptionalValue: ErrorInfoOptionalRepresentable where OptionalValue.Wrapped == ValueExistential
   
   associatedtype Keys: Collection<KeyType> & _UniqueCollection
   associatedtype AllKeys: Collection<KeyType>
