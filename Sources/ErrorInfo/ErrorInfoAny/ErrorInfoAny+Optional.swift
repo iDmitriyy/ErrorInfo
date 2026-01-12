@@ -54,6 +54,9 @@ extension ErrorInfoAny {
     var isValue: Bool { instanceOfOptional.isValue }
     
     @usableFromInline
+    var isNil: Bool { instanceOfOptional.isValue }
+    
+    @usableFromInline
     var getWrapped: Any? { instanceOfOptional.getWrapped }
     
     @usableFromInline

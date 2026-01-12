@@ -51,6 +51,9 @@ extension ErrorInfo {
     var isValue: Bool { instanceOfOptional.isValue } // inlining has no effect on performance
     
     @usableFromInline
+    var isNil: Bool { instanceOfOptional.isNil }
+    
+    @usableFromInline
     var debugDescription: String { instanceOfOptional.debugDescription }
     
     @usableFromInline

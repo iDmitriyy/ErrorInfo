@@ -37,10 +37,3 @@ public protocol ErrorInfoOptionalRepresentable {
   
   var instanceOfOptional: OptionalInstanceType { get }
 }
-
-extension ErrorInfoOptionalRepresentable {
-  @inlinable
-  @inline(__always)
-  var isNil: Bool { !isValue } // FIXME: - check perf
-}
-
