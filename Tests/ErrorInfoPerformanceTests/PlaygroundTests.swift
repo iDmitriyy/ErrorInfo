@@ -10,24 +10,43 @@ import Foundation
 import OrderedCollections
 import Testing
 
+struct LargeStruct {
+  let a: String = "dscsdf"
+  let b: UUID = UUID()
+  let c: Duration = Duration.seconds(1)
+  let d: Date = Date()
+  let e: String = "dfsdfwefferfwerfrefwerfvref"
+}
+
 struct PlaygroundTests {
   @Test func playground() throws {
-    let count = 10
+    let count = 1000
         
-    let dict: OrderedDictionary<String, String> = [
-      "dcdfdsdsfd": "dsf2sdfsdf",
-      "dcdfdsdsfd2": "dsf1sdfsdf",
-      "dcdfdsdsf3": "dsf4sdfsdf",
-      "dcdfdsdsf4": "dsf2rdfsdf",
-      "dcdfdsdsf5": "dsf2rdfqdf",
-    ]
-    
     let output = performMeasuredAction(count: count) {
       for index in 1...100_000 {
         blackHole(index)
       }
     }
-    print("__playground: ", output.duration.asString(fractionDigits: 2)) // it takes ~25ms for 10 million of calls of empty blackHole(())
+    
+    // hasValue(forKey:)                          byIndex     byKeys     byNil
+    // OrderedDictionary<String, String>            326         315       349               .
+    // OrderedDictionary<String, LargeStruct>       314         296      4484               .
+    // OrderedDictionary<String, Int>               328         313       353               .
+    // OrderedDictionary<Int, Int>                  377         348       395               .
+    // OrderedDictionary<String, ___________>       ___         ___      ____               .
+    
+    //  Swift.Dictionary<String, String>           1788        1285      1782               .
+    //  Swift.Dictionary<String, LargeStruct>      1794        1293      6634               .
+    //  Swift.Dictionary<String, Int>              1794        1296      1786               .
+    //  Swift.Dictionary<Int, Int>                  865         866       865               .
+    //  Swift.Dictionary<String, ___________>      ____        ____      ____               .
+    // byIndex – index(forKey: key) != nil
+    //  byKeys – keys.contains(key)
+    //   byNil – self[key] != nil
+    
+    // print("__playground: ", output.duration.asString(fractionDigits: 2)) // it takes ~25ms for 10 million of calls of empty blackHole(())
+    
+    // dict hasValueForKey
     
     // __playground:  331 transitionedFrom0
     // __playground:  315 transitionedFrom1

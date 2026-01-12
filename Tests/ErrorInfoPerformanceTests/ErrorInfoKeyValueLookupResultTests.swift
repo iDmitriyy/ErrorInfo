@@ -14,7 +14,7 @@ struct ErrorInfoKeyValueLookupResultTests {
   private static let key = String(describing: StringLiteralKey.id)
   private let key = String(describing: StringLiteralKey.id)
   
-  private let measurementsCount: Int = 100
+  private let measurementsCount: Int = 1000
   
   private var iterations: Int {
     Int(Double(measurementsCount).rounded(.toNearestOrAwayFromZero))
@@ -22,6 +22,10 @@ struct ErrorInfoKeyValueLookupResultTests {
   
   private let innerLoopCount: Int = 20000 // 20000 is optimal for one measurement be ~= 450-800 µs
   private var innerLoopRange: Range<Int> { 0..<innerLoopCount }
+  
+  // ===-------------------------------------------------------------------------------------------------------------------=== //
+
+  // MARK: - keyValue LookupResult
   
   @Test(.serialized, arguments: BackingStorageKind.allCases)
   func keyValueLookupIncludingNil(storageKind: BackingStorageKind) throws {
@@ -31,7 +35,7 @@ struct ErrorInfoKeyValueLookupResultTests {
       let measurements = collectMeasurements(overhead: {
         ErrorInfoKeyValueLookupResultTests.overheadMeasurement(config: config, storageKind: storageKind)
       }, baseline: {
-        ErrorInfoKeyValueLookupResultTests.baselineMeasurement(config: config, storageKind: storageKind)
+        ErrorInfoKeyValueLookupResultTests.keyValueLookupBaseline(config: config, storageKind: storageKind)
       }, measured: {
         ErrorInfoKeyValueLookupResultTests.keyValueLookupIncludingNilMeasurement(config: config, storageKind: storageKind)
       })
@@ -92,17 +96,89 @@ struct ErrorInfoKeyValueLookupResultTests {
       }
     })
   }
-}
+  
+  // ===-------------------------------------------------------------------------------------------------------------------=== //
 
-extension ErrorInfoKeyValueLookupResultTests {
-  struct Config {
-    let iterations: Int
-    let innerLoopRange: Range<Int>
-    let storageKind: BackingStorageKind
+  // MARK: - hasMultipleRecords forKey
+  
+  @Test(.serialized, arguments: BackingStorageKind.allCases)
+  func hasMultipleRecordsForKey(storageKind: BackingStorageKind) throws {
+    let config = IterationsConfig(iterations: iterations, innerLoopRange: innerLoopRange)
+    
+    let ratioSummary = collectRatioResults(runsCount: 4, shouldPreheat: true, getResult: {
+      let measurements = collectMeasurements(overhead: {
+        ErrorInfoKeyValueLookupResultTests.overheadMeasurement(config: config, storageKind: storageKind)
+      }, baseline: {
+        ErrorInfoKeyValueLookupResultTests.hasMultipleRecordsBaseline(config: config, storageKind: storageKind)
+      }, measured: {
+        ErrorInfoKeyValueLookupResultTests.hasMultipleRecordsForKeyMeasurement(config: config, storageKind: storageKind)
+      })
+      return measurements.adjustedRatio
+    })
+    
+    let medianRatio = ratioSummary.median
+    
+    switch storageKind {
+    case .singleForKey(let variant):
+      switch variant {
+      case .noValues:
+        #expect(medianRatio <= 0)
+        // 0.05 0.06 0.05
+        //
+      case .singleValue:
+        #expect(medianRatio <= 0)
+        // 0.05 0.04 0.04
+        //
+      }
+    case .multiForKey(let variant):
+      switch variant {
+      case .noValues:
+        #expect(medianRatio <= 0)
+        // 1.15 1.15 1.15
+        //
+      case .singleValue:
+        #expect(medianRatio <= 0)
+        // 0.77 0.91 1.10
+        //
+      case .twoValues(let nilPosition):
+        switch nilPosition {
+        case .withoutNil:
+          #expect(medianRatio <= 0)
+          // 1.42 1.59 1.59
+          //
+        case .atStart:
+          #expect(medianRatio <= 0)
+          // 1.19 1.43 1.43
+          //
+        case .atEnd:
+          #expect(medianRatio <= 0)
+          // 1.42 1.42 1.43
+          //
+        }
+      }
+    }
   }
   
   @inline(never)
-  static func baselineMeasurement(config: IterationsConfig, storageKind: BackingStorageKind) -> MeasureOutput<Void> {
+  static func hasMultipleRecordsForKeyMeasurement(config: IterationsConfig,
+                                                    storageKind: BackingStorageKind) -> MeasureOutput<Void> {
+    performMeasuredAction(iterations: config.iterations, setup: { index in
+      makeIDKeyErrorInfo(storageKind: storageKind, index: index)
+    }, measure: { info in
+      for _ in config.innerLoopRange {
+        blackHole(info.hasMultipleRecords(forKey: key))
+      }
+    })
+  }
+}
+
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// MARK: - Helpers
+
+extension ErrorInfoKeyValueLookupResultTests {
+  @inline(never)
+  static func keyValueLookupBaseline(config: IterationsConfig, storageKind: BackingStorageKind) -> MeasureOutput<Void> {
     performMeasuredAction(iterations: config.iterations, setup: { index in
       var dict = Dictionary<String, Array<Any?>>(minimumCapacity: 2)
       
@@ -138,6 +214,42 @@ extension ErrorInfoKeyValueLookupResultTests {
           }
         }
         blackHole((valuesCount, nilInstancesCount))
+      }
+    })
+  }
+  
+  
+  @inline(never)
+  static func hasMultipleRecordsBaseline(config: IterationsConfig, storageKind: BackingStorageKind) -> MeasureOutput<Void> {
+    performMeasuredAction(iterations: config.iterations, setup: { index in
+      var dict = Dictionary<String, Array<Any?>>(minimumCapacity: 2)
+      
+      let nameArray: Array<Any?> = ["name"]
+      dict["name"] = nameArray
+      
+      let idArray: Array<ErrorInfo.ValueExistential>? = switch storageKind {
+      case .singleForKey(let variant):
+        switch variant {
+        case .noValues: nil
+        case .singleValue: [index]
+        }
+      case .multiForKey(let variant):
+        switch variant {
+        case .noValues: nil
+        case .singleValue: [index]
+        case .twoValues: [index, index]
+        }
+      }
+      dict[key] = idArray
+      return dict
+    }, measure: { dict in
+      for _ in config.innerLoopRange {
+        let hasMultipleRecords: Bool = if let values = dict[key] {
+          values.count > 1
+        } else {
+          false
+        }
+        blackHole(hasMultipleRecords)
       }
     })
   }

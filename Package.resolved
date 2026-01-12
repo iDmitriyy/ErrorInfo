@@ -16,7 +16,7 @@
       "location" : "https://github.com/iDmitriyy/swift-nonempty.git",
       "state" : {
         "branch" : "SwiftCollectionsAdditions",
-        "revision" : "29860be0f6f024e1de72c49e8ff0d9136881e287"
+        "revision" : "164d812796cc3bf6634dc84df80e5c6b33a8e304"
       }
     },
     {
@@ -25,7 +25,7 @@
       "location" : "https://github.com/iDmitriyy/SwiftCollections-NonEmpty.git",
       "state" : {
         "branch" : "RangeSet",
-        "revision" : "83fc72848cfb7d47afba7d520c4a874f2197a3db"
+        "revision" : "b7af2aa14edd53cbe5fdbba92a324f6e761e98be"
       }
     }
   ],

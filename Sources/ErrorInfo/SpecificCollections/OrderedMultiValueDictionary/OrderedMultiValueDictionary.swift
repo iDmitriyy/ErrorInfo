@@ -40,7 +40,8 @@ struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   @usableFromInline internal var _entries: ContiguousArray<Element>
   
   @usableFromInline internal var _keyToEntryIndices: Dictionary<Key, NonEmptyOrderedIndexSet>
-  // TODO: ? use RangeSet instead of NonEmptyOrderedIndexSet?
+  // DEFERRED: OrderedDictionary might improve performance
+  // ? use RangeSet instead of NonEmptyOrderedIndexSet?
   
   @usableFromInline internal init() {
     _entries = []
@@ -83,9 +84,11 @@ extension OrderedMultiValueDictionary {
     _keyToEntryIndices.hasValue(forKey: key)
   }
   
-  internal func hasMultipleValues(forKey key: Key) -> Bool {
+  @inlinable
+  @inline(__always)
+  internal func hasMultipleValues(forKey key: Key) -> Bool { // optimized
     guard let entriesForKeyIndices = _keyToEntryIndices[key] else { return false }
-    return entriesForKeyIndices.count > 1
+    return entriesForKeyIndices.count > 1 
   }
   
   internal var hasMultipleValuesForAtLeastOneKey: Bool {

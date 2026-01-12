@@ -9,7 +9,10 @@
 
 extension ErrorInfoGeneric {
   public func hasSomeValue(forKey key: Key) -> Bool {
-    _storage.hasValue(forKey: key)
+    switch _storage._variant {
+    case .left(let singleValueForKeyDict): singleValueForKeyDict.hasValue(forKey: key)
+    case .right(let multiValueForKeyDict): multiValueForKeyDict.hasValue(forKey: key)
+    }
   }
 }
 
@@ -40,10 +43,11 @@ extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
 // MARK: - Has Multiple Records For Key
 
 extension ErrorInfoGeneric {
-  func hasMultipleRecords(forKey key: Key) -> Bool {
-    guard let recordsForKey = _storage.allValues(forKey: key) else { return false }
-    return recordsForKey.count > 1
-    // TODO: - optimize _storage.hasMultipleValues(forKey: key)
+  func hasMultipleRecords(forKey key: Key) -> Bool { // optimized
+    switch _storage._variant {
+    case .left: false
+    case .right(let multiValueForKeyDict): multiValueForKeyDict.hasMultipleValues(forKey: key)
+    }
   }
 }
 

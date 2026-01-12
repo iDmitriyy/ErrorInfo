@@ -68,6 +68,13 @@ public struct NonEmptyOrderedIndexSet: Sendable, RandomAccessCollection {
     }
   }
   
+  // public var count: Int {
+  //   switch _variant {
+  //   case .left: 1
+  //   case .right(let indices): indices.base.count
+  //   }
+  // }
+  
   /// Accesses the index at `position`.
   /// - Precondition: `position` is within bounds.
   @_spi(PerformanceTesting)
