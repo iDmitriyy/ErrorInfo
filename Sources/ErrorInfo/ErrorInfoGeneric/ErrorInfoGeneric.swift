@@ -26,30 +26,7 @@ public struct ErrorInfoGeneric<Key: Hashable, RecordValue>: Sequence {
   
   // FIXME: private set
   @usableFromInline internal var _mutableVariant: _Variant
-  
-//  @usableFromInline internal typealias BackingStorage = OrderedMultipleValuesForKeyStorage<Key, Record>
-//
-//  @usableFromInline internal var _storage: BackingStorage
     
-//  @usableFromInline
-//  internal init(storage: BackingStorage) {
-//    _storage = storage
-//  }
-//
-//  /// Creates an empty `ErrorInfo` instance with a specified minimum capacity.
-//  @inlinable @inline(__always)
-//  public init(minimumCapacity: Int) {
-//    self.init(storage: BackingStorage(minimumCapacity: minimumCapacity))
-//  }
-//
-//  /// An empty instance of `ErrorInfo`.
-//  public static var empty: Self { Self(storage: BackingStorage.empty) }
-//
-//  @inlinable @inline(__always)
-//  public mutating func reserveCapacity(_ minimumCapacity: Int) {
-//    _storage.reserveCapacity(minimumCapacity)
-//  }
-  
   private init(_variant: _Variant) {
     _mutableVariant = _variant
   }
@@ -94,8 +71,6 @@ extension ErrorInfoGeneric {
     }
   }
 }
-
-// Improvement: ErrorInfoGeneric @_specialize(where Self == ...)
 
 extension ErrorInfoGeneric: Sendable where Key: Sendable, RecordValue: Sendable {}
 

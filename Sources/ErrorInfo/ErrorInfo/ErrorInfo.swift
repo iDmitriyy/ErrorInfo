@@ -95,17 +95,6 @@ public struct ErrorInfo: Sendable, ErrorInfoOperationsProtocol {
     _storage = storage
   }
   
-  /// Creates an empty `ErrorInfo` with space preallocated for a small amount of context.
-  ///
-  /// The default capacity is tuned for typical error payloads, which usually contain
-  /// only a few key–value pairs (for example, a message, an underlying error message, and one
-  /// or two domain-specific fields).
-  ///
-  /// This avoids reallocation that happens during the first few insertions while keeping the empty
-  /// instance lightweight.
-  ///
-  /// Use ``empty``  property or empty dictionary literal to create an empty instance without preallocated capacity.
-  /// Use ``init(minimumCapacity:)`` if you are adding a known number of elements.
   public init() {
     self.init(storage: BackingStorage(minimumCapacity: 4))
   } // inlining worsens performance

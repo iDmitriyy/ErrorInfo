@@ -21,16 +21,11 @@ extension ErrorInfo {
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
-// MARK: - Full Info View
+// MARK: - Records View
 
 extension ErrorInfo {
-  public typealias Record = (value: OptionalValue, keyOrigin: KeyOrigin, collisionSource: WriteProvenance?)
-  public typealias RecordElement = (key: String, record: Record)
-  
   // MARK: All Records
   
-  /// Returns a sequence of tuples, where each element consists of a key with its origin and a collision-tagged value.
-  /// This view provides an enriched sequence of key-value pairs with additional metadata, useful for deep inspection, logging or debugging.
   public var records: some Sequence<RecordElement> {
     _storage.lazy.map { key, annotatedRecord -> RecordElement in
       let record = annotatedRecord.record
@@ -40,13 +35,8 @@ extension ErrorInfo {
   
   // MARK: AllRecords for Key
   
-  public func allRecords(forKey literalKey: StringLiteralKey) -> ItemsForKey<Record>? {
-    allRecords(forKey: literalKey.rawValue)
-  }
-  
-  @_disfavoredOverload
-  public func allRecords(forKey dynamicKey: String) -> ItemsForKey<Record>? {
-    _storage.allAnnotatedRecords(forKey: dynamicKey, transform: { annotatedRecord -> Record in
+  public func allRecords(forKey key: String) -> ItemsForKey<Record>? {
+    _storage.allAnnotatedRecords(forKey: key, transform: { annotatedRecord -> Record in
       (annotatedRecord.record.someValue.instanceOfOptional, annotatedRecord.record.keyOrigin, annotatedRecord.collisionSource)
     })
   }

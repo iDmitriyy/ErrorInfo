@@ -43,18 +43,14 @@ extension ErrorInfo {
   public mutating func appendIfNotNil(_ value: (some ValueProtocol)?,
                                       forKey literalKey: StringLiteralKey) {
     guard let value else { return }
-    _singleKeyValuePairAppend(key: literalKey.rawValue,
-                              keyOrigin: literalKey.keyOrigin,
-                              value: value)
+    _singleKeyValuePairAppend(key: literalKey.rawValue, keyOrigin: literalKey.keyOrigin, value: value)
   }
   
   @_disfavoredOverload
   public mutating func appendIfNotNil(_ value: (some ValueProtocol)?,
-                                      forKey dynamicKey: String) {
+                                      forKey key: String) {
     guard let value else { return }
-    _singleKeyValuePairAppend(key: dynamicKey,
-                              keyOrigin: .dynamic,
-                              value: value)
+    _singleKeyValuePairAppend(key: key, keyOrigin: .dynamic, value: value)
   }
 }
 

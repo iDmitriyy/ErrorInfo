@@ -101,7 +101,7 @@ extension ErrorInfo {
   //   appendProperties(of: instance, keysPrefix: keysPrefix, origin: .fileLine(file: file, line: line), keys: keys)
   // }
   
-  // DEFERRED: - slow on release builds. 5 properties takes ~0.0004s.
+  // DEFERRED: - slow on release builds.
   // ~293x slower than subscript
   
   @resultBuilder

@@ -15,33 +15,23 @@ extension ErrorInfoAny {
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
-// MARK: - Full Info View
+// MARK: - Records View
 
-extension ErrorInfoAny {
-  public typealias FullInfoRecord = (value: ErrorInfoOptionalAny, keyOrigin: KeyOrigin, collisionSource: WriteProvenance?)
-  public typealias FullInfoElement = (key: String, record: FullInfoRecord)
+extension ErrorInfoAny {  
+  // MARK: All Records
   
-  // MARK: FullInfo All
-  
-  public var fullInfoView: some Sequence<FullInfoElement> {
-    _storage.lazy.map { key, annotatedRecord -> FullInfoElement in
+  public var records: some Sequence<RecordElement> {
+    _storage.lazy.map { key, annotatedRecord -> RecordElement in
       let record = annotatedRecord.record
       return (key, (record.someValue.instanceOfOptional, record.keyOrigin, annotatedRecord.collisionSource))
     }
   }
   
-  // MARK: FullInfo for Key
-  
-  public func fullInfo(forKey literalKey: StringLiteralKey) -> ItemsForKey<FullInfoRecord>? {
-    fullInfo(forKey: literalKey.rawValue)
-  }
-  
-  @_disfavoredOverload
-  public func fullInfo(forKey dynamicKey: String) -> ItemsForKey<FullInfoRecord>? {
-    guard let annotatedRecords = _storage.allAnnotatedRecords(forKey: dynamicKey) else { return nil }
-
-    return annotatedRecords.map { annotatedRecord -> FullInfoRecord in
+  // MARK: AllRecords for Key
+    
+  public func allRecords(forKey key: String) -> ItemsForKey<Record>? {
+    _storage.allAnnotatedRecords(forKey: key, transform: { annotatedRecord -> Record in
       (annotatedRecord.record.someValue.instanceOfOptional, annotatedRecord.record.keyOrigin, annotatedRecord.collisionSource)
-    }
+    })
   }
 }

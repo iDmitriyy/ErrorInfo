@@ -20,7 +20,22 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   associatedtype Keys: Collection<KeyType> & _UniqueCollection
   associatedtype AllKeys: Collection<KeyType>
   
-  /// Creates an empty `ErrorInfo` instance.
+  typealias Record = (value: OptionalValue, keyOrigin: KeyOrigin, collisionSource: WriteProvenance?)
+  typealias RecordElement = (key: KeyType, record: Record)
+  
+  associatedtype Records: Sequence<RecordElement>
+  
+  /// Creates an empty `ErrorInfo` with space preallocated for a small amount of context.
+  ///
+  /// The default capacity is tuned for typical error payloads, which usually contain
+  /// only a few key–value pairs (for example, a message, an underlying error message, and one
+  /// or two domain-specific fields).
+  ///
+  /// This avoids reallocation that happens during the first few insertions while keeping the empty
+  /// instance lightweight.
+  ///
+  /// Use ``empty``  property or empty dictionary literal to create an empty instance without preallocated capacity.
+  /// Use ``init(minimumCapacity:)`` if you are adding a known number of elements.
   init()
   
   /// Creates an empty `ErrorInfo` instance with a specified minimum capacity.
@@ -95,7 +110,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   
   // ===-------------------------------------------------------------------------------------------------------------------=== //
     
-  // MARK: - Keys
+  // MARK: - Views
   
   /// Returns a collection of **unique** keys from the `ErrorInfo` instance.
   ///
@@ -117,6 +132,10 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   /// let allKeys = errorInfo.allKeys // ["a", "b", "c", "b"]
   /// ```
   var allKeys: AllKeys { get }
+  
+  /// Returns a sequence of tuples, where each element consists of a key with its origin and a collision-annotated value.
+  /// This view provides an enriched sequence of key-value pairs with additional metadata, useful for deep inspection, logging or debugging.
+  var records: Records { get }
   
   // ===-------------------------------------------------------------------------------------------------------------------=== //
     
@@ -161,6 +180,10 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   /// // errorInfo.allValues(forKey: "id") // returns [5, 6]
   /// ```
   func allValues(forKey dynamicKey: KeyType) -> ItemsForKey<ValueExistential>?
+  
+  func allRecords(forKey literalKey: StringLiteralKey) -> ItemsForKey<Record>?
+  
+  func allRecords(forKey key: KeyType) -> ItemsForKey<Record>?
   
   // ===-------------------------------------------------------------------------------------------------------------------=== //
   
@@ -456,7 +479,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   /// ```
   ///
   func keyValueLookupResult(forKey key: KeyType) -> KeyValueLookupResult
-  
+    
   // ===-------------------------------------------------------------------------------------------------------------------=== //
   
   // MARK: - RemoveAll

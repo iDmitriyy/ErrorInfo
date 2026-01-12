@@ -51,6 +51,10 @@ extension ErrorInfoOperationsProtocol where KeyType == String {
     allValues(forKey: literalKey.rawValue)
   }
   
+  public func allRecords(forKey literalKey: StringLiteralKey) -> ItemsForKey<Record>? {
+    allRecords(forKey: literalKey.rawValue)
+  }
+  
   // ===-------------------------------------------------------------------------------------------------------------------=== //
   
   // MARK: - FirstLastForKey

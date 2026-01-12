@@ -57,7 +57,7 @@ extension ErrorInfoGeneric: RandomAccessCollection {
 }
 
 //extension ErrorInfoGeneric {
-//  /// Returns a Boolean value indicating whether the sequence contains valuess for a given key that satisfies the given predicate.
+//  /// Returns a Boolean value indicating whether the sequence contains values for a given key that satisfies the given predicate.
 //  internal func containsValues<E>(forKey key: Key, where predicate: (Value) throws(E) -> Bool) rethrows -> Bool {
 //    switch _variant {
 //    case .left(let singleValueForKeyDict):
@@ -65,8 +65,8 @@ extension ErrorInfoGeneric: RandomAccessCollection {
 //      return try predicate(value)
 //      
 //    case .right(let multiValueForKeyDict):
-//      return try multiValueForKeyDict.containsValues(forKey: key, where: { warppedValue in
-//        try predicate(warppedValue.record)
+//      return try multiValueForKeyDict.containsValues(forKey: key, where: { wrappedValue in
+//        try predicate(wrappedValue.record)
 //      })
 //    }
 //  }

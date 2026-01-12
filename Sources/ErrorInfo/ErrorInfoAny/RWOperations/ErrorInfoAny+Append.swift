@@ -35,28 +35,44 @@ extension ErrorInfoAny {
 // MARK: Append IfNotNil
 
 extension ErrorInfoAny {
-  public mutating func appendIfNotNil<T>(_ value: T?,
-                                         forKey literalKey: StringLiteralKey,
-                                         duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending) {
-    guard let value else { return }
+  public mutating func appendIfNotNil(_ value: (some Any)?,
+                                      forKey literalKey: StringLiteralKey) {
+    let flattenedOptional = ErrorInfoFuncs.flattenOptional(any: value)
+    guard let value = flattenedOptional.getWrapped else { return }
     _add(key: literalKey.rawValue,
          keyOrigin: literalKey.keyOrigin,
          value: value,
          preserveNilValues: true, // has no effect in this func
-         duplicatePolicy: duplicatePolicy,
+         duplicatePolicy: .defaultForAppending,
          writeProvenance: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
   }
   
   @_disfavoredOverload
-  public mutating func appendIfNotNil<T>(_ value: T?,
-                                         forKey dynamicKey: String,
-                                         duplicatePolicy: ValueDuplicatePolicy = .defaultForAppending) {
-    guard let value else { return }
-    _add(key: dynamicKey,
+  public mutating func appendIfNotNil(_ value: (some Any)?,
+                                      forKey key: String) {
+    let flattenedOptional = ErrorInfoFuncs.flattenOptional(any: value)
+    guard let value = flattenedOptional.getWrapped else { return }
+    _add(key: key,
          keyOrigin: .dynamic,
          value: value,
          preserveNilValues: true, // has no effect in this func
-         duplicatePolicy: duplicatePolicy,
+         duplicatePolicy: .defaultForAppending,
          writeProvenance: .onAppend(origin: nil)) // providing origin for a single key-value is an overhead for binary size
   }
 }
+
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// extension ErrorInfoAny {
+//  private mutating func _singleKeyValuePairAppend(key: String,
+//                                                  keyOrigin: KeyOrigin,
+//                                                  value: some ValueProtocol) {
+//    withCollisionAndDuplicateResolutionAdd(
+//      value: value,
+//      duplicatePolicy: .defaultForAppending,
+//      forKey: key,
+//      keyOrigin: keyOrigin,
+//      writeProvenance: .onAppend(origin: nil),
+//    ) // providing origin for a single key-value is an overhead for binary size
+//  } // inlining has no performance gain.
+// }
