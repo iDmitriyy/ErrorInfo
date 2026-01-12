@@ -15,6 +15,7 @@ public import protocol InternalCollectionsUtilities._UniqueCollection
 public protocol ErrorInfoOperationsProtocol where KeyType == String {
   associatedtype KeyType: Hashable
   associatedtype ValueExistential
+  associatedtype OptionalValue: ErrorInfoOptionalRepresentable
   
   associatedtype Keys: Collection<KeyType> & _UniqueCollection
   associatedtype AllKeys: Collection<KeyType>
@@ -106,8 +107,8 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   /// ```
   var keys: Keys { get }
   
-  /// Returns a collection of all (possibly **non unique**) keys in the `ErrorInfo` instance. Unlike `keys`, this does not enforce uniqueness, so it may contain duplicate entries, if there
-  /// are multiple values for some keys.
+  /// Returns a collection of all (possibly **non unique**) keys in the `ErrorInfo` instance. Unlike `keys`, this does not enforce uniqueness,
+  /// so it may contain duplicate entries, if there are multiple values for some keys.
   ///
   /// # Example:
   /// ```swift
@@ -159,54 +160,163 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   ///
   /// // errorInfo.allValues(forKey: "id") // returns [5, 6]
   /// ```
-  @_disfavoredOverload
   func allValues(forKey dynamicKey: KeyType) -> ItemsForKey<ValueExistential>?
   
   // ===-------------------------------------------------------------------------------------------------------------------=== //
   
   // MARK: - FirstLastForKey
   
-  // MARK: Last For Key
-  
-  /// Returns the last `non-nil` value associated with the given literal key.
+  // MARK: Last Value For Key
+    
+  /// Returns the last non‑nil value associated with the given key.
   ///
-  /// - Returns: The last value associated with key, or `nil` if no value is found.
+  /// This mirrors the subscript’s read behavior and surfaces the latest meaningful value.
+  /// `nil` entries are preserved in history but skipped here.
+  /// Use ``lastRecorded(forKey:)`` or ``allRecords(forKey:)`` to inspect
+  /// the final record including `nil` and its provenance.
   ///
-  /// # Example:
+  /// - Parameter literalKey: The literal key to read.
+  /// - Returns: The last non‑nil value for the key, or `nil` if none exists.
+  ///
+  /// # Example
   /// ```swift
   /// var info = ErrorInfo()
+  ///
   /// info[.id] = 5
   /// info[.id] = 6
   /// info[.id] = nil as Int?
   ///
-  /// info.lastValue[forKey: .id) // returns 6
+  /// info.lastValue(forKey: .id) // 6
   /// ```
   func lastValue(forKey literalKey: StringLiteralKey) -> (ValueExistential)?
   
-  @_disfavoredOverload
-  func lastValue(forKey dynamicKey: KeyType) -> (ValueExistential)?
+  // TODO: - remake examples for dynamic keys (everywhere), as they are for literal api now
   
-  // MARK: First For Key
-  
-  /// Returns the first `non-nil` value associated with the given key.
+  /// Returns the last non‑nil value associated with the given key.
   ///
-  /// - Parameter literalKey: The key to look up in the `ErrorInfo` storage.
+  /// This mirrors the subscript’s read behavior and surfaces the latest meaningful value.
+  /// `nil` entries are preserved in history but skipped here.
+  /// Use ``lastRecorded(forKey:)`` or ``allRecords(forKey:)`` to inspect
+  /// the final record including `nil` and its provenance.
   ///
-  /// - Returns: The first `non-nil` value associated with the key, or `nil` if no such value exists.
+  /// - Parameter dynamicKey: The dynamic key to read.
+  /// - Returns: The last non‑nil value for the key, or `nil` if none exists.
   ///
-  /// # Example:
+  /// # Example
   /// ```swift
   /// var info = ErrorInfo()
+  /// let key = "id"
+  ///
+  /// info[key] = 5
+  /// info[key] = 6
+  /// info[key] = nil as Int?
+  ///
+  /// info.lastValue(forKey: key) // 6
+  /// ```
+  func lastValue(forKey dynamicKey: KeyType) -> (ValueExistential)?
+  
+  // MARK: First Value For Key
+    
+  /// Returns the first `non‑nil` value associated with the given key.
+  ///
+  /// Use this to read the earliest meaningful entry when a key has multiple records.
+  /// `nil` entries are preserved in history but skipped here.
+  ///
+  /// - Parameter literalKey: The literal key to read.
+  /// - Returns: The first non‑nil value for the key, or `nil` if none exists.
+  ///
+  /// # Example
+  /// ```swift
+  /// var info = ErrorInfo()
+  ///
+  /// info[.id] = nil as Int?
   /// info[.id] = 5
   /// info[.id] = 6
-  /// info[.id] = nil as Int?
   ///
-  /// info.firstValue(forKey: .id) // returns 5
+  /// info.firstValue(forKey: .id) // 5
   /// ```
   func firstValue(forKey literalKey: StringLiteralKey) -> (ValueExistential)?
   
-  @_disfavoredOverload
+  /// Returns the first `non‑nil` value associated with the given key.
+  ///
+  /// Use this to read the earliest meaningful entry when a key has multiple records.
+  /// `nil` entries are preserved in history but skipped here.
+  ///
+  /// - Parameter dynamicKey: The dynamic key to read.
+  /// - Returns: The first non‑nil value for the key, or `nil` if none exists.
+  ///
+  /// ```swift
+  /// var info = ErrorInfo()
+  /// let key = "id"
+  ///
+  /// info[key] = nil as Int?
+  /// info[key] = 5
+  /// info[key] = 6
+  ///
+  /// info.firstValue(forKey: key) // 5
+  /// ```
   func firstValue(forKey dynamicKey: KeyType) -> (ValueExistential)?
+  
+  // MARK: Last Recorded For Key
+  
+  /// Returns the last recorded entry for the given key, including explicit or implicit `nil`.
+  ///
+  /// Use this when you need to audit the final write for a key. For typical lookups of the latest
+  /// meaningful value, prefer ``lastValue(forKey:)`` or the subscript.
+  ///
+  /// - Parameter literalKey: The literal key to look up.
+  /// - Returns: The last recorded ``ErrorInfo/OptionalValue`` (either `.value` or `.nilInstance`),
+  ///   or `nil` if the key has never been recorded.
+  ///
+  /// # Example
+  /// ```swift
+  /// var info = ErrorInfo()
+  ///
+  /// info[.id] = 5
+  /// info[.id] = nil as Int?
+  ///
+  /// if let last = info.lastRecorded(forKey: .id) {
+  ///   switch last {
+  ///   case .value(let v): print("last value:", v)
+  ///   case .nilInstance(let t): print("last write was a nil of type \(t)")
+  ///   }
+  ///   // print: "last write was a nil of type Int"
+  /// }
+  /// ```
+  func lastRecorded(forKey literalKey: StringLiteralKey) -> OptionalValue?
+  
+  /// Returns the last recorded entry for the given key, including explicit or implicit `nil`.
+  ///
+  /// Use this when you need to audit the final write for a key. For typical lookups of the latest
+  /// meaningful value, prefer ``lastValue(forKey:)`` or the subscript.
+  ///
+  /// - Parameter dynamicKey: The dynamic key to look up.
+  /// - Returns: The last recorded ``ErrorInfo/OptionalValue`` (either `.value` or `.nilInstance`),
+  ///   or `nil` if the key has never been recorded.
+  ///
+  /// # Example
+  /// ```swift
+  /// var info = ErrorInfo()
+  /// let key = "id"
+  ///
+  /// info[key] = 5
+  /// info[key] = nil as Int?
+  ///
+  /// if let last = info.lastRecorded(forKey: key) {
+  ///   switch last {
+  ///   case .value(let v): print("last value:", v)
+  ///   case .nilInstance(let t): print("last write was a nil of type \(t)")
+  ///   }
+  ///   // print: "last write was a nil of type Int"
+  /// }
+  /// ```
+  func lastRecorded(forKey dynamicKey: KeyType) -> OptionalValue?
+  
+  // MARK: First Recorded For Key
+  
+  func firstRecorded(forKey literalKey: StringLiteralKey) -> OptionalValue?
+  
+  func firstRecorded(forKey dynamicKey: String) -> OptionalValue?
   
   // ===-------------------------------------------------------------------------------------------------------------------=== //
   
@@ -249,6 +359,8 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   @_disfavoredOverload
   func hasValue(forKey key: KeyType) -> Bool
   
+  func hasRecord(forKey key: KeyType) -> Bool
+  
   // MARK: Has Multiple Records For Key
   
   /// Checks if the key is associated with multiple values (both `non-nil` and `nil`) in the `ErrorInfo` storage.
@@ -283,7 +395,6 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   ///
   /// errorInfo.hasMultipleRecords(forKey: "id")  // true because there are multiple records
   /// ```
-  @_disfavoredOverload
   func hasMultipleRecords(forKey key: KeyType) -> Bool
   
   /// Checks if there is any key in the `ErrorInfo` storage that is associated with more than one record.
@@ -469,27 +580,4 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   @discardableResult
   mutating func replaceAllRecords(forKey dynamicKey: KeyType,
                                   by newValue: ValueExistential) -> ItemsForKey<ValueExistential>?
-}
-
-extension ErrorInfoOperationsProtocol {
-  /// A guidance-only subscript that prevents accidental removal by `nil` literal assignment.
-  ///
-  /// This subscript exists to catch patterns like `info["key"] = nil`, which can look like
-  /// “remove the value” in dictionaries. In `ErrorInfo`, removal is explicit and
-  /// `nil` can be recorded as a meaningful entry. Use dedicated removal APIs instead.
-  ///
-  /// - Get: Unavailable.
-  /// - Set: Deprecated. Use ``removeAllRecords(forKey:)`` (or other explicit removal APIs) instead.
-  ///
-  /// Rationale: Keeping removal explicit avoids silent loss of earlier context and aligns with
-  /// `ErrorInfo`’s multi-record model.
-  @_disfavoredOverload
-  public subscript(unavailable _: StringLiteralKey) -> Never? {
-    @available(*, unavailable,
-                message: "This is a set-only subscript for guidance.")
-    get { nil }
-    
-    @available(*, deprecated, message: "To remove value use removeAllRecords(forKey:) function.")
-    set {}
-  }
 }

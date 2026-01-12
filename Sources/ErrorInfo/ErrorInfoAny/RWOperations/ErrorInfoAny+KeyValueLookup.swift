@@ -8,11 +8,7 @@
 // MARK: - HasValue For Key
 
 extension ErrorInfoAny {
-  public func hasValue(forKey literalKey: StringLiteralKey) -> Bool {
-    hasValue(forKey: literalKey.rawValue)
-  }
-  
-  @_disfavoredOverload public func hasValue(forKey key: String) -> Bool {
+  public func hasValue(forKey key: String) -> Bool {
     _storage.hasNonNilValue(forKey: key)
   }
 }
@@ -22,11 +18,11 @@ extension ErrorInfoAny {
 // MARK: - Has Multiple Records For Key
 
 extension ErrorInfoAny {
-  public func hasMultipleRecords(forKey literalKey: StringLiteralKey) -> Bool {
-    hasMultipleRecords(forKey: literalKey.rawValue)
+  public func hasRecord(forKey key: String) -> Bool {
+    _storage.hasRecord(forKey: key)
   }
   
-  @_disfavoredOverload public func hasMultipleRecords(forKey key: String) -> Bool {
+  public func hasMultipleRecords(forKey key: String) -> Bool {
     _storage.hasMultipleRecords(forKey: key)
   }
   
@@ -39,12 +35,8 @@ extension ErrorInfoAny {
 
 // MARK: - KeyValue Lookup Result
 
-extension ErrorInfoAny {
-  public func keyValueLookupResult(forKey literalKey: StringLiteralKey) -> KeyValueLookupResult {
-    keyValueLookupResult(forKey: literalKey.rawValue)
-  }
-  
-  @_disfavoredOverload public func keyValueLookupResult(forKey key: String) -> KeyValueLookupResult {
+extension ErrorInfoAny {  
+  public func keyValueLookupResult(forKey key: String) -> KeyValueLookupResult {
     _storage.keyValueLookupResultIncludingNil(forKey: key)
   }
 }

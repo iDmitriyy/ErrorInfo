@@ -16,6 +16,10 @@ extension ErrorInfoAny {
   public func lastValue(forKey dynamicKey: String) -> (ValueExistential)? {
     _storage.lastNonNilValue(forKey: dynamicKey)
   }
+  
+  public func lastRecorded(forKey dynamicKey: String) -> ErrorInfoOptionalAny? {
+    _storage.lastRecordedOptionalInstance(forKey: dynamicKey)
+  }
 }
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
@@ -25,6 +29,10 @@ extension ErrorInfoAny {
 extension ErrorInfoAny {
   public func firstValue(forKey literalKey: StringLiteralKey) -> (ValueExistential)? {
     firstValue(forKey: literalKey.rawValue)
+  }
+  
+  public func firstRecorded(forKey dynamicKey: String) -> ErrorInfoOptionalAny? {
+    _storage.firstRecordedOptionalInstance(forKey: dynamicKey)
   }
   
   @_disfavoredOverload

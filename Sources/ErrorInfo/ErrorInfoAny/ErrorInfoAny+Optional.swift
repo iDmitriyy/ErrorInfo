@@ -8,6 +8,8 @@
 // MARK: - Equatable OptionalAnyValue
 
 extension ErrorInfoAny {
+  public typealias OptionalValue = ErrorInfoOptionalAny
+  
   /// An equatable, type‑erased optional wrapper used by `ErrorInfoAny`.
   ///
   /// Enables safe, predictable equality comparisons for optional values, flattening nested optionals and ensuring

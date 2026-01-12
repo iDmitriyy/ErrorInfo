@@ -6,16 +6,6 @@
 //
 
 extension ErrorInfo {
-  // MARK: - Read access Subscript
-  
-  public subscript(_ literalKey: StringLiteralKey) -> (ValueExistential)? {
-    lastValue(forKey: literalKey)
-  }
-  
-  public subscript(dynamicKey key: String) -> (ValueExistential)? {
-    lastValue(forKey: key)
-  }
-  
   // MARK: - Mutating subscript
   
   /// Sets the value associated with the given literal key.

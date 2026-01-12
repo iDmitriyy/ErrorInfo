@@ -8,10 +8,6 @@
 // MARK: - AllValues ForKey
 
 extension ErrorInfo {
-  public func allValues(forKey literalKey: StringLiteralKey) -> ItemsForKey<ValueExistential>? {
-    allValues(forKey: literalKey.rawValue)
-  }
-  
   public func allValues(forKey dynamicKey: String) -> ItemsForKey<ValueExistential>? {
     _storage.allNonNilValues(forKey: dynamicKey)
   }
