@@ -27,7 +27,7 @@ extension ErrorInfo {
   public typealias Record = (value: OptionalValue, keyOrigin: KeyOrigin, collisionSource: WriteProvenance?)
   public typealias RecordElement = (key: String, record: Record)
   
-  // MARK: FullInfo All
+  // MARK: All Records
   
   /// Returns a sequence of tuples, where each element consists of a key with its origin and a collision-tagged value.
   /// This view provides an enriched sequence of key-value pairs with additional metadata, useful for deep inspection, logging or debugging.
@@ -38,7 +38,7 @@ extension ErrorInfo {
     }
   }
   
-  // MARK: FullInfo for Key
+  // MARK: AllRecords for Key
   
   public func allRecords(forKey literalKey: StringLiteralKey) -> ItemsForKey<Record>? {
     allRecords(forKey: literalKey.rawValue)
@@ -46,10 +46,8 @@ extension ErrorInfo {
   
   @_disfavoredOverload
   public func allRecords(forKey dynamicKey: String) -> ItemsForKey<Record>? {
-    guard let annotatedRecords = _storage.allAnnotatedRecords(forKey: dynamicKey) else { return nil }
-
-    return annotatedRecords.map { annotatedRecord -> Record in
+    _storage.allAnnotatedRecords(forKey: dynamicKey, transform: { annotatedRecord -> Record in
       (annotatedRecord.record.someValue.instanceOfOptional, annotatedRecord.record.keyOrigin, annotatedRecord.collisionSource)
-    }
+    })
   }
 }

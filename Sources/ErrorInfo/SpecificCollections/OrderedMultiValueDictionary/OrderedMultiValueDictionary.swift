@@ -118,6 +118,24 @@ extension OrderedMultiValueDictionary {
     return valuesForKey
   }
   
+  @inlinable
+  @inline(__always)
+  internal func allValues<T>(forKey key: Key, transform: (Value) -> T) -> ItemsForKey<T>? {
+    guard let indexSet = _keyToEntryIndices[key] else { return nil }
+    
+    let valuesForKey: ItemsForKey<T>
+    switch indexSet._variant {
+    case .left(let index): // Typically there is only one value for key
+      valuesForKey = ItemsForKey(element: transform(_entries[index].value))
+       
+    case .right(let indices):
+      // TODO: - 1 value possible, need 2
+      let valuesForKeyArray = indices.map { index in transform(_entries[index].value) }
+      valuesForKey = ItemsForKey(array: valuesForKeyArray)
+    }
+    return valuesForKey
+  }
+  
   @discardableResult
   internal mutating func removeAllValues(forKey key: Key) -> ItemsForKey<Value>? {
     guard let indexSetForKey = _keyToEntryIndices.removeValue(forKey: key) else { return nil }

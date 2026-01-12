@@ -42,7 +42,7 @@ public struct CollisionAnnotatedRecord<Record>: CustomDebugStringConvertible {
   
   @inlinable
   @inline(__always)
-  internal init(value: Record, collisionSource: WriteProvenance?) {
+  internal init(value: consuming Record, collisionSource: WriteProvenance?) {
     record = value
     _collisionSource = collisionSource.map(HeapBox.init) // TODO: check preformnace when using if-let
     // TODO: check consuming for array element by index
@@ -50,7 +50,7 @@ public struct CollisionAnnotatedRecord<Record>: CustomDebugStringConvertible {
   
   @inlinable
   @inline(__always) // 50x speedup
-  internal static func value(_ value: Record) -> Self { Self(value: value, collisionSource: nil) }
+  internal static func value(_ value: consuming Record) -> Self { Self(value: value, collisionSource: nil) }
   
   @inlinable
   @inline(__always) // 6x speedup

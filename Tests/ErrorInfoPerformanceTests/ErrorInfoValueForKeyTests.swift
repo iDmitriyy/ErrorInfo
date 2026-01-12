@@ -14,7 +14,7 @@ import Testing
 
 /// Relative performance compared to OrderedDictionary
 struct ErrorInfoValueForKeyTests {
-  private let measurementsCount: Int = 100 //
+  private let measurementsCount: Int = 400 //
   private let factor: Double = 1
   
   private var iterations: Int {
@@ -129,7 +129,7 @@ struct ErrorInfoValueForKeyTests {
     let config = Config(iterations: iterations, innerLoopRange: innerLoopRange, storageKind: storageKind)
     
     var ratios: [Double] = []
-    for run in 0...11 {
+    for run in 0...5 {
       let ratio = Self.allRecordsForKey_Ratio(config: config)
       if run == 0 { continue } // run 0 is preheat
       ratios.append(ratio)
@@ -146,37 +146,37 @@ struct ErrorInfoValueForKeyTests {
       switch variant {
       case .noValues:
         #expect(median <= 0)
-        // 0.97
-        // 1.12
+        // 0.84 0.84 0.75 0.84 0.86 0.86
+        //
       case .singleValue:
         #expect(median <= 0)
-        // 2.7
-        // 3.02
+        // 2.30 2.29 1.99 2.20 2.23 1.99
+        //
       }
     case .multiForKey(let variant):
       switch variant {
       case .noValues:
         #expect(median <= 0)
-        // 1.67
-        // 1.88
+        // 1.65 1.64 1.46 1.65 1.75 1.45
+        //
       case .singleValue:
         #expect(median <= 0)
-        // 3.76
-        // 4.26
+        // 3.30 3.29 2.97 3.34 3.41 2.96
+        //
       case .twoValues(let nilPosition):
         switch nilPosition {
         case .withoutNil:
           #expect(median <= 0)
-          // 9.87
-          // 10.93
+          // 7.49 7.39 6.57 7.47 7.44 6.75
+          //
         case .atStart:
           #expect(median <= 0)
-          // 9.76
-          // 10.8
+          // 7.27 7.22
+          //
         case .atEnd:
           #expect(median <= 0)
-          // 9.77
-          // 10.86
+          // 7.27 7.26
+          //
         }
       }
     }

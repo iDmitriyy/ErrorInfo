@@ -25,6 +25,19 @@ extension ErrorInfoGeneric {
       multiValueForKeyDict.allValues(forKey: key)
     }
   } // inlining has no performance gain.
+  
+  func allAnnotatedRecords<T>(forKey key: Key, transform: (AnnotatedRecord) -> T) -> ItemsForKey<T>? {
+    switch _storage._variant {
+    case .left(let singleValueForKeyDict):
+      if let index = singleValueForKeyDict.index(forKey: key) {
+        return ItemsForKey<T>(element: transform(AnnotatedRecord.value(singleValueForKeyDict.values[index])))
+      } else {
+        return nil
+      }
+    case .right(let multiValueForKeyDict):
+      return multiValueForKeyDict.allValues(forKey: key, transform: transform)
+    }
+  } // inlining worsen performance
 }
 
 extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
