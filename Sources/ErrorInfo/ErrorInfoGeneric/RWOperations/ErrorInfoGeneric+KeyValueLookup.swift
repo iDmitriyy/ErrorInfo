@@ -8,7 +8,7 @@
 // MARK: - HasValue For Key
 
 extension ErrorInfoGeneric {
-  public func hasSomeValue(forKey key: Key) -> Bool {
+  public func hasRecord(forKey key: Key) -> Bool { // optimized
     switch _storage._variant {
     case .left(let singleValueForKeyDict): singleValueForKeyDict.hasValue(forKey: key)
     case .right(let multiValueForKeyDict): multiValueForKeyDict.hasValue(forKey: key)
@@ -52,8 +52,11 @@ extension ErrorInfoGeneric {
 }
 
 extension ErrorInfoGeneric {
-  public func hasMultipleRecordsForAtLeastOneKey() -> Bool {
-    _storage.hasMultipleValuesForAtLeastOneKey
+  public func hasMultipleRecordsForAtLeastOneKey() -> Bool { // optimized
+    switch _storage._variant {
+    case .left: false
+    case .right(let multiValueForKeyDict): multiValueForKeyDict.hasMultipleValuesForAtLeastOneKey
+    }
   }
 }
 
@@ -62,10 +65,10 @@ extension ErrorInfoGeneric {
 // MARK: - KeyValue Lookup Result
 
 extension ErrorInfoGeneric {
-  func keyValueLookupResultIgnoringNil(forKey key: Key) -> KeyNonOptionalValueLookupResult {
+  func keyValueLookupResultIgnoringNil(forKey key: Key) -> KeyNonOptionalValueLookupResult { // optimized
     switch _storage._variant {
     case .left(let singleValueForKeyDict):
-      if let _ = singleValueForKeyDict.index(forKey: key) {
+      if singleValueForKeyDict.hasValue(forKey: key) {
         return .singleValue
       } else {
         return .nothing

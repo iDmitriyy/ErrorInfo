@@ -80,7 +80,7 @@ extension OrderedMultiValueDictionary: Sendable where Key: Sendable, Value: Send
 
 extension OrderedMultiValueDictionary {
   @usableFromInline
-  func hasValue(forKey key: Key) -> Bool {
+  func hasValue(forKey key: Key) -> Bool { // optimized
     _keyToEntryIndices.hasValue(forKey: key)
   }
   
@@ -91,7 +91,7 @@ extension OrderedMultiValueDictionary {
     return entriesForKeyIndices.count > 1 
   }
   
-  internal var hasMultipleValuesForAtLeastOneKey: Bool {
+  internal var hasMultipleValuesForAtLeastOneKey: Bool { // optimized
     for entriesIndices in _keyToEntryIndices.values where entriesIndices.count > 1 {
       return true
     }

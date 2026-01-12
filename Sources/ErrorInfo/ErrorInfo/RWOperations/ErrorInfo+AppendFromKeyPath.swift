@@ -112,3 +112,13 @@ extension ErrorInfo {
     }
   }
 }
+
+/// This enum allows you to specify how the key path string should be prefixed when it's converted
+/// to a string representation. You can use either the type's name or a custom name.
+///
+/// - `typeName`: Uses the type's name as a prefix.
+/// - `customName`: Allows you to provide a custom prefix string, like name of an instance's property.
+public enum KeyPathPrefixOption {
+  case typeName
+  case custom(_ name: String)
+}

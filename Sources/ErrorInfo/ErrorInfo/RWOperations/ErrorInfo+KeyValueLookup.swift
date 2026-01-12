@@ -21,7 +21,7 @@ extension ErrorInfo {
   }
   
   public func hasRecord(forKey key: String) -> Bool {
-    _storage.hasSomeValue(forKey: key)
+    _storage.hasRecord(forKey: key)
   }
 }
 

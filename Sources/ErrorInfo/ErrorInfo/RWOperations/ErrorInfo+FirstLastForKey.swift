@@ -110,6 +110,7 @@ extension ErrorInfo {
   ///   case .nilInstance(let t): print("last write was a nil of type \(t)")
   ///   }
   ///   // print: "last write was a nil of type Int"
+  /// }
   /// ```
   public func lastRecorded(forKey dynamicKey: String) -> OptionalValue? {
     _storage.lastRecordedOptionalInstance(forKey: dynamicKey)
@@ -163,6 +164,14 @@ extension ErrorInfo {
   /// ```
   public func firstValue(forKey dynamicKey: String) -> (ValueExistential)? {
     _storage.firstNonNilValue(forKey: dynamicKey)
+  }
+  
+  public func firstRecorded(forKey literalKey: StringLiteralKey) -> OptionalValue? {
+    firstRecorded(forKey: literalKey.rawValue)
+  }
+  
+  public func firstRecorded(forKey dynamicKey: String) -> OptionalValue? {
+    _storage.lastRecordedOptionalInstance(forKey: dynamicKey)
   }
 }
 

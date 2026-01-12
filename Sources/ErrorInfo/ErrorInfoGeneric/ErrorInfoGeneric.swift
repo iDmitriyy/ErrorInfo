@@ -127,11 +127,6 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
   }
 }
 
-public enum ValueAppendingScope {
-  case scoped(keyAlreadyExists: Bool)
-  case detached
-}
-
 extension ErrorInfoGeneric where RecordValue: Equatable {
   /// Appends `newRecord` for `key` according to `duplicatePolicy`, and annotates the record with `writeProvenanceForCollision`
   /// when the same key is written more than once.

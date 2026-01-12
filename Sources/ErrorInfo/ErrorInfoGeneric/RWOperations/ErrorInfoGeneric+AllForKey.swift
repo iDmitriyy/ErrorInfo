@@ -8,12 +8,7 @@
 // MARK: - AllValues ForKey
 
 extension ErrorInfoGeneric {
-  func allSomeValues(forKey key: Key) -> ItemsForKey<RecordValue>? {
-    // FIXME: - might be incorrect, replace _compactMap
-    _storage.allValues(forKey: key)?._compactMap { $0.record.someValue }
-  }
-  
-  func allAnnotatedRecords(forKey key: Key) -> ItemsForKey<AnnotatedRecord>? {
+  func allAnnotatedRecords(forKey key: Key) -> ItemsForKey<AnnotatedRecord>? { // optimized
     switch _storage._variant {
     case .left(let singleValueForKeyDict):
       if let index = singleValueForKeyDict.index(forKey: key) {
@@ -26,7 +21,7 @@ extension ErrorInfoGeneric {
     }
   } // inlining has no performance gain.
   
-  func allAnnotatedRecords<T>(forKey key: Key, transform: (AnnotatedRecord) -> T) -> ItemsForKey<T>? {
+  func allAnnotatedRecords<T>(forKey key: Key, transform: (AnnotatedRecord) -> T) -> ItemsForKey<T>? { // optimized
     switch _storage._variant {
     case .left(let singleValueForKeyDict):
       if let index = singleValueForKeyDict.index(forKey: key) {
