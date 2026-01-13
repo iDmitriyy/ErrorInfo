@@ -385,6 +385,10 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   
   func hasRecord(forKey key: KeyType) -> Bool
   
+  func containsValue(forKey literalKey: StringLiteralKey, where predicate: (OptionalValue) -> Bool) -> Bool
+  
+  func containsValue(forKey key: KeyType, where predicate: (OptionalValue) -> Bool) -> Bool
+  
   // MARK: Has Multiple Records For Key
   
   /// Checks if the key is associated with multiple values (both `non-nil` and `nil`) in the `ErrorInfo` storage.
@@ -441,13 +445,17 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   
   // MARK: Count for key
   
+  func valuesCount(forKey literalKey: StringLiteralKey) -> Int
+  
+  func valuesCount(forKey key: KeyType) -> Int
+  
   func recordsCount(forKey literalKey: StringLiteralKey) -> Int
   
   func recordsCount(forKey key: KeyType) -> Int
   
-  func valuesCount(forKey literalKey: StringLiteralKey) -> Int
+  func countValues(forKey literalKey: StringLiteralKey, where predicate: (OptionalValue) -> Bool) -> Int
   
-  func valuesCount(forKey key: KeyType) -> Int
+  func countValues(forKey key: KeyType, where predicate: (OptionalValue) -> Bool) -> Int
   
   // MARK: KeyValue Lookup Result
   

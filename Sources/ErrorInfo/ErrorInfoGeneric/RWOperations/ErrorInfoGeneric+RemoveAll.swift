@@ -6,7 +6,7 @@
 //
 
 extension ErrorInfoGeneric {
-  internal mutating func removeAll(keepingCapacity keepCapacity: Bool) {
+  public mutating func removeAll(keepingCapacity keepCapacity: Bool) {
     _mutableVariant.mutateUnderlying(singleValueForKey: { singleValueForKeyDict in
       singleValueForKeyDict.removeAll(keepingCapacity: keepCapacity)
     }, multiValueForKey: { multiValueForKeyDict in

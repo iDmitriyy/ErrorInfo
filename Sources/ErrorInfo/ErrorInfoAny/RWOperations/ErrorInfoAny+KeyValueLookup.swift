@@ -8,12 +8,20 @@
 // MARK: - HasValue For Key
 
 extension ErrorInfoAny {
-  public func hasValue(forKey key: String) -> Bool {
-    _storage.hasNonNilValue(forKey: key)
-  }
-  
   public func hasRecord(forKey key: String) -> Bool {
     _storage.hasRecord(forKey: key)
+  }
+  
+  public func recordsCount(forKey key: String) -> Int {
+    _storage.recordsCount(forKey: key)
+  }
+  
+  public func containsValue(forKey key: String, where predicate: (OptionalValue) -> Bool) -> Bool {
+    _storage.containsValue(forKey: key, where: { predicate($0.instanceOfOptional) })
+  }
+  
+  public func countValues(forKey key: String, where predicate: (OptionalValue) -> Bool) -> Int {
+    _storage.countValues(forKey: key, where: { predicate($0.instanceOfOptional) })
   }
 }
 
@@ -28,16 +36,6 @@ extension ErrorInfoAny {
   
   public func hasMultipleRecordsForAtLeastOneKey() -> Bool {
     _storage.hasMultipleRecordsForAtLeastOneKey()
-  }
-}
-
-// ===-------------------------------------------------------------------------------------------------------------------=== //
-
-// MARK: - Count For Key
-
-extension ErrorInfoAny {
-  public func recordsCount(forKey key: String) -> Int {
-    _storage.recordsCount(forKey: key)
   }
 }
 

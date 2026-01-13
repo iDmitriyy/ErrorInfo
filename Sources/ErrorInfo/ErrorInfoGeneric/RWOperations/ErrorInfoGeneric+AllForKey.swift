@@ -8,7 +8,7 @@
 // MARK: - AllValues ForKey
 
 extension ErrorInfoGeneric {
-  func allAnnotatedRecords(forKey key: Key) -> ItemsForKey<AnnotatedRecord>? { // optimized
+  public func allAnnotatedRecords(forKey key: Key) -> ItemsForKey<AnnotatedRecord>? { // optimized
     switch _variant {
     case .left(let singleValueForKeyDict):
       if let index = singleValueForKeyDict.index(forKey: key) {
@@ -21,7 +21,7 @@ extension ErrorInfoGeneric {
     }
   } // inlining has no performance gain.
   
-  func allAnnotatedRecords<T>(forKey key: Key, transform: (AnnotatedRecord) -> T) -> ItemsForKey<T>? { // optimized
+  public func allAnnotatedRecords<T>(forKey key: Key, transform: (AnnotatedRecord) -> T) -> ItemsForKey<T>? { // optimized
     switch _variant {
     case .left(let singleValueForKeyDict):
       if let index = singleValueForKeyDict.index(forKey: key) {
@@ -36,7 +36,7 @@ extension ErrorInfoGeneric {
 }
 
 extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
-  func allNonNilValues(forKey key: Key) -> ItemsForKey<RecordValue.Wrapped>? { // optimized
+  public func allNonNilValues(forKey key: Key) -> ItemsForKey<RecordValue.Wrapped>? { // optimized
     switch _variant {
     case .left(let singleValueForKeyDict):
       if let index = singleValueForKeyDict.index(forKey: key),

@@ -32,7 +32,7 @@ public protocol ErrorInfoOptionalRepresentable {
   var isNil: Bool { get }
 }
 
-@usableFromInline protocol ErrorInfoOptionalRepresentableEquatable: ErrorInfoOptionalRepresentable, Equatable {
+public protocol ErrorInfoOptionalRepresentableEquatable: ErrorInfoOptionalRepresentable, Equatable {
   associatedtype OptionalInstanceType: ErrorInfoOptionalRepresentable
   
   var instanceOfOptional: OptionalInstanceType { get }

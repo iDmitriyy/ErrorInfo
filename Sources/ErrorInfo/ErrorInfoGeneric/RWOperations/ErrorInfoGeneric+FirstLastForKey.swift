@@ -10,7 +10,7 @@
 extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
   // MARK: last
   
-  func lastNonNilValue(forKey key: Key) -> RecordValue.Wrapped? { // optimized
+  public func lastNonNilValue(forKey key: Key) -> RecordValue.Wrapped? { // optimized
     switch _variant {
     case .left(let singleValueForKeyDict):
       if let index = singleValueForKeyDict.index(forKey: key) {
@@ -36,7 +36,7 @@ extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
   
   // MARK: first
   
-  func firstNonNilValue(forKey key: Key) -> RecordValue.Wrapped? { // optimized
+  public func firstNonNilValue(forKey key: Key) -> RecordValue.Wrapped? { // optimized
     switch _variant {
     case .left(let singleValueForKeyDict):
       if let index = singleValueForKeyDict.index(forKey: key) {
@@ -68,7 +68,7 @@ extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
 extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentableEquatable {
   // MARK: last
   
-  internal func lastRecordedOptionalInstance(forKey key: Key) -> RecordValue.OptionalInstanceType? { // optimized
+  public func lastRecordedOptionalInstance(forKey key: Key) -> RecordValue.OptionalInstanceType? { // optimized
     switch _variant {
     case .left(let singleValueForKeyDict):
       if let index = singleValueForKeyDict.index(forKey: key) {
@@ -87,7 +87,7 @@ extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentableEqua
   
   // MARK: first
   
-  internal func firstRecordedOptionalInstance(forKey key: Key) -> RecordValue.OptionalInstanceType? { // optimized
+  public func firstRecordedOptionalInstance(forKey key: Key) -> RecordValue.OptionalInstanceType? { // optimized
     switch _variant {
     case .left(let singleValueForKeyDict):
       if let index = singleValueForKeyDict.index(forKey: key) {

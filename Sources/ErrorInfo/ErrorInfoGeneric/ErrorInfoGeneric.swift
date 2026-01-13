@@ -32,16 +32,16 @@ public struct ErrorInfoGeneric<Key: Hashable, RecordValue>: Sequence {
   }
   
   @inlinable @inline(__always)
-  internal init(minimumCapacity: Int) {
+  public init(minimumCapacity: Int) {
     _mutableVariant = _Variant(.left(OrderedDictionary(minimumCapacity: minimumCapacity)))
   }
   
-  internal static var empty: Self {
+  public static var empty: Self {
     Self(_variant: _Variant(.left(OrderedDictionary())))
   } // inlining has no performance gain
   
   @inlinable @inline(__always)
-  internal mutating func reserveCapacity(_ minimumCapacity: Int) {
+  public mutating func reserveCapacity(_ minimumCapacity: Int) {
     _mutableVariant.mutateUnderlying(singleValueForKey: { singleValueForKeyDict in
       singleValueForKeyDict.reserveCapacity(minimumCapacity)
     }, multiValueForKey: { multiValueForKeyDict in
@@ -60,8 +60,7 @@ extension ErrorInfoGeneric {
     public let keyOrigin: KeyOrigin
     public let someValue: RecordValue
     
-    @usableFromInline
-    internal init(keyOrigin: KeyOrigin, someValue: RecordValue) {
+    public init(keyOrigin: KeyOrigin, someValue: RecordValue) {
       self.keyOrigin = keyOrigin
       self.someValue = someValue
     }

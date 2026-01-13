@@ -91,30 +91,43 @@ extension ErrorInfoOperationsProtocol where KeyType == String {
     hasValue(forKey: literalKey.rawValue)
   }
   
+  public func hasValue(forKey key: KeyType) -> Bool {
+    containsValue(forKey: key, where: { $0.isValue })
+  }
+  
   public func hasRecord(forKey literalKey: StringLiteralKey) -> Bool {
     hasRecord(forKey: literalKey.rawValue)
   }
   
-  public func recordsCount(forKey literalKey: StringLiteralKey) -> Int {
-    recordsCount(forKey: literalKey.rawValue)
+  public func containsValue(forKey literalKey: StringLiteralKey, where predicate: (OptionalValue) -> Bool) -> Bool {
+    containsValue(forKey: literalKey.rawValue, where: predicate)
   }
+  
+  // MARK: Has Multiple Records For Key
+  
+  public func hasMultipleRecords(forKey literalKey: StringLiteralKey) -> Bool {
+    hasMultipleRecords(forKey: literalKey.rawValue)
+  }
+  
+  // MARK: Count for key
   
   public func valuesCount(forKey literalKey: StringLiteralKey) -> Int {
     valuesCount(forKey: literalKey.rawValue)
   }
   
   public func valuesCount(forKey key: KeyType) -> Int {
-    switch keyValueLookupResult(forKey: key) {
-    case .nothing: 0
-    case .singleValue: 1
-    case .singleNil: 0
-    case .multipleRecords(let valuesCount, _): valuesCount
-    }
+    countValues(forKey: key, where: { $0.isValue })
   }
   
-  public func hasMultipleRecords(forKey literalKey: StringLiteralKey) -> Bool {
-    hasMultipleRecords(forKey: literalKey.rawValue)
+  public func recordsCount(forKey literalKey: StringLiteralKey) -> Int {
+    recordsCount(forKey: literalKey.rawValue)
   }
+  
+  public func countValues(forKey literalKey: StringLiteralKey, where predicate: (OptionalValue) -> Bool) -> Int {
+    countValues(forKey: literalKey.rawValue, where: predicate)
+  }
+  
+  // MARK: KeyValue Lookup Result
   
   public func keyValueLookupResult(forKey literalKey: StringLiteralKey) -> KeyValueLookupResult {
     keyValueLookupResult(forKey: literalKey.rawValue)

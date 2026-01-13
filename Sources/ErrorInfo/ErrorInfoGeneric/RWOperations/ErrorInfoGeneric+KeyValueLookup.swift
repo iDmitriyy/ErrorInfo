@@ -25,24 +25,57 @@ extension ErrorInfoGeneric {
   }
 }
 
-extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
-  func hasNonNilValue(forKey key: Key) -> Bool {
-    switch keyValueLookupResultIncludingNil(forKey: key) {
-    case .nothing: false
-    case .singleValue: true
-    case .singleNil: false
-    case .multipleRecords(let valuesCount, _): valuesCount > 0
+extension ErrorInfoGeneric {
+  public func containsValue(forKey key: Key, where predicate: (RecordValue) -> Bool) -> Bool {
+    switch _variant {
+    case .left(let singleValueForKeyDict):
+      if let index = singleValueForKeyDict.index(forKey: key) {
+        return predicate(singleValueForKeyDict.values[index].someValue)
+      } else {
+        return false
+      }
+      
+    case .right(let multiValueForKeyDict):
+      if let indexSet = multiValueForKeyDict._keyToEntryIndices[key] {
+        switch indexSet._variant {
+        case .left(let singleIndex):
+          return predicate(multiValueForKeyDict._entries[singleIndex].value.record.someValue)
+        case .right(let indices):
+          for index in indices.base where predicate(multiValueForKeyDict._entries[index].value.record.someValue) {
+            return true
+          }
+          return false
+        }
+      } else {
+        return false
+      }
     }
   }
-
-  // DEFERRED: optimize – for hasNonNilValue / hasNilInstance it is enough to find first value and return early
   
-  func hasNilInstance(forKey key: Key) -> Bool {
-    switch keyValueLookupResultIncludingNil(forKey: key) {
-    case .nothing: false
-    case .singleValue: false
-    case .singleNil: true
-    case .multipleRecords(_, let nilCount): nilCount > 0
+  public func countValues(forKey key: Key, where predicate: (RecordValue) -> Bool) -> Int {
+    switch _variant {
+    case .left(let singleValueForKeyDict):
+      if let index = singleValueForKeyDict.index(forKey: key) {
+        return predicate(singleValueForKeyDict.values[index].someValue) ? 1 : 0
+      } else {
+        return 0
+      }
+      
+    case .right(let multiValueForKeyDict):
+      if let indexSet = multiValueForKeyDict._keyToEntryIndices[key] {
+        switch indexSet._variant {
+        case .left(let singleIndex):
+          return predicate(multiValueForKeyDict._entries[singleIndex].value.record.someValue) ? 1 : 0
+        case .right(let indices):
+          var valuesThatMatch: Int = 0
+          for index in indices.base where predicate(multiValueForKeyDict._entries[index].value.record.someValue) {
+            valuesThatMatch += 1
+          }
+          return valuesThatMatch
+        }
+      } else {
+        return 0
+      }
     }
   }
 }
@@ -52,7 +85,7 @@ extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
 // MARK: - Has Multiple Records For Key
 
 extension ErrorInfoGeneric {
-  func hasMultipleRecords(forKey key: Key) -> Bool { // optimized
+  public func hasMultipleRecords(forKey key: Key) -> Bool { // optimized
     switch _variant {
     case .left: false
     case .right(let multiValueForKeyDict): multiValueForKeyDict.hasMultipleValues(forKey: key)
@@ -74,7 +107,7 @@ extension ErrorInfoGeneric {
 // MARK: - KeyValue Lookup Result
 
 extension ErrorInfoGeneric {
-  func keyValueLookupResultIgnoringNil(forKey key: Key) -> KeyNonOptionalValueLookupResult { // optimized
+  public func keyValueLookupResultIgnoringNil(forKey key: Key) -> KeyNonOptionalValueLookupResult { // optimized
     switch _variant {
     case .left(let singleValueForKeyDict):
       if singleValueForKeyDict.hasValue(forKey: key) {
@@ -99,7 +132,7 @@ extension ErrorInfoGeneric {
 }
 
 extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
-  func keyValueLookupResultIncludingNil(forKey key: Key) -> KeyValueLookupResult { // optimized
+  public func keyValueLookupResultIncludingNil(forKey key: Key) -> KeyValueLookupResult { // optimized
     switch _variant {
     case .left(let singleValueForKeyDict):
       if let index = singleValueForKeyDict.index(forKey: key) {
