@@ -54,4 +54,20 @@ extension ErrorInfoGeneric: RandomAccessCollection {
       return (key, wrappedValue)
     }
   }
+  
+  public func countValues(where predicate: (RecordValue) -> Bool) -> Int {
+    switch _variant {
+    case .left(let singleValueForKeyDict):
+      singleValueForKeyDict.values.count(where: { predicate($0.someValue) })
+      
+    case .right(let multiValueForKeyDict):
+      multiValueForKeyDict._entries.count(where: { predicate($0.value.record.someValue) })
+    }
+  }
+}
+
+extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
+  public var valuesCount: Int {
+    countValues(where: { $0.isValue })
+  }
 }

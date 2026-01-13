@@ -6,7 +6,13 @@
 //
 
 extension ErrorInfoAny {
-  @_transparent public var count: Int { _storage.count }
+  @inlinable
+  @inline(__always)
+  public var count: Int { _storage.count }
   
-  @_transparent public var isEmpty: Bool { _storage.isEmpty }
+  public var valuesCount: Int { _storage.valuesCount }
+  
+  @inlinable
+  @inline(__always)
+  public var isEmpty: Bool { _storage.isEmpty }
 }
