@@ -83,10 +83,10 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   /// From a usability standpoint, the subscript is the ergonomic read path and should surface the last meaningful value by default.
   /// ErrorInfo intentionally separates “removal” from “explicitly recorded `nil`” so you don’t accidentally lose a meaningful prior value.
   /// Returning `nil` just because a later stage wrote a `nil` would reintroduce the classic “silent overwrite” pitfall ``ErrorInfo`` is trying to avoid.
-  /// - Subscript is returning the last non‑nil value.
+  /// - Subscript is returning the last `non‑nil` value.
   ///   This matches how most callers read “the latest meaningful value” and prevents a trailing `nil`
   ///   from blanking useful context.
-  /// - Iteration and the `lastValue` / `firstValue` APIs already operate on non‑nil values;
+  /// - Iteration and the `lastValue` / `firstValue` APIs already operate on `non‑nil` values;
   ///   the subscript should remain consistent with that model for predictability and ergonomics.
   /// - Explicit `nil` is still preserved as a record for auditing and legacy‑style “removal” semantics.
   ///   When you need to know that the last write was `nil`, use `lastRecorded(forKey:)` or
@@ -803,9 +803,15 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   ///
   /// - Complexity: O(*n*), where *n* is the count of all records.
   mutating func removeAll(keepingCapacity keepCapacity: Bool)
-  
-  // ===-------------------------------------------------------------------------------------------------------------------=== //
-  
+}
+
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+// MARK: - Mutable Operations
+
+// Mutable operations can only be done consuming existentials, while at implementation level functions are generic.
+
+public protocol ErrorInfoMutableOperationsProtocol: ErrorInfoOperationsProtocol {
   // MARK: - RemoveAll ForKey
   
   /// Removes all records associated with the specified key and returns the removed `non-nil` values
@@ -913,4 +919,11 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   @discardableResult
   mutating func replaceAllRecords(forKey key: KeyType,
                                   by newValue: ValueExistential) -> ItemsForKey<ValueExistential>?
+}
+
+protocol PPP {
+  func setvalue<T: ~Copyable & ~Escapable>(value: consuming T)
+}
+struct AAA: PPP {
+  func setvalue<T>(value: T) {}
 }

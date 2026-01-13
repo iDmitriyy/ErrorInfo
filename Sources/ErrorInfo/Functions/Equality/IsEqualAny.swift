@@ -32,14 +32,14 @@ extension ErrorInfoFuncs {
   /// ErrorInfoFuncs.isEqualAny(intNil, strNil)    // false
   /// ```
   public static func isEqualAny<T>(_ lhs: T, _ rhs: T) -> Bool {
-    let lhs = flattenOptional(any: lhs)
-    let rhs = flattenOptional(any: rhs)
+    let lhsFlattened = flattenOptional(any: lhs)
+    let rhsFlattened = flattenOptional(any: rhs)
     
     if T.self is AnyObject.Type {
       // print("_____ AnyObject \(type(of: lhs))")
     }
     
-    return switch (lhs, rhs) {
+    return switch (lhsFlattened, rhsFlattened) {
     case (.value, .nilInstance),
          (.nilInstance, .value):
       false
@@ -51,23 +51,6 @@ extension ErrorInfoFuncs {
       lhsType == rhsType
     }
   }
-  
-//  public static func isEqualAny<A, B>(a lhs: A, b rhs: B) -> Bool {
-//    let lhs = flattenOptional(any: lhs)
-//    let rhs = flattenOptional(any: rhs)
-//
-//    return switch (lhs, rhs) {
-//    case (.value, .nilInstance),
-//         (.nilInstance, .value):
-//      false
-//
-//    case let (.value(lhsInstance), .value(rhsInstance)):
-//      __PrivateImps._isEqualFlattenedExistentialAnyWithUnboxing(a: lhsInstance, b: rhsInstance)
-//
-//    case let (.nilInstance(lhsType), .nilInstance(rhsType)):
-//      lhsType == rhsType
-//    }
-//  }
 }
 
 extension ErrorInfoFuncs.__PrivateImps {

@@ -25,7 +25,7 @@ extension ErrorInfoFuncs {
       case .some(let wrapped):
         return flattenOptional(any: wrapped)
       case .none:
-        let rootWrappedType = __PrivateImps._getRootWrappedType(anyType: optionalExistential.getStaticWrappedType())
+        let rootWrappedType = getRootWrappedType(anyType: optionalExistential.getStaticWrappedType())
         return .nilInstance(typeOfWrapped: rootWrappedType)
       }
     } else {
@@ -77,12 +77,21 @@ extension ErrorInfoFuncs {
       case .some(let wrapped):
         return typeOfWrapped(any: wrapped)
       case .none:
-        return __PrivateImps._getRootWrappedType(anyType: optionalExistential.getStaticWrappedType())
+        return getRootWrappedType(anyType: optionalExistential.getStaticWrappedType())
       }
     } else {
       // returning here type(of: any) can return `Any` for value like this: Optional<Any>.some("")
-      // however, when passed to function which calls `type(of: any)` ubser the hood, then `String` is returned.
+      // however, when passed to function which calls `type(of: any)` under the hood, then `String` is returned.
       return __PrivateImps._dynamicType(ofNonOptionalAny: any)
+    }
+  }
+  
+  /// When passed value is `nil`, we can not get type of values. In this extract `Wrapped` type from the most nested Optional type.
+  internal static func getRootWrappedType(anyType: any Any.Type) -> any Any.Type {
+    if let optionalType = anyType as? (any ErrorInfoFuncs.__PrivateImps.FlattenableOptionalPrivateProtocol.Type) {
+      return getRootWrappedType(anyType: optionalType.getStaticWrappedType())
+    } else {
+      return anyType
     }
   }
 }
@@ -90,15 +99,6 @@ extension ErrorInfoFuncs {
 extension ErrorInfoFuncs.__PrivateImps {
   fileprivate static func _dynamicType(ofNonOptionalAny nonOptionalAny: Any) -> any Any.Type {
     type(of: nonOptionalAny)
-  }
-  
-  /// When passed value is `nil`, we can not get type of values. In this extract `Wrapped` type from the most nested Optional type.
-  fileprivate static func _getRootWrappedType(anyType: any Any.Type) -> any Any.Type {
-    if let optionalType = anyType as? (any FlattenableOptionalPrivateProtocol.Type) {
-      return _getRootWrappedType(anyType: optionalType.getStaticWrappedType())
-    } else {
-      return anyType
-    }
   }
   
   fileprivate static func _getSendableRootWrappedType(anyType: any Sendable.Type) -> any Sendable.Type {

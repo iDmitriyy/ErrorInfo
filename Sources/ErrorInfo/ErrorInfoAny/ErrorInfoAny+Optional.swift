@@ -31,8 +31,8 @@ extension ErrorInfoAny {
     @usableFromInline
     let instanceOfOptional: ErrorInfoOptionalAny
     
-    private init(_unverifiedMaybeValue: ErrorInfoOptionalAny) {
-      instanceOfOptional = _unverifiedMaybeValue
+    private init(_unverifiedOptionalInstance: ErrorInfoOptionalAny) {
+      instanceOfOptional = _unverifiedOptionalInstance
     }
     
     private init(anyValue: any Any) {
@@ -46,8 +46,8 @@ extension ErrorInfoAny {
     
     @usableFromInline
     static func nilInstance(typeOfWrapped: any Any.Type) -> Self {
-      // FIXME: - type can be incorrect, extract root type
-      Self(_unverifiedMaybeValue: .nilInstance(typeOfWrapped: typeOfWrapped))
+      let type = ErrorInfoFuncs.getRootWrappedType(anyType: typeOfWrapped)
+      return Self(_unverifiedOptionalInstance: .nilInstance(typeOfWrapped: type))
     }
     
     @usableFromInline

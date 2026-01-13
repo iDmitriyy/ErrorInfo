@@ -79,7 +79,7 @@ extension ErrorInfoAny {
 // MARK: - Append KeyValue with all arguments passed explicitly
 
 extension ErrorInfoAny {
-  /// The root appending function for public API imps. The term "_add" is chosen to visually / syntatically differentiate from family of public `append()`functions.
+  /// The root appending function for public API imps. The term "_add" is chosen to visually / syntactically differentiate from family of public `append()`functions.
   @usableFromInline
   internal mutating func _add<V>(key: String,
                                  keyOrigin: KeyOrigin,
