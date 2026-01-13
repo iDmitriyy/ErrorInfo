@@ -107,7 +107,7 @@ extension ErrorInfo {
     }
     
     if done == nil {
-      newKeyValues.forEach { key, value in
+      newKeyValues.forEach { key, value in // for generic sequence `forEach` iteration is faster than `for in loop`
         add(key: key, value: value)
       }
     }

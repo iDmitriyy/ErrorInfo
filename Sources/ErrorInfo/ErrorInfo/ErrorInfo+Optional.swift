@@ -34,6 +34,11 @@ extension ErrorInfo {
     @usableFromInline
     internal let instanceOfOptional: OptionalValue
     
+    @_transparent
+    init(instanceOfOptional: OptionalValue) {
+      self.instanceOfOptional = instanceOfOptional
+    }
+    
     @usableFromInline
     static func value(_ value: ValueExistential) -> Self {
       Self(instanceOfOptional: .value(value))
@@ -97,6 +102,21 @@ extension ErrorInfo {
   public enum OptionalValue: Sendable, ErrorInfoOptionalRepresentable, CustomDebugStringConvertible {
     case value(any ValueProtocol)
     case nilInstance(typeOfWrapped: any Sendable.Type)
+    
+    @inlinable
+    @inline(__always)
+    public static func fromOptional<V: ValueProtocol>(_ value: V?) -> Self {
+      if let value {
+        .value(value)
+      } else {
+        .nilInstance(typeOfWrapped: V.self)
+      }
+    }
+    
+//    @usableFromInline
+//    static func value(_ value: some ValueProtocol) -> Self {
+//      Self.value(value as any ValueProtocol)
+//    }
     
     public var getWrapped: (any ValueProtocol)? {
       switch self {

@@ -180,11 +180,11 @@ extension ErrorInfo {
     )
   }
   
-  public mutating func _addValue_Test<V: ValueProtocol>(_ newValue: V?,
-                                                        shouldPreserveNilValues: Bool = true,
-                                                        duplicatePolicy: ValueDuplicatePolicy,
-                                                        forKey key: String,
-                                                        keyOrigin: KeyOrigin = .dynamic) {
+  public mutating func _addValue_Test_1<V: ValueProtocol>(_ newValue: V?,
+                                                          shouldPreserveNilValues: Bool = true,
+                                                          duplicatePolicy: ValueDuplicatePolicy,
+                                                          forKey key: String,
+                                                          keyOrigin: KeyOrigin = .dynamic) {
     let optional: EquatableOptionalValue
     if let newValue {
       optional = .value(newValue)
@@ -201,6 +201,24 @@ extension ErrorInfo {
       writeProvenance: .onSubscript(origin: nil),
     )
   }
+  
+  // 18% faster than _addValue_Test_1
+  public mutating func _addValue_Test_2(_ newValue: OptionalValue,
+                                        shouldPreserveNilValues: Bool = true,
+                                        duplicatePolicy: ValueDuplicatePolicy,
+                                        forKey key: String,
+                                        keyOrigin: KeyOrigin = .dynamic) { // optimized
+    if newValue.isValue || shouldPreserveNilValues {
+      let optional = EquatableOptionalValue(instanceOfOptional: newValue)
+          
+      _storage.withCollisionAndDuplicateResolutionAdd(
+        record: BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
+        forKey: key,
+        duplicatePolicy: duplicatePolicy,
+        writeProvenance: .onSubscript(origin: nil),
+      )
+    }
+  } // inlining significantly worsen performance
   
   // SE-0352 Implicitly Opened Existentials
   // https://github.com/swiftlang/swift-evolution/blob/main/proposals/0352-implicit-open-existentials.md

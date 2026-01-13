@@ -10,39 +10,69 @@ import Foundation
 import OrderedCollections
 import Testing
 
-struct LargeStruct {
-  let a: String = "dscsdf"
-  let b: UUID = UUID()
-  let c: Duration = Duration.seconds(1)
-  let d: Date = Date()
-  let e: String = "dfsdfwefferfwerfrefwerfvref"
+@inline(never)
+public func genericTest<T>(value: T, closure: (T?) -> Void) {
+  closure(value)
 }
 
 struct PlaygroundTests {
   @Test func playground() throws {
     let count = 1000
         
-    let output = performMeasuredAction(count: count) {
-      for index in 1...100_000 {
-        blackHole(index)
+//    let output = performMeasuredAction(count: count) {
+//      for index in 1...100_000 {
+//        blackHole(index)
+//      }
+//    }
+    
+    if #available(macOS 26.0, *) {
+      genericTest(value: 2) { value in
+//        let value = nil as Int?
+        let overhead = performMeasuredAction(iterations: count) { _ in
+          InlineArray<1000, ErrorInfo> { index in ErrorInfo.empty }
+        } measure: { array in
+          for _ in 1...10 {
+            for index in array.indices {
+              blackHole(array[index])
+            }
+          }
+        }
+        
+        let baseline = performMeasuredAction(iterations: count) { _ in
+          InlineArray<1000, ErrorInfo> { index in ErrorInfo() }
+        } measure: { array in
+          for _ in 1...10 {
+            for index in array.indices {
+              array[index]._addValue_Test_1(value, duplicatePolicy: .allowEqual, forKey: "a")
+            }
+          }
+        }
+        
+        let measured = performMeasuredAction(iterations: count) { _ in
+          InlineArray<1000, ErrorInfo> { index in ErrorInfo() }
+        } measure: { array in
+          for _ in 1...10 {
+            for index in array.indices {
+              array[index]._addValue_Test_2(.fromOptional(value), duplicatePolicy: .allowEqual, forKey: "a")
+            }
+          }
+        }
+        
+        let measurements = collectMeasurements(overhead: {overhead}, baseline: {baseline}, measured: {measured})
+        
+        print(measurements.adjustedRatio)
+        // 1.05 1.043 1.046
+        // 0.820 0.824 0.823 // inlined fromOptional<V: ValueProtocol>(_ value: V?)
+        // 0.825 0.831  @_transparent init(instanceOfOptional: OptionalValue)
+        
+        // imp1        value       :        nil
+        // 0.819 0.815 0.811       | 0.800 0.806 0.803
+        // imp2 (if newValue.isValue || shouldPreserveNilValues)
+        // 0.811 0.809 0.813 0.807 | 0.799 0.799 0.800
+        // imp3 (if _fastPath(newValue.isValue || shouldPreserveNilValues))
+        // 0.816 0.815 | 0.807 0.799 0.798 0.801
       }
     }
-    
-    // hasValue(forKey:)                          byIndex     byKeys     byNil
-    // OrderedDictionary<String, String>            326         315       349               .
-    // OrderedDictionary<String, LargeStruct>       314         296      4484               .
-    // OrderedDictionary<String, Int>               328         313       353               .
-    // OrderedDictionary<Int, Int>                  377         348       395               .
-    // OrderedDictionary<String, ___________>       ___         ___      ____               .
-    
-    //  Swift.Dictionary<String, String>           1788        1285      1782               .
-    //  Swift.Dictionary<String, LargeStruct>      1794        1293      6634               .
-    //  Swift.Dictionary<String, Int>              1794        1296      1786               .
-    //  Swift.Dictionary<Int, Int>                  865         866       865               .
-    //  Swift.Dictionary<String, ___________>      ____        ____      ____               .
-    // byIndex – index(forKey: key) != nil
-    //  byKeys – keys.contains(key)
-    //   byNil – self[key] != nil
     
     // print("__playground: ", output.duration.asString(fractionDigits: 2)) // it takes ~25ms for 10 million of calls of empty blackHole(())
     
@@ -145,3 +175,19 @@ struct PlaygroundTests {
 //    print(AnyHashable(Optional<Int>.none) == AnyHashable(Optional<String>.none))
   } // test func end
 }
+
+// hasValue(forKey:)                          byIndex     byKeys     byNil              .
+// OrderedDictionary<String, String>            326         315       349               .
+// OrderedDictionary<String, LargeStruct>       314         296      4484               .
+// OrderedDictionary<String, Int>               328         313       353               .
+// OrderedDictionary<Int, Int>                  377         348       395               .
+// OrderedDictionary<String, ___________>       ___         ___      ____               .
+//
+// Swift.Dictionary<String, String>            1788        1285      1782               .
+// Swift.Dictionary<String, LargeStruct>       1794        1293      6634               .
+// Swift.Dictionary<String, Int>               1794        1296      1786               .
+// Swift.Dictionary<Int, Int>                   865         866       865               .
+// Swift.Dictionary<String, ___________>       ____        ____      ____               .
+// byIndex – index(forKey: key) != nil
+//  byKeys – keys.contains(key)
+//   byNil – self[key] != nil

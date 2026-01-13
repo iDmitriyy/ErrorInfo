@@ -920,10 +920,3 @@ public protocol ErrorInfoMutableOperationsProtocol: ErrorInfoOperationsProtocol 
   mutating func replaceAllRecords(forKey key: KeyType,
                                   by newValue: ValueExistential) -> ItemsForKey<ValueExistential>?
 }
-
-protocol PPP {
-  func setvalue<T: ~Copyable & ~Escapable>(value: consuming T)
-}
-struct AAA: PPP {
-  func setvalue<T>(value: T) {}
-}
