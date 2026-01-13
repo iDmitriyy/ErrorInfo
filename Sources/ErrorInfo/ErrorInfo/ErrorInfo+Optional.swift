@@ -113,6 +113,11 @@ extension ErrorInfo {
       }
     }
     
+    // useless, as overall performance is the same as using `fromOptional(_:)` func.
+    // public static func fromValue<V: ValueProtocol>(_ value: V) -> Self {
+    //   .value(value)
+    // }
+    
 //    @usableFromInline
 //    static func value(_ value: some ValueProtocol) -> Self {
 //      Self.value(value as any ValueProtocol)

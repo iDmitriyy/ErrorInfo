@@ -27,7 +27,7 @@ struct PlaygroundTests {
     
     if #available(macOS 26.0, *) {
       genericTest(value: 2) { value in
-//        let value = nil as Int?
+        let value = 5
         let overhead = performMeasuredAction(iterations: count) { _ in
           InlineArray<1000, ErrorInfo> { index in ErrorInfo.empty }
         } measure: { array in
@@ -43,34 +43,31 @@ struct PlaygroundTests {
         } measure: { array in
           for _ in 1...10 {
             for index in array.indices {
-              array[index]._addValue_Test_1(value, duplicatePolicy: .allowEqual, forKey: "a")
+               array[index]._addValue_Test_1(value, duplicatePolicy: .allowEqual, forKey: "a")
             }
           }
         }
         
         let measured = performMeasuredAction(iterations: count) { _ in
-          InlineArray<1000, ErrorInfo> { index in ErrorInfo() }
+          InlineArray<1000, ErrorInfo> { index in [.apiEndpoint: index, .base64String: index] as ErrorInfo }
         } measure: { array in
           for _ in 1...10 {
             for index in array.indices {
-              array[index]._addValue_Test_2(.fromOptional(value), duplicatePolicy: .allowEqual, forKey: "a")
+              var copy = array[index]
+              blackHole(copy.merge(with: array[index]))
+//               array[index]._addValue_Test_2(.fromOptional(value), duplicatePolicy: .allowEqual, forKey: "a")
             }
           }
         }
         
         let measurements = collectMeasurements(overhead: {overhead}, baseline: {baseline}, measured: {measured})
         
-        print(measurements.adjustedRatio)
-        // 1.05 1.043 1.046
-        // 0.820 0.824 0.823 // inlined fromOptional<V: ValueProtocol>(_ value: V?)
-        // 0.825 0.831  @_transparent init(instanceOfOptional: OptionalValue)
-        
-        // imp1        value       :        nil
-        // 0.819 0.815 0.811       | 0.800 0.806 0.803
-        // imp2 (if newValue.isValue || shouldPreserveNilValues)
-        // 0.811 0.809 0.813 0.807 | 0.799 0.799 0.800
-        // imp3 (if _fastPath(newValue.isValue || shouldPreserveNilValues))
-        // 0.816 0.815 | 0.807 0.799 0.798 0.801
+        // print(measurements.adjustedRatio)
+        print(measured.totalDuration.inMilliseconds)
+        // 458 458 458
+        // 7661 7554 7569 – struct with inlining
+        // 7691 7771 7668 - struct no inlining
+        // 8204 8201
       }
     }
     

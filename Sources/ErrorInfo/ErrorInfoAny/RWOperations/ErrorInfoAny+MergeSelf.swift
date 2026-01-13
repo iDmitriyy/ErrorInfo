@@ -1,13 +1,13 @@
 //
-//  ErrorInfo+MergeSelf.swift
+//  ErrorInfoAny+MergeSelf.swift
 //  ErrorInfo
 //
-//  Created by Dmitriy Ignatyev on 06/10/2025.
+//  Created by Dmitriy Ignatyev on 13/01/2026.
 //
 
 // MARK: - Protocol Requirement Imp
 
-extension ErrorInfo {
+extension ErrorInfoAny {
   public static func mergeTo(recipient: inout Self,
                              donator: Self,
                              origin: @autoclosure () -> WriteProvenance.Origin) {

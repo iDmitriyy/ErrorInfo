@@ -45,7 +45,7 @@
 ///   legacyAPI.send(userInfo)
 /// }
 /// ```
-public struct ErrorInfoAny: ErrorInfoOperationsProtocol {
+public struct ErrorInfoAny: ErrorInfoMutableOperationsProtocol {
   @usableFromInline internal var _storage: ErrorInfoGeneric<String, EquatableOptionalAny>
   
   // MARK: - Initializers

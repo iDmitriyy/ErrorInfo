@@ -87,7 +87,7 @@
 ///
 /// let summary = info.merged(with: networkInfo)
 /// ```
-public struct ErrorInfo: Sendable, ErrorInfoOperationsProtocol {
+public struct ErrorInfo: Sendable, ErrorInfoMutableOperationsProtocol {
   @usableFromInline
   internal var _storage: ErrorInfoGeneric<KeyType, EquatableOptionalValue>
   
@@ -202,7 +202,7 @@ extension ErrorInfo {
     )
   }
   
-  // 18% faster than _addValue_Test_1
+  // 19% faster than _addValue_Test_1
   public mutating func _addValue_Test_2(_ newValue: OptionalValue,
                                         shouldPreserveNilValues: Bool = true,
                                         duplicatePolicy: ValueDuplicatePolicy,
