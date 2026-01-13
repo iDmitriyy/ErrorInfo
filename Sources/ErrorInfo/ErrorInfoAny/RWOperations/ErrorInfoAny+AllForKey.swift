@@ -6,7 +6,7 @@
 //
 
 extension ErrorInfoAny {
-  public func allValues(forKey dynamicKey: String) -> ItemsForKey<ValueExistential>? {
-    _storage.allNonNilValues(forKey: dynamicKey)
+  public func allValues(forKey key: String) -> ItemsForKey<ValueExistential>? {
+    _storage.allNonNilValues(forKey: key)
   }
 }

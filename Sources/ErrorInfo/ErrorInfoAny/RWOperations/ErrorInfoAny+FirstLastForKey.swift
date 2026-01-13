@@ -8,12 +8,12 @@
 // MARK: - Last For Key
 
 extension ErrorInfoAny {
-  public func lastValue(forKey dynamicKey: String) -> (ValueExistential)? {
-    _storage.lastNonNilValue(forKey: dynamicKey)
+  public func lastValue(forKey key: String) -> (ValueExistential)? {
+    _storage.lastNonNilValue(forKey: key)
   }
   
-  public func lastRecorded(forKey dynamicKey: String) -> ErrorInfoOptionalAny? {
-    _storage.lastRecordedOptionalInstance(forKey: dynamicKey)
+  public func lastRecorded(forKey key: String) -> ErrorInfoOptionalAny? {
+    _storage.lastRecordedOptionalInstance(forKey: key)
   }
 }
 
@@ -22,11 +22,11 @@ extension ErrorInfoAny {
 // MARK: - First For Key
 
 extension ErrorInfoAny {
-  public func firstValue(forKey dynamicKey: String) -> (ValueExistential)? {
-    _storage.firstNonNilValue(forKey: dynamicKey)
+  public func firstValue(forKey key: String) -> (ValueExistential)? {
+    _storage.firstNonNilValue(forKey: key)
   }
   
-  public func firstRecorded(forKey dynamicKey: String) -> ErrorInfoOptionalAny? {
-    _storage.firstRecordedOptionalInstance(forKey: dynamicKey)
+  public func firstRecorded(forKey key: String) -> ErrorInfoOptionalAny? {
+    _storage.firstRecordedOptionalInstance(forKey: key)
   }
 }
