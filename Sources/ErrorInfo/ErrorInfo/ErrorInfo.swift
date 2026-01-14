@@ -225,6 +225,37 @@ extension ErrorInfo {
     }
   }
   
+  public mutating func withCollisionAndDuplicateResolutionAdd( // value: ____ | nilInstance: ___ | fromOptional: ___
+    optionalInstance newValue: OptionalValue,
+    duplicatePolicy: ValueDuplicatePolicy,
+    forKey key: String,
+    keyOrigin: KeyOrigin,
+    writeProvenance: @autoclosure () -> WriteProvenance,
+  ) {
+    _storage.withCollisionAndDuplicateResolutionAdd(
+      record: BackingStorage.Record(keyOrigin: keyOrigin, someValue: EquatableOptionalValue(instanceOfOptional: newValue)),
+      forKey: key,
+      duplicatePolicy: duplicatePolicy,
+      writeProvenance: writeProvenance(),
+    )
+  }
+  
+  @inlinable @inline(__always)
+  public mutating func withCollisionAndDuplicateResolutionAdd_inlined( // value: ____ | nilInstance: ___ | fromOptional: ___
+    optionalInstance newValue: OptionalValue,
+    duplicatePolicy: ValueDuplicatePolicy,
+    forKey key: String,
+    keyOrigin: KeyOrigin,
+    writeProvenance: @autoclosure () -> WriteProvenance,
+  ) {
+    _storage.withCollisionAndDuplicateResolutionAdd(
+      record: BackingStorage.Record(keyOrigin: keyOrigin, someValue: EquatableOptionalValue(instanceOfOptional: newValue)),
+      forKey: key,
+      duplicatePolicy: duplicatePolicy,
+      writeProvenance: writeProvenance(),
+    )
+  }
+  
   // MARK: - Add Value
   
   @inlinable @inline(__always)

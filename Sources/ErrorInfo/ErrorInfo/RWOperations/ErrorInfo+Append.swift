@@ -9,18 +9,85 @@
 
 extension ErrorInfo {
   /// Instead of subscript overload with `String` key to prevent pollution of autocomplete for `StringLiteralKey` by tons of String methods.
-  @inlinable @inline(__always)
-  @_disfavoredOverload
-  public mutating func appendValue(_ newValue: (some ValueProtocol)?, forKey dynamicKey: String) {
-    withCollisionAndDuplicateResolutionAdd(
-      optionalInstance: .fromOptional(newValue),
-      shouldPreserveNilValues: true,
-      duplicatePolicy: .defaultForAppending,
-      forKey: dynamicKey,
-      keyOrigin: .dynamic,
-      writeProvenance: .onAppend(origin: nil),
-    ) // providing origin for a single key-value is an overhead for binary size
-  }
+  
+   @inlinable @inline(__always)
+   @_disfavoredOverload
+   public mutating func appendValue(_ newValue: (some ValueProtocol)?, forKey dynamicKey: String) { // 79
+     withCollisionAndDuplicateResolutionAdd(
+       optionalInstance: .fromOptional(newValue),
+       duplicatePolicy: .defaultForAppending,
+       forKey: dynamicKey,
+       keyOrigin: .dynamic,
+       writeProvenance: .onAppend(origin: nil),
+     ) // providing origin for a single key-value is an overhead for binary size
+   }
+  
+//  @_disfavoredOverload
+//  public mutating func appendValue(_ newValue: (some ValueProtocol)?, forKey dynamicKey: String) { // 119.9
+//    withCollisionAndDuplicateResolutionAdd_inlined(
+//      optionalInstance: .fromOptional(newValue),
+//      duplicatePolicy: .defaultForAppending,
+//      forKey: dynamicKey,
+//      keyOrigin: .dynamic,
+//      writeProvenance: .onAppend(origin: nil),
+//    ) // providing origin for a single key-value is an overhead for binary size
+//  }
+  
+//  @_disfavoredOverload
+//  public mutating func appendValue<V: ValueProtocol>(_ newValue: V?, forKey dynamicKey: String) {
+//    if let newValue {
+//      withCollisionAndDuplicateResolutionAdd( // 132 | _inlined: 132
+//        value: newValue,
+//        duplicatePolicy: .defaultForAppending,
+//        forKey: dynamicKey,
+//        keyOrigin: .dynamic,
+//        writeProvenance: .onAppend(origin: nil),
+//      ) // providing origin for a single key-value is an overhead for binary size
+//    } else {
+//      withCollisionAndDuplicateResolutionAddNilInstance(typeOfWrapped: V.self, // 114 | inlined 116
+//                                                        duplicatePolicy: .defaultForAppending,
+//                                                        forKey: dynamicKey,
+//                                                        keyOrigin: .dynamic,
+//                                                        writeProvenance: .onAppend(origin: nil))
+//    }
+//  }
+  
+  // @_disfavoredOverload
+  // public mutating func appendValue(_ newValue: (some ValueProtocol)?, forKey dynamicKey: String) { // 140
+  //   withCollisionAndDuplicateResolutionAdd( // _inlined has same perf
+  //     optionalValue: newValue,
+  //     shouldPreserveNilValues: true,
+  //     duplicatePolicy: .defaultForAppending,
+  //     forKey: dynamicKey,
+  //     keyOrigin: .dynamic,
+  //     writeProvenance: .onAppend(origin: nil),
+  //   ) // providing origin for a single key-value is an overhead for binary size
+  // }
+  
+  // @_disfavoredOverload
+  // public mutating func appendValue(_ newValue: (some ValueProtocol)?, forKey dynamicKey: String) { // 140
+  //   withCollisionAndDuplicateResolutionAdd_inlined(
+  //     optionalInstance: .fromOptional(newValue),
+  //     shouldPreserveNilValues: true,
+  //     duplicatePolicy: .defaultForAppending,
+  //     forKey: dynamicKey,
+  //     keyOrigin: .dynamic,
+  //     writeProvenance: .onAppend(origin: nil),
+  //   ) // providing origin for a single key-value is an overhead for binary size
+  // }
+  
+  // @inlinable @inline(__always)
+  // @_disfavoredOverload
+  // public mutating func appendValue(_ newValue: (some ValueProtocol)?, forKey dynamicKey: String) { // 104.875
+  //   withCollisionAndDuplicateResolutionAdd(
+  //     optionalInstance: .fromOptional(newValue),
+  //     shouldPreserveNilValues: true,
+  //     duplicatePolicy: .defaultForAppending,
+  //     forKey: dynamicKey,
+  //     keyOrigin: .dynamic,
+  //     writeProvenance: .onAppend(origin: nil),
+  //   ) // providing origin for a single key-value is an overhead for binary size
+  // }
   
   @available(*, deprecated, message: "for literal keys use subscript instead, append() is intended for dynamic keys)")
   public mutating func appendValue(_ newValue: (some ValueProtocol)?, forKey literalKey: StringLiteralKey) {

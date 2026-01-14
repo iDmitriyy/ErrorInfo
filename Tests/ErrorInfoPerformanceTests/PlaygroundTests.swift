@@ -28,7 +28,8 @@ struct PlaygroundTests {
     
     if #available(macOS 26.0, *) {
       genericTest(value: 2) { value in
-        let value = 5
+//        let value = 5
+        let value: Int? = nil
         let overhead = performMeasuredAction(iterations: count) { _ in
           InlineArray<1000, ErrorInfo> { _ in ErrorInfo.empty }
         } measure: { array in
@@ -53,12 +54,7 @@ struct PlaygroundTests {
           }
         } measure: { array in
            for index in array.indices {
-             array[index].withCollisionAndDuplicateResolutionAdd(optionalValue: value,
-                                                                 shouldPreserveNilValues: true,
-                                                                 duplicatePolicy: .allowEqual,
-                                                                 forKey: key1,
-                                                                 keyOrigin: .dynamic,
-                                                                 writeProvenance: .onSubscript(origin: nil))
+             array[index].appendValue(value, forKey: key1)
            }
         }
         blackHole(overhead)
