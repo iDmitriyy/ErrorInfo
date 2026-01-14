@@ -58,8 +58,8 @@ public struct WriteProvenance: Sendable, Equatable, CustomStringConvertible, Cus
   // MARK: - Public Static Initializers
 
   /// Creates a `WriteProvenance` for a key collision triggered by subscript access.
-  @usableFromInline
-  internal static func onSubscript(origin: Origin?) -> Self {
+//  @usableFromInline
+  public static func onSubscript(origin: Origin?) -> Self {
     Self(backing: .onSubscript(origin: origin))
   }
       

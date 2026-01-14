@@ -123,7 +123,7 @@ extension ErrorInfo {
       // However, this will require OptionalValue store `any Any.Type` instead of `any Sendable.Type` in case .nilInstance
     }
     
-    withCollisionAndDuplicateResolutionAdd(
+    withCollisionAndDuplicateResolutionAdd_inlined(
       value: stringRepresentation,
       duplicatePolicy: .defaultForAppending,
       forKey: key,
@@ -139,7 +139,7 @@ extension ErrorInfo {
     switch ErrorInfoFuncs.flattenOptional(anySendable: newValue) {
     case .left(let value):
       let stringRepresentation = stringTransform(value)
-      withCollisionAndDuplicateResolutionAdd(
+      withCollisionAndDuplicateResolutionAdd_inlined(
         value: stringRepresentation,
         duplicatePolicy: .defaultForAppending,
         forKey: key,

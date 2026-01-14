@@ -246,7 +246,7 @@ extension ErrorInfo.CustomOptionsView {
     get { pointer.pointee.lastValue(forKey: literalKey) as? V }
     nonmutating set {
       let resolvedKey = Self.resolveKey(literalKey: literalKey, prefixForKeys: prefixForKeys)
-      pointer.pointee.withCollisionAndDuplicateResolutionAdd(
+      pointer.pointee.withCollisionAndDuplicateResolutionAdd_inlined(
         optionalValue: newValue,
         shouldPreserveNilValues: preserveNilValues ?? self.preserveNilValues,
         duplicatePolicy: duplicatePolicy ?? self.duplicatePolicy,

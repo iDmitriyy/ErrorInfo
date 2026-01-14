@@ -33,7 +33,7 @@ extension ErrorInfo {
       lastValue(forKey: literalKey) as? V
     }
     set {
-      withCollisionAndDuplicateResolutionAdd(
+      withCollisionAndDuplicateResolutionAdd_inlined(
         optionalValue: newValue,
         shouldPreserveNilValues: true,
         duplicatePolicy: .defaultForAppending,

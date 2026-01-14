@@ -137,9 +137,13 @@ extension ErrorInfo {
 // MARK: - Append KeyValue with all arguments passed explicitly
 
 extension ErrorInfo {
+  // ! usage of inlined function directly is about 5.5x slower
+  
+  // MARK: Add Optional Value
+  
   /// The root appending function for public API imps. The term "_add" is chosen to visually / syntactically differentiate from family of public `append()`functions.
   @inlinable @inline(__always)
-  internal mutating func withCollisionAndDuplicateResolutionAdd<V: ValueProtocol>(
+  public mutating func withCollisionAndDuplicateResolutionAdd_inlined<V: ValueProtocol>(
     optionalValue newValue: V?,
     shouldPreserveNilValues: Bool,
     duplicatePolicy: ValueDuplicatePolicy,
@@ -164,8 +168,67 @@ extension ErrorInfo {
     )
   }
   
+  public mutating func withCollisionAndDuplicateResolutionAdd( // value: 122 | value?: 124
+    optionalValue newValue: (some ValueProtocol)?,
+    shouldPreserveNilValues: Bool,
+    duplicatePolicy: ValueDuplicatePolicy,
+    forKey key: String,
+    keyOrigin: KeyOrigin,
+    writeProvenance: @autoclosure () -> WriteProvenance,
+  ) {
+    withCollisionAndDuplicateResolutionAdd_inlined(
+      optionalValue: newValue,
+      shouldPreserveNilValues: shouldPreserveNilValues,
+      duplicatePolicy: duplicatePolicy,
+      forKey: key,
+      keyOrigin: keyOrigin,
+      writeProvenance: writeProvenance(),
+    )
+  }
+  
+  // MARK: Add Optional Instance
+  
+  public mutating func withCollisionAndDuplicateResolutionAdd( // value: 88.666 | nilInstance: 71.792 | fromOptional: 88.75
+    optionalInstance newValue: OptionalValue,
+    shouldPreserveNilValues: Bool,
+    duplicatePolicy: ValueDuplicatePolicy,
+    forKey key: String,
+    keyOrigin: KeyOrigin,
+    writeProvenance: @autoclosure () -> WriteProvenance,
+  ) {
+    withCollisionAndDuplicateResolutionAdd_inlined(optionalInstance: newValue,
+                                                   shouldPreserveNilValues: shouldPreserveNilValues,
+                                                   duplicatePolicy: duplicatePolicy,
+                                                   forKey: key,
+                                                   keyOrigin: keyOrigin,
+                                                   writeProvenance: writeProvenance())
+  }
+  
   @inlinable @inline(__always)
-  internal mutating func withCollisionAndDuplicateResolutionAdd(
+  public mutating func withCollisionAndDuplicateResolutionAdd_inlined(
+    optionalInstance newValue: OptionalValue,
+    shouldPreserveNilValues: Bool,
+    duplicatePolicy: ValueDuplicatePolicy,
+    forKey key: String,
+    keyOrigin: KeyOrigin,
+    writeProvenance: @autoclosure () -> WriteProvenance,
+  ) {
+    if newValue.isValue || shouldPreserveNilValues {
+      let optional = EquatableOptionalValue(instanceOfOptional: newValue)
+          
+      _storage.withCollisionAndDuplicateResolutionAdd(
+        record: BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
+        forKey: key,
+        duplicatePolicy: duplicatePolicy,
+        writeProvenance: writeProvenance(),
+      )
+    }
+  }
+  
+  // MARK: - Add Value
+  
+  @inlinable @inline(__always)
+  public mutating func withCollisionAndDuplicateResolutionAdd_inlined(
     value newValue: some ValueProtocol,
     duplicatePolicy: ValueDuplicatePolicy,
     forKey key: String,
@@ -180,45 +243,21 @@ extension ErrorInfo {
     )
   }
   
-  public mutating func _addValue_Test_1<V: ValueProtocol>(_ newValue: V?,
-                                                          shouldPreserveNilValues: Bool = true,
-                                                          duplicatePolicy: ValueDuplicatePolicy,
-                                                          forKey key: String,
-                                                          keyOrigin: KeyOrigin = .dynamic) {
-    let optional: EquatableOptionalValue
-    if let newValue {
-      optional = .value(newValue)
-    } else if shouldPreserveNilValues {
-      optional = .nilInstance(typeOfWrapped: V.self)
-    } else {
-      return
-    }
-        
-    _storage.withCollisionAndDuplicateResolutionAdd(
-      record: BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
-      forKey: key,
-      duplicatePolicy: duplicatePolicy,
-      writeProvenance: .onSubscript(origin: nil),
-    )
+  public mutating func withCollisionAndDuplicateResolutionAdd( // 77.5
+    value newValue: some ValueProtocol,
+    duplicatePolicy: ValueDuplicatePolicy,
+    forKey key: String,
+    keyOrigin: KeyOrigin,
+    writeProvenance: @autoclosure () -> WriteProvenance,
+  ) {
+    withCollisionAndDuplicateResolutionAdd_inlined(value: newValue,
+                                                   duplicatePolicy: duplicatePolicy,
+                                                   forKey: key,
+                                                   keyOrigin: keyOrigin,
+                                                   writeProvenance: writeProvenance())
   }
   
-  // 19% faster than _addValue_Test_1
-  public mutating func _addValue_Test_2(_ newValue: OptionalValue,
-                                        shouldPreserveNilValues: Bool = true,
-                                        duplicatePolicy: ValueDuplicatePolicy,
-                                        forKey key: String,
-                                        keyOrigin: KeyOrigin = .dynamic) { // optimized
-    if newValue.isValue || shouldPreserveNilValues {
-      let optional = EquatableOptionalValue(instanceOfOptional: newValue)
-          
-      _storage.withCollisionAndDuplicateResolutionAdd(
-        record: BackingStorage.Record(keyOrigin: keyOrigin, someValue: optional),
-        forKey: key,
-        duplicatePolicy: duplicatePolicy,
-        writeProvenance: .onSubscript(origin: nil),
-      )
-    }
-  } // inlining significantly worsen performance
+  // MARK: Add Nil Instance
   
   // SE-0352 Implicitly Opened Existentials
   // https://github.com/swiftlang/swift-evolution/blob/main/proposals/0352-implicit-open-existentials.md
@@ -235,12 +274,30 @@ extension ErrorInfo {
   ///   - keyOrigin: The origin metadata for the key.
   ///   - duplicatePolicy: How to handle duplicates for subsequent non‑nil inserts.
   ///   - writeProvenance: The collision origin for diagnostics.
+//  @inlinable @inline(__always)
+  public mutating func withCollisionAndDuplicateResolutionAddNilInstance( // 60.875
+    typeOfWrapped: any Sendable.Type,
+    duplicatePolicy: ValueDuplicatePolicy,
+    forKey key: String,
+    keyOrigin: KeyOrigin,
+    writeProvenance: @autoclosure () -> WriteProvenance,
+  ) {
+    withCollisionAndDuplicateResolutionAddNilInstance_inlined(
+      typeOfWrapped: typeOfWrapped,
+      duplicatePolicy: duplicatePolicy,
+      forKey: key,
+      keyOrigin: keyOrigin,
+      writeProvenance: writeProvenance())
+  }
+  
   @inlinable @inline(__always)
-  internal mutating func withCollisionAndDuplicateResolutionAddNilInstance(typeOfWrapped: any Sendable.Type,
-                                                                           duplicatePolicy: ValueDuplicatePolicy,
-                                                                           forKey key: String,
-                                                                           keyOrigin: KeyOrigin,
-                                                                           writeProvenance: @autoclosure () -> WriteProvenance) {
+  public mutating func withCollisionAndDuplicateResolutionAddNilInstance_inlined(
+    typeOfWrapped: any Sendable.Type,
+    duplicatePolicy: ValueDuplicatePolicy,
+    forKey key: String,
+    keyOrigin: KeyOrigin,
+    writeProvenance: @autoclosure () -> WriteProvenance,
+  ) {
     _storage.withCollisionAndDuplicateResolutionAdd(
       record: BackingStorage.Record(keyOrigin: keyOrigin, someValue: .nilInstance(typeOfWrapped: typeOfWrapped)),
       forKey: key,
@@ -248,6 +305,18 @@ extension ErrorInfo {
       writeProvenance: writeProvenance(),
     )
   }
+  
+  // public mutating func testAddNilInstance( // 59.833
+  //   typeOfWrapped: any Sendable.Type,
+  //   forKey key: String,
+  // ) {
+  //   withCollisionAndDuplicateResolutionAddNilInstance_inlined(
+  //     typeOfWrapped: typeOfWrapped,
+  //     duplicatePolicy: .allowEqual,
+  //     forKey: key,
+  //     keyOrigin: .dynamic,
+  //     writeProvenance: .onSubscript(origin: nil))
+  // }
 }
 
 // TODO: - add tests for elements ordering stability

@@ -46,7 +46,7 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
 
       for (literalKey, value) in elements {
         if let value {
-          withCollisionAndDuplicateResolutionAdd(
+          withCollisionAndDuplicateResolutionAdd_inlined(
             value: value,
             duplicatePolicy: .allowEqual,
             forKey: literalKey.rawValue,

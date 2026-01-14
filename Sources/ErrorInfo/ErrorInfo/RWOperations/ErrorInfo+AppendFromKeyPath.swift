@@ -79,7 +79,7 @@ extension ErrorInfo {
       
       let value = instance[keyPath: keyPath]
       
-      withCollisionAndDuplicateResolutionAdd(
+      withCollisionAndDuplicateResolutionAdd_inlined(
         optionalValue: value,
         shouldPreserveNilValues: true,
         duplicatePolicy: .defaultForAppending,

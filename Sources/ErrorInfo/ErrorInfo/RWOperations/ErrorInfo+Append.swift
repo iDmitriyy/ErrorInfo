@@ -9,10 +9,11 @@
 
 extension ErrorInfo {
   /// Instead of subscript overload with `String` key to prevent pollution of autocomplete for `StringLiteralKey` by tons of String methods.
+  @inlinable @inline(__always)
   @_disfavoredOverload
   public mutating func appendValue(_ newValue: (some ValueProtocol)?, forKey dynamicKey: String) {
     withCollisionAndDuplicateResolutionAdd(
-      optionalValue: newValue,
+      optionalInstance: .fromOptional(newValue),
       shouldPreserveNilValues: true,
       duplicatePolicy: .defaultForAppending,
       forKey: dynamicKey,
@@ -25,7 +26,7 @@ extension ErrorInfo {
   public mutating func appendValue(_ newValue: (some ValueProtocol)?, forKey literalKey: StringLiteralKey) {
     // deprecation is used to guide users
     withCollisionAndDuplicateResolutionAdd(
-      optionalValue: newValue,
+      optionalInstance: .fromOptional(newValue),
       shouldPreserveNilValues: true,
       duplicatePolicy: .defaultForAppending,
       forKey: literalKey.rawValue,
@@ -41,16 +42,25 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   public mutating func appendIfNotNil(_ value: (some ValueProtocol)?,
-                                      forKey literalKey: StringLiteralKey) { // optimized
+                                      forKey literalKey: StringLiteralKey) {
     guard let value else { return }
     _singleKeyValuePairAppend(key: literalKey.rawValue, keyOrigin: literalKey.keyOrigin, value: value)
   }
   
   @_disfavoredOverload
+  @inlinable @inline(__always)
   public mutating func appendIfNotNil(_ value: (some ValueProtocol)?,
-                                      forKey key: String) { // optimized
-    guard let value else { return }
-    _singleKeyValuePairAppend(key: key, keyOrigin: .dynamic, value: value)
+                                      forKey key: String) {
+//    guard let value else { return }
+//    _singleKeyValuePairAppend(key: key, keyOrigin: .dynamic, value: value)
+    withCollisionAndDuplicateResolutionAdd(
+      optionalInstance: .fromOptional(value),
+      shouldPreserveNilValues: false,
+      duplicatePolicy: .defaultForAppending,
+      forKey: key,
+      keyOrigin: .dynamic,
+      writeProvenance: .onAppend(origin: nil),
+    ) // providing origin for a single key-value is an overhead for binary size
   }
 }
 
@@ -61,7 +71,7 @@ extension ErrorInfo {
   internal mutating func _singleKeyValuePairAppend(key: String,
                                                    keyOrigin: KeyOrigin,
                                                    value: some ValueProtocol) {
-    withCollisionAndDuplicateResolutionAdd(
+    withCollisionAndDuplicateResolutionAdd_inlined(
       value: value,
       duplicatePolicy: .defaultForAppending,
       forKey: key,

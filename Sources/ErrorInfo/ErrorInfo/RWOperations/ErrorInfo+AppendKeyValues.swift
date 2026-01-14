@@ -89,7 +89,7 @@ extension ErrorInfo {
                                              writeProvenance: @autoclosure () -> WriteProvenance) {
     for (literalKey, value) in elements {
       if let value {
-        withCollisionAndDuplicateResolutionAdd(
+        withCollisionAndDuplicateResolutionAdd_inlined(
           value: value,
           duplicatePolicy: duplicatePolicy,
           forKey: literalKey.rawValue,

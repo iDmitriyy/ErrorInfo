@@ -34,17 +34,20 @@ extension ErrorInfo {
     @usableFromInline
     internal let instanceOfOptional: OptionalValue
     
-    @_transparent
+    @inlinable
+    @inline(__always)
     init(instanceOfOptional: OptionalValue) {
       self.instanceOfOptional = instanceOfOptional
     }
     
-    @usableFromInline
+    @inlinable
+    @inline(__always)
     static func value(_ value: ValueExistential) -> Self {
       Self(instanceOfOptional: .value(value))
     }
     
-    @usableFromInline
+    @inlinable
+    @inline(__always)
     static func nilInstance(typeOfWrapped: any Sendable.Type) -> Self {
       Self(instanceOfOptional: .nilInstance(typeOfWrapped: typeOfWrapped))
     }
@@ -104,7 +107,7 @@ extension ErrorInfo {
     case nilInstance(typeOfWrapped: any Sendable.Type)
     
     @inlinable
-    @inline(__always)
+    @inline(__always) // 31x performance gain
     public static func fromOptional<V: ValueProtocol>(_ value: V?) -> Self {
       if let value {
         .value(value)
@@ -112,16 +115,6 @@ extension ErrorInfo {
         .nilInstance(typeOfWrapped: V.self)
       }
     }
-    
-    // useless, as overall performance is the same as using `fromOptional(_:)` func.
-    // public static func fromValue<V: ValueProtocol>(_ value: V) -> Self {
-    //   .value(value)
-    // }
-    
-//    @usableFromInline
-//    static func value(_ value: some ValueProtocol) -> Self {
-//      Self.value(value as any ValueProtocol)
-//    }
     
     public var getWrapped: (any ValueProtocol)? {
       switch self {

@@ -77,7 +77,7 @@ extension ErrorInfo {
                               duplicatePolicy: ValueDuplicatePolicy = .allowEqualWhenOriginDiffers,
                               origin: @autoclosure () -> WriteProvenance.Origin) {
     func add(key: String, value: some ValueProtocol) {
-      withCollisionAndDuplicateResolutionAdd(
+      withCollisionAndDuplicateResolutionAdd_inlined(
         value: value,
         duplicatePolicy: duplicatePolicy,
         forKey: key,

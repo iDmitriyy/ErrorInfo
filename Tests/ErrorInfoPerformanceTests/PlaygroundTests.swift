@@ -29,15 +29,12 @@ struct PlaygroundTests {
     if #available(macOS 26.0, *) {
       genericTest(value: 2) { value in
         let value = 5
-//        let overhead = performMeasuredAction(iterations: count) { _ in
-//          InlineArray<1000, ErrorInfo> { index in ErrorInfo.empty }
-//        } measure: { array in
-//          for _ in 1...10 {
-//            for index in array.indices {
-//              blackHole(array[index])
-//            }
-//          }
-//        }
+        let overhead = performMeasuredAction(iterations: count) { _ in
+          InlineArray<1000, ErrorInfo> { _ in ErrorInfo.empty }
+        } measure: { array in
+//          for index in 1...10000 { blackHole(index) }
+          for index in array.indices { blackHole(array[index]) }
+        }
         
 //        let baseline = performMeasuredAction(iterations: count) { _ in
 //          InlineArray<1000, ErrorInfo> { index in ErrorInfo() }
@@ -50,33 +47,27 @@ struct PlaygroundTests {
 //        }
         
         let measured = performMeasuredAction(iterations: count) { _ in
-          InlineArray<1000, ErrorInfo> { index in
+          InlineArray<1000, ErrorInfo> { _ in
             ErrorInfo()
 //            [.apiEndpoint: index, .base64String: index] as ErrorInfo
           }
         } measure: { array in
-          for index in array.indices {
-            array[index].appendIfNotNil(value, forKey: key1)
-//               array[index]._addValue_Test_2(.fromOptional(value), duplicatePolicy: .allowEqual, forKey: key)
-          }
+           for index in array.indices {
+             array[index].withCollisionAndDuplicateResolutionAdd(optionalValue: value,
+                                                                 shouldPreserveNilValues: true,
+                                                                 duplicatePolicy: .allowEqual,
+                                                                 forKey: key1,
+                                                                 keyOrigin: .dynamic,
+                                                                 writeProvenance: .onSubscript(origin: nil))
+           }
         }
-        
+        blackHole(overhead)
 //        let measurements = collectMeasurements(overhead: {overhead}, baseline: {baseline}, measured: {measured})
         
         // print(measurements.adjustedRatio)
-        print(measured.medianDuration.inMicroseconds)
-        // appendIfNotNil
-        // 1689 1640
-        // 1623 1634 (inline)
-        // 1333
-        // 131 130 132
-        // 131 131 132
-        
-        // merge
-        // 458 458 458 - merged(with:)
-        // 7661 7554 7569 – struct with inlining
-        // 7691 7771 7668 - struct no inlining
-        // 8204 8201
+        print((measured.medianDuration - overhead.medianDuration).inMicroseconds)
+        // appendIfNotNil 128 129
+        // appendValue 131 132
       }
     }
     
