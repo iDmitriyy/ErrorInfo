@@ -60,6 +60,7 @@ extension ErrorInfoGeneric {
     public let keyOrigin: KeyOrigin
     public let someValue: RecordValue
     
+    @inlinable @inline(__always)
     public init(keyOrigin: KeyOrigin, someValue: RecordValue) {
       self.keyOrigin = keyOrigin
       self.someValue = someValue

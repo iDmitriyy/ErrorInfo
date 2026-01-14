@@ -41,14 +41,14 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   public mutating func appendIfNotNil(_ value: (some ValueProtocol)?,
-                                      forKey literalKey: StringLiteralKey) {
+                                      forKey literalKey: StringLiteralKey) { // optimized
     guard let value else { return }
     _singleKeyValuePairAppend(key: literalKey.rawValue, keyOrigin: literalKey.keyOrigin, value: value)
   }
   
   @_disfavoredOverload
   public mutating func appendIfNotNil(_ value: (some ValueProtocol)?,
-                                      forKey key: String) {
+                                      forKey key: String) { // optimized
     guard let value else { return }
     _singleKeyValuePairAppend(key: key, keyOrigin: .dynamic, value: value)
   }
@@ -57,9 +57,10 @@ extension ErrorInfo {
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
 extension ErrorInfo {
-  private mutating func _singleKeyValuePairAppend(key: String,
-                                                  keyOrigin: KeyOrigin,
-                                                  value: some ValueProtocol) {
+  @inlinable @inline(__always)
+  internal mutating func _singleKeyValuePairAppend(key: String,
+                                                   keyOrigin: KeyOrigin,
+                                                   value: some ValueProtocol) {
     withCollisionAndDuplicateResolutionAdd(
       value: value,
       duplicatePolicy: .defaultForAppending,

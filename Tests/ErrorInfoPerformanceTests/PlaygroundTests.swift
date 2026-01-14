@@ -17,8 +17,9 @@ public func genericTest<T>(value: T, closure: (T?) -> Void) {
 
 struct PlaygroundTests {
   @Test func playground() throws {
-    let count = 1000
-        
+    let count = 10000
+    let key1 = "key"
+    let key2 = "key2"
 //    let output = performMeasuredAction(count: count) {
 //      for index in 1...100_000 {
 //        blackHole(index)
@@ -28,43 +29,51 @@ struct PlaygroundTests {
     if #available(macOS 26.0, *) {
       genericTest(value: 2) { value in
         let value = 5
-        let overhead = performMeasuredAction(iterations: count) { _ in
-          InlineArray<1000, ErrorInfo> { index in ErrorInfo.empty }
-        } measure: { array in
-          for _ in 1...10 {
-            for index in array.indices {
-              blackHole(array[index])
-            }
-          }
-        }
+//        let overhead = performMeasuredAction(iterations: count) { _ in
+//          InlineArray<1000, ErrorInfo> { index in ErrorInfo.empty }
+//        } measure: { array in
+//          for _ in 1...10 {
+//            for index in array.indices {
+//              blackHole(array[index])
+//            }
+//          }
+//        }
         
-        let baseline = performMeasuredAction(iterations: count) { _ in
-          InlineArray<1000, ErrorInfo> { index in ErrorInfo() }
-        } measure: { array in
-          for _ in 1...10 {
-            for index in array.indices {
-               array[index]._addValue_Test_1(value, duplicatePolicy: .allowEqual, forKey: "a")
-            }
-          }
-        }
+//        let baseline = performMeasuredAction(iterations: count) { _ in
+//          InlineArray<1000, ErrorInfo> { index in ErrorInfo() }
+//        } measure: { array in
+//          for _ in 1...10 {
+//            for index in array.indices {
+//               array[index]._addValue_Test_1(value, duplicatePolicy: .allowEqual, forKey: key)
+//            }
+//          }
+//        }
         
         let measured = performMeasuredAction(iterations: count) { _ in
-          InlineArray<1000, ErrorInfo> { index in [.apiEndpoint: index, .base64String: index] as ErrorInfo }
+          InlineArray<1000, ErrorInfo> { index in
+            ErrorInfo()
+//            [.apiEndpoint: index, .base64String: index] as ErrorInfo
+          }
         } measure: { array in
-          for _ in 1...10 {
-            for index in array.indices {
-              var copy = array[index]
-              blackHole(copy.merge(with: array[index]))
-//               array[index]._addValue_Test_2(.fromOptional(value), duplicatePolicy: .allowEqual, forKey: "a")
-            }
+          for index in array.indices {
+            array[index].appendIfNotNil(value, forKey: key1)
+//               array[index]._addValue_Test_2(.fromOptional(value), duplicatePolicy: .allowEqual, forKey: key)
           }
         }
         
-        let measurements = collectMeasurements(overhead: {overhead}, baseline: {baseline}, measured: {measured})
+//        let measurements = collectMeasurements(overhead: {overhead}, baseline: {baseline}, measured: {measured})
         
         // print(measurements.adjustedRatio)
-        print(measured.totalDuration.inMilliseconds)
-        // 458 458 458
+        print(measured.medianDuration.inMicroseconds)
+        // appendIfNotNil
+        // 1689 1640
+        // 1623 1634 (inline)
+        // 1333
+        // 131 130 132
+        // 131 131 132
+        
+        // merge
+        // 458 458 458 - merged(with:)
         // 7661 7554 7569 – struct with inlining
         // 7691 7771 7668 - struct no inlining
         // 8204 8201
