@@ -74,14 +74,14 @@ extension ErrorInfo {
   /// // will be rejected, which may be unexpected.
   /// ```
   public mutating func append(contentsOf newKeyValues: some Sequence<(String, some ValueProtocol)>,
-                              duplicatePolicy: ValueDuplicatePolicy = .allowEqualWhenOriginDiffers,
+                              duplicatePolicy: consuming ValueDuplicatePolicy = .allowEqualWhenOriginDiffers,
                               origin: @autoclosure () -> WriteProvenance.Origin) {
-    func add(key: String, value: some ValueProtocol) {
-      withCollisionAndDuplicateResolutionAdd_inlined(
-        value: value,
-        duplicatePolicy: duplicatePolicy,
+    // consuming ValueDuplicatePolicy worsen performance
+    func add(key: String, value: some ValueProtocol) { // optimized
+      _storage.withCollisionAndDuplicateResolutionAdd(
+        record: BackingStorage.Record(keyOrigin: .fromCollection, someValue: .init(instanceOfOptional: .value(value))),
         forKey: key,
-        keyOrigin: .fromCollection,
+        duplicatePolicy: duplicatePolicy,
         writeProvenance: .onSequenceConsumption(origin: origin()),
       )
     }
@@ -97,7 +97,7 @@ extension ErrorInfo {
         add(key: key, value: value)
       
       default:
-        _storage.reserveCapacity(self.count + newCount)
+        _storage.reserveCapacity(self.count + newCount) // Improvement: do it correctly when self.capacity will become known
         for index in new.indices {
           let (key, value) = new[index]
           add(key: key, value: value)
