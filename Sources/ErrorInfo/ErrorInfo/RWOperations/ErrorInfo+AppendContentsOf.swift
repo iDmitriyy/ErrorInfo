@@ -73,17 +73,12 @@ extension ErrorInfo {
   /// // As `origin` is the same, equal `key-value` pairs across `query` and `params`
   /// // will be rejected, which may be unexpected.
   /// ```
+  @inlinable @inline(__always)
   public mutating func append(contentsOf newKeyValues: some Sequence<(String, some ValueProtocol)>,
                               duplicatePolicy: ValueDuplicatePolicy = .allowEqualWhenOriginDiffers,
                               origin: @autoclosure () -> WriteProvenance.Origin) {
-    // consuming ValueDuplicatePolicy worsen performance about 25% for 1 element array
-    func add(key: consuming String, value: some ValueProtocol) {
-      _storage.withCollisionAndDuplicateResolutionAdd(
-        record: BackingStorage.Record(keyOrigin: .fromCollection, someValue: .init(instanceOfOptional: .value(value))),
-        forKey: key,
-        duplicatePolicy: duplicatePolicy,
-        writeProvenance: .onSequenceConsumption(origin: origin()),
-      )
+    func add(key: consuming String, value: consuming OptionalValue) {
+      _appendSequenceElement(key: key, value: value, duplicatePolicy: duplicatePolicy, origin: origin())
     }
     
     let done: Void? = newKeyValues.withContiguousStorageIfAvailable { new in
@@ -94,13 +89,13 @@ extension ErrorInfo {
         
       case 1:
         let (key, value) = new[0] // access by index is faster than .first
-        add(key: key, value: value)
-      
+        add(key: key, value: .value(value))
+        
       default:
-        _storage.reserveCapacity(self.count + newCount) // Improvement: do it correctly when self.capacity will become known
+//        _storage.reserveCapacity(self.count + newCount) // Improvement: do it right when self.capacity will become known
         for index in new.indices {
           let (key, value) = new[index]
-          add(key: key, value: value)
+          add(key: key, value: .value(value))
         }
       }
       return Void()
@@ -108,8 +103,21 @@ extension ErrorInfo {
     
     if done == nil {
       newKeyValues.forEach { key, value in // for generic sequence `forEach` iteration is faster than `for in loop`
-        add(key: key, value: value)
+        add(key: key, value: .value(value))
       }
     }
+  }
+  
+  @usableFromInline
+  internal mutating func _appendSequenceElement(key: consuming String,
+                                                value: consuming OptionalValue,
+                                                duplicatePolicy: ValueDuplicatePolicy,
+                                                origin: @autoclosure () -> WriteProvenance.Origin) {
+    _storage.withCollisionAndDuplicateResolutionAdd(
+      record: BackingStorage.Record(keyOrigin: .fromCollection, someValue: .init(instanceOfOptional: value)),
+      forKey: key,
+      duplicatePolicy: duplicatePolicy,
+      writeProvenance: .onSequenceConsumption(origin: origin()),
+    )
   }
 }

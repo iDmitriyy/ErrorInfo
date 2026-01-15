@@ -67,7 +67,9 @@ struct PlaygroundTests {
         
         // print(measurements.adjustedRatio)
         print((measured.medianDuration - overhead.medianDuration).inMicroseconds)
-        print((measured.totalDuration - overhead.totalDuration).inMilliseconds)
+        // print((measured.totalDuration - overhead.totalDuration).inMilliseconds)
+        // 95.375 consuming OptionalValue
+        //  103.25 | inlined
         // 132.376
         // 138.166 138.292 137.834
         // 172.959 171.499 172.167 171.209
