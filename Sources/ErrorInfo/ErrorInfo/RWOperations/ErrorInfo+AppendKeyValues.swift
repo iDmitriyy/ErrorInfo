@@ -69,7 +69,7 @@ extension ErrorInfo {
   public mutating func append(_ dictionaryLiteral: KeyValuePairs<Key, Value>,
                               preserveNilValues: Bool = true,
                               duplicatePolicy: ValueDuplicatePolicy = .allowEqualWhenOriginDiffers,
-                              origin: @autoclosure () -> WriteProvenance.Origin) {
+                              origin: @autoclosure () -> WriteProvenance.Origin) {    
     _appendKeyValuesImp(_dictionaryLiteral: dictionaryLiteral,
                         preserveNilValues: preserveNilValues,
                         duplicatePolicy: duplicatePolicy,
@@ -89,19 +89,17 @@ extension ErrorInfo {
                                              writeProvenance: @autoclosure () -> WriteProvenance) {
     for (literalKey, value) in elements {
       if let value {
-        withCollisionAndDuplicateResolutionAdd_inlined(
-          value: value,
-          duplicatePolicy: duplicatePolicy,
+        _storage.withCollisionAndDuplicateResolutionAdd(
+          record: BackingStorage.Record(keyOrigin: literalKey.keyOrigin, someValue: .init(instanceOfOptional: .value(value))),
           forKey: literalKey.rawValue,
-          keyOrigin: literalKey.keyOrigin,
+          duplicatePolicy: duplicatePolicy,
           writeProvenance: writeProvenance(),
         )
       } else if preserveNilValues {
-        withCollisionAndDuplicateResolutionAddNilInstance(
-          typeOfWrapped: ValueExistential.self,
-          duplicatePolicy: duplicatePolicy,
+        _storage.withCollisionAndDuplicateResolutionAdd(
+          record: BackingStorage.Record(keyOrigin: literalKey.keyOrigin, someValue: .init(instanceOfOptional: .nilInstance(typeOfWrapped: ValueExistential.self))),
           forKey: literalKey.rawValue,
-          keyOrigin: literalKey.keyOrigin,
+          duplicatePolicy: duplicatePolicy,
           writeProvenance: writeProvenance(),
         )
       }

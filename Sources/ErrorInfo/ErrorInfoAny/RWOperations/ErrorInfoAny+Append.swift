@@ -20,7 +20,7 @@ extension ErrorInfoAny {
   
   @available(*, deprecated, message: "for literal keys use subscript instead, append() is intended for dynamic keys)")
   public mutating func append<T>(key literalKey: StringLiteralKey, value newValue: T?) {
-    // deprecattion is used to guide users
+    // deprecation is used to guide users
     _add(key: literalKey.rawValue,
          keyOrigin: literalKey.keyOrigin,
          value: newValue,
