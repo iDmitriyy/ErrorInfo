@@ -151,11 +151,14 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
   ///   - writeProvenance: Describes the origin of a collision; evaluated lazily.
   @usableFromInline
   internal mutating func withCollisionAndDuplicateResolutionAdd(
-    record newRecord: Record,
+    record newRecord: consuming Record,
     forKey key: Key,
     duplicatePolicy: ValueDuplicatePolicy,
     writeProvenance: @autoclosure () -> WriteProvenance,
   ) {
+//    blackHole(newRecord)
+//    blackHole(key)
+//    blackHole(duplicatePolicy)
     switch duplicatePolicy.kind {
     case .rejectEqualValue:
       appendIfNotPresent(key: key,
@@ -221,7 +224,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
 
 extension ErrorInfoGeneric {
   @usableFromInline
-  internal mutating func appendIfNotPresent(key newKey: Key,
+  internal mutating func appendIfNotPresent(key newKey: consuming Key,
                                             value newValue: Record,
                                             writeProvenance: @autoclosure () -> WriteProvenance,
                                             andRejectWhenExistingMatches decideToReject: (_ existing: AnnotatedRecord) -> Bool) {
@@ -277,4 +280,9 @@ extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepre
       writeProvenance: writeProvenance(),
     )
   }
+}
+
+@inline(never) @_optimize(none)
+public func blackHole<T>(_ thing: T) {
+  _ = thing
 }

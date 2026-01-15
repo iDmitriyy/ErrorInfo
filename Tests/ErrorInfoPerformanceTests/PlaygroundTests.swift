@@ -55,7 +55,8 @@ struct PlaygroundTests {
           }
         } measure: { array in
            for index in array.indices {
-             array[index].append(contentsOf: elements, origin: .custom(origin: ""))
+             array[index].appendIfNotNil(value, forKey: key1)
+             //array[index].append(contentsOf: elements, origin: .custom(origin: ""))
            }
         }
         blackHole(overhead)
@@ -64,6 +65,8 @@ struct PlaygroundTests {
         // print(measurements.adjustedRatio)
         print((measured.medianDuration - overhead.medianDuration).inMicroseconds)
 //        print((measured.totalDuration - overhead.totalDuration).inMilliseconds)
+        // 86.791 84.084 83.416/82.833
+        // 8.875
         // contentsOf(2 el): 308 135
       }
     }

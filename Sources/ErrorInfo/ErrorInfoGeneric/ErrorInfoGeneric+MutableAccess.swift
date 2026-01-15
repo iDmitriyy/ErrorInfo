@@ -76,8 +76,8 @@ extension ErrorInfoGeneric {
     /// Replaces `SingleValueForKeyDict` by `MultiValueForKeyDict` when first collision happens
     @inlinable @inline(__always)
     internal mutating func appendIfNotPresent(
-      key newKey: Key,
-      value newValue: Record,
+      key newKey: consuming Key,
+      value newValue: consuming Record,
       writeProvenance: @autoclosure () -> WriteProvenance,
       rejectWhenExistingMatches decideToReject: (_ existing: AnnotatedRecord) -> Bool,
     ) {
