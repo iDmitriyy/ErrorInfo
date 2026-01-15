@@ -13,7 +13,7 @@ extension ErrorInfoGeneric {
     case .left(let singleValueForKeyDict): singleValueForKeyDict.hasValue(forKey: key)
     case .right(let multiValueForKeyDict): multiValueForKeyDict.hasValue(forKey: key)
     }
-  }
+  } // inlining has no performance gain
   
   @inlinable @inline(__always)
   public func recordsCount(forKey key: Key) -> Int {
@@ -86,6 +86,7 @@ extension ErrorInfoGeneric {
 // MARK: - Has Multiple Records For Key
 
 extension ErrorInfoGeneric {
+  @inlinable @inline(__always)
   public func hasMultipleRecords(forKey key: Key) -> Bool { // optimized
     switch _variant {
     case .left: false
@@ -95,6 +96,7 @@ extension ErrorInfoGeneric {
 }
 
 extension ErrorInfoGeneric {
+  @inlinable @inline(__always)
   public func hasMultipleRecordsForAtLeastOneKey() -> Bool { // optimized
     switch _variant {
     case .left: false

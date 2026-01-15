@@ -84,8 +84,7 @@ extension OrderedMultiValueDictionary {
     _keyToEntryIndices.hasValue(forKey: key)
   } // inlining worsen performance
   
-  @inlinable
-  @inline(__always)
+  @usableFromInline
   internal func hasMultipleValues(forKey key: Key) -> Bool { // optimized
     guard let entriesForKeyIndices = _keyToEntryIndices[key] else { return false }
     return entriesForKeyIndices.count > 1 
@@ -96,6 +95,7 @@ extension OrderedMultiValueDictionary {
     _keyToEntryIndices[key]?.count ?? 0
   }
   
+  @usableFromInline
   internal var hasMultipleValuesForAtLeastOneKey: Bool { // optimized
     for entriesIndices in _keyToEntryIndices.values where entriesIndices.count > 1 {
       return true

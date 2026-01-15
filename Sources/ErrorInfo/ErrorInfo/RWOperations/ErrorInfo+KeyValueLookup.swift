@@ -8,7 +8,7 @@
 // MARK: - HasValue For Key
 
 extension ErrorInfo {
-  @inlinable @inline(__always)
+  @inlinable @inline(__always) // ~2x performance gain
   public func hasRecord(forKey key: String) -> Bool {
     _storage.hasRecord(forKey: key)
   }
@@ -32,10 +32,12 @@ extension ErrorInfo {
 // MARK: - Has Multiple Records For Key
 
 extension ErrorInfo {
+  @inlinable @inline(__always) // 50x performance gain when single-value for key backing storage
   public func hasMultipleRecords(forKey key: String) -> Bool {
     _storage.hasMultipleRecords(forKey: key)
   }
   
+  @inlinable @inline(__always) // 50x performance gain when single-value for key backing storage
   public func hasMultipleRecordsForAtLeastOneKey() -> Bool {
     _storage.hasMultipleRecordsForAtLeastOneKey()
   }
