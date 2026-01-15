@@ -15,6 +15,7 @@ extension ErrorInfoGeneric {
     }
   }
   
+  @inlinable @inline(__always)
   public func recordsCount(forKey key: Key) -> Int {
     switch _variant {
     case .left(let singleValueForKeyDict):

@@ -51,14 +51,15 @@ struct PlaygroundTests {
         
         let measured = performMeasuredAction(iterations: count) { _ in
           InlineArray<1000, ErrorInfo> { _ in
-//            var info = ErrorInfo()
+            var info = ErrorInfo()
 //            info.appendIfNotNil(value, forKey: key1)
-//            return info
-            ErrorInfo()
+//            info.appendIfNotNil(value, forKey: key1)
+            return info
+//            ErrorInfo()
           }
         } measure: { array in
            for index in array.indices {
-             array[index].appendIfNotNil(value, forKey: key1)
+             blackHole(array[index].recordsCount(forKey: key2))
            }
         }
         blackHole(overhead)
@@ -67,7 +68,7 @@ struct PlaygroundTests {
         // print(measurements.adjustedRatio)
         print((measured.medianDuration - overhead.medianDuration).inMicroseconds)
         // print((measured.totalDuration - overhead.totalDuration).inMilliseconds)
-        // 87.334
+        // 24.083 8.667
       }
     }
     

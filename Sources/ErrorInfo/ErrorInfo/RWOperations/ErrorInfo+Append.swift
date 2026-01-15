@@ -11,7 +11,7 @@ extension ErrorInfo {
   /// Instead of subscript overload with `String` key to prevent pollution of autocomplete for `StringLiteralKey` by tons of String methods.
   @_disfavoredOverload
   @inlinable @inline(__always)
-  public mutating func appendValue(_ newValue: (some ValueProtocol)?, forKey dynamicKey: consuming String) { // 86.125
+  public mutating func appendValue(_ newValue: consuming (some ValueProtocol)?, forKey dynamicKey: consuming String) { // 85.709
     _appendValue_imp(.fromOptional(newValue), forKey: dynamicKey, keyOrigin: .dynamic)
   }
   

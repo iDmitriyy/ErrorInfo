@@ -82,7 +82,7 @@ extension OrderedMultiValueDictionary {
   @usableFromInline
   func hasValue(forKey key: Key) -> Bool { // optimized
     _keyToEntryIndices.hasValue(forKey: key)
-  }
+  } // inlining worsen performance
   
   @inlinable
   @inline(__always)
@@ -91,6 +91,7 @@ extension OrderedMultiValueDictionary {
     return entriesForKeyIndices.count > 1 
   }
   
+  @usableFromInline
   func valuesCount(forKey key: Key) -> Int {
     _keyToEntryIndices[key]?.count ?? 0
   }

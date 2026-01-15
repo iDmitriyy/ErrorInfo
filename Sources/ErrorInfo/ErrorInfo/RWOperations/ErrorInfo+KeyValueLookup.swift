@@ -8,10 +8,12 @@
 // MARK: - HasValue For Key
 
 extension ErrorInfo {
+  @inlinable @inline(__always)
   public func hasRecord(forKey key: String) -> Bool {
     _storage.hasRecord(forKey: key)
   }
   
+  @inlinable @inline(__always)
   public func recordsCount(forKey key: String) -> Int {
     _storage.recordsCount(forKey: key)
   }
