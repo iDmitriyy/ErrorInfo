@@ -147,10 +147,14 @@ extension ErrorInfo {
   
   @_disfavoredOverload
   @inlinable @inline(__always)
-  public mutating func appendIfNotNil(_ value: (some ValueProtocol)?,
-                                      forKey key: String) { // optimized
-    guard let value else { return }
-    _appendValue_imp(.value(value), forKey: key, keyOrigin: .dynamic)
+  public mutating func appendIfNotNil(_ value: consuming (some ValueProtocol)?,
+                                      forKey key: consuming String) { // optimized
+    switch consume value {
+    case .some(let value):
+      _appendValue_imp(.value(value), forKey: key, keyOrigin: .dynamic)
+    case .none:
+      break
+    }
   }
 }
 

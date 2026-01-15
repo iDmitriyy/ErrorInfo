@@ -79,7 +79,7 @@ extension ErrorInfoGeneric {
       key newKey: consuming Key,
       value newValue: consuming Record,
       writeProvenance: @autoclosure () -> WriteProvenance,
-      rejectWhenExistingMatches decideToReject: (_ existing: AnnotatedRecord) -> Bool,
+      rejectWhenExistingMatches decideToReject: (_ existing: borrowing AnnotatedRecord) -> Bool,
     ) {
       // Improvement:
       // - implement geometric growth strategy, OrderedCollections has no `capacity` property now

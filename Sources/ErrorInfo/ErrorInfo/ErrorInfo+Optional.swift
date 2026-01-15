@@ -109,6 +109,10 @@ extension ErrorInfo {
     @inlinable
     @inline(__always) // 31x performance gain
     public static func fromOptional<V: ValueProtocol>(_ value: V?) -> Self {
+//      switch consume value { // slower
+//      case .some(let wrapped): .value(wrapped)
+//      case .none: .nilInstance(typeOfWrapped: V.self)
+//      }
       if let value {
         .value(value)
       } else {

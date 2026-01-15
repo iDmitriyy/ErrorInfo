@@ -152,13 +152,10 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
   @usableFromInline
   internal mutating func withCollisionAndDuplicateResolutionAdd(
     record newRecord: consuming Record,
-    forKey key: Key,
+    forKey key: consuming Key,
     duplicatePolicy: ValueDuplicatePolicy,
     writeProvenance: @autoclosure () -> WriteProvenance,
   ) {
-//    blackHole(newRecord)
-//    blackHole(key)
-//    blackHole(duplicatePolicy)
     switch duplicatePolicy.kind {
     case .rejectEqualValue:
       appendIfNotPresent(key: key,
@@ -182,7 +179,7 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
       appendUnconditionally(key: key, value: newRecord, writeProvenance: writeProvenance())
     }
   }
-  
+  // Improvement: add ownership when == become borrowing in stdlib
   @inlinable @inline(__always)
   internal static func isEqualValue(newRecord: Record, current: Record) -> Bool {
     newRecord.someValue == current.someValue
@@ -227,7 +224,7 @@ extension ErrorInfoGeneric {
   internal mutating func appendIfNotPresent(key newKey: consuming Key,
                                             value newValue: Record,
                                             writeProvenance: @autoclosure () -> WriteProvenance,
-                                            andRejectWhenExistingMatches decideToReject: (_ existing: AnnotatedRecord) -> Bool) {
+                                            andRejectWhenExistingMatches decideToReject: (_ existing: borrowing AnnotatedRecord) -> Bool) {
     _mutableVariant.appendIfNotPresent(key: newKey,
                                        value: newValue,
                                        writeProvenance: writeProvenance(),

@@ -50,12 +50,15 @@ struct PlaygroundTests {
         let elements: [(String, String)] = [("a", "b")]
         let measured = performMeasuredAction(iterations: count) { _ in
           InlineArray<1000, ErrorInfo> { _ in
+//            var info = ErrorInfo()
+//            info.appendIfNotNil(value, forKey: key1)
+//            return info
             ErrorInfo()
-//            [.apiEndpoint: index, .base64String: index] as ErrorInfo
           }
         } measure: { array in
            for index in array.indices {
-             array[index].appendIfNotNil(value, forKey: key1)
+             array[index].appendValue(value, forKey: key1)
+//             array[index].appendIfNotNil(value, forKey: key1)
              //array[index].append(contentsOf: elements, origin: .custom(origin: ""))
            }
         }
@@ -64,8 +67,9 @@ struct PlaygroundTests {
         
         // print(measurements.adjustedRatio)
         print((measured.medianDuration - overhead.medianDuration).inMicroseconds)
+        // 79.751
 //        print((measured.totalDuration - overhead.totalDuration).inMilliseconds)
-        // 86.791 84.084 83.416/82.833
+        // 86.791 84.084 83.416/82.833 123.7
         // 8.875
         // contentsOf(2 el): 308 135
       }
