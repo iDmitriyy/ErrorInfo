@@ -36,7 +36,7 @@ extension ErrorInfo {
     
     @inlinable
     @inline(__always)
-    init(instanceOfOptional: OptionalValue) {
+    init(instanceOfOptional: consuming OptionalValue) {
       self.instanceOfOptional = instanceOfOptional
     }
     

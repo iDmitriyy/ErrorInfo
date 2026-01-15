@@ -74,10 +74,10 @@ extension ErrorInfo {
   /// // will be rejected, which may be unexpected.
   /// ```
   public mutating func append(contentsOf newKeyValues: some Sequence<(String, some ValueProtocol)>,
-                              duplicatePolicy: consuming ValueDuplicatePolicy = .allowEqualWhenOriginDiffers,
+                              duplicatePolicy: ValueDuplicatePolicy = .allowEqualWhenOriginDiffers,
                               origin: @autoclosure () -> WriteProvenance.Origin) {
-    // consuming ValueDuplicatePolicy worsen performance
-    func add(key: String, value: some ValueProtocol) { // optimized
+    // consuming ValueDuplicatePolicy worsen performance about 25% for 1 element array
+    func add(key: consuming String, value: some ValueProtocol) {
       _storage.withCollisionAndDuplicateResolutionAdd(
         record: BackingStorage.Record(keyOrigin: .fromCollection, someValue: .init(instanceOfOptional: .value(value))),
         forKey: key,
@@ -93,7 +93,7 @@ extension ErrorInfo {
         break
         
       case 1:
-        let (key, value) = new[0]
+        let (key, value) = new[0] // access by index is faster than .first
         add(key: key, value: value)
       
       default:

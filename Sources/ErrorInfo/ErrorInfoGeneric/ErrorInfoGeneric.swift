@@ -61,7 +61,8 @@ extension ErrorInfoGeneric {
     public let someValue: RecordValue
     
     @inlinable @inline(__always)
-    public init(keyOrigin: KeyOrigin, someValue: RecordValue) {
+    public init(keyOrigin: KeyOrigin, someValue: consuming RecordValue) {
+      // consuming keyOrigin worsen performance
       self.keyOrigin = keyOrigin
       self.someValue = someValue
     }
@@ -179,7 +180,9 @@ extension ErrorInfoGeneric where RecordValue: Equatable {
       appendUnconditionally(key: key, value: newRecord, writeProvenance: writeProvenance())
     }
   }
+  
   // Improvement: add ownership when == become borrowing in stdlib
+  
   @inlinable @inline(__always)
   internal static func isEqualValue(newRecord: Record, current: Record) -> Bool {
     newRecord.someValue == current.someValue

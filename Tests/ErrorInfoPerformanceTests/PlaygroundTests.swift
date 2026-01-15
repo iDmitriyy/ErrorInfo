@@ -27,9 +27,9 @@ struct PlaygroundTests {
 //    }
     
     if #available(macOS 26.0, *) {
-      genericTest(value: 2) { value in
-//        let value = 5
-//        let value: Int? = nil
+      genericTest(value: "abcdef") { value in
+        let value = "abcdef"
+//        let value: String? = nil
         let overhead = performMeasuredAction(iterations: count) { _ in
           InlineArray<1000, ErrorInfo> { _ in ErrorInfo.empty }
         } measure: { array in
@@ -57,9 +57,9 @@ struct PlaygroundTests {
           }
         } measure: { array in
            for index in array.indices {
-             array[index].appendValue(value, forKey: key1)
+//             array[index].appendValue(value, forKey: key1)
 //             array[index].appendIfNotNil(value, forKey: key1)
-             //array[index].append(contentsOf: elements, origin: .custom(origin: ""))
+             array[index].append(contentsOf: elements, origin: .custom(origin: ""))
            }
         }
         blackHole(overhead)
@@ -67,11 +67,11 @@ struct PlaygroundTests {
         
         // print(measurements.adjustedRatio)
         print((measured.medianDuration - overhead.medianDuration).inMicroseconds)
-        // 79.751
-//        print((measured.totalDuration - overhead.totalDuration).inMilliseconds)
-        // 86.791 84.084 83.416/82.833 123.7
-        // 8.875
-        // contentsOf(2 el): 308 135
+        print((measured.totalDuration - overhead.totalDuration).inMilliseconds)
+        // 132.376
+        // 138.166 138.292 137.834
+        // 172.959 171.499 172.167 171.209
+        // 
       }
     }
     
