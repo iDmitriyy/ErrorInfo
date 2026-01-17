@@ -10,21 +10,21 @@
 extension ErrorInfo {
   @discardableResult
   public mutating func replaceAllRecords(forKey literalKey: StringLiteralKey,
-                                         by newValue: ValueExistential) -> ItemsForKey<ValueExistential>? {
+                                         by newValue: ValueExistential) -> ItemsForKey<OptionalValue>? {
     _replaceAllRecordsImp(forKey: literalKey.rawValue, by: newValue, keyOrigin: literalKey.keyOrigin)
   }
   
   @_disfavoredOverload
   @discardableResult
   public mutating func replaceAllRecords(forKey dynamicKey: String,
-                                         by newValue: ValueExistential) -> ItemsForKey<ValueExistential>? {
+                                         by newValue: ValueExistential) -> ItemsForKey<OptionalValue>? {
     _replaceAllRecordsImp(forKey: dynamicKey, by: newValue, keyOrigin: .dynamic)
   }
   
   internal mutating func _replaceAllRecordsImp(forKey key: String,
                                                by newValue: ValueExistential,
-                                               keyOrigin: KeyOrigin) -> ItemsForKey<ValueExistential>? {
-    let oldValues = removeAllRecords(forKey: key)
+                                               keyOrigin: KeyOrigin) -> ItemsForKey<OptionalValue>? {
+    let oldValues: ItemsForKey<OptionalValue>? = removeAllRecords(forKey: key)
     withCollisionAndDuplicateResolutionAdd_inlined(
       value: newValue,
       duplicatePolicy: .allowEqual, // has no effect in this func

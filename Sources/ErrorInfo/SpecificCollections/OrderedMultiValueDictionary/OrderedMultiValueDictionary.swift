@@ -142,6 +142,7 @@ extension OrderedMultiValueDictionary {
   }
   
   @discardableResult
+  @usableFromInline
   internal mutating func removeAllValues(forKey key: Key) -> ItemsForKey<Value>? {
     guard let indexSetForKey = _keyToEntryIndices.removeValue(forKey: key) else { return nil }
       
@@ -158,6 +159,39 @@ extension OrderedMultiValueDictionary {
     }
     _rebuildKeyToEntryIndices()
     return removedValues
+  }
+  
+  @discardableResult
+  @usableFromInline
+  internal mutating func removeAllValues<T>(forKey key: Key, transform: (Value) -> T) -> ItemsForKey<T>? {
+    guard let indexSetForKey = _keyToEntryIndices.removeValue(forKey: key) else { return nil }
+      
+    let removedValues: ItemsForKey<T>
+    switch indexSetForKey._variant {
+    case .left(let index): // Typically there is only one value for key
+      removedValues = ItemsForKey(element: transform(_entries.remove(at: index).value))
+       
+    case .right(let indicesToRemove):
+      let removedValuesArray = indicesToRemove.map { index in transform(_entries[index].value) }
+      _entries.removeSubranges(indicesToRemove.asRangeSet(for: _entries))
+      removedValues = ItemsForKey(array: removedValuesArray)
+    }
+    _rebuildKeyToEntryIndices()
+    return removedValues
+  }
+  
+  @usableFromInline
+  internal mutating func removeAllValues(forKey key: Key) {
+    guard let indexSetForKey = _keyToEntryIndices.removeValue(forKey: key) else { return }
+      
+    switch indexSetForKey._variant {
+    case .left(let index): // Typically there is only one value for key
+      _entries.remove(at: index)
+       
+    case .right(let indicesToRemove):
+      _entries.removeSubranges(indicesToRemove.asRangeSet(for: _entries))
+    }
+    _rebuildKeyToEntryIndices()
   }
   
   private mutating func _rebuildKeyToEntryIndices() {

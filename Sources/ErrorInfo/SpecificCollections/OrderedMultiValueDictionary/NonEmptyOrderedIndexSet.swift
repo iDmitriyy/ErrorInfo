@@ -124,6 +124,7 @@ public struct NonEmptyOrderedIndexSet: Sendable, RandomAccessCollection {
 
 extension NonEmptyOrderedSet<Int> {
   /// Builds a `RangeSet` of indices relative to `collection`.
+  @usableFromInline
   internal func asRangeSet<C>(for collection: C) -> RangeSet<Int> where C: Collection, C.Index == Int {
     RangeSet(self, within: collection)
   }

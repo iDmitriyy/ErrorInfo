@@ -9,9 +9,12 @@
 
 extension ErrorInfo {
   @discardableResult
-  public mutating func removeAllRecords(forKey dynamicKey: String) -> ItemsForKey<ValueExistential>? {
-    // _storage.removeAllRecords_ReturningNonNilValues(forKey: dynamicKey)
-    // FIXME: - imp
-    return nil
-  }
+  public mutating func removeAllRecords(forKey key: String) -> ItemsForKey<OptionalValue>? {
+    _storage.removeAllRecordsReturningOptionalInstances(forKey: key)
+  } // inlining worsen performance
+  
+  // faster but lead to overload resolution problems
+  // public mutating func removeAllRecords(forKey key: String) {
+  //   _storage.removeAllRecords(forKey: key)
+  // }
 }

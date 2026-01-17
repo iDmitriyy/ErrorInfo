@@ -40,7 +40,7 @@ extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
     switch _variant {
     case .left(let singleValueForKeyDict):
       if let index = singleValueForKeyDict.index(forKey: key),
-          let value = singleValueForKeyDict.values[index].someValue.getWrapped {
+         let value = singleValueForKeyDict.values[index].someValue.getWrapped {
         return ItemsForKey(element: value)
       } else {
         return nil
@@ -68,32 +68,25 @@ extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
   }
 }
 
-// ===-------------------------------------------------------------------------------------------------------------------=== //
-
-// MARK: - Remove All Records For Key
-
-// FIXME: - @discardableResult remove operations – check performance
-// may it is better to make 2 overloads – pure remove and remove with result
-
-//extension ErrorInfoGeneric {
+// extension ErrorInfoGeneric {
 //  @discardableResult
 //  mutating func removeAllRecords_ReturningSomeValues(forKey key: Key) -> ItemsForKey<RecordValue>? {
 //    _storage.removeAllValues(forKey: key)?._compactMap { $0.record.someValue }
 //  }
-//}
+// }
 //
-//extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
+// extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
 //  @discardableResult
 //  mutating func removeAllRecords_ReturningNonNilValues(forKey key: Key) -> ItemsForKey<RecordValue.Wrapped>? {
 //    _storage.removeAllValues(forKey: key)?._compactMap { $0.record.someValue.getWrapped }
 //  }
-//}
+// }
 
 // ===-------------------------------------------------------------------------------------------------------------------=== //
 
 // MARK: - Replace All Records For Key
 
-//extension ErrorInfoGeneric where RecordValue: Equatable {
+// extension ErrorInfoGeneric where RecordValue: Equatable {
 //  internal mutating func _replaceAllRecords(forKey key: Key,
 //                                            keyOrigin: KeyOrigin,
 //                                            bySomeValue newValue: RecordValue) -> ItemsForKey<RecordValue>? {
@@ -105,9 +98,9 @@ extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
 //         writeProvenance: .onAppend(origin: nil)) // collisions must never happen using this func
 //    return oldValues
 //  }
-//}
+// }
 //
-//extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepresentable {
+// extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepresentable {
 //  internal mutating func _replaceAllRecords(forKey key: Key,
 //                                            keyOrigin: KeyOrigin,
 //                                            byNonNilValue newValue: RecordValue.Wrapped,
@@ -122,7 +115,7 @@ extension ErrorInfoGeneric where RecordValue: ErrorInfoOptionalRepresentable {
 //         writeProvenance: .onAppend(origin: nil)) // collisions must never happen using this func
 //    return oldValues
 //  }
-//}
+// }
 
 // DEFERRED: check performance for args when they have no semantical effect, e.g. preserveNilValues: true or duplicatePolicy: .allowEqual
 // Constant values / if branches should be optimized by compiler. Check it

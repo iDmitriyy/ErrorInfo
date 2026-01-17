@@ -243,43 +243,22 @@ extension ErrorInfoGeneric {
 }
 
 extension ErrorInfoGeneric where RecordValue: Equatable & ErrorInfoOptionalRepresentable {
-  mutating func append(contentsOf sequence: some Sequence<(Key, RecordValue.Wrapped)>,
-                       duplicatePolicy: ValueDuplicatePolicy,
-                       origin: WriteProvenance.Origin) {
-    for (dynamicKey, value) in sequence {
-      _addValue_2(
-        value,
-        shouldPreserveNilValues: true, // has no effect here
-        duplicatePolicy: duplicatePolicy,
-        forKey: dynamicKey,
-        keyOrigin: .fromCollection,
-        writeProvenance: .onSequenceConsumption(origin: origin),
-      )
-    }
-  }
+//  mutating func append(contentsOf sequence: some Sequence<(Key, RecordValue.Wrapped)>,
+//                       duplicatePolicy: ValueDuplicatePolicy,
+//                       origin: WriteProvenance.Origin) {
+//    for (dynamicKey, value) in sequence {
+//      _addValue_2(
+//        value,
+//        shouldPreserveNilValues: true, // has no effect here
+//        duplicatePolicy: duplicatePolicy,
+//        forKey: dynamicKey,
+//        keyOrigin: .fromCollection,
+//        writeProvenance: .onSequenceConsumption(origin: origin),
+//      )
+//    }
+//  }
+//
 
-  internal mutating func _addValue_2(_ newValue: RecordValue.Wrapped?,
-                                     shouldPreserveNilValues: Bool,
-                                     duplicatePolicy: ValueDuplicatePolicy,
-                                     forKey key: Key,
-                                     keyOrigin: KeyOrigin,
-                                     writeProvenance: @autoclosure () -> WriteProvenance) {
-    let optional: RecordValue
-    if let newValue {
-      optional = .value(newValue)
-    } else if shouldPreserveNilValues {
-      optional = .nilInstance(typeOfWrapped: RecordValue.TypeOfWrapped.self as! RecordValue.TypeOfWrapped)
-    } else {
-      return
-    }
-
-    withCollisionAndDuplicateResolutionAdd(
-      record: Record(keyOrigin: keyOrigin, someValue: optional),
-      forKey: key,
-      duplicatePolicy: duplicatePolicy,
-      writeProvenance: writeProvenance(),
-    )
-  }
 }
 
 @inline(never) @_optimize(none)

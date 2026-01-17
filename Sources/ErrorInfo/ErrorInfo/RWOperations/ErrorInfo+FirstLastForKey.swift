@@ -10,7 +10,7 @@
 extension ErrorInfo {
   public func lastValue(forKey key: String) -> (ValueExistential)? {
     _storage.lastNonNilValue(forKey: key)
-  }
+  } // inlining worsen performance
   
   public func lastRecorded(forKey key: String) -> OptionalValue? {
     _storage.lastRecordedOptionalInstance(forKey: key)
