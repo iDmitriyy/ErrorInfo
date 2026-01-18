@@ -33,8 +33,7 @@ import SwiftCollectionsNonEmpty
 /// dict.removeAllValues(forKey: "id") // removes both values for "id"
 /// ```
 @usableFromInline
-internal
-struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
+internal struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   @usableFromInline typealias Element = (key: Key, value: Value)
   
   @usableFromInline internal var _entries: ContiguousArray<Element>
@@ -57,7 +56,7 @@ struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   @inlinable
   @inline(__always)
   internal static func migratedFrom(singleValueForKeyDictionary source: OrderedDictionary<Key, Value>)
-  -> OrderedMultiValueDictionary<Key, CollisionAnnotatedRecord<Value>> {
+    -> OrderedMultiValueDictionary<Key, CollisionAnnotatedRecord<Value>> {
     let capacity = source.count + 1
     var output = OrderedMultiValueDictionary<Key, CollisionAnnotatedRecord<Value>>(minimumCapacity: capacity)
     
@@ -87,7 +86,7 @@ extension OrderedMultiValueDictionary {
   @usableFromInline
   internal func hasMultipleValues(forKey key: Key) -> Bool { // optimized
     guard let entriesForKeyIndices = _keyToEntryIndices[key] else { return false }
-    return entriesForKeyIndices.count > 1 
+    return entriesForKeyIndices.count > 1
   }
   
   @usableFromInline
@@ -153,46 +152,45 @@ extension OrderedMultiValueDictionary {
        
     case .right(let indicesToRemove):
       let removedValuesArray = indicesToRemove.map { index in transform(_entries[index].value) }
-      
-      // Sort indices in descending order to minimize shifting and remove correctly
-      switch indicesToRemove.base.count {
-      case 2: // 2 values for key is common when collision happens
-        var last = indicesToRemove.base[1]
-        var first = indicesToRemove.base[0]
-        if first > last {
-          swap(&first, &last)
-        }
-        _entries.remove(at: last)
-        _entries.remove(at: first)
-      default:
-        let sortedDescendingIndices = indicesToRemove.base.sorted(by: >)
-        for indexToRemove in sortedDescendingIndices {
-          _entries.remove(at: indexToRemove)
-        }
-      }
+      _removeEntries(indicesToRemove: indicesToRemove)
       removedValues = ItemsForKey(array: removedValuesArray)
     }
     _rebuildKeyToEntryIndices()
-     return removedValues
+    return removedValues
   } // inlining has no performance gain.
   
-   @usableFromInline
-   internal mutating func removeAllValues(forKey key: Key) {
-     guard let indexSetForKey = _keyToEntryIndices.removeValue(forKey: key) else { return }
+  @usableFromInline
+  internal mutating func removeAllValues(forKey key: Key) {
+    guard let indexSetForKey = _keyToEntryIndices.removeValue(forKey: key) else { return }
   
-     switch indexSetForKey._variant {
-     case .left(let index): // Typically there is only one value for key
-       _entries.remove(at: index)
+    switch indexSetForKey._variant {
+    case .left(let index): // Typically there is only one value for key
+      _entries.remove(at: index)
   
-     case .right(let indicesToRemove):
-       // Sort indices in descending order to minimize shifting
-       let sortedDescendingIndices = indicesToRemove.base.sorted(by: >)
-       for indexToRemove in sortedDescendingIndices {
-         _entries.remove(at: indexToRemove)
-       }
-     }
-     _rebuildKeyToEntryIndices()
-   }
+    case .right(let indicesToRemove):
+      _removeEntries(indicesToRemove: indicesToRemove)
+    }
+    _rebuildKeyToEntryIndices()
+  }
+  
+  private mutating func _removeEntries(indicesToRemove: borrowing NonEmptyOrderedSet<Int>) {
+    // Sort indices in descending order to minimize shifting and remove correctly
+    switch indicesToRemove.base.count {
+    case 2: // 2 values for key is common when collision happens
+      var last = indicesToRemove.base[1]
+      var first = indicesToRemove.base[0]
+      if first > last {
+        swap(&first, &last)
+      }
+      _entries.remove(at: last)
+      _entries.remove(at: first)
+    default:
+      let sortedDescendingIndices = indicesToRemove.base.sorted(by: >)
+      for indexToRemove in sortedDescendingIndices {
+        _entries.remove(at: indexToRemove)
+      }
+    }
+  }
   
   private mutating func _rebuildKeyToEntryIndices() {
     _keyToEntryIndices.removeAll(keepingCapacity: true)
@@ -247,21 +245,25 @@ extension OrderedMultiValueDictionary {
 }
 
 extension OrderedMultiValueDictionary {
+  @inlinable
+  @inline(__always)
   internal func _checkInvariants() {
-    var computedEntriesCount: Int = 0
-    var seenIndices = Set<Int>()
+    #if DEBUG
+      var computedEntriesCount: Int = 0
+      var seenIndices = Set<Int>()
     
-    for (key, entryIndices) in _keyToEntryIndices {
-      precondition(!entryIndices.isEmpty) // entryIndices must be NonEmpty
-      for entryIndex in entryIndices {
-        precondition(seenIndices.insert(entryIndex).inserted)
+      for (key, entryIndices) in _keyToEntryIndices {
+        precondition(!entryIndices.isEmpty) // entryIndices must be NonEmpty
+        for entryIndex in entryIndices {
+          precondition(seenIndices.insert(entryIndex).inserted)
         
-        let entry = _entries[entryIndex]
-        precondition(entry.key == key)
-        computedEntriesCount += 1
+          let entry = _entries[entryIndex]
+          precondition(entry.key == key)
+          computedEntriesCount += 1
+        }
       }
-    }
     
-    precondition(_entries.count == computedEntriesCount)
+      precondition(_entries.count == computedEntriesCount)
+    #endif
   }
 }

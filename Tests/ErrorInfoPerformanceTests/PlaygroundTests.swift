@@ -51,8 +51,8 @@ struct PlaygroundTests {
         let measured = performMeasuredAction(iterations: count) { _ in
           InlineArray<1000, ErrorInfo> { _ in
             var info = ErrorInfo()
-//            info = ["key1": "dsfsdfdsfd", "key1": "444dsfdsfsf"]
-            info = ["key1": "dsfsdfdsfd"]
+            info = ["key1": "dsfsdfdsfd", "key1": "444dsfdsfsf"]
+//            info = ["key1": "dsfsdfdsfd"]
             info.appendValue("ffrwefwerferw", forKey: key2)
             info.appendValue("ffrwefwerfer444w", forKey: .debugMessage)
             return info
@@ -76,7 +76,7 @@ struct PlaygroundTests {
 //         print((measured.totalDuration - overhead.totalDuration).inMilliseconds)
         // 45.0 | remove single index key
         
-        // 460
+        // 535
         
         // 2118.958 | remove milti index key
         // 1929 | .removeSubranges asRangeSet
