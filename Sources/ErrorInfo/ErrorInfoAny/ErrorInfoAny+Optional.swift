@@ -35,7 +35,7 @@ extension ErrorInfoAny {
       instanceOfOptional = _unverifiedOptionalInstance
     }
     
-    private init(anyValue: any Any) {
+    private init(anyValue: Any) {
       instanceOfOptional = ErrorInfoFuncs.flattenOptional(any: anyValue)
     }
     

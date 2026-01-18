@@ -69,7 +69,7 @@ extension ErrorInfo {
   public mutating func append(_ dictionaryLiteral: KeyValuePairs<Key, Value>,
                               preserveNilValues: Bool = true,
                               duplicatePolicy: ValueDuplicatePolicy = .allowEqualWhenOriginDiffers,
-                              origin: @autoclosure () -> WriteProvenance.Origin) {    
+                              origin: @autoclosure () -> WriteProvenance.Origin) {
     _appendKeyValuesImp(_dictionaryLiteral: dictionaryLiteral,
                         preserveNilValues: preserveNilValues,
                         duplicatePolicy: duplicatePolicy,
@@ -96,8 +96,12 @@ extension ErrorInfo {
           writeProvenance: writeProvenance(),
         )
       } else if preserveNilValues {
+        let record = BackingStorage
+          .Record(keyOrigin: literalKey.keyOrigin,
+                  someValue: .init(instanceOfOptional: .nilInstance(typeOfWrapped: ValueExistential.self)))
+        
         _storage.withCollisionAndDuplicateResolutionAdd(
-          record: BackingStorage.Record(keyOrigin: literalKey.keyOrigin, someValue: .init(instanceOfOptional: .nilInstance(typeOfWrapped: ValueExistential.self))),
+          record: record,
           forKey: literalKey.rawValue,
           duplicatePolicy: duplicatePolicy,
           writeProvenance: writeProvenance(),
