@@ -122,6 +122,7 @@ public struct WriteProvenance: Sendable, Equatable, CustomStringConvertible, Cus
     Self(backing: .onSequenceConsumption(origin: origin))
   }
   
+  
   // MARK: - Public Methods
   
   public func defaultStringInterpolation() -> String {

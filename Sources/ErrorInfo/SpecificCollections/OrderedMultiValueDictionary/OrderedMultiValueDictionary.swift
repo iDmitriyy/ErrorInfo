@@ -140,27 +140,7 @@ extension OrderedMultiValueDictionary {
     }
     return valuesForKey
   }
-  
-  @discardableResult
-  @usableFromInline
-  internal mutating func removeAllValues(forKey key: Key) -> ItemsForKey<Value>? {
-    guard let indexSetForKey = _keyToEntryIndices.removeValue(forKey: key) else { return nil }
       
-    let removedValues: ItemsForKey<Value>
-    switch indexSetForKey._variant {
-    case .left(let index): // Typically there is only one value for key
-      let removedElement = _entries.remove(at: index)
-      removedValues = ItemsForKey(element: removedElement.value)
-       
-    case .right(let indicesToRemove):
-      let removedValuesArray = indicesToRemove.map { index in _entries[index].value }
-      _entries.removeSubranges(indicesToRemove.asRangeSet(for: _entries))
-      removedValues = ItemsForKey(array: removedValuesArray)
-    }
-    _rebuildKeyToEntryIndices()
-    return removedValues
-  }
-  
   @discardableResult
   @usableFromInline
   internal mutating func removeAllValues<T>(forKey key: Key, transform: (Value) -> T) -> ItemsForKey<T>? {
@@ -173,26 +153,46 @@ extension OrderedMultiValueDictionary {
        
     case .right(let indicesToRemove):
       let removedValuesArray = indicesToRemove.map { index in transform(_entries[index].value) }
-      _entries.removeSubranges(indicesToRemove.asRangeSet(for: _entries))
+      
+      // Sort indices in descending order to minimize shifting and remove correctly
+      switch indicesToRemove.base.count {
+      case 2: // 2 values for key is common when collision happens
+        var last = indicesToRemove.base[1]
+        var first = indicesToRemove.base[0]
+        if first > last {
+          swap(&first, &last)
+        }
+        _entries.remove(at: last)
+        _entries.remove(at: first)
+      default:
+        let sortedDescendingIndices = indicesToRemove.base.sorted(by: >)
+        for indexToRemove in sortedDescendingIndices {
+          _entries.remove(at: indexToRemove)
+        }
+      }
       removedValues = ItemsForKey(array: removedValuesArray)
     }
     _rebuildKeyToEntryIndices()
-    return removedValues
-  }
+     return removedValues
+  } // inlining has no performance gain.
   
-  @usableFromInline
-  internal mutating func removeAllValues(forKey key: Key) {
-    guard let indexSetForKey = _keyToEntryIndices.removeValue(forKey: key) else { return }
-      
-    switch indexSetForKey._variant {
-    case .left(let index): // Typically there is only one value for key
-      _entries.remove(at: index)
-       
-    case .right(let indicesToRemove):
-      _entries.removeSubranges(indicesToRemove.asRangeSet(for: _entries))
-    }
-    _rebuildKeyToEntryIndices()
-  }
+   @usableFromInline
+   internal mutating func removeAllValues(forKey key: Key) {
+     guard let indexSetForKey = _keyToEntryIndices.removeValue(forKey: key) else { return }
+  
+     switch indexSetForKey._variant {
+     case .left(let index): // Typically there is only one value for key
+       _entries.remove(at: index)
+  
+     case .right(let indicesToRemove):
+       // Sort indices in descending order to minimize shifting
+       let sortedDescendingIndices = indicesToRemove.base.sorted(by: >)
+       for indexToRemove in sortedDescendingIndices {
+         _entries.remove(at: indexToRemove)
+       }
+     }
+     _rebuildKeyToEntryIndices()
+   }
   
   private mutating func _rebuildKeyToEntryIndices() {
     _keyToEntryIndices.removeAll(keepingCapacity: true)
@@ -226,7 +226,7 @@ extension OrderedMultiValueDictionary {
   
   @inlinable
   @inline(__always)
-  public mutating func _insert(entryIndex: Int, forKey key: Key) {
+  internal mutating func _insert(entryIndex: Int, forKey key: Key) {
     if let bucketIndex = _keyToEntryIndices.index(forKey: key) {
       _keyToEntryIndices.values[bucketIndex].insert(entryIndex)
     } else {

@@ -25,13 +25,12 @@ extension ErrorInfo {
                                                by newValue: ValueExistential,
                                                keyOrigin: KeyOrigin) -> ItemsForKey<OptionalValue>? {
     let oldValues: ItemsForKey<OptionalValue>? = removeAllRecords(forKey: key)
-    withCollisionAndDuplicateResolutionAdd_inlined(
-      value: newValue,
-      duplicatePolicy: .allowEqual, // has no effect in this func
+    _storage.withCollisionAndDuplicateResolutionAdd(
+      record: BackingStorage.Record(keyOrigin: keyOrigin, someValue: .value(newValue)),
       forKey: key,
-      keyOrigin: keyOrigin,
-      writeProvenance: .onAppend(origin: nil),
-    ) // collisions must never happen using this func
+      duplicatePolicy: .allowEqual, // has no effect in this func
+      writeProvenance: .onAppend(origin: nil), // collisions must never happen using this func
+    )
     return oldValues
   }
 }

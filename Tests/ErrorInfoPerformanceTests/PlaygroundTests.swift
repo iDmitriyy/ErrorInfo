@@ -18,7 +18,7 @@ public func genericTest<T>(value: T, closure: (T?) -> Void) {
 struct PlaygroundTests {
   @Test func playground() throws {
     let count = 10000
-    let key1 = "key"
+    let key1 = "key1"
     let key2 = "key2"
 //    let output = performMeasuredAction(count: count) {
 //      for index in 1...100_000 {
@@ -27,8 +27,8 @@ struct PlaygroundTests {
 //    }
     
     if #available(macOS 26.0, *) {
-      genericTest(value: "abcdef") { value in
-        let value = "abcdef"
+      genericTest(value: 2) { value in
+//        let value = "abcdef"
 //        let value: String? = nil
         let overhead = performMeasuredAction(iterations: count) { _ in
           InlineArray<1000, ErrorInfo> { _ in ErrorInfo.empty }
@@ -46,33 +46,51 @@ struct PlaygroundTests {
 //            }
 //          }
 //        }
-        
+        let collection = [0, 1, 2, 3]
         // let elements: [(String, String)] = [("a", "b")]
-        
         let measured = performMeasuredAction(iterations: count) { _ in
           InlineArray<1000, ErrorInfo> { _ in
             var info = ErrorInfo()
-//            info.appendValue(value, forKey: key1)
-//            info.appendIfNotNil(value, forKey: key1)
-            info = [.apiEndpoint: "dsfsdfdsfd", .base64String: "dsfdsfsf"]
+//            info = ["key1": "dsfsdfdsfd", "key1": "444dsfdsfsf"]
+            info = ["key1": "dsfsdfdsfd"]
+            info.appendValue("ffrwefwerferw", forKey: key2)
+            info.appendValue("ffrwefwerfer444w", forKey: .debugMessage)
             return info
-//            ErrorInfo()
+//            var indexSet = NonEmptyOrderedIndexSet.single(index: 0)
+//            indexSet.insert(1)
+//            return indexSet
           }
         } measure: { array in
            for index in array.indices {
-//             blackHole(array[index].removeAllRecords(forKey: key1))
-             array[index].removeAllRecords(forKey: "api_endpoint")
+//             blackHole(array[index].asRangeSet(for: collection))
+             array[index].removeAllRecords(forKey: key1)
+//             blackHole(array[index].map { $0 + $0 })
            }
         }
+        blackHole(5)
         blackHole(overhead)
 //        let measurements = collectMeasurements(overhead: {overhead}, baseline: {baseline}, measured: {measured})
         
         // print(measurements.adjustedRatio)
         print((measured.medianDuration - overhead.medianDuration).inMicroseconds)
 //         print((measured.totalDuration - overhead.totalDuration).inMilliseconds)
-        // 294.168
-        // 1743.2079999999999
-        // 42
+        // 45.0 | remove single index key
+        
+        // 460
+        
+        // 2118.958 | remove milti index key
+        // 1929 | .removeSubranges asRangeSet
+        // 601 | previous + rebuild indices
+        // 415 | map + remove by index sorted in reverse
+        // 285 | only indicesToRemove.map
+        // 226 | transform first / last
+        // 238 | transform over indicesToRemove.indices
+        // 120 | only iteration over indicesToRemove
+        // 111 | iteration over indices indicesToRemove
+        // 107 | .first / .last
+        
+        // 523 | 1 asRangeSet | 401 inlined
+        // 1029 | 2 asRangeSet | 781 inlined
       }
     }
     
