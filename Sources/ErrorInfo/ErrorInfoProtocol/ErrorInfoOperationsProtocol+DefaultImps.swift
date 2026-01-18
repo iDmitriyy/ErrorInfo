@@ -132,13 +132,15 @@ extension ErrorInfoOperationsProtocol where KeyType == String {
   public func keyValueLookupResult(forKey literalKey: StringLiteralKey) -> KeyValueLookupResult {
     keyValueLookupResult(forKey: literalKey.rawValue)
   }
-  
-  // ===-------------------------------------------------------------------------------------------------------------------=== //
-  
+}
+
+// ===-------------------------------------------------------------------------------------------------------------------=== //
+
+extension ErrorInfoMutableOperationsProtocol {
   // MARK: - RemoveAll ForKey
   
-//  @discardableResult
-//  public mutating func removeAllRecords(forKey literalKey: StringLiteralKey) -> ItemsForKey<ValueExistential>? {
-//    removeAllRecords(forKey: literalKey.rawValue)
-//  }
+  @discardableResult
+  public mutating func removeAllRecords(forKey literalKey: StringLiteralKey) -> ItemsForKey<OptionalValue>? {
+    removeAllRecords(forKey: literalKey.rawValue)
+  }
 }

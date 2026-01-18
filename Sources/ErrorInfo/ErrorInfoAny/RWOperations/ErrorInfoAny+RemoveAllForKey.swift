@@ -7,12 +7,10 @@
 
 // MARK: - Remove All Records For Key
 
-extension ErrorInfoAny {  
+extension ErrorInfoAny {
   @discardableResult
-  public mutating func removeAllRecords(forKey dynamicKey: String) -> ItemsForKey<ValueExistential>? {
-    // FIXME: - imp
-    return nil
-    // _storage.removeAllRecords_ReturningNonNilValues(forKey: dynamicKey)
+  public mutating func removeAllRecords(forKey key: String) -> ItemsForKey<OptionalValue>? {
+    _storage.removeAllRecordsReturningOptionalInstances(forKey: key)
   }
 }
 

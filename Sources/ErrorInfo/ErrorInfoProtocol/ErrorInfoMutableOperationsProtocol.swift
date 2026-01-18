@@ -37,8 +37,8 @@ public protocol ErrorInfoMutableOperationsProtocol: ErrorInfoOperationsProtocol 
   /// let removedURL = errorInfo.removeAllRecords(forKey: .url)
   /// // returns nil
   /// ```
-//  @discardableResult
-//  mutating func removeAllRecords(forKey literalKey: StringLiteralKey) -> ItemsForKey<ValueExistential>?
+  @discardableResult
+  mutating func removeAllRecords(forKey literalKey: StringLiteralKey) -> ItemsForKey<OptionalValue>?
   
   /// Removes all records associated with the specified key and returns the removed `non-nil` values
   /// as a sequence.
@@ -61,9 +61,8 @@ public protocol ErrorInfoMutableOperationsProtocol: ErrorInfoOperationsProtocol 
   /// let removedURL = errorInfo.removeAllRecords(forKey: "url")
   /// // returns nil
   /// ```
-//  @_disfavoredOverload
-//  @discardableResult
-//  mutating func removeAllRecords(forKey key: KeyType) -> ItemsForKey<ValueExistential>?
+  @discardableResult
+  mutating func removeAllRecords(forKey key: KeyType) -> ItemsForKey<OptionalValue>?
   
   // ===-------------------------------------------------------------------------------------------------------------------=== //
   

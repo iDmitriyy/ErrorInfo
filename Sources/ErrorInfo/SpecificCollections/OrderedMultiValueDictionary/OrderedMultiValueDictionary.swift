@@ -177,13 +177,13 @@ extension OrderedMultiValueDictionary {
     // Sort indices in descending order to minimize shifting and remove correctly
     switch indicesToRemove.base.count {
     case 2: // 2 values for key is common when collision happens
-      var last = indicesToRemove.base[1]
-      var first = indicesToRemove.base[0]
-      if first > last {
-        swap(&first, &last)
+      var upper = indicesToRemove.base[1]
+      var lower = indicesToRemove.base[0]
+      if upper < lower {
+        swap(&lower, &upper)
       }
-      _entries.remove(at: last)
-      _entries.remove(at: first)
+      _entries.remove(at: upper)
+      _entries.remove(at: lower)
     default:
       let sortedDescendingIndices = indicesToRemove.base.sorted(by: >)
       for indexToRemove in sortedDescendingIndices {
