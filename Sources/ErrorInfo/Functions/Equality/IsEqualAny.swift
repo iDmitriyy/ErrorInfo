@@ -83,6 +83,47 @@ extension ErrorInfoFuncs {
 //    return false
   }
   
+  /// For ErrorInfo equatable wrappers.
+  ///
+  @inlinable @inline(__always)
+  public static func _isEqualWithUnboxingAndStdTypesSpecialization<A, B>(_ a: A, _ b: B) -> Bool {
+    // ~0 | is ~0 only with A.self == B.self check before. Otherwise _specialize has equal speed to _isEqualWithUnboxing
+    guard A.self == B.self else { return false }
+    
+    if let intA = _specialize(a, for: Int.self), let intB = b as? Int { // , let intB = b as? Int
+      return intA == intB
+    }
+    if let stringA = _specialize(a, for: String.self) {
+      let stringB = b as! String
+      return stringA == stringB
+    }
+    if let doubleA = _specialize(a, for: Double.self) {
+      let doubleB = b as! Double
+      return doubleA == doubleB
+    }
+    if let boolA = _specialize(a, for: Bool.self) {
+      let boolB = b as! Bool
+      return boolA == boolB
+    }
+    if let uintA = _specialize(a, for: UInt.self) {
+      let uintB = b as! UInt
+      return uintA == uintB
+    }
+    if let floatA = _specialize(a, for: Float.self) {
+      let floatB = b as! Float
+      return floatA == floatB
+    }
+    
+    // Range
+    
+    // Date
+    // URL
+    // UUID
+    // Decimal
+    
+    return _isEqualWithUnboxing(a, b)
+  }
+  
   /// > Fast
   /// No nil: isEqualWithUnboxing(nil as Int?, nil as UInt?) – true
   /// No classes

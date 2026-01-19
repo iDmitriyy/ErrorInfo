@@ -30,6 +30,9 @@ struct GenericEqualityTests {
     let (uintOVal, intOVal, eqOVal, neqOVal) = getOptionalValues(5)
     let (uintONil, intONil, eqONil, neqONil) = getOptionalNil()
         
+    let aa = int1 // as ErrorInfo.ValueExistential
+    let bb = int2 // as ErrorInfo.ValueExistential
+    
     print(ErrorInfoFuncs._isEqualWithUnboxing(nil as Int?, nil as UInt?))
     
     let measured = performMeasuredAction(iterations: count) { _ in
@@ -37,7 +40,7 @@ struct GenericEqualityTests {
     } measure: { _ in
       for _ in innerLoopRange {
 //        blackHole(eq1 == eq2)
-        blackHole(ErrorInfoFuncs._isEqualWithUnboxing(intAny1, intAny2))
+        blackHole(ErrorInfoFuncs._isEqualWithUnboxingAndStdTypesSpecialization(intAny1, intAny2))
 //        blackHole(int1 as any Equatable)
       }
     }
