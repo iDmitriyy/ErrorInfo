@@ -130,7 +130,12 @@ extension ErrorInfoFuncs {
   }
   
   /// > Fast
-  /// No nil: isEqualWithUnboxing(nil as Int?, nil as UInt?) – true
+  ///
+  /// No guard from `nil`:
+  /// ```
+  /// isEqualWithUnboxing(nil as Int?, nil as UInt?)
+  /// //  true
+  /// ```
   /// No classes
   @inlinable @inline(__always)
   public static func _isEqualWithUnboxing<A, B>(_ a: A, _ b: B) -> Bool {    
