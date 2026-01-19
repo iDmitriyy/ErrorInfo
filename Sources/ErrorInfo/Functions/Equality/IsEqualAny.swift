@@ -32,12 +32,12 @@ extension ErrorInfoFuncs {
   /// ErrorInfoFuncs.isEqualAny(intNil, strNil)    // false
   /// ```
   public static func isEqualAny<T>(_ lhs: T, _ rhs: T) -> Bool {
+    if T.self is AnyObject.Type, type(of: lhs) != type(of: rhs) { 
+       return false
+    }
+    
     let lhsFlattened = flattenOptional(any: lhs)
     let rhsFlattened = flattenOptional(any: rhs)
-    
-    if T.self is AnyObject.Type {
-      // print("_____ AnyObject \(type(of: lhs))")
-    }
     
     return switch (lhsFlattened, rhsFlattened) {
     case (.value, .nilInstance),

@@ -18,8 +18,9 @@ extension ErrorInfoFuncs {
   /// - Returns: An `ErrorInfoOptionalAny` enum representing the flattened value:
   ///   - `.value`: If the value is non-optional or the final unwrapped value is found.
   ///   - `.nilInstance`: If the value is `nil` or the final unwrapped value is `nil`.
-  @usableFromInline
-  internal static func flattenOptional<T>(any: T) -> ErrorInfoOptionalAny {
+//  @usableFromInline
+  @inlinable @inline(__always)
+  public static func flattenOptional<T>(any: T) -> ErrorInfoOptionalAny {
     if let optionalExistential = any as? any ErrorInfoFuncs.__PrivateImps.FlattenableOptionalPrivateProtocol {
       switch optionalExistential.getSelf() {
       case .some(let wrapped):
@@ -33,11 +34,96 @@ extension ErrorInfoFuncs {
     }
   }
   
+  @inlinable @inline(__always)
+  public static func flattenOptional_1<T>(any: T) -> ErrorInfoOptionalAny {
+    if !(T.self is any ErrorInfoFuncs.__PrivateImps.FlattenableOptionalPrivateProtocol.Type) {
+      return .value(any)
+    }
+    
+    if let optionalExistential = any as? any ErrorInfoFuncs.__PrivateImps.FlattenableOptionalPrivateProtocol {
+      switch optionalExistential.getSelf() {
+      case .some(let wrapped):
+        return flattenOptional_1(any: wrapped)
+      case .none:
+        let rootWrappedType = getRootWrappedType(anyType: optionalExistential.getStaticWrappedType())
+        return .nilInstance(typeOfWrapped: rootWrappedType)
+      }
+    } else {
+      return .value(any)
+    }
+  }
+  
+  @inlinable @inline(__always)
+  public static func flattenOptional_22<T>(any maybeValue: T?) -> ErrorInfoOptionalAny {
+    if let value = maybeValue {
+//      if !(T.self is any ErrorInfoFuncs.__PrivateImps.FlattenableOptionalPrivateProtocol.Type) {
+//        return .value(value)
+//      } else {
+//        return flattenOptional_2(any: value)
+//      }
+      if let optionalExistential = maybeValue as? any ErrorInfoFuncs.__PrivateImps.FlattenableOptionalPrivateProtocol {
+        return flattenOptional_2_conformed(instance: optionalExistential)
+      } else {
+        return .value(value)
+      }
+    } else {
+      let rootWrappedType = getRootWrappedType_2(anyType: T.self)
+      return .nilInstance(typeOfWrapped: rootWrappedType)
+    }
+  }
+    
+  @inlinable @inline(__always)
+  public static func flattenOptional_2<T>(any: T) -> ErrorInfoOptionalAny {
+    if !(T.self is any ErrorInfoFuncs.__PrivateImps.FlattenableOptionalPrivateProtocol.Type) {
+      return .value(any)
+    }
+
+    if let optionalExistential = any as? any ErrorInfoFuncs.__PrivateImps.FlattenableOptionalPrivateProtocol {
+      return flattenOptional_2_conformed(instance: optionalExistential)
+    } else {
+      return .value(any)
+    }
+  }
+  
+  @inlinable @inline(__always)
+  internal static func flattenOptional_2_conformed<C>(instance: C)
+  -> ErrorInfoOptionalAny where C: ErrorInfoFuncs.__PrivateImps.FlattenableOptionalPrivateProtocol {
+    switch instance.getSelf() {
+    case .some(let wrapped):
+      return flattenOptional_2(any: wrapped)
+
+    case .none:
+      let rootWrappedType = getRootWrappedType_2(anyType: instance.getStaticWrappedType())
+      return .nilInstance(typeOfWrapped: rootWrappedType)
+    }
+  }
+  
+//  @inlinable @inline(__always)
+//  internal static func flattenOptional_2_conformed(
+//    instance: any ErrorInfoFuncs.__PrivateImps.FlattenableOptionalPrivateProtocol
+//  )
+//  -> ErrorInfoOptionalAny {
+//    switch instance.getSelf() {
+//    case .some(let wrapped):
+//      return flattenOptional_2(any: wrapped)
+//
+//    case .none:
+//      let rootWrappedType = getRootWrappedType(anyType: instance.getStaticWrappedType())
+//      return .nilInstance(typeOfWrapped: rootWrappedType)
+//    }
+//  }
+    
+  @inlinable @inline(__always)
+  public static func test(_ value: (some Any)?) -> ErrorInfoOptionalAny {
+    flattenOptional_22(any: value)
+  }
+  
   // TODO: - try to reduce count of casts, making arg optionall: any: T => any: T?
   // in most cases there is no nesting
+  // https://forums.swift.org/t/how-to-dynamically-check-if-a-type-conforms-to-value-of-type/49118/2
   
   @usableFromInline
-  internal static func flattenOptional<T: Sendable>(anySendable: T) -> Either<any Sendable, (any Sendable.Type)> {
+  internal static func flattenOptional(anySendable: some Sendable) -> Either<any Sendable, any Sendable.Type> {
     if let optionalExistential = anySendable as? any ErrorInfoFuncs.__PrivateImps.FlattenableSendableOptionalPrivateProtocol {
       switch optionalExistential.getSendableSelf() {
       case .some(let wrapped):
@@ -71,7 +157,7 @@ extension ErrorInfoFuncs {
   /// let value = Optional<Optional<Optional<Any>>>.some(.some(.some("" as Any))))
   /// typeOfWrapped(any: value) // Returns `String`
   /// ```
-  internal static func typeOfWrapped<T>(any: T) -> any Any.Type {
+  public static func typeOfWrapped<T>(any: T) -> any Any.Type {
     if let optionalExistential = any as? any ErrorInfoFuncs.__PrivateImps.FlattenableOptionalPrivateProtocol {
       switch optionalExistential.getSelf() {
       case .some(let wrapped):
@@ -87,17 +173,28 @@ extension ErrorInfoFuncs {
   }
   
   /// When passed value is `nil`, we can not get type of values. In this extract `Wrapped` type from the most nested Optional type.
-  internal static func getRootWrappedType(anyType: any Any.Type) -> any Any.Type {
+//  internal
+  @inlinable @inline(__always)
+  public static func getRootWrappedType(anyType: any Any.Type) -> any Any.Type {
     if let optionalType = anyType as? (any ErrorInfoFuncs.__PrivateImps.FlattenableOptionalPrivateProtocol.Type) {
       return getRootWrappedType(anyType: optionalType.getStaticWrappedType())
     } else {
-      return anyType
+      return anyType // TODO: - check is it enough or need to call _dynamicType(ofNonOptionalAny:)
+    }
+  }
+  
+  @inlinable @inline(__always)
+  public static func getRootWrappedType_2<T>(anyType: T.Type) -> any Any.Type { // improved
+    if let optionalType = anyType as? (any ErrorInfoFuncs.__PrivateImps.FlattenableOptionalPrivateProtocol.Type) {
+      return getRootWrappedType(anyType: optionalType.getStaticWrappedType())
+    } else {
+      return anyType // TODO: - check is it enough or need to call _dynamicType(ofNonOptionalAny:)
     }
   }
 }
 
 extension ErrorInfoFuncs.__PrivateImps {
-  fileprivate static func _dynamicType(ofNonOptionalAny nonOptionalAny: Any) -> any Any.Type {
+  internal static func _dynamicType(ofNonOptionalAny nonOptionalAny: Any) -> any Any.Type {
     type(of: nonOptionalAny)
   }
   
@@ -122,7 +219,7 @@ extension ErrorInfoFuncs.__PrivateImps {
   /// ## Methods:
   /// - `getStaticWrappedType()`: Returns the static type of the wrapped value (i.e., the type inside the optional).
   /// - `getSelf()`: Returns the optional instance itself.
-  fileprivate protocol FlattenableOptionalPrivateProtocol<Wrapped> {
+  @usableFromInline internal protocol FlattenableOptionalPrivateProtocol<Wrapped> {
     associatedtype Wrapped
       
     static func getStaticWrappedType() -> Wrapped.Type
@@ -132,7 +229,7 @@ extension ErrorInfoFuncs.__PrivateImps {
     func getSelf() -> Wrapped?
   }
   
-  fileprivate protocol FlattenableSendableOptionalPrivateProtocol<Wrapped>: Sendable {
+  @usableFromInline internal protocol FlattenableSendableOptionalPrivateProtocol<Wrapped>: Sendable {
     associatedtype Wrapped: Sendable
       
     static func getStaticWrappedSendableType() -> Wrapped.Type
@@ -144,17 +241,17 @@ extension ErrorInfoFuncs.__PrivateImps {
 }
 
 extension Optional: ErrorInfoFuncs.__PrivateImps.FlattenableOptionalPrivateProtocol {
-  fileprivate static func getStaticWrappedType() -> Wrapped.Type { Wrapped.self }
+  @inlinable @inline(__always) internal static func getStaticWrappedType() -> Wrapped.Type { Wrapped.self }
   
-  fileprivate func getStaticWrappedType() -> Wrapped.Type { Wrapped.self }
+  @inlinable @inline(__always) internal func getStaticWrappedType() -> Wrapped.Type { Wrapped.self }
   
-  fileprivate func getSelf() -> Wrapped? { self }
+  @inlinable @inline(__always) internal func getSelf() -> Wrapped? { self }
 }
 
 extension Optional: ErrorInfoFuncs.__PrivateImps.FlattenableSendableOptionalPrivateProtocol {
-  fileprivate static func getStaticWrappedSendableType() -> Wrapped.Type { Wrapped.self }
+  @usableFromInline internal static func getStaticWrappedSendableType() -> Wrapped.Type { Wrapped.self }
   
-  fileprivate func getStaticWrappedSendableType() -> Wrapped.Type { Wrapped.self }
+  @usableFromInline internal func getStaticWrappedSendableType() -> Wrapped.Type { Wrapped.self }
   
-  fileprivate func getSendableSelf() -> Wrapped? { self }
+  @usableFromInline internal func getSendableSelf() -> Wrapped? { self }
 }

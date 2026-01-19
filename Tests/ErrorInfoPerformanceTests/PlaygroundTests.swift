@@ -15,9 +15,21 @@ public func genericTest<T>(value: T, closure: (T?) -> Void) {
   closure(value)
 }
 
+@inline(never)
+public func genericTestAny<T>(value: T, closure: (Any, any Any.Type, any Any.Type) -> Void) {
+  closure(value, Optional<Optional<Int>>.self, Int.self)
+}
+
+@_optimize(none)
+@inline(never)
+public func getValues() -> (Int, Int?, Int?, Any, any Any.Type, Any, Any, any Any.Type) {
+  (5, 5, nil, 5, Int.self, Optional(5) as Any, Optional<Int>.none as Any, Optional<Optional<Int>>.self)
+//  (5, Int.self, Optional(Optional(5)) as Any, Optional<Optional<Int>>.some(.none) as Any, Optional<Optional<Int>>.self)
+}
+
 struct PlaygroundTests {
   @Test func playground() throws {
-    let count = 10000
+    let count = 1000
     let key1 = "key1"
     let key2 = "key2"
 //    let output = performMeasuredAction(count: count) {
@@ -27,15 +39,17 @@ struct PlaygroundTests {
 //    }
     
     if #available(macOS 26.0, *) {
-      genericTest(value: 2) { value in
 //        let value = "abcdef"
 //        let value: String? = nil
-        let overhead = performMeasuredAction(iterations: count) { _ in
-          InlineArray<1000, ErrorInfo> { _ in ErrorInfo.empty }
-        } measure: { array in
+      let value2 = 3 as Any
+      let overhead = performMeasuredAction(iterations: count) { _ in
+        InlineArray<1000, ErrorInfo> { _ in ErrorInfo.empty }
+      } measure: { array in
 //          for index in 1...10000 { blackHole(index) }
-          for index in array.indices { blackHole(array[index]) }
+        for index in array.indices {
+          blackHole(array[index])
         }
+      }
         
 //        let baseline = performMeasuredAction(iterations: count) { _ in
 //          InlineArray<1000, ErrorInfo> { index in ErrorInfo() }
@@ -46,52 +60,95 @@ struct PlaygroundTests {
 //            }
 //          }
 //        }
-        let collection = [0, 1, 2, 3]
-        // let elements: [(String, String)] = [("a", "b")]
-        let measured = performMeasuredAction(iterations: count) { _ in
-          InlineArray<1000, ErrorInfo> { _ in
-            var info = ErrorInfo()
-            info = ["key1": "dsfsdfdsfd", "key1": "444dsfdsfsf"]
+      
+      let (int, intOVal, intONil, anyValue, anyType, anyOptionalValue, anyOptionalNil, anyOptionalType) = getValues()
+      let measured = performMeasuredAction(iterations: count) { _ in
+        InlineArray<1000, ErrorInfo> { _ in
+          var info = ErrorInfo()
+//            info = ["key1": "dsfsdfdsfd", "key1": "444dsfdsfsf"]
 //            info = ["key1": "dsfsdfdsfd"]
-            info.appendValue("ffrwefwerferw", forKey: key2)
-            info.appendValue("ffrwefwerfer444w", forKey: .debugMessage)
-            return info
-//            var indexSet = NonEmptyOrderedIndexSet.single(index: 0)
-//            indexSet.insert(1)
-//            return indexSet
-          }
-        } measure: { array in
-           for index in array.indices {
-//             blackHole(array[index].asRangeSet(for: collection))
-             array[index].removeAllRecords(forKey: key1)
-//             blackHole(array[index].map { $0 + $0 })
-           }
+//            info.appendValue("ffrwefwerferw", forKey: key2)
+//            info.appendValue("ffrwefwerfer444w", forKey: .debugMessage)
+          return info
         }
-        blackHole(5)
-        blackHole(overhead)
+      } measure: { array in
+        for index in array.indices {
+//          blackHole(ErrorInfoFuncs.test(anyOptionalValue))
+             blackHole(ErrorInfoFuncs.flattenOptional_2(any: intOVal))
+        }
+      }
+      blackHole(5)
+      blackHole(overhead)
 //        let measurements = collectMeasurements(overhead: {overhead}, baseline: {baseline}, measured: {measured})
         
-        // print(measurements.adjustedRatio)
-        print((measured.medianDuration - overhead.medianDuration).inMicroseconds)
+      // print(measurements.adjustedRatio)
+      print((measured.medianDuration - overhead.medianDuration).inMicroseconds)
 //         print((measured.totalDuration - overhead.totalDuration).inMilliseconds)
-        // 45.0 | remove single index key
+      
+      // test(_ value: (some Any)?) + flattenOptional_22
+      // direct5: 1.5
+      // anyValue:
+      // anyOptionalValue:
+      
+      // test(_ value: (some Any)?) + inlined
+      // direct5: 41
+      // anyValue: 166
+      // anyOptionalValue: 327
+      
+      // test(_ value: (some Any)?)
+      // direct5: 158 162
+      // anyValue: 188
+      // anyOptionalValue: 333
+      
+      // direct5:
+      // anyValue:
+      // anyOptionalValue:
+      // anyOptionalNil:
+      
+      // _____
+      // flattenOptional_2 + flattenOptional_2_conformed
+      // int: 1.5
+      // intOVal: 78 80 87
+      // intONil: 59 66
+      // anyValue: 32
+      // anyOptionalValue: 173 175
+      // anyOptionalNil: 151 160
+      
+      // flattenOptional_2 + flattenOptional_2_conformed(any OptionalProtocol)
+      // int: 1.5
+      // intOVal: 78 80
+      // intONil: 67 69
+      // anyValue: 35
+      // anyOptionalValue: 173 175
+      // anyOptionalNil: 163 170
+      
+      // flattenOptional_2 + flattenOptional_2_conformed
+      // direct 5: 1.5
+      // anyValue: 36
+      // anyOptionalValue: 169 164
+      // anyOptionalNil: 163
+      
+      // flattenOptional_2 + !(T.self is any
+      // anyValue: 34
+      // anyOptionalValue: 180
+      // anyOptionalNil: 164
+      
+      // flattenOptional_2 inlined
+      // anyValue: 57 59
+      // anyOptionalValue: 173 181
+      // anyOptionalNil: 131 142
+      
+      // flattenOptional
+      // anyValue: 58 61
+      // anyOptionalValue: 293 302
+      // anyOptionalNil: 269 282
         
-        // 535
-        
-        // 2118.958 | remove milti index key
-        // 1929 | .removeSubranges asRangeSet
-        // 601 | previous + rebuild indices
-        // 415 | map + remove by index sorted in reverse
-        // 285 | only indicesToRemove.map
-        // 226 | transform first / last
-        // 238 | transform over indicesToRemove.indices
-        // 120 | only iteration over indicesToRemove
-        // 111 | iteration over indices indicesToRemove
-        // 107 | .first / .last
-        
-        // 523 | 1 asRangeSet | 401 inlined
-        // 1029 | 2 asRangeSet | 781 inlined
-      }
+      // getRootWrappedType
+      // direct Int: 29 32
+      // optional Int: 90
+      // inlined:
+      // 0.625
+      // 57 65
     }
     
     // print("__playground: ", output.duration.asString(fractionDigits: 2)) // it takes ~25ms for 10 million of calls of empty blackHole(())
