@@ -90,8 +90,9 @@ extension ErrorInfoFuncs {
     // ~0 | is ~0 only with A.self == B.self check before _specialize calls and concrete types passed directly.
     // Otherwise _specialize has equal speed to _isEqualWithUnboxing for concrete Equatable types or to Any
     // For values passed as `Any` check A.self == B.self has no impact.
-    guard A.self == B.self else { return false }
-    
+    guard A.self == B.self else { print("????"); return false }
+    // (0 as Any, "" as Any) passes check A.self == B.self
+    print("____")
     if let intA = _specialize(a, for: Int.self), let intB = _specialize(b, for: Int.self) { // , let intB = b as? Int
       return intA == intB
     }

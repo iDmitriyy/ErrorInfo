@@ -40,7 +40,7 @@ struct GenericEqualityTests {
     } measure: { _ in
       for _ in innerLoopRange {
 //        blackHole(eq1 == eq2)
-        blackHole(ErrorInfoFuncs._isEqualWithUnboxingAndStdTypesSpecialization(0 as Float, 0 as Float))
+        blackHole(ErrorInfoFuncs._isEqualWithUnboxingAndStdTypesSpecialization(0 as Any, "" as Any))
 //        blackHole(int1 as any Equatable)
       }
     }
