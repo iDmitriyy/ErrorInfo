@@ -87,12 +87,17 @@ extension ErrorInfoFuncs {
   ///
   @inlinable @inline(__always)
   public static func _isEqualWithUnboxingAndStdTypesSpecialization<A, B>(_ a: A, _ b: B) -> Bool {
-    // ~0 | is ~0 only with A.self == B.self check before. Otherwise _specialize has equal speed to _isEqualWithUnboxing
+    // ~0 | is ~0 only with A.self == B.self check before _specialize calls and concrete types passed directly.
+    // Otherwise _specialize has equal speed to _isEqualWithUnboxing for concrete Equatable types or to Any
+    // For values passed as `Any` check A.self == B.self has no impact.
     guard A.self == B.self else { return false }
     
-    if let intA = _specialize(a, for: Int.self), let intB = b as? Int { // , let intB = b as? Int
+    if let intA = _specialize(a, for: Int.self), let intB = _specialize(b, for: Int.self) { // , let intB = b as? Int
       return intA == intB
     }
+//    if let intA = _specialize(a, for: Int.self), let intB = b as? Int { // , let intB = b as? Int
+//      return intA == intB
+//    }
     if let stringA = _specialize(a, for: String.self) {
       let stringB = b as! String
       return stringA == stringB

@@ -24,8 +24,8 @@ struct GenericEqualityTests {
     let (uint1, int1, eq1, neq1) = getValues(5)
     let (uint2, int2, eq2, neq2) = getValues(5)
     
-    let (uintAny1, intAny1, eqAny1, neqAny1) = getValues(5)
-    let (uintAny2, intAny2, eqAny2, neqAny2) = getValues(5)
+    let (uintAny1, intAny1, eqAny1, neqAny1) = getValuesAny(5)
+    let (uintAny2, intAny2, eqAny2, neqAny2) = getValuesAny(5)
     
     let (uintOVal, intOVal, eqOVal, neqOVal) = getOptionalValues(5)
     let (uintONil, intONil, eqONil, neqONil) = getOptionalNil()
