@@ -32,8 +32,8 @@ extension ErrorInfoFuncs {
   /// ErrorInfoFuncs.isEqualAny(intNil, strNil)    // false
   /// ```
   public static func isEqualAny<T>(_ lhs: T, _ rhs: T) -> Bool {
-    if T.self is AnyObject.Type, type(of: lhs) != type(of: rhs) { 
-       return false
+    if T.self is AnyObject.Type, type(of: lhs) != type(of: rhs) {
+      return false
     }
     
     let lhsFlattened = flattenOptional(any: lhs)
@@ -51,6 +51,51 @@ extension ErrorInfoFuncs {
       lhsType == rhsType
     }
   }
+  
+  @inlinable @inline(__always)
+  public static func isEqualAny2<T, U>(_ lhs: T, _ rhs: U) -> Bool {
+    // if T.self is AnyObject.Type, type(of: lhs) != type(of: rhs) {
+    //    return false
+    // }
+    
+    //    let lhsFlattened = ErrorInfoOptionalAny.value(lhs) // flattenOptional(any: lhs)
+    //    let rhsFlattened = ErrorInfoOptionalAny.value(rhs) // flattenOptional(any: rhs)
+    //
+    //    return switch (lhsFlattened, rhsFlattened) {
+    //    case (.value, .nilInstance),
+    //         (.nilInstance, .value):
+    //      false
+    //
+    //    case let (.value(lhsInstance), .value(rhsInstance)):
+    //      __PrivateImps._isEqualFlattenedExistentialAnyWithUnboxing(a: lhsInstance, b: rhsInstance)
+    //
+    //    case let (.nilInstance(lhsType), .nilInstance(rhsType)):
+    //      lhsType == rhsType
+    //    }
+    
+    __PrivateImps._isEqualFlattenedExistentialAnyWithUnboxing(a: lhs, b: rhs)
+//    if let lhs = lhs as? any Hashable, let rhs = rhs as? any Hashable {
+//      return AnyHashable(lhs) == AnyHashable(rhs)
+//    }
+//    if let lhs = lhs as? AnyHashable, let rhs = rhs as? AnyHashable {
+//      return lhs == rhs
+//    }
+//    return false
+  }
+  
+  /// > Fast
+  /// No nil: isEqualWithUnboxing(nil as Int?, nil as UInt?) – true
+  /// No classes
+  @inlinable @inline(__always)
+  public static func _isEqualWithUnboxing<A, B>(_ a: A, _ b: B) -> Bool {    
+    guard let a = a as? any Equatable else { return false }
+    
+    func _isEqual<EqA: Equatable>(_ equatableA: EqA) -> Bool {
+        guard let equatableB = b as? EqA else { return false }
+        return equatableA == equatableB
+    }
+    return _isEqual(a)
+  }
 }
 
 extension ErrorInfoFuncs.__PrivateImps {
@@ -60,17 +105,29 @@ extension ErrorInfoFuncs.__PrivateImps {
   ///         If `a` and `b` are of different types, the function will immediately return `false`.
   @inlinable @inline(__always)
   internal static func _isEqualFlattenedExistentialAnyWithUnboxing<A, B>(a: A, b: B) -> Bool {
-    guard A.self == B.self else { return false } // TODO: check performance
+    // affect perf of Optional vs nonOptional. Not affect eq vs noneq.
+    guard A.self == B.self else { return false } // significantly improve performance
     
-    guard let a = a as? any Equatable, let b = b as? any Equatable else { return false }
-    // TODO: optimize – cast here only `a`
-    return _isEqualExistentialEquatableWithUnboxing(a: a, b: b)
-    // return _isEqualOneEquatableExistentialWithUnboxing(a: a, b: b)
+    // if let int1 = _specialize(a, for: Int.self) { // ~0
+    //   let int2 = unsafeBitCast(b, to: Int.self)
+    //   return int1 == int2
+    // }
+    
+    guard let a = a as? any Equatable else { return false }
+    
+    func _isEqual<EqA: Equatable>(_ equatableA: EqA) -> Bool {
+        guard let equatableB = b as? EqA else { return false }
+        return equatableA == equatableB
+    }
+    return _isEqual(a)
+//    return _isEqualOneEquatableExistentialWithUnboxing(a: a, b: b)
   }
-  
-  @inlinable @inline(__always)
-  internal static func _isEqualOneEquatableExistentialWithUnboxing<A: Equatable, B>(a: A, b: B) -> Bool {
-    guard let b = b as? A else { return false }
-    return a == b
-  }
+    
+//  @inlinable @inline(__always)
+//  internal static func _isEqualOneEquatableExistentialWithUnboxing<A: Equatable, B>(a: A, b: B) -> Bool {
+//    guard let b = b as? A else { return false }
+//    return a == b
+//  }
 }
+
+// https://forums.swift.org/t/comparing-two-any-values-for-equality-is-this-the-simplest-implementation/73816
