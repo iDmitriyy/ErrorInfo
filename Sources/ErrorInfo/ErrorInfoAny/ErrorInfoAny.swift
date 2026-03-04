@@ -74,7 +74,7 @@ extension ErrorInfoAny {
   @usableFromInline internal typealias BackingStorage = ErrorInfoGeneric<String, EquatableOptionalAny>
 }
 
-// ===-------------------------------------------------------------------------------------------------------------------=== //
+//===-------------------------------------------------------------------------------------------------------------------===//
 
 // MARK: - Append KeyValue with all arguments passed explicitly
 

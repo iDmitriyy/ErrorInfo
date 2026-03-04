@@ -27,6 +27,20 @@ public func getValues() -> (Int, Int?, Int?, Any, any Any.Type, Any, Any, any An
 //  (5, Int.self, Optional(Optional(5)) as Any, Optional<Optional<Int>>.some(.none) as Any, Optional<Optional<Int>>.self)
 }
 
+final class ClassBox<T> {
+  let value: T
+  init(value: T) {
+    self.value = value
+  }
+}
+
+struct NCBox<T>: ~Copyable {
+  let value: T
+  init(value: T) {
+    self.value = value
+  }
+}
+
 struct PlaygroundTests {
   @Test func playground() throws {
     let count = 1000
@@ -72,9 +86,10 @@ struct PlaygroundTests {
           return info
         }
       } measure: { array in
-        for index in array.indices {
+        for index in 1...50000 {
+          blackHole(consuming: ClassBox(value: index))
 //          blackHole(ErrorInfoFuncs.test(anyOptionalValue))
-             blackHole(ErrorInfoFuncs.flattenOptional_2(any: intOVal))
+//             blackHole(ErrorInfoFuncs.flattenOptional_2(any: intOVal))
         }
       }
       blackHole(5)

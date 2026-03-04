@@ -64,7 +64,7 @@ public protocol ErrorInfoMutableOperationsProtocol: ErrorInfoOperationsProtocol 
   @discardableResult
   mutating func removeAllRecords(forKey key: KeyType) -> ItemsForKey<OptionalValue>?
   
-  // ===-------------------------------------------------------------------------------------------------------------------=== //
+  //===-------------------------------------------------------------------------------------------------------------------===//
   
   // MARK: - ReplaceAll ForKey
   

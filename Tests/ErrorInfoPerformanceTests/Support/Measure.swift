@@ -1024,6 +1024,11 @@ public func blackHole<T>(_ thing: T) {
 }
 
 @inline(never) @_optimize(none)
+public func blackHole<T: ~Copyable & ~Escapable>(consuming thing: consuming T) {
+  _ = thing
+}
+
+@inline(never) @_optimize(none)
 public func emptyFunc0() {}
 
 @inline(never) @_optimize(none)

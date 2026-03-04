@@ -53,7 +53,7 @@ extension StringLiteralKey {
   public static let operation: StringLiteralKey = "operation"
 }
 
-// ===-------------------------------------------------------------------------------------------------------------------=== //
+//===-------------------------------------------------------------------------------------------------------------------===//
 
 extension StringLiteralKey {
   // MARK: - Commonly used keys
@@ -114,7 +114,7 @@ extension StringLiteralKey {
   public static let dataBytesCount: StringLiteralKey = "data_bytes_count"
 }
 
-// ===-------------------------------------------------------------------------------------------------------------------=== //
+//===-------------------------------------------------------------------------------------------------------------------===//
 
 extension StringLiteralKey {
   // MARK: - Basic Information
@@ -131,7 +131,7 @@ extension StringLiteralKey {
   public static let host: StringLiteralKey = "host"
 }
 
-// ===-------------------------------------------------------------------------------------------------------------------=== //
+//===-------------------------------------------------------------------------------------------------------------------===//
 
 extension StringLiteralKey {
   // MARK: - Error Context
@@ -160,7 +160,7 @@ extension StringLiteralKey {
   public static let retryDelay: StringLiteralKey = "retry_delay"
 }
 
-// ===-------------------------------------------------------------------------------------------------------------------=== //
+//===-------------------------------------------------------------------------------------------------------------------===//
 
 extension StringLiteralKey {
   // MARK: - Network & Connectivity Information
@@ -177,7 +177,7 @@ extension StringLiteralKey {
   public static let apiEndpoint: StringLiteralKey = "api_endpoint"
 }
 
-// ===-------------------------------------------------------------------------------------------------------------------=== //
+//===-------------------------------------------------------------------------------------------------------------------===//
 
 extension StringLiteralKey {
   // MARK: - App Usage Data

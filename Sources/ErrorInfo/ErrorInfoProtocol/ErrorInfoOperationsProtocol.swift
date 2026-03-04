@@ -44,7 +44,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   /// Returns empty instance of `ErrorInfo`.
   static var empty: Self { get }
   
-  // ===-------------------------------------------------------------------------------------------------------------------=== //
+  //===-------------------------------------------------------------------------------------------------------------------===//
     
   // MARK: - Subscript
   
@@ -108,7 +108,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   /// ```
   subscript(_ literalKey: StringLiteralKey) -> (ValueExistential)? { get }
   
-  // ===-------------------------------------------------------------------------------------------------------------------=== //
+  //===-------------------------------------------------------------------------------------------------------------------===//
     
   // MARK: - Views
   
@@ -137,7 +137,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   /// This view provides an enriched sequence of key-value pairs with additional metadata, useful for deep inspection, logging or debugging.
   var records: Records { get }
   
-  // ===-------------------------------------------------------------------------------------------------------------------=== //
+  //===-------------------------------------------------------------------------------------------------------------------===//
     
   // MARK: - All ForKey
   
@@ -261,7 +261,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   /// ```
   func allRecords(forKey key: KeyType) -> ItemsForKey<Record>?
   
-  // ===-------------------------------------------------------------------------------------------------------------------=== //
+  //===-------------------------------------------------------------------------------------------------------------------===//
   
   // MARK: - FirstLastForKey
   
@@ -465,7 +465,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   /// ```
   func firstRecorded(forKey key: String) -> OptionalValue?
   
-  // ===-------------------------------------------------------------------------------------------------------------------=== //
+  //===-------------------------------------------------------------------------------------------------------------------===//
   
   // MARK: - KeyValue Lookup
   
@@ -792,7 +792,7 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   ///
   func keyValueLookupResult(forKey key: KeyType) -> KeyValueLookupResult
     
-  // ===-------------------------------------------------------------------------------------------------------------------=== //
+  //===-------------------------------------------------------------------------------------------------------------------===//
   
   // MARK: - RemoveAll
   
@@ -805,4 +805,4 @@ public protocol ErrorInfoOperationsProtocol where KeyType == String {
   mutating func removeAll(keepingCapacity keepCapacity: Bool)
 }
 
-// ===-------------------------------------------------------------------------------------------------------------------=== //
+//===-------------------------------------------------------------------------------------------------------------------===//

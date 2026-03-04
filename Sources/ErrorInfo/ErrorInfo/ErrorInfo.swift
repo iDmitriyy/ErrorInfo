@@ -132,7 +132,7 @@ extension ErrorInfo {
   internal typealias BackingStorage = ErrorInfoGeneric<KeyType, EquatableOptionalValue>
 }
 
-// ===-------------------------------------------------------------------------------------------------------------------=== //
+//===-------------------------------------------------------------------------------------------------------------------===//
 
 // MARK: - Append KeyValue with all arguments passed explicitly
 
